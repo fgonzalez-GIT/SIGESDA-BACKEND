@@ -1,0 +1,578 @@
+### Tests para CRUD Medios de Pago - Sistema SIGESDA
+### Base URL
+@baseUrl = http://localhost:3001/api
+@token = Bearer {{authToken}}
+
+### ============================================
+### 1. HEALTH CHECK
+### ============================================
+
+GET {{baseUrl}}/medios-pago/health
+Content-Type: application/json
+
+### ============================================
+### 2. OBTENER TODOS LOS MEDIOS DE PAGO
+### ============================================
+
+GET {{baseUrl}}/medios-pago?page=1&limit=10
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 3. CREAR MEDIO DE PAGO - EFECTIVO
+### ============================================
+
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo",
+  "tipo": "EFECTIVO",
+  "importe": 25000,
+  "fecha": "2024-11-26T10:00:00Z",
+  "observaciones": "Pago en efectivo - Cuota noviembre"
+}
+
+### ============================================
+### 4. CREAR MEDIO DE PAGO - TRANSFERENCIA
+### ============================================
+
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo2",
+  "tipo": "TRANSFERENCIA",
+  "importe": 45000,
+  "numero": "TRF123456789",
+  "fecha": "2024-11-26T14:30:00Z",
+  "banco": "Banco Nación",
+  "observaciones": "Transferencia online"
+}
+
+### ============================================
+### 5. CREAR MEDIO DE PAGO - CHEQUE
+### ============================================
+
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo3",
+  "tipo": "CHEQUE",
+  "importe": 30000,
+  "numero": "12345678",
+  "fecha": "2024-11-26T16:00:00Z",
+  "banco": "Banco Santander",
+  "observaciones": "Cheque al día"
+}
+
+### ============================================
+### 6. CREAR MEDIO DE PAGO - TARJETA DÉBITO
+### ============================================
+
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo4",
+  "tipo": "TARJETA_DEBITO",
+  "importe": 18000,
+  "numero": "AUTH987654",
+  "fecha": "2024-11-26T11:15:00Z",
+  "observaciones": "Pago con tarjeta de débito"
+}
+
+### ============================================
+### 7. CREAR MEDIO DE PAGO - TARJETA CRÉDITO
+### ============================================
+
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo5",
+  "tipo": "TARJETA_CREDITO",
+  "importe": 22000,
+  "numero": "CC456789",
+  "fecha": "2024-11-26T13:45:00Z",
+  "observaciones": "Pago con tarjeta de crédito en 1 cuota"
+}
+
+### ============================================
+### 8. OBTENER MEDIO DE PAGO POR ID
+### ============================================
+
+GET {{baseUrl}}/medios-pago/clh1234567890pago
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 9. OBTENER MEDIOS DE PAGO POR RECIBO
+### ============================================
+
+GET {{baseUrl}}/medios-pago/recibo/clh1234567890recibo
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 10. OBTENER MEDIOS DE PAGO POR TIPO
+### ============================================
+
+# Efectivo
+GET {{baseUrl}}/medios-pago/tipo/EFECTIVO?limit=5
+Content-Type: application/json
+Authorization: {{token}}
+
+### Transferencias
+GET {{baseUrl}}/medios-pago/tipo/TRANSFERENCIA?limit=5
+Content-Type: application/json
+Authorization: {{token}}
+
+### Cheques
+GET {{baseUrl}}/medios-pago/tipo/CHEQUE?limit=5
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 11. RUTAS ESPECIALIZADAS POR TIPO
+### ============================================
+
+# Listado de efectivo
+GET {{baseUrl}}/medios-pago/efectivo/listado?limit=10
+Content-Type: application/json
+Authorization: {{token}}
+
+### Listado de cheques
+GET {{baseUrl}}/medios-pago/cheques/listado?limit=10
+Content-Type: application/json
+Authorization: {{token}}
+
+### Listado de transferencias
+GET {{baseUrl}}/medios-pago/transferencias/listado?limit=10
+Content-Type: application/json
+Authorization: {{token}}
+
+### Listado de tarjetas
+GET {{baseUrl}}/medios-pago/tarjetas/listado?limit=10
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 12. FILTROS AVANZADOS
+### ============================================
+
+# Filtrar por rango de importes
+GET {{baseUrl}}/medios-pago?importeMinimo=20000&importeMaximo=50000
+Content-Type: application/json
+Authorization: {{token}}
+
+### Filtrar por rango de fechas
+GET {{baseUrl}}/medios-pago?fechaDesde=2024-11-01T00:00:00Z&fechaHasta=2024-11-30T23:59:59Z
+Content-Type: application/json
+Authorization: {{token}}
+
+### Filtrar por banco específico
+GET {{baseUrl}}/medios-pago?banco=Santander
+Content-Type: application/json
+Authorization: {{token}}
+
+### Filtrar por tipo y ordenar por importe
+GET {{baseUrl}}/medios-pago?tipo=TRANSFERENCIA&orderBy=importe&orderDirection=desc
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 13. BÚSQUEDA AVANZADA
+### ============================================
+
+# Buscar por número de comprobante/cheque
+GET {{baseUrl}}/medios-pago/search/avanzada?search=12345&searchBy=numero
+Content-Type: application/json
+Authorization: {{token}}
+
+### Buscar por banco
+GET {{baseUrl}}/medios-pago/search/avanzada?search=Santander&searchBy=banco
+Content-Type: application/json
+Authorization: {{token}}
+
+### Buscar por datos del recibo
+GET {{baseUrl}}/medios-pago/search/avanzada?search=Juan&searchBy=recibo
+Content-Type: application/json
+Authorization: {{token}}
+
+### Búsqueda general
+GET {{baseUrl}}/medios-pago/search/avanzada?search=25000&searchBy=all&tipo=EFECTIVO
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 14. ACTUALIZAR MEDIO DE PAGO
+### ============================================
+
+PUT {{baseUrl}}/medios-pago/clh1234567890pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "importe": 28000,
+  "observaciones": "Pago en efectivo - Monto corregido"
+}
+
+### ============================================
+### 15. VALIDACIÓN DE PAGOS
+### ============================================
+
+# Validar pago completo (POST con datos)
+POST {{baseUrl}}/medios-pago/validar/pago-completo
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo",
+  "tolerancia": 0.01
+}
+
+### Validar pago de recibo específico (GET con parámetros)
+GET {{baseUrl}}/medios-pago/validar/recibo/clh1234567890recibo?tolerancia=0.01
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 16. DASHBOARD Y ESTADÍSTICAS RÁPIDAS
+### ============================================
+
+# Dashboard principal
+GET {{baseUrl}}/medios-pago/dashboard/principal
+Content-Type: application/json
+Authorization: {{token}}
+
+### Estadísticas rápidas
+GET {{baseUrl}}/medios-pago/stats/rapidas
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 17. ESTADÍSTICAS DETALLADAS
+### ============================================
+
+# Estadísticas por tipo
+GET {{baseUrl}}/medios-pago/stats/detalladas?fechaDesde=2024-11-01T00:00:00Z&fechaHasta=2024-11-30T23:59:59Z&agruparPor=tipo
+Content-Type: application/json
+Authorization: {{token}}
+
+### Estadísticas por banco
+GET {{baseUrl}}/medios-pago/stats/detalladas?fechaDesde=2024-11-01T00:00:00Z&fechaHasta=2024-11-30T23:59:59Z&agruparPor=banco
+Content-Type: application/json
+Authorization: {{token}}
+
+### Estadísticas generales
+GET {{baseUrl}}/medios-pago/stats/detalladas?fechaDesde=2024-11-01T00:00:00Z&fechaHasta=2024-11-30T23:59:59Z&agruparPor=general
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 18. RESUMEN POR PERÍODO
+### ============================================
+
+GET {{baseUrl}}/medios-pago/resumen/periodo?fechaDesde=2024-11-01T00:00:00Z&fechaHasta=2024-11-30T23:59:59Z
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 19. CONCILIACIÓN BANCARIA
+### ============================================
+
+# Conciliación para Banco Santander
+GET {{baseUrl}}/medios-pago/conciliacion/bancaria?banco=Santander&fechaDesde=2024-11-01T00:00:00Z&fechaHasta=2024-11-30T23:59:59Z
+Content-Type: application/json
+Authorization: {{token}}
+
+### Conciliación para transferencias específicas
+GET {{baseUrl}}/medios-pago/conciliacion/bancaria?banco=Nación&fechaDesde=2024-11-01T00:00:00Z&fechaHasta=2024-11-30T23:59:59Z&tipo=TRANSFERENCIA
+Content-Type: application/json
+Authorization: {{token}}
+
+### Conciliación para cheques específicos
+GET {{baseUrl}}/medios-pago/conciliacion/bancaria?banco=Santander&fechaDesde=2024-11-01T00:00:00Z&fechaHasta=2024-11-30T23:59:59Z&tipo=CHEQUE
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 20. RUTAS DE ACCESO DIRECTO
+### ============================================
+
+# Medios de pago del día
+GET {{baseUrl}}/medios-pago/hoy/listado
+Content-Type: application/json
+Authorization: {{token}}
+
+### Medios de pago del mes actual
+GET {{baseUrl}}/medios-pago/mes-actual/listado
+Content-Type: application/json
+Authorization: {{token}}
+
+### Medios de pago de alto valor (más de $50,000)
+GET {{baseUrl}}/medios-pago/alto-valor/listado
+Content-Type: application/json
+Authorization: {{token}}
+
+### Medios de pago recientes (últimos 7 días)
+GET {{baseUrl}}/medios-pago/recientes/listado
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 21. OPERACIONES MASIVAS
+### ============================================
+
+# Eliminar múltiples medios de pago
+DELETE {{baseUrl}}/medios-pago/bulk/eliminar
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "ids": ["clh1234567890pago1", "clh1234567890pago2"],
+  "confirmarEliminacion": true
+}
+
+### ============================================
+### 22. ELIMINAR MEDIO DE PAGO INDIVIDUAL
+### ============================================
+
+DELETE {{baseUrl}}/medios-pago/clh1234567890pago
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 23. CASOS DE ERROR Y VALIDACIONES
+### ============================================
+
+# Crear medio de pago con datos inválidos
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "invalid-id",
+  "tipo": "INVALID_TYPE",
+  "importe": -100
+}
+
+### Crear cheque sin número
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo",
+  "tipo": "CHEQUE",
+  "importe": 25000,
+  "banco": "Banco Santander"
+}
+
+### Crear transferencia sin número de comprobante
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo",
+  "tipo": "TRANSFERENCIA",
+  "importe": 25000
+}
+
+### Crear medio de pago para recibo inexistente
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "recibo-inexistente",
+  "tipo": "EFECTIVO",
+  "importe": 25000
+}
+
+### ============================================
+### 24. PRUEBAS DE DUPLICADOS
+### ============================================
+
+# Intentar crear cheque con número duplicado
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo",
+  "tipo": "CHEQUE",
+  "importe": 25000,
+  "numero": "12345678",
+  "banco": "Banco Santander"
+}
+
+### Intentar crear transferencia con número duplicado
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo",
+  "tipo": "TRANSFERENCIA",
+  "importe": 25000,
+  "numero": "TRF123456789"
+}
+
+### ============================================
+### 25. PRUEBAS DE LÍMITES Y RANGOS
+### ============================================
+
+# Crear efectivo con monto muy alto (debería funcionar pero con advertencia)
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo",
+  "tipo": "EFECTIVO",
+  "importe": 500000,
+  "observaciones": "Pago en efectivo de monto alto"
+}
+
+### Crear efectivo excediendo límite teórico
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo",
+  "tipo": "EFECTIVO",
+  "importe": 1500000,
+  "observaciones": "Debería fallar por monto muy alto"
+}
+
+### ============================================
+### 26. PRUEBAS DE PAGINACIÓN
+### ============================================
+
+# Primera página
+GET {{baseUrl}}/medios-pago?page=1&limit=5
+Content-Type: application/json
+Authorization: {{token}}
+
+### Segunda página
+GET {{baseUrl}}/medios-pago?page=2&limit=5
+Content-Type: application/json
+Authorization: {{token}}
+
+### Página con límite alto
+GET {{baseUrl}}/medios-pago?page=1&limit=50
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 27. PRUEBAS DE ORDENAMIENTO
+### ============================================
+
+# Ordenar por fecha descendente
+GET {{baseUrl}}/medios-pago?orderBy=fecha&orderDirection=desc&limit=10
+Content-Type: application/json
+Authorization: {{token}}
+
+### Ordenar por importe ascendente
+GET {{baseUrl}}/medios-pago?orderBy=importe&orderDirection=asc&limit=10
+Content-Type: application/json
+Authorization: {{token}}
+
+### Ordenar por tipo
+GET {{baseUrl}}/medios-pago?orderBy=tipo&orderDirection=asc&limit=10
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 28. PRUEBAS DE INTEGRACIÓN
+### ============================================
+
+# Crear medio de pago y validar inmediatamente
+POST {{baseUrl}}/medios-pago
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "reciboId": "clh1234567890recibo",
+  "tipo": "EFECTIVO",
+  "importe": 15000,
+  "observaciones": "Pago parcial"
+}
+
+###
+GET {{baseUrl}}/medios-pago/validar/recibo/clh1234567890recibo
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 29. PRUEBAS DE RENDIMIENTO
+### ============================================
+
+# Obtener gran cantidad de registros
+GET {{baseUrl}}/medios-pago?limit=100
+Content-Type: application/json
+Authorization: {{token}}
+
+### Búsqueda en gran volumen
+GET {{baseUrl}}/medios-pago/search/avanzada?search=2024&searchBy=all
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### 30. VALIDACIONES FINALES
+### ============================================
+
+# Obtener medio de pago inexistente
+GET {{baseUrl}}/medios-pago/pago-inexistente
+Content-Type: application/json
+Authorization: {{token}}
+
+### Actualizar medio de pago inexistente
+PUT {{baseUrl}}/medios-pago/pago-inexistente
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "importe": 30000
+}
+
+### Eliminar medio de pago inexistente
+DELETE {{baseUrl}}/medios-pago/pago-inexistente
+Content-Type: application/json
+Authorization: {{token}}
+
+### ============================================
+### NOTAS DE TESTING
+### ============================================
+
+# Para ejecutar estos tests:
+# 1. Asegúrate de que el servidor esté corriendo en puerto 3001
+# 2. Reemplaza los IDs de ejemplo por IDs reales de tu base de datos
+# 3. Configura el token de autenticación si es necesario
+# 4. Los endpoints que requieren recibos existentes necesitan IDs válidos
+
+# Orden sugerido de testing:
+# 1. Health check
+# 2. Crear diferentes tipos de medios de pago
+# 3. Consultar y filtrar medios de pago
+# 4. Validar pagos completos
+# 5. Estadísticas y dashboard
+# 6. Conciliación bancaria
+# 7. Operaciones de actualización
+# 8. Búsquedas avanzadas
+# 9. Validaciones de error
+# 10. Eliminación y operaciones masivas
+
+### ============================================
+### FIN DE TESTS CRUD MEDIOS DE PAGO
+### ============================================

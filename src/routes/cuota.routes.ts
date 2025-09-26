@@ -1,0 +1,55 @@
+import { Router } from 'express';
+import { CuotaController } from '@/controllers/cuota.controller';
+import { CuotaService } from '@/services/cuota.service';
+import { CuotaRepository } from '@/repositories/cuota.repository';
+import { ReciboRepository } from '@/repositories/recibo.repository';
+import { PersonaRepository } from '@/repositories/persona.repository';
+import { ConfiguracionRepository } from '@/repositories/configuracion.repository';
+import { prisma } from '@/config/database';
+
+const router = Router();
+
+// Initialize dependencies
+const cuotaRepository = new CuotaRepository(prisma);
+const reciboRepository = new ReciboRepository(prisma);
+const personaRepository = new PersonaRepository(prisma);
+const configuracionRepository = new ConfiguracionRepository(prisma);
+const cuotaService = new CuotaService(cuotaRepository, reciboRepository, personaRepository, configuracionRepository);
+const cuotaController = new CuotaController(cuotaService);
+
+// Basic CRUD Routes
+router.post('/', cuotaController.createCuota.bind(cuotaController));
+router.get('/', cuotaController.getCuotas.bind(cuotaController));
+router.get('/:id', cuotaController.getCuotaById.bind(cuotaController));
+router.put('/:id', cuotaController.updateCuota.bind(cuotaController));
+router.delete('/:id', cuotaController.deleteCuota.bind(cuotaController));
+
+// Specialized query routes (before parameterized routes)
+router.get('/search/avanzada', cuotaController.searchCuotas.bind(cuotaController));
+router.get('/stats/resumen', cuotaController.getStatistics.bind(cuotaController));
+router.get('/dashboard/principal', cuotaController.getDashboard.bind(cuotaController));
+router.get('/pendientes/listado', cuotaController.getPendientes.bind(cuotaController));
+router.get('/vencidas/listado', cuotaController.getVencidas.bind(cuotaController));
+router.get('/periodos/disponibles', cuotaController.getPeriodosDisponibles.bind(cuotaController));
+
+// Generation and calculation routes
+router.post('/generar/masiva', cuotaController.generarCuotas.bind(cuotaController));
+router.post('/calcular/monto', cuotaController.calcularMontoCuota.bind(cuotaController));
+router.post('/recalcular/periodo', cuotaController.recalcularCuotas.bind(cuotaController));
+
+// Bulk operations
+router.delete('/bulk/eliminar', cuotaController.deleteBulkCuotas.bind(cuotaController));
+
+// Report routes
+router.get('/reporte/:mes/:anio', cuotaController.generarReporte.bind(cuotaController));
+router.get('/resumen/:mes/:anio', cuotaController.getResumenMensual.bind(cuotaController));
+
+// Validation routes
+router.get('/validar/:mes/:anio/generacion', cuotaController.validarGeneracionCuotas.bind(cuotaController));
+
+// Lookup routes by different criteria
+router.get('/recibo/:reciboId', cuotaController.getCuotaByReciboId.bind(cuotaController));
+router.get('/socio/:socioId', cuotaController.getCuotasBySocio.bind(cuotaController));
+router.get('/periodo/:mes/:anio', cuotaController.getCuotasPorPeriodo.bind(cuotaController));
+
+export default router;

@@ -1,0 +1,340 @@
+### SIGESDA API - Pruebas de Endpoints Familiares
+### Base URL: http://localhost:3001
+### Prerequisito: Tener socios creados para usar como referencia
+
+### Variables para usar en las pruebas
+# Reemplaza estos IDs con IDs reales de socios existentes en tu BD
+@socioId1 = {{$id-socio-principal}}
+@socioId2 = {{$id-socio-conyuge}}
+@socioId3 = {{$id-socio-hijo}}
+@familiarId = {{$id-relacion-familiar}}
+
+###################################################################
+### CRUD FAMILIARES - Casos de Prueba Básicos
+###################################################################
+
+### 1. Crear relación familiar - Cónyuge
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "{{socioId1}}",
+  "familiarId": "{{socioId2}}",
+  "parentesco": "CONYUGE"
+}
+
+### 2. Crear relación familiar - Hijo
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "{{socioId1}}",
+  "familiarId": "{{socioId3}}",
+  "parentesco": "HIJO"
+}
+
+### 3. Obtener todas las relaciones familiares (paginado)
+GET http://localhost:3001/api/familiares
+
+### 4. Obtener relaciones familiares con filtros
+GET http://localhost:3001/api/familiares?parentesco=CONYUGE&page=1&limit=5
+
+### 5. Obtener relación familiar por ID
+GET http://localhost:3001/api/familiares/{{familiarId}}
+
+### 6. Actualizar tipo de parentesco
+PUT http://localhost:3001/api/familiares/{{familiarId}}
+Content-Type: application/json
+
+{
+  "parentesco": "HERMANO"
+}
+
+### 7. Eliminar relación familiar
+DELETE http://localhost:3001/api/familiares/{{familiarId}}
+
+###################################################################
+### ENDPOINTS ESPECIALIZADOS - Consultas por Socio
+###################################################################
+
+### 8. Obtener familiares de un socio específico
+GET http://localhost:3001/api/familiares/socio/{{socioId1}}
+
+### 9. Obtener familiares incluyendo inactivos
+GET http://localhost:3001/api/familiares/socio/{{socioId1}}?includeInactivos=true
+
+### 10. Obtener árbol familiar completo de un socio
+GET http://localhost:3001/api/familiares/socio/{{socioId1}}/tree
+
+### 11. Obtener socios disponibles para vincular como familiares
+GET http://localhost:3001/api/familiares/socio/{{socioId1}}/disponibles
+
+###################################################################
+### VERIFICACIÓN Y UTILIDADES
+###################################################################
+
+### 12. Verificar si existe relación entre dos socios
+GET http://localhost:3001/api/familiares/verify/{{socioId1}}/{{socioId2}}
+
+### 13. Obtener tipos de parentesco disponibles
+GET http://localhost:3001/api/familiares/tipos/parentesco
+
+### 14. Obtener estadísticas de parentesco
+GET http://localhost:3001/api/familiares/stats/parentesco
+
+###################################################################
+### BÚSQUEDA AVANZADA
+###################################################################
+
+### 15. Búsqueda por nombre
+GET http://localhost:3001/api/familiares/search/avanzada?search=Juan&searchBy=nombre
+
+### 16. Búsqueda por DNI
+GET http://localhost:3001/api/familiares/search/avanzada?search=12345&searchBy=dni
+
+### 17. Búsqueda general con filtro de parentesco
+GET http://localhost:3001/api/familiares/search/avanzada?search=Pérez&searchBy=all&parentesco=CONYUGE
+
+### 18. Búsqueda incluyendo inactivos
+GET http://localhost:3001/api/familiares/search/avanzada?search=María&includeInactivos=true
+
+###################################################################
+### OPERACIONES MASIVAS (BULK)
+###################################################################
+
+### 19. Crear múltiples relaciones familiares
+POST http://localhost:3001/api/familiares/bulk/create
+Content-Type: application/json
+
+{
+  "familiares": [
+    {
+      "socioId": "{{socioId1}}",
+      "familiarId": "{{socioId2}}",
+      "parentesco": "CONYUGE"
+    },
+    {
+      "socioId": "{{socioId1}}",
+      "familiarId": "{{socioId3}}",
+      "parentesco": "HIJO"
+    }
+  ]
+}
+
+### 20. Eliminar múltiples relaciones familiares
+DELETE http://localhost:3001/api/familiares/bulk/delete
+Content-Type: application/json
+
+{
+  "ids": ["id1", "id2", "id3"]
+}
+
+###################################################################
+### CASOS DE ERROR Y VALIDACIÓN
+###################################################################
+
+### 21. ERROR: Crear relación con persona inexistente
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "inexistente-id",
+  "familiarId": "otro-inexistente-id",
+  "parentesco": "HIJO"
+}
+
+### 22. ERROR: Crear relación consigo mismo
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "{{socioId1}}",
+  "familiarId": "{{socioId1}}",
+  "parentesco": "HERMANO"
+}
+
+### 23. ERROR: Parentesco inválido
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "{{socioId1}}",
+  "familiarId": "{{socioId2}}",
+  "parentesco": "PARENTESCO_INVALIDO"
+}
+
+### 24. ERROR: Crear relación duplicada
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "{{socioId1}}",
+  "familiarId": "{{socioId2}}",
+  "parentesco": "CONYUGE"
+}
+
+### 25. ERROR: Datos faltantes
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "{{socioId1}}"
+}
+
+### 26. ERROR: IDs inválidos (no CUID)
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "123",
+  "familiarId": "456",
+  "parentesco": "HIJO"
+}
+
+###################################################################
+### CASOS DE PRUEBA CON PERSONAS NO SOCIAS
+###################################################################
+
+### 27. ERROR: Intentar crear relación con NO_SOCIO
+# Primero crear un NO_SOCIO
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "NO_SOCIO",
+  "nombre": "Pedro",
+  "apellido": "No Socio",
+  "dni": "99999999"
+}
+
+### 28. Intentar crear relación con el NO_SOCIO (debe fallar)
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "{{socioId1}}",
+  "familiarId": "{{$id-no-socio}}",
+  "parentesco": "HERMANO"
+}
+
+###################################################################
+### CASOS DE PRUEBA CON SOCIOS INACTIVOS
+###################################################################
+
+### 29. Dar de baja a un socio
+PUT http://localhost:3001/api/personas/{{socioId2}}
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "fechaBaja": "2024-12-01T00:00:00.000Z",
+  "motivoBaja": "Prueba de inactivación"
+}
+
+### 30. ERROR: Intentar crear relación con socio inactivo
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "{{socioId1}}",
+  "familiarId": "{{socioId2}}",
+  "parentesco": "HERMANO"
+}
+
+###################################################################
+### PRUEBAS DE FILTRADO Y PAGINACIÓN
+###################################################################
+
+### 31. Paginación - Página 1
+GET http://localhost:3001/api/familiares?page=1&limit=2
+
+### 32. Paginación - Página 2
+GET http://localhost:3001/api/familiares?page=2&limit=2
+
+### 33. Filtrar por socio específico
+GET http://localhost:3001/api/familiares?socioId={{socioId1}}
+
+### 34. Filtrar por tipo de parentesco
+GET http://localhost:3001/api/familiares?parentesco=HIJO
+
+### 35. Combinar filtros
+GET http://localhost:3001/api/familiares?socioId={{socioId1}}&parentesco=CONYUGE&page=1&limit=5
+
+###################################################################
+### PRUEBAS DE RENDIMIENTO (CARGA)
+###################################################################
+
+### 36. Crear múltiples relaciones - Test de carga
+POST http://localhost:3001/api/familiares/bulk/create
+Content-Type: application/json
+
+{
+  "familiares": [
+    {
+      "socioId": "{{socioId1}}",
+      "familiarId": "{{socioId2}}",
+      "parentesco": "HERMANO"
+    },
+    {
+      "socioId": "{{socioId1}}",
+      "familiarId": "{{socioId3}}",
+      "parentesco": "HERMANA"
+    }
+  ]
+}
+
+###################################################################
+### CONSULTAS DE ESTADÍSTICAS Y REPORTES
+###################################################################
+
+### 37. Estadísticas generales
+GET http://localhost:3001/api/familiares/stats/parentesco
+
+### 38. Todas las relaciones sin filtro (para ver el total)
+GET http://localhost:3001/api/familiares?limit=100
+
+###################################################################
+### CASOS ESPECÍFICOS DE VALIDACIÓN DE NEGOCIO
+###################################################################
+
+### 39. Múltiples tipos de parentesco con el mismo socio
+POST http://localhost:3001/api/familiares
+Content-Type: application/json
+
+{
+  "socioId": "{{socioId1}}",
+  "familiarId": "{{socioId3}}",
+  "parentesco": "HIJA"
+}
+
+### 40. Actualizar relación existente
+PUT http://localhost:3001/api/familiares/{{familiarId}}
+Content-Type: application/json
+
+{
+  "parentesco": "OTRO"
+}
+
+###################################################################
+### NOTAS PARA LAS PRUEBAS:
+###################################################################
+
+# 1. Reemplaza las variables {{socioId1}}, {{socioId2}}, etc. con IDs reales
+# 2. Ejecuta las pruebas en orden para evitar errores de dependencias
+# 3. Los casos de error están diseñados para fallar - verifica que devuelvan los códigos de error correctos
+# 4. Algunos tests requieren datos específicos - ajusta según tu BD
+# 5. Para las pruebas de bulk, puedes usar IDs existentes o crear nuevos socios
+#
+# Total de casos de prueba: 40
+# - CRUD básico: 7 casos
+# - Consultas especializadas: 4 casos
+# - Utilidades: 3 casos
+# - Búsqueda: 4 casos
+# - Operaciones masivas: 2 casos
+# - Validaciones de error: 6 casos
+# - Casos con no socios: 2 casos
+# - Casos con inactivos: 2 casos
+# - Filtrado y paginación: 5 casos
+# - Carga: 1 caso
+# - Estadísticas: 2 casos
+# - Validaciones de negocio: 2 casos

@@ -1,0 +1,515 @@
+### SIGESDA API - Pruebas de Endpoints Reservas Aula
+### Base URL: http://localhost:3001
+### Prerequisito: Tener aulas, docentes y actividades creadas
+
+### Variables para usar en las pruebas
+# Reemplaza estos IDs con IDs reales de tu BD
+@aulaId1 = {{$id-aula-principal}}
+@aulaId2 = {{$id-aula-secundaria}}
+@docenteId1 = {{$id-docente-piano}}
+@docenteId2 = {{$id-docente-canto}}
+@actividadId1 = {{$id-actividad-clase-piano}}
+@reservaId = {{$id-reserva}}
+
+###################################################################
+### CRUD RESERVAS AULA - Casos de Prueba Básicos
+###################################################################
+
+### 1. Crear reserva de aula básica
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "{{docenteId1}}",
+  "actividadId": "{{actividadId1}}",
+  "fechaInicio": "2025-09-27T10:00:00.000Z",
+  "fechaFin": "2025-09-27T11:30:00.000Z",
+  "observaciones": "Clase de piano nivel intermedio"
+}
+
+### 2. Crear reserva sin actividad (uso libre del aula)
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId2}}",
+  "docenteId": "{{docenteId2}}",
+  "fechaInicio": "2025-09-27T14:00:00.000Z",
+  "fechaFin": "2025-09-27T15:00:00.000Z",
+  "observaciones": "Ensayo personal"
+}
+
+### 3. Obtener todas las reservas (paginado)
+GET http://localhost:3001/api/reservas
+
+### 4. Obtener reservas con filtros
+GET http://localhost:3001/api/reservas?aulaId={{aulaId1}}&page=1&limit=5
+
+### 5. Obtener reserva por ID
+GET http://localhost:3001/api/reservas/{{reservaId}}
+
+### 6. Actualizar reserva
+PUT http://localhost:3001/api/reservas/{{reservaId}}
+Content-Type: application/json
+
+{
+  "fechaInicio": "2025-09-27T10:30:00.000Z",
+  "fechaFin": "2025-09-27T12:00:00.000Z",
+  "observaciones": "Clase de piano nivel intermedio - horario ajustado"
+}
+
+### 7. Eliminar reserva
+DELETE http://localhost:3001/api/reservas/{{reservaId}}
+
+###################################################################
+### CONSULTAS ESPECIALIZADAS POR ENTIDAD
+###################################################################
+
+### 8. Obtener reservas de un aula específica
+GET http://localhost:3001/api/reservas/aula/{{aulaId1}}
+
+### 9. Obtener reservas incluyendo pasadas
+GET http://localhost:3001/api/reservas/aula/{{aulaId1}}?incluirPasadas=true
+
+### 10. Obtener reservas de un docente
+GET http://localhost:3001/api/reservas/docente/{{docenteId1}}
+
+### 11. Obtener reservas de una actividad
+GET http://localhost:3001/api/reservas/actividad/{{actividadId1}}
+
+###################################################################
+### DETECCIÓN DE CONFLICTOS Y DISPONIBILIDAD
+###################################################################
+
+### 12. Detectar conflictos para un horario específico
+POST http://localhost:3001/api/reservas/conflicts/detect
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "fechaInicio": "2025-09-27T10:30:00.000Z",
+  "fechaFin": "2025-09-27T11:30:00.000Z"
+}
+
+### 13. Verificar disponibilidad de aula
+GET http://localhost:3001/api/reservas/availability/check?aulaId={{aulaId1}}&fechaInicio=2025-09-27T16:00:00.000Z&fechaFin=2025-09-27T17:00:00.000Z
+
+### 14. Detectar conflictos excluyendo una reserva (para actualización)
+POST http://localhost:3001/api/reservas/conflicts/detect
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "fechaInicio": "2025-09-27T10:00:00.000Z",
+  "fechaFin": "2025-09-27T12:00:00.000Z",
+  "excludeReservaId": "{{reservaId}}"
+}
+
+###################################################################
+### CONSULTAS DE TIEMPO Y ESTADO
+###################################################################
+
+### 15. Obtener próximas reservas
+GET http://localhost:3001/api/reservas/upcoming/proximas
+
+### 16. Obtener próximas reservas con límite
+GET http://localhost:3001/api/reservas/upcoming/proximas?limit=5
+
+### 17. Obtener reservas actuales (en curso)
+GET http://localhost:3001/api/reservas/current/actuales
+
+### 18. Dashboard de reservas
+GET http://localhost:3001/api/reservas/dashboard/resumen
+
+###################################################################
+### BÚSQUEDA AVANZADA
+###################################################################
+
+### 19. Búsqueda por nombre de aula
+GET http://localhost:3001/api/reservas/search/avanzada?search=Piano&searchBy=aula
+
+### 20. Búsqueda por docente
+GET http://localhost:3001/api/reservas/search/avanzada?search=García&searchBy=docente
+
+### 21. Búsqueda por actividad
+GET http://localhost:3001/api/reservas/search/avanzada?search=Canto&searchBy=actividad
+
+### 22. Búsqueda general
+GET http://localhost:3001/api/reservas/search/avanzada?search=intermedio&searchBy=all
+
+### 23. Búsqueda con rango de fechas
+GET http://localhost:3001/api/reservas/search/avanzada?search=piano&fechaDesde=2025-09-27T00:00:00.000Z&fechaHasta=2025-09-28T23:59:59.000Z
+
+###################################################################
+### ESTADÍSTICAS Y REPORTES
+###################################################################
+
+### 24. Estadísticas por aula
+GET http://localhost:3001/api/reservas/stats/reservas?fechaDesde=2025-09-01T00:00:00.000Z&fechaHasta=2025-09-30T23:59:59.000Z&agruparPor=aula
+
+### 25. Estadísticas por docente
+GET http://localhost:3001/api/reservas/stats/reservas?fechaDesde=2025-09-01T00:00:00.000Z&fechaHasta=2025-09-30T23:59:59.000Z&agruparPor=docente
+
+### 26. Estadísticas por actividad
+GET http://localhost:3001/api/reservas/stats/reservas?fechaDesde=2025-09-01T00:00:00.000Z&fechaHasta=2025-09-30T23:59:59.000Z&agruparPor=actividad
+
+###################################################################
+### OPERACIONES MASIVAS (BULK)
+###################################################################
+
+### 27. Crear múltiples reservas
+POST http://localhost:3001/api/reservas/bulk/create
+Content-Type: application/json
+
+{
+  "reservas": [
+    {
+      "aulaId": "{{aulaId1}}",
+      "docenteId": "{{docenteId1}}",
+      "actividadId": "{{actividadId1}}",
+      "fechaInicio": "2025-09-28T10:00:00.000Z",
+      "fechaFin": "2025-09-28T11:30:00.000Z",
+      "observaciones": "Clase de piano - Lunes"
+    },
+    {
+      "aulaId": "{{aulaId1}}",
+      "docenteId": "{{docenteId1}}",
+      "actividadId": "{{actividadId1}}",
+      "fechaInicio": "2025-09-30T10:00:00.000Z",
+      "fechaFin": "2025-09-30T11:30:00.000Z",
+      "observaciones": "Clase de piano - Miércoles"
+    }
+  ]
+}
+
+### 28. Eliminar múltiples reservas
+DELETE http://localhost:3001/api/reservas/bulk/delete
+Content-Type: application/json
+
+{
+  "ids": ["id1", "id2", "id3"]
+}
+
+###################################################################
+### RESERVAS RECURRENTES
+###################################################################
+
+### 29. Crear reservas recurrentes semanales
+POST http://localhost:3001/api/reservas/recurring/create
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "{{docenteId1}}",
+  "actividadId": "{{actividadId1}}",
+  "fechaInicio": "2025-09-29T15:00:00.000Z",
+  "fechaFin": "2025-09-29T16:30:00.000Z",
+  "observaciones": "Clase de piano - Recurrente",
+  "recurrencia": {
+    "tipo": "SEMANAL",
+    "intervalo": 1,
+    "diasSemana": [1, 3, 5],
+    "fechaHasta": "2025-12-31T23:59:59.000Z",
+    "maxOcurrencias": 20
+  }
+}
+
+### 30. Crear reservas recurrentes diarias
+POST http://localhost:3001/api/reservas/recurring/create
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId2}}",
+  "docenteId": "{{docenteId2}}",
+  "fechaInicio": "2025-10-01T09:00:00.000Z",
+  "fechaFin": "2025-10-01T10:00:00.000Z",
+  "observaciones": "Ensayo matutino",
+  "recurrencia": {
+    "tipo": "DIARIO",
+    "intervalo": 1,
+    "fechaHasta": "2025-10-07T23:59:59.000Z"
+  }
+}
+
+###################################################################
+### CASOS DE ERROR Y VALIDACIÓN
+###################################################################
+
+### 31. ERROR: Crear reserva con aula inexistente
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "inexistente-id",
+  "docenteId": "{{docenteId1}}",
+  "fechaInicio": "2025-09-27T10:00:00.000Z",
+  "fechaFin": "2025-09-27T11:00:00.000Z"
+}
+
+### 32. ERROR: Crear reserva con docente inexistente
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "inexistente-id",
+  "fechaInicio": "2025-09-27T10:00:00.000Z",
+  "fechaFin": "2025-09-27T11:00:00.000Z"
+}
+
+### 33. ERROR: Fecha de fin anterior a fecha de inicio
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "{{docenteId1}}",
+  "fechaInicio": "2025-09-27T11:00:00.000Z",
+  "fechaFin": "2025-09-27T10:00:00.000Z"
+}
+
+### 34. ERROR: Reserva en el pasado
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "{{docenteId1}}",
+  "fechaInicio": "2023-01-01T10:00:00.000Z",
+  "fechaFin": "2023-01-01T11:00:00.000Z"
+}
+
+### 35. ERROR: Duración muy corta (menos de 30 minutos)
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "{{docenteId1}}",
+  "fechaInicio": "2025-09-27T10:00:00.000Z",
+  "fechaFin": "2025-09-27T10:15:00.000Z"
+}
+
+### 36. ERROR: Duración muy larga (más de 12 horas)
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "{{docenteId1}}",
+  "fechaInicio": "2025-09-27T08:00:00.000Z",
+  "fechaFin": "2025-09-27T22:00:00.000Z"
+}
+
+### 37. ERROR: Conflicto de horarios (solapamiento)
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "{{docenteId2}}",
+  "fechaInicio": "2025-09-27T10:30:00.000Z",
+  "fechaFin": "2025-09-27T11:30:00.000Z"
+}
+
+### 38. ERROR: Datos faltantes
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}"
+}
+
+### 39. ERROR: IDs inválidos (no CUID)
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "123",
+  "docenteId": "456",
+  "fechaInicio": "2025-09-27T10:00:00.000Z",
+  "fechaFin": "2025-09-27T11:00:00.000Z"
+}
+
+###################################################################
+### CASOS CON PERSONAS NO DOCENTES
+###################################################################
+
+### 40. ERROR: Intentar reservar con NO_SOCIO
+# Primero obtener un NO_SOCIO
+GET http://localhost:3001/api/personas?tipo=NO_SOCIO&limit=1
+
+### 41. ERROR: Crear reserva con persona que no es docente
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "{{$id-no-socio}}",
+  "fechaInicio": "2025-09-27T10:00:00.000Z",
+  "fechaFin": "2025-09-27T11:00:00.000Z"
+}
+
+###################################################################
+### CASOS CON AULAS INACTIVAS
+###################################################################
+
+### 42. ERROR: Intentar reservar aula inactiva
+# Primero desactivar un aula
+PUT http://localhost:3001/api/aulas/{{aulaId2}}
+Content-Type: application/json
+
+{
+  "activa": false
+}
+
+### 43. ERROR: Crear reserva con aula inactiva
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId2}}",
+  "docenteId": "{{docenteId1}}",
+  "fechaInicio": "2025-09-27T13:00:00.000Z",
+  "fechaFin": "2025-09-27T14:00:00.000Z"
+}
+
+###################################################################
+### PRUEBAS DE FILTRADO AVANZADO
+###################################################################
+
+### 44. Filtrar por rango de fechas
+GET http://localhost:3001/api/reservas?fechaDesde=2025-09-27T00:00:00.000Z&fechaHasta=2025-09-28T23:59:59.000Z
+
+### 45. Filtrar solo activas (por defecto)
+GET http://localhost:3001/api/reservas?soloActivas=true
+
+### 46. Incluir reservas pasadas
+GET http://localhost:3001/api/reservas?incluirPasadas=true
+
+### 47. Combinar múltiples filtros
+GET http://localhost:3001/api/reservas?aulaId={{aulaId1}}&docenteId={{docenteId1}}&fechaDesde=2025-09-27T00:00:00.000Z
+
+### 48. Paginación avanzada
+GET http://localhost:3001/api/reservas?page=2&limit=3
+
+###################################################################
+### PRUEBAS DE CONFLICTOS ESPECÍFICOS
+###################################################################
+
+### 49. Conflicto total (mismos horarios exactos)
+POST http://localhost:3001/api/reservas/conflicts/detect
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "fechaInicio": "2025-09-27T10:00:00.000Z",
+  "fechaFin": "2025-09-27T11:30:00.000Z"
+}
+
+### 50. Conflicto parcial (solapamiento al inicio)
+POST http://localhost:3001/api/reservas/conflicts/detect
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "fechaInicio": "2025-09-27T09:30:00.000Z",
+  "fechaFin": "2025-09-27T10:30:00.000Z"
+}
+
+### 51. Conflicto parcial (solapamiento al final)
+POST http://localhost:3001/api/reservas/conflicts/detect
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "fechaInicio": "2025-09-27T11:00:00.000Z",
+  "fechaFin": "2025-09-27T12:00:00.000Z"
+}
+
+### 52. Conflicto por contenido (nueva reserva contiene a existente)
+POST http://localhost:3001/api/reservas/conflicts/detect
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "fechaInicio": "2025-09-27T09:00:00.000Z",
+  "fechaFin": "2025-09-27T12:00:00.000Z"
+}
+
+### 53. Sin conflicto (horarios consecutivos)
+POST http://localhost:3001/api/reservas/conflicts/detect
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "fechaInicio": "2025-09-27T11:30:00.000Z",
+  "fechaFin": "2025-09-27T12:30:00.000Z"
+}
+
+###################################################################
+### PRUEBAS DE VALIDACIÓN DE DOCENTE
+###################################################################
+
+### 54. ERROR: Docente con múltiples reservas simultáneas
+# Crear primera reserva
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId1}}",
+  "docenteId": "{{docenteId1}}",
+  "fechaInicio": "2025-09-28T15:00:00.000Z",
+  "fechaFin": "2025-09-28T16:00:00.000Z"
+}
+
+### 55. ERROR: Intentar crear segunda reserva simultánea para mismo docente
+POST http://localhost:3001/api/reservas
+Content-Type: application/json
+
+{
+  "aulaId": "{{aulaId2}}",
+  "docenteId": "{{docenteId1}}",
+  "fechaInicio": "2025-09-28T15:30:00.000Z",
+  "fechaFin": "2025-09-28T16:30:00.000Z"
+}
+
+###################################################################
+### PRUEBAS DE ELIMINACIÓN Y RESTRICCIONES
+###################################################################
+
+### 56. ERROR: Eliminar reserva del pasado
+# Primero crear una reserva en el pasado (solo para testing - forzar en BD)
+DELETE http://localhost:3001/api/reservas/{{$id-reserva-pasada}}
+
+### 57. Eliminar reserva futura (debe funcionar)
+DELETE http://localhost:3001/api/reservas/{{reservaId}}
+
+###################################################################
+### NOTAS PARA LAS PRUEBAS:
+###################################################################
+
+# 1. Reemplaza las variables {{aulaId1}}, {{docenteId1}}, etc. con IDs reales
+# 2. Ejecuta las pruebas en orden para evitar errores de dependencias
+# 3. Los casos de error están diseñados para fallar - verifica códigos de error
+# 4. Algunos tests requieren datos específicos - ajusta según tu BD
+# 5. Para pruebas de recurrencia, ajusta las fechas para evitar conflictos
+# 6. Los endpoints de estadísticas requieren datos existentes para mostrar resultados
+#
+# Total de casos de prueba: 57
+# - CRUD básico: 7 casos
+# - Consultas por entidad: 4 casos
+# - Conflictos y disponibilidad: 3 casos
+# - Consultas de tiempo: 4 casos
+# - Búsqueda avanzada: 5 casos
+# - Estadísticas: 3 casos
+# - Operaciones masivas: 2 casos
+# - Reservas recurrentes: 2 casos
+# - Validaciones de error: 9 casos
+# - Casos con no docentes: 2 casos
+# - Casos con aulas inactivas: 2 casos
+# - Filtrado avanzado: 5 casos
+# - Conflictos específicos: 5 casos
+# - Validación de docente: 2 casos
+# - Eliminación y restricciones: 2 casos

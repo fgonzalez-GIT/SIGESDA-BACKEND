@@ -1,0 +1,574 @@
+### SIGESDA API - Pruebas de Endpoints Recibos (Sistema de Facturación)
+### Base URL: http://localhost:3001
+### Prerequisito: Tener personas (socios, docentes) creadas
+
+### Variables para usar en las pruebas
+# Reemplaza estos IDs con IDs reales de tu BD
+@socioId1 = {{$id-socio-activo}}
+@socioId2 = {{$id-socio-estudiante}}
+@docenteId1 = {{$id-docente-piano}}
+@proveedorId1 = {{$id-proveedor}}
+@reciboId = {{$id-recibo}}
+
+###################################################################
+### CRUD RECIBOS - Casos de Prueba Básicos
+###################################################################
+
+### 1. Crear recibo de cuota social
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "CUOTA",
+  "importe": 5000.00,
+  "fechaVencimiento": "2025-10-31T23:59:59.000Z",
+  "concepto": "Cuota social mensual - Octubre 2025",
+  "receptorId": "{{socioId1}}",
+  "observaciones": "Cuota categoria ACTIVO"
+}
+
+### 2. Crear recibo de sueldo docente
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "SUELDO",
+  "importe": 35000.00,
+  "concepto": "Sueldo docente - Septiembre 2025",
+  "receptorId": "{{docenteId1}}",
+  "observaciones": "40 horas cátedra piano"
+}
+
+### 3. Crear recibo de pago de actividad
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "PAGO_ACTIVIDAD",
+  "importe": 8000.00,
+  "fechaVencimiento": "2025-10-15T23:59:59.000Z",
+  "concepto": "Clase particular de piano - No socio",
+  "receptorId": "{{socioId2}}"
+}
+
+### 4. Crear recibo de deuda
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "DEUDA",
+  "importe": 2500.00,
+  "fechaVencimiento": "2025-11-30T23:59:59.000Z",
+  "concepto": "Deuda por daños en aula - Reparación piano",
+  "receptorId": "{{socioId1}}",
+  "observaciones": "Costo de reparación de teclas"
+}
+
+### 5. Obtener todos los recibos (paginado)
+GET http://localhost:3001/api/recibos
+
+### 6. Obtener recibos con filtros
+GET http://localhost:3001/api/recibos?tipo=CUOTA&estado=PENDIENTE&page=1&limit=5
+
+### 7. Obtener recibo por ID
+GET http://localhost:3001/api/recibos/{{reciboId}}
+
+### 8. Obtener recibo por número
+GET http://localhost:3001/api/recibos/numero/000001
+
+### 9. Actualizar recibo
+PUT http://localhost:3001/api/recibos/{{reciboId}}
+Content-Type: application/json
+
+{
+  "importe": 5500.00,
+  "concepto": "Cuota social mensual - Octubre 2025 (con recargo)",
+  "observaciones": "Cuota categoria ACTIVO con recargo por demora"
+}
+
+### 10. Cambiar estado de recibo
+PUT http://localhost:3001/api/recibos/{{reciboId}}/estado
+Content-Type: application/json
+
+{
+  "nuevoEstado": "PAGADO",
+  "observaciones": "Pagado en efectivo en secretaría"
+}
+
+### 11. Eliminar recibo
+DELETE http://localhost:3001/api/recibos/{{reciboId}}
+
+###################################################################
+### CONSULTAS POR PERSONA
+###################################################################
+
+### 12. Obtener recibos de una persona (todos)
+GET http://localhost:3001/api/recibos/persona/{{socioId1}}
+
+### 13. Obtener recibos donde la persona es emisor
+GET http://localhost:3001/api/recibos/persona/{{socioId1}}?tipo=emisor
+
+### 14. Obtener recibos donde la persona es receptor
+GET http://localhost:3001/api/recibos/persona/{{socioId1}}?tipo=receptor
+
+###################################################################
+### CONSULTAS POR TIPO Y ESTADO
+###################################################################
+
+### 15. Obtener solo recibos de cuotas
+GET http://localhost:3001/api/recibos/tipo/CUOTA
+
+### 16. Obtener solo recibos de sueldos
+GET http://localhost:3001/api/recibos/tipo/SUELDO
+
+### 17. Obtener solo recibos pendientes
+GET http://localhost:3001/api/recibos/estado/PENDIENTE
+
+### 18. Obtener solo recibos pagados
+GET http://localhost:3001/api/recibos/estado/PAGADO
+
+### 19. Obtener solo recibos vencidos
+GET http://localhost:3001/api/recibos/estado/VENCIDO
+
+###################################################################
+### GESTIÓN DE VENCIMIENTOS Y PENDIENTES
+###################################################################
+
+### 20. Obtener recibos vencidos
+GET http://localhost:3001/api/recibos/vencidos/listado
+
+### 21. Obtener recibos pendientes
+GET http://localhost:3001/api/recibos/pendientes/listado
+
+### 22. Procesar vencidos automáticamente
+POST http://localhost:3001/api/recibos/vencidos/process
+
+### 23. Filtrar solo vencidos en query general
+GET http://localhost:3001/api/recibos?vencidosOnly=true
+
+### 24. Filtrar solo pendientes en query general
+GET http://localhost:3001/api/recibos?pendientesOnly=true
+
+###################################################################
+### BÚSQUEDA AVANZADA
+###################################################################
+
+### 25. Búsqueda por número de recibo
+GET http://localhost:3001/api/recibos/search/avanzada?search=000001&searchBy=numero
+
+### 26. Búsqueda por concepto
+GET http://localhost:3001/api/recibos/search/avanzada?search=cuota&searchBy=concepto
+
+### 27. Búsqueda por emisor
+GET http://localhost:3001/api/recibos/search/avanzada?search=Juan&searchBy=emisor
+
+### 28. Búsqueda por receptor
+GET http://localhost:3001/api/recibos/search/avanzada?search=García&searchBy=receptor
+
+### 29. Búsqueda general
+GET http://localhost:3001/api/recibos/search/avanzada?search=piano&searchBy=all
+
+### 30. Búsqueda con filtros adicionales
+GET http://localhost:3001/api/recibos/search/avanzada?search=sueldo&tipo=SUELDO&estado=PENDIENTE
+
+### 31. Búsqueda con rango de fechas
+GET http://localhost:3001/api/recibos/search/avanzada?search=cuota&fechaDesde=2025-09-01T00:00:00.000Z&fechaHasta=2025-10-31T23:59:59.000Z
+
+###################################################################
+### ESTADÍSTICAS Y REPORTES
+###################################################################
+
+### 32. Estadísticas por tipo
+GET http://localhost:3001/api/recibos/stats/resumen?fechaDesde=2025-09-01T00:00:00.000Z&fechaHasta=2025-09-30T23:59:59.000Z&agruparPor=tipo
+
+### 33. Estadísticas por estado
+GET http://localhost:3001/api/recibos/stats/resumen?fechaDesde=2025-09-01T00:00:00.000Z&fechaHasta=2025-09-30T23:59:59.000Z&agruparPor=estado
+
+### 34. Estadísticas por mes
+GET http://localhost:3001/api/recibos/stats/resumen?fechaDesde=2025-01-01T00:00:00.000Z&fechaHasta=2025-12-31T23:59:59.000Z&agruparPor=mes
+
+### 35. Dashboard principal
+GET http://localhost:3001/api/recibos/dashboard/principal
+
+### 36. Resumen financiero
+GET http://localhost:3001/api/recibos/financial/summary?fechaDesde=2025-09-01T00:00:00.000Z&fechaHasta=2025-09-30T23:59:59.000Z
+
+###################################################################
+### OPERACIONES MASIVAS (BULK)
+###################################################################
+
+### 37. Crear múltiples recibos
+POST http://localhost:3001/api/recibos/bulk/create
+Content-Type: application/json
+
+{
+  "recibos": [
+    {
+      "tipo": "CUOTA",
+      "importe": 4500.00,
+      "fechaVencimiento": "2025-11-30T23:59:59.000Z",
+      "concepto": "Cuota social - Noviembre 2025",
+      "receptorId": "{{socioId1}}"
+    },
+    {
+      "tipo": "CUOTA",
+      "importe": 3000.00,
+      "fechaVencimiento": "2025-11-30T23:59:59.000Z",
+      "concepto": "Cuota social estudiante - Noviembre 2025",
+      "receptorId": "{{socioId2}}"
+    }
+  ]
+}
+
+### 38. Actualizar estados masivamente
+PUT http://localhost:3001/api/recibos/bulk/estados
+Content-Type: application/json
+
+{
+  "ids": ["id1", "id2", "id3"],
+  "nuevoEstado": "VENCIDO",
+  "observaciones": "Marcados como vencidos automáticamente"
+}
+
+### 39. Eliminar múltiples recibos
+DELETE http://localhost:3001/api/recibos/bulk/delete
+Content-Type: application/json
+
+{
+  "ids": ["id1", "id2", "id3"]
+}
+
+###################################################################
+### FILTRADO AVANZADO POR IMPORTES Y FECHAS
+###################################################################
+
+### 40. Filtrar por importe mínimo
+GET http://localhost:3001/api/recibos?importeMinimo=5000
+
+### 41. Filtrar por importe máximo
+GET http://localhost:3001/api/recibos?importeMaximo=10000
+
+### 42. Filtrar por rango de importes
+GET http://localhost:3001/api/recibos?importeMinimo=3000&importeMaximo=8000
+
+### 43. Filtrar por rango de fechas
+GET http://localhost:3001/api/recibos?fechaDesde=2025-09-01T00:00:00.000Z&fechaHasta=2025-09-30T23:59:59.000Z
+
+### 44. Combinar múltiples filtros
+GET http://localhost:3001/api/recibos?tipo=CUOTA&estado=PENDIENTE&importeMinimo=4000&fechaDesde=2025-09-01T00:00:00.000Z
+
+###################################################################
+### UTILIDADES DEL SISTEMA
+###################################################################
+
+### 45. Obtener transiciones de estado válidas
+GET http://localhost:3001/api/recibos/transitions/valid
+
+###################################################################
+### CASOS DE ERROR Y VALIDACIÓN
+###################################################################
+
+### 46. ERROR: Crear recibo sin tipo
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "importe": 5000.00,
+  "concepto": "Test sin tipo"
+}
+
+### 47. ERROR: Importe negativo
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "CUOTA",
+  "importe": -1000.00,
+  "concepto": "Test importe negativo",
+  "receptorId": "{{socioId1}}"
+}
+
+### 48. ERROR: Concepto muy corto
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "CUOTA",
+  "importe": 5000.00,
+  "concepto": "Test",
+  "receptorId": "{{socioId1}}"
+}
+
+### 49. ERROR: Fecha de vencimiento anterior a fecha de emisión
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "CUOTA",
+  "importe": 5000.00,
+  "fecha": "2025-10-01T00:00:00.000Z",
+  "fechaVencimiento": "2025-09-01T00:00:00.000Z",
+  "concepto": "Test fecha vencimiento anterior",
+  "receptorId": "{{socioId1}}"
+}
+
+### 50. ERROR: Receptor inexistente
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "CUOTA",
+  "importe": 5000.00,
+  "concepto": "Test receptor inexistente",
+  "receptorId": "inexistente-id"
+}
+
+### 51. ERROR: Emisor inexistente
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "DEUDA",
+  "importe": 1000.00,
+  "concepto": "Test emisor inexistente",
+  "emisorId": "inexistente-id",
+  "receptorId": "{{socioId1}}"
+}
+
+### 52. ERROR: Cuota a no-socio
+# Primero crear un NO_SOCIO
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "NO_SOCIO",
+  "nombre": "Persona",
+  "apellido": "Externa",
+  "dni": "99887766"
+}
+
+### 53. ERROR: Intentar emitir cuota a NO_SOCIO
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "CUOTA",
+  "importe": 5000.00,
+  "concepto": "Test cuota a no socio",
+  "receptorId": "{{$id-no-socio}}"
+}
+
+### 54. ERROR: Sueldo a no-docente
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "SUELDO",
+  "importe": 30000.00,
+  "concepto": "Test sueldo a no docente",
+  "receptorId": "{{socioId1}}"
+}
+
+### 55. ERROR: Importe excesivamente alto
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "CUOTA",
+  "importe": 2000000.00,
+  "concepto": "Test importe muy alto",
+  "receptorId": "{{socioId1}}"
+}
+
+###################################################################
+### CASOS DE ERROR EN ACTUALIZACIONES
+###################################################################
+
+### 56. ERROR: Modificar recibo pagado
+PUT http://localhost:3001/api/recibos/{{$id-recibo-pagado}}
+Content-Type: application/json
+
+{
+  "importe": 6000.00,
+  "concepto": "Intento de modificar recibo pagado"
+}
+
+### 57. ERROR: Eliminar recibo pagado
+DELETE http://localhost:3001/api/recibos/{{$id-recibo-pagado}}
+
+### 58. ERROR: Transición de estado inválida
+PUT http://localhost:3001/api/recibos/{{$id-recibo-pagado}}/estado
+Content-Type: application/json
+
+{
+  "nuevoEstado": "PENDIENTE",
+  "observaciones": "Intento de cambiar de PAGADO a PENDIENTE"
+}
+
+###################################################################
+### CASOS DE ERROR EN OPERACIONES MASIVAS
+###################################################################
+
+### 59. ERROR: Bulk create con recibos inválidos
+POST http://localhost:3001/api/recibos/bulk/create
+Content-Type: application/json
+
+{
+  "recibos": [
+    {
+      "tipo": "CUOTA",
+      "importe": -1000.00,
+      "concepto": "Recibo inválido",
+      "receptorId": "{{socioId1}}"
+    },
+    {
+      "tipo": "SUELDO",
+      "importe": 30000.00,
+      "concepto": "Sueldo a no docente",
+      "receptorId": "{{socioId1}}"
+    }
+  ]
+}
+
+### 60. ERROR: Bulk delete con recibos pagados
+DELETE http://localhost:3001/api/recibos/bulk/delete
+Content-Type: application/json
+
+{
+  "ids": ["{{$id-recibo-pagado}}", "{{$id-recibo-pagado-2}}"]
+}
+
+###################################################################
+### CASOS DE PRUEBA CON PERSONAS INACTIVAS
+###################################################################
+
+### 61. Dar de baja a un socio
+PUT http://localhost:3001/api/personas/{{socioId2}}
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "fechaBaja": "2025-09-26T00:00:00.000Z",
+  "motivoBaja": "Prueba de inactivación para testing recibos"
+}
+
+### 62. ERROR: Crear cuota para socio dado de baja
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "CUOTA",
+  "importe": 5000.00,
+  "concepto": "Cuota para socio inactivo",
+  "receptorId": "{{socioId2}}"
+}
+
+### 63. ERROR: Crear recibo con emisor dado de baja
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "DEUDA",
+  "importe": 1000.00,
+  "concepto": "Recibo con emisor inactivo",
+  "emisorId": "{{socioId2}}",
+  "receptorId": "{{socioId1}}"
+}
+
+###################################################################
+### PRUEBAS DE PAGINACIÓN Y LÍMITES
+###################################################################
+
+### 64. Paginación - Página 1
+GET http://localhost:3001/api/recibos?page=1&limit=2
+
+### 65. Paginación - Página 2
+GET http://localhost:3001/api/recibos?page=2&limit=2
+
+### 66. Límite máximo
+GET http://localhost:3001/api/recibos?limit=100
+
+### 67. ERROR: Límite excesivo
+GET http://localhost:3001/api/recibos?limit=200
+
+###################################################################
+### PRUEBAS DE ESTADOS Y TRANSICIONES
+###################################################################
+
+### 68. Crear recibo y cambiar a VENCIDO
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "CUOTA",
+  "importe": 5000.00,
+  "fechaVencimiento": "2025-09-01T23:59:59.000Z",
+  "concepto": "Recibo para cambiar a vencido",
+  "receptorId": "{{socioId1}}"
+}
+
+### 69. Cambiar recibo a VENCIDO
+PUT http://localhost:3001/api/recibos/{{$id-nuevo-recibo}}/estado
+Content-Type: application/json
+
+{
+  "nuevoEstado": "VENCIDO",
+  "observaciones": "Marcado como vencido manualmente"
+}
+
+### 70. Cambiar recibo vencido a PAGADO
+PUT http://localhost:3001/api/recibos/{{$id-nuevo-recibo}}/estado
+Content-Type: application/json
+
+{
+  "nuevoEstado": "PAGADO",
+  "observaciones": "Pago tardío recibido"
+}
+
+### 71. Crear recibo y cancelar
+POST http://localhost:3001/api/recibos
+Content-Type: application/json
+
+{
+  "tipo": "DEUDA",
+  "importe": 1500.00,
+  "concepto": "Recibo para cancelar",
+  "receptorId": "{{socioId1}}"
+}
+
+### 72. Cancelar recibo
+PUT http://localhost:3001/api/recibos/{{$id-recibo-cancelar}}/estado
+Content-Type: application/json
+
+{
+  "nuevoEstado": "CANCELADO",
+  "observaciones": "Cancelado por error en emisión"
+}
+
+###################################################################
+### NOTAS PARA LAS PRUEBAS:
+###################################################################
+
+# 1. Reemplaza las variables {{socioId1}}, {{docenteId1}}, etc. con IDs reales
+# 2. Ejecuta las pruebas en orden para evitar errores de dependencias
+# 3. Los casos de error están diseñados para fallar - verifica códigos de error
+# 4. Algunos tests requieren crear recibos previos - ajusta según necesidad
+# 5. Para pruebas de estados, guarda los IDs de recibos creados
+# 6. Las fechas de vencimiento deben ajustarse para testing realista
+#
+# Total de casos de prueba: 72
+# - CRUD básico: 11 casos
+# - Consultas por persona: 3 casos
+# - Consultas por tipo/estado: 5 casos
+# - Gestión vencimientos: 5 casos
+# - Búsqueda avanzada: 7 casos
+# - Estadísticas: 5 casos
+# - Operaciones masivas: 3 casos
+# - Filtrado avanzado: 5 casos
+# - Utilidades: 1 caso
+# - Validaciones de error: 10 casos
+# - Errores en actualizaciones: 3 casos
+# - Errores en operaciones masivas: 2 casos
+# - Casos con personas inactivas: 3 casos
+# - Paginación: 4 casos
+# - Estados y transiciones: 5 casos
