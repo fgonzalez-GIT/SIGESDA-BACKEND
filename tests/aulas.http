@@ -1,0 +1,308 @@
+### SIGESDA API - Pruebas de Endpoints Aulas
+### Base URL: http://localhost:3001
+
+### 1. Health Check
+GET http://localhost:3001/health
+
+###################################################################
+### CRUD AULAS - Casos de Prueba
+###################################################################
+
+### 2. Crear Aula Principal
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "Aula Principal",
+  "capacidad": 50,
+  "ubicacion": "Planta Baja - Frente",
+  "equipamiento": "Piano de cola Yamaha, sistema de sonido, 50 sillas, pizarra musical",
+  "activa": true
+}
+
+### 3. Crear Aula de Ensayos
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "Sala de Ensayos",
+  "capacidad": 15,
+  "ubicacion": "Primer Piso - Izquierda",
+  "equipamiento": "Piano vertical, amplificador, micrófono, 15 sillas",
+  "activa": true
+}
+
+### 4. Crear Aula Pequeña Sin Equipamiento
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "Aula 3 - Clases Individuales",
+  "capacidad": 2,
+  "ubicacion": "Primer Piso - Derecha",
+  "activa": true
+}
+
+### 5. Crear Aula Grande Para Coro
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "Sala de Coro",
+  "capacidad": 60,
+  "ubicacion": "Segundo Piso",
+  "equipamiento": "Piano de cola, escalones para coro, sistema de grabación, 60 atriles",
+  "activa": true
+}
+
+###################################################################
+### VALIDACIONES Y CASOS DE ERROR
+###################################################################
+
+### 6. Error: Nombre Duplicado
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "Aula Principal",
+  "capacidad": 20,
+  "ubicacion": "Otro lugar"
+}
+
+### 7. Error: Capacidad Negativa
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "Aula Inválida",
+  "capacidad": -5,
+  "ubicacion": "Lugar inexistente"
+}
+
+### 8. Error: Capacidad Cero
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "Aula Sin Capacidad",
+  "capacidad": 0,
+  "ubicacion": "Test"
+}
+
+### 9. Error: Nombre Vacío
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "capacidad": 10,
+  "ubicacion": "Test"
+}
+
+###################################################################
+### CONSULTAS Y FILTROS
+###################################################################
+
+### 10. Listar Todas las Aulas
+GET http://localhost:3001/api/aulas
+
+### 11. Listar con Paginación
+GET http://localhost:3001/api/aulas?page=1&limit=3
+
+### 12. Filtrar Solo Aulas Activas
+GET http://localhost:3001/api/aulas?activa=true
+
+### 13. Filtrar por Capacidad Mínima
+GET http://localhost:3001/api/aulas?capacidadMinima=30
+
+### 14. Filtrar por Rango de Capacidad
+GET http://localhost:3001/api/aulas?capacidadMinima=10&capacidadMaxima=50
+
+### 15. Filtrar Solo Aulas con Equipamiento
+GET http://localhost:3001/api/aulas?conEquipamiento=true
+
+### 16. Filtrar Solo Aulas sin Equipamiento
+GET http://localhost:3001/api/aulas?conEquipamiento=false
+
+### 17. Buscar por Nombre/Ubicación/Equipamiento
+GET http://localhost:3001/api/aulas?search=Piano
+
+###################################################################
+### ENDPOINTS ESPECÍFICOS
+###################################################################
+
+### 18. Obtener Aulas Disponibles
+GET http://localhost:3001/api/aulas/disponibles
+
+### 19. Obtener Aulas con Menor Uso
+GET http://localhost:3001/api/aulas/menor-uso
+
+### 20. Obtener Aulas con Equipamiento
+GET http://localhost:3001/api/aulas/con-equipamiento
+
+### 21. Buscar Aulas por Capacidad Específica
+GET http://localhost:3001/api/aulas/por-capacidad?capacidad=15
+
+### 22. Búsqueda Avanzada
+GET http://localhost:3001/api/aulas/search?q=Ensayos
+
+###################################################################
+### OBTENER POR ID
+###################################################################
+
+### 23. Obtener Aula por ID (reemplazar {id} con ID real)
+GET http://localhost:3001/api/aulas/{id}
+
+### 24. Error: ID No Existente
+GET http://localhost:3001/api/aulas/id-inexistente
+
+###################################################################
+### VERIFICAR DISPONIBILIDAD
+###################################################################
+
+### 25. Verificar Disponibilidad Futura (reemplazar {id} con ID real)
+POST http://localhost:3001/api/aulas/{id}/verificar-disponibilidad
+Content-Type: application/json
+
+{
+  "fechaInicio": "2025-09-26T10:00:00.000Z",
+  "fechaFin": "2025-09-26T12:00:00.000Z"
+}
+
+### 26. Error: Fecha de Inicio en el Pasado
+POST http://localhost:3001/api/aulas/{id}/verificar-disponibilidad
+Content-Type: application/json
+
+{
+  "fechaInicio": "2025-09-20T10:00:00.000Z",
+  "fechaFin": "2025-09-20T12:00:00.000Z"
+}
+
+### 27. Error: Fecha Fin Antes que Fecha Inicio
+POST http://localhost:3001/api/aulas/{id}/verificar-disponibilidad
+Content-Type: application/json
+
+{
+  "fechaInicio": "2025-09-26T12:00:00.000Z",
+  "fechaFin": "2025-09-26T10:00:00.000Z"
+}
+
+###################################################################
+### ESTADÍSTICAS Y RESERVAS
+###################################################################
+
+### 28. Obtener Estadísticas de Aula
+GET http://localhost:3001/api/aulas/{id}/estadisticas
+
+### 29. Obtener Reservas del Aula (próximo mes)
+GET http://localhost:3001/api/aulas/{id}/reservas
+
+### 30. Obtener Reservas en Período Específico
+GET http://localhost:3001/api/aulas/{id}/reservas?fechaDesde=2025-09-26T00:00:00.000Z&fechaHasta=2025-10-26T23:59:59.000Z
+
+###################################################################
+### ACTUALIZACIÓN
+###################################################################
+
+### 31. Actualizar Información de Aula
+PUT http://localhost:3001/api/aulas/{id}
+Content-Type: application/json
+
+{
+  "equipamiento": "Piano de cola Yamaha (afinado), sistema de sonido actualizado, 50 sillas nuevas, pizarra musical digital",
+  "ubicacion": "Planta Baja - Frente (renovado)"
+}
+
+### 32. Aumentar Capacidad
+PUT http://localhost:3001/api/aulas/{id}
+Content-Type: application/json
+
+{
+  "capacidad": 55
+}
+
+### 33. Dar de Baja Aula (Soft Delete)
+PUT http://localhost:3001/api/aulas/{id}
+Content-Type: application/json
+
+{
+  "activa": false
+}
+
+### 34. Error: Actualizar con Nombre Duplicado
+PUT http://localhost:3001/api/aulas/{id}
+Content-Type: application/json
+
+{
+  "nombre": "Sala de Ensayos"
+}
+
+###################################################################
+### ELIMINACIÓN
+###################################################################
+
+### 35. Baja Lógica (Soft Delete)
+DELETE http://localhost:3001/api/aulas/{id}
+
+### 36. Eliminación Física (Hard Delete) - ¡CUIDADO!
+DELETE http://localhost:3001/api/aulas/{id}?hard=true
+
+###################################################################
+### CASOS ESPECIALES Y VALIDACIONES DE NEGOCIO
+###################################################################
+
+### 37. Crear Aula de Gran Capacidad
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "Auditorio Principal",
+  "capacidad": 200,
+  "ubicacion": "Planta Baja - Auditorio",
+  "equipamiento": "Escenario, sistema de sonido profesional, 200 butacas, iluminación escénica, piano de concierto Steinway",
+  "activa": true
+}
+
+### 38. Crear Aula Mínima (1 persona)
+POST http://localhost:3001/api/aulas
+Content-Type: application/json
+
+{
+  "nombre": "Cabina de Práctica Individual",
+  "capacidad": 1,
+  "ubicacion": "Sótano - Cabina 1",
+  "equipamiento": "Piano digital con auriculares, asiento ajustable",
+  "activa": true
+}
+
+### 39. Buscar Aulas Grandes (50+ personas)
+GET http://localhost:3001/api/aulas?capacidadMinima=50
+
+### 40. Buscar Aulas Pequeñas (1-5 personas)
+GET http://localhost:3001/api/aulas?capacidadMinima=1&capacidadMaxima=5
+
+### 41. Verificar Disponibilidad con Exclusión de Reserva
+POST http://localhost:3001/api/aulas/{id}/verificar-disponibilidad
+Content-Type: application/json
+
+{
+  "fechaInicio": "2025-09-26T14:00:00.000Z",
+  "fechaFin": "2025-09-26T16:00:00.000Z",
+  "excluirReservaId": "id-de-reserva-existente"
+}
+
+### 42. Buscar Aulas por Equipamiento Específico
+GET http://localhost:3001/api/aulas/search?q=Yamaha
+
+### 43. Aulas Ordenadas por Capacidad
+GET http://localhost:3001/api/aulas?limit=100
+
+###################################################################
+### NOTAS PARA LAS PRUEBAS:
+### 1. Ejecutar casos de creación primero para tener datos
+### 2. Reemplazar {id} con IDs reales obtenidos de las respuestas
+### 3. Usar fechas futuras para verificación de disponibilidad
+### 4. Las fechas deben estar en formato ISO 8601
+### 5. Probar casos de error para validar manejo de errores
+### 6. Las estadísticas y reservas requerirán datos de reservas existentes
+###################################################################

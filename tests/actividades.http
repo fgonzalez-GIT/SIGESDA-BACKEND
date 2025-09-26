@@ -1,0 +1,301 @@
+### SIGESDA API - Pruebas de Endpoints Actividades
+### Base URL: http://localhost:3001
+
+### 1. Health Check
+GET http://localhost:3001/health
+
+###################################################################
+### CRUD ACTIVIDADES - Casos de Prueba
+###################################################################
+
+### 2. Crear Coro (Gratis - Típico)
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Coro Principal SIGESDA",
+  "tipo": "CORO",
+  "descripcion": "Coro principal de la asociación musical, abierto a todos los socios",
+  "precio": 0,
+  "duracion": 120,
+  "capacidadMaxima": 50,
+  "activa": true
+}
+
+### 3. Crear Clase de Piano
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Clases de Piano - Nivel Básico",
+  "tipo": "CLASE_INSTRUMENTO",
+  "descripcion": "Clases individuales de piano para principiantes",
+  "precio": 12000,
+  "duracion": 60,
+  "capacidadMaxima": 1,
+  "activa": true
+}
+
+### 4. Crear Clase de Canto con Docente Asignado
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Técnica Vocal Avanzada",
+  "tipo": "CLASE_CANTO",
+  "descripcion": "Clases de técnica vocal para estudiantes avanzados",
+  "precio": 15000,
+  "duracion": 90,
+  "capacidadMaxima": 8,
+  "activa": true,
+  "docenteIds": ["cmfzndnr100084z6cajfbzj2l"]
+}
+
+### 5. Crear Clase Grupal de Guitarra
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Guitarra Clásica - Grupo",
+  "tipo": "CLASE_INSTRUMENTO",
+  "descripcion": "Clases grupales de guitarra clásica",
+  "precio": 8000,
+  "duracion": 75,
+  "capacidadMaxima": 6,
+  "activa": true
+}
+
+###################################################################
+### VALIDACIONES Y CASOS DE ERROR
+###################################################################
+
+### 6. Error: Precio Negativo
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Actividad con Error",
+  "tipo": "CLASE_CANTO",
+  "precio": -1000,
+  "capacidadMaxima": 5
+}
+
+### 7. Error: Docente Inexistente
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Clase con Docente Inexistente",
+  "tipo": "CLASE_INSTRUMENTO",
+  "precio": 10000,
+  "docenteIds": ["id-inexistente-123"]
+}
+
+### 8. Error: Capacidad Negativa
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Actividad Inválida",
+  "tipo": "CORO",
+  "capacidadMaxima": -5
+}
+
+### 9. Error: Tipo de Actividad Inválido
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Actividad Tipo Inválido",
+  "tipo": "TIPO_INEXISTENTE",
+  "precio": 5000
+}
+
+###################################################################
+### CONSULTAS Y FILTROS
+###################################################################
+
+### 10. Listar Todas las Actividades
+GET http://localhost:3001/api/actividades
+
+### 11. Listar con Paginación
+GET http://localhost:3001/api/actividades?page=1&limit=3
+
+### 12. Filtrar por Tipo: Solo Coros
+GET http://localhost:3001/api/actividades?tipo=CORO
+
+### 13. Filtrar por Tipo: Solo Clases de Instrumento
+GET http://localhost:3001/api/actividades?tipo=CLASE_INSTRUMENTO
+
+### 14. Filtrar Solo Activas
+GET http://localhost:3001/api/actividades?activa=true
+
+### 15. Filtrar por Rango de Precios
+GET http://localhost:3001/api/actividades?precioDesde=5000&precioHasta=15000
+
+### 16. Filtrar Actividades con Docentes Asignados
+GET http://localhost:3001/api/actividades?conDocentes=true
+
+### 17. Buscar por Nombre/Descripción
+GET http://localhost:3001/api/actividades?search=Piano
+
+###################################################################
+### ENDPOINTS ESPECÍFICOS POR TIPO
+###################################################################
+
+### 18. Obtener Solo Coros
+GET http://localhost:3001/api/actividades/coros
+
+### 19. Obtener Solo Clases de Instrumento
+GET http://localhost:3001/api/actividades/clases-instrumento
+
+### 20. Obtener Solo Clases de Canto
+GET http://localhost:3001/api/actividades/clases-canto
+
+### 21. Búsqueda Avanzada
+GET http://localhost:3001/api/actividades/search?q=Guitarra&tipo=CLASE_INSTRUMENTO
+
+### 22. Obtener Docentes Disponibles
+GET http://localhost:3001/api/actividades/docentes-disponibles
+
+###################################################################
+### OBTENER POR ID
+###################################################################
+
+### 23. Obtener Actividad por ID (reemplazar {id} con ID real)
+GET http://localhost:3001/api/actividades/{id}
+
+### 24. Error: ID No Existente
+GET http://localhost:3001/api/actividades/id-inexistente
+
+###################################################################
+### PARTICIPANTES Y ESTADÍSTICAS
+###################################################################
+
+### 25. Obtener Participantes de una Actividad
+GET http://localhost:3001/api/actividades/{id}/participantes
+
+### 26. Obtener Estadísticas de una Actividad
+GET http://localhost:3001/api/actividades/{id}/estadisticas
+
+###################################################################
+### GESTIÓN DE DOCENTES
+###################################################################
+
+### 27. Asignar Docente a Actividad
+POST http://localhost:3001/api/actividades/{id}/docentes
+Content-Type: application/json
+
+{
+  "docenteId": "cmfzndnr800094z6cwujf9nmj"
+}
+
+### 28. Desasignar Docente de Actividad
+DELETE http://localhost:3001/api/actividades/{id}/docentes/{docenteId}
+
+### 29. Error: Asignar Persona que No es Docente
+POST http://localhost:3001/api/actividades/{id}/docentes
+Content-Type: application/json
+
+{
+  "docenteId": "cmfzndnrg000b4z6c875mv4qu"
+}
+
+###################################################################
+### ACTUALIZACIÓN
+###################################################################
+
+### 30. Actualizar Datos de Actividad
+PUT http://localhost:3001/api/actividades/{id}
+Content-Type: application/json
+
+{
+  "descripcion": "Descripción actualizada de la actividad",
+  "precio": 13500,
+  "capacidadMaxima": 10
+}
+
+### 31. Actualizar Asignación de Docentes
+PUT http://localhost:3001/api/actividades/{id}
+Content-Type: application/json
+
+{
+  "docenteIds": ["cmfzndnr100084z6cajfbzj2l", "cmfzndnrb000a4z6ciwx9vkps"]
+}
+
+### 32. Dar de Baja Actividad (Soft Delete)
+PUT http://localhost:3001/api/actividades/{id}
+Content-Type: application/json
+
+{
+  "activa": false
+}
+
+###################################################################
+### ELIMINACIÓN
+###################################################################
+
+### 33. Baja Lógica (Soft Delete)
+DELETE http://localhost:3001/api/actividades/{id}
+
+### 34. Eliminación Física (Hard Delete) - ¡CUIDADO!
+DELETE http://localhost:3001/api/actividades/{id}?hard=true
+
+###################################################################
+### CASOS ESPECIALES Y VALIDACIONES DE NEGOCIO
+###################################################################
+
+### 35. Crear Coro con Precio (Genera Warning)
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Coro Premium",
+  "tipo": "CORO",
+  "descripcion": "Coro con precio - caso especial",
+  "precio": 5000,
+  "capacidadMaxima": 20
+}
+
+### 36. Clase Individual (Capacidad 1)
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Clases Particulares de Violín",
+  "tipo": "CLASE_INSTRUMENTO",
+  "descripcion": "Clases individuales personalizadas",
+  "precio": 18000,
+  "duracion": 45,
+  "capacidadMaxima": 1
+}
+
+### 37. Actividad Sin Límite de Capacidad
+POST http://localhost:3001/api/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Taller de Apreciación Musical",
+  "tipo": "CLASE_CANTO",
+  "descripcion": "Taller abierto sin límite de participantes",
+  "precio": 3000,
+  "duracion": 180
+}
+
+### 38. Búsqueda de Actividades Gratuitas
+GET http://localhost:3001/api/actividades?precioDesde=0&precioHasta=0
+
+### 39. Actividades de Larga Duración (>2 horas)
+GET http://localhost:3001/api/actividades?search=&limit=100
+
+### 40. Filtros Combinados: Coros Activos con Docentes
+GET http://localhost:3001/api/actividades?tipo=CORO&activa=true&conDocentes=true
+
+###################################################################
+### NOTAS PARA LAS PRUEBAS:
+### 1. Ejecutar casos básicos primero para crear datos
+### 2. Reemplazar {id} con IDs reales obtenidos de las respuestas
+### 3. Los docentes deben existir en la base de datos (usar IDs del seed)
+### 4. Verificar logs del servidor para warnings y validaciones
+### 5. Probar casos de error para validar manejo de errores
+###################################################################

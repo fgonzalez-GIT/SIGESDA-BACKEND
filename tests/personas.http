@@ -1,0 +1,259 @@
+### SIGESDA API - Pruebas de Endpoints Personas
+### Base URL: http://localhost:3001
+
+### 1. Health Check
+GET http://localhost:3001/health
+
+### 2. API Info
+GET http://localhost:3001/
+
+###################################################################
+### CRUD PERSONAS - Casos de Prueba
+###################################################################
+
+### 3. Crear Socio Activo
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "nombre": "Juan Carlos",
+  "apellido": "Pérez González",
+  "dni": "12345678",
+  "email": "juan.perez@email.com",
+  "telefono": "+54 9 11 1234-5678",
+  "direccion": "Av. Corrientes 1234, CABA",
+  "fechaNacimiento": "1985-03-15T00:00:00.000Z",
+  "categoria": "ACTIVO",
+  "fechaIngreso": "2024-01-15T00:00:00.000Z"
+}
+
+### 4. Crear Socio Estudiante
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "nombre": "María",
+  "apellido": "López",
+  "dni": "87654321",
+  "email": "maria.lopez@estudiante.com",
+  "categoria": "ESTUDIANTE",
+  "fechaNacimiento": "2000-07-20T00:00:00.000Z"
+}
+
+### 5. Crear Docente
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "DOCENTE",
+  "nombre": "Carlos",
+  "apellido": "García",
+  "dni": "11223344",
+  "email": "carlos.garcia@conservatorio.edu",
+  "telefono": "+54 9 11 9876-5432",
+  "especialidad": "Piano y Composición",
+  "honorariosPorHora": 7500.00,
+  "fechaNacimiento": "1978-11-03T00:00:00.000Z"
+}
+
+### 6. Crear No Socio
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "NO_SOCIO",
+  "nombre": "Ana",
+  "apellido": "Martínez",
+  "dni": "55667788",
+  "email": "ana.martinez@gmail.com",
+  "telefono": "+54 9 11 5555-6666",
+  "fechaNacimiento": "1992-05-10T00:00:00.000Z"
+}
+
+### 7. Crear Proveedor
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "PROVEEDOR",
+  "nombre": "Roberto",
+  "apellido": "Fernández",
+  "dni": "99887766",
+  "email": "ventas@instrumentosfernandez.com",
+  "telefono": "+54 9 11 7777-8888",
+  "direccion": "Av. San Martín 567, San Isidro",
+  "cuit": "20998877664",
+  "razonSocial": "Instrumentos Fernández SRL"
+}
+
+###################################################################
+### VALIDACIONES Y CASOS DE ERROR
+###################################################################
+
+### 8. Error: DNI Duplicado
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "nombre": "Pedro",
+  "apellido": "Duplicate",
+  "dni": "12345678",
+  "categoria": "ACTIVO"
+}
+
+### 9. Error: Email Duplicado
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "NO_SOCIO",
+  "nombre": "Sara",
+  "apellido": "Duplicate",
+  "dni": "99999999",
+  "email": "juan.perez@email.com"
+}
+
+### 10. Error: Campos Requeridos Faltantes (Socio sin categoría)
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "nombre": "Sin",
+  "apellido": "Categoria",
+  "dni": "11111111"
+}
+
+### 11. Error: CUIT Inválido para Proveedor
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "PROVEEDOR",
+  "nombre": "Bad",
+  "apellido": "Cuit",
+  "dni": "22222222",
+  "cuit": "123",
+  "razonSocial": "Test SRL"
+}
+
+###################################################################
+### CONSULTAS Y FILTROS
+###################################################################
+
+### 12. Listar Todas las Personas
+GET http://localhost:3001/api/personas
+
+### 13. Listar con Paginación
+GET http://localhost:3001/api/personas?page=1&limit=3
+
+### 14. Filtrar por Tipo: Solo Socios
+GET http://localhost:3001/api/personas?tipo=SOCIO
+
+### 15. Filtrar por Categoría: Solo Socios Activos
+GET http://localhost:3001/api/personas?tipo=SOCIO&categoria=ACTIVO
+
+### 16. Filtrar Solo Activos (sin fecha de baja)
+GET http://localhost:3001/api/personas?activo=true
+
+### 17. Buscar por Nombre/DNI/Email
+GET http://localhost:3001/api/personas?search=Juan
+
+### 18. Endpoint Específico: Obtener Solo Socios
+GET http://localhost:3001/api/personas/socios
+
+### 19. Endpoint Específico: Obtener Solo Docentes
+GET http://localhost:3001/api/personas/docentes
+
+### 20. Endpoint Específico: Obtener Solo Proveedores
+GET http://localhost:3001/api/personas/proveedores
+
+### 21. Búsqueda Avanzada
+GET http://localhost:3001/api/personas/search?q=Carlos&tipo=DOCENTE
+
+###################################################################
+### OBTENER POR ID
+###################################################################
+
+### 22. Obtener Persona por ID (reemplazar {id} con ID real)
+GET http://localhost:3001/api/personas/{id}
+
+### 23. Error: ID No Existente
+GET http://localhost:3001/api/personas/id-inexistente
+
+###################################################################
+### ACTUALIZACIÓN
+###################################################################
+
+### 24. Actualizar Datos de Socio (reemplazar {id} con ID real)
+PUT http://localhost:3001/api/personas/{id}
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "telefono": "+54 9 11 9999-0000",
+  "direccion": "Nueva Dirección 456"
+}
+
+### 25. Dar de Baja Socio (soft delete)
+PUT http://localhost:3001/api/personas/{id}
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "fechaBaja": "2024-12-31T23:59:59.000Z",
+  "motivoBaja": "Mudanza al exterior"
+}
+
+###################################################################
+### ELIMINACIÓN
+###################################################################
+
+### 26. Baja Lógica (Soft Delete) con Motivo
+DELETE http://localhost:3001/api/personas/{id}?motivo=Falta de pago
+
+### 27. Eliminación Física (Hard Delete) - ¡CUIDADO!
+DELETE http://localhost:3001/api/personas/{id}?hard=true
+
+###################################################################
+### CASOS ESPECIALES Y VALIDACIONES DE NEGOCIO
+###################################################################
+
+### 28. Verificar Auto-asignación de Número de Socio
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "nombre": "Test",
+  "apellido": "AutoNumero",
+  "dni": "33333333",
+  "categoria": "FAMILIAR"
+}
+
+### 29. Crear Socio con Número Específico
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": "SOCIO",
+  "nombre": "Test",
+  "apellido": "NumeroEspecifico",
+  "dni": "44444444",
+  "categoria": "JUBILADO",
+  "numeroSocio": 9999
+}
+
+### 30. Listar Socios por Categoría Específica
+GET http://localhost:3001/api/personas/socios?categoria=ESTUDIANTE&activos=true
+
+###################################################################
+### NOTAS PARA LAS PRUEBAS:
+### 1. Ejecutar los casos en orden para evitar conflictos de DNI/email
+### 2. Reemplazar {id} con IDs reales obtenidos de las respuestas
+### 3. El servidor debe estar corriendo: npm run dev
+### 4. Base de datos debe estar configurada y con migraciones aplicadas
+###################################################################

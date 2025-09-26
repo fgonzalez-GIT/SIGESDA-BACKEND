@@ -1,0 +1,470 @@
+### SIGESDA API - Pruebas de Endpoints Configuración Sistema
+### Base URL: http://localhost:3001
+
+### 1. Health Check
+GET http://localhost:3001/health
+
+###################################################################
+### INICIALIZACIÓN DEL SISTEMA
+###################################################################
+
+### 2. Inicializar Configuraciones del Sistema
+POST http://localhost:3001/api/configuracion/inicializar
+Content-Type: application/json
+
+###################################################################
+### CRUD CONFIGURACIÓN - Casos de Prueba
+###################################################################
+
+### 3. Crear Configuración Tipo STRING
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "MENSAJE_BIENVENIDA",
+  "valor": "Bienvenido a la Asociación Musical San Martín",
+  "descripcion": "Mensaje de bienvenida en la página principal",
+  "tipo": "STRING"
+}
+
+### 4. Crear Configuración Tipo NUMBER
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "LIMITE_ACTIVIDADES_SOCIO",
+  "valor": "5",
+  "descripcion": "Número máximo de actividades por socio",
+  "tipo": "NUMBER"
+}
+
+### 5. Crear Configuración Tipo BOOLEAN
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "NOTIFICACIONES_EMAIL",
+  "valor": "true",
+  "descripcion": "Habilitar notificaciones por email",
+  "tipo": "BOOLEAN"
+}
+
+### 6. Crear Configuración Tipo JSON
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "CONFIGURACION_TEMA",
+  "valor": "{\"color_primario\": \"#2563eb\", \"color_secundario\": \"#64748b\", \"modo_oscuro\": false}",
+  "descripcion": "Configuración del tema visual de la aplicación",
+  "tipo": "JSON"
+}
+
+###################################################################
+### VALIDACIONES Y CASOS DE ERROR
+###################################################################
+
+### 7. Error: Clave Duplicada
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "MENSAJE_BIENVENIDA",
+  "valor": "Otro mensaje",
+  "tipo": "STRING"
+}
+
+### 8. Error: Valor NUMBER Inválido
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "NUMERO_INVALIDO",
+  "valor": "no-es-numero",
+  "tipo": "NUMBER"
+}
+
+### 9. Error: Valor BOOLEAN Inválido
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "BOOLEAN_INVALIDO",
+  "valor": "maybe",
+  "tipo": "BOOLEAN"
+}
+
+### 10. Error: Valor JSON Inválido
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "JSON_INVALIDO",
+  "valor": "{clave: valor sin comillas}",
+  "tipo": "JSON"
+}
+
+### 11. Error: Clave con Formato Inválido
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "clave-minuscula",
+  "valor": "test",
+  "tipo": "STRING"
+}
+
+### 12. Error: Clave Vacía
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "",
+  "valor": "test",
+  "tipo": "STRING"
+}
+
+###################################################################
+### CONSULTAS Y FILTROS
+###################################################################
+
+### 13. Listar Todas las Configuraciones
+GET http://localhost:3001/api/configuracion
+
+### 14. Listar con Paginación
+GET http://localhost:3001/api/configuracion?page=1&limit=5
+
+### 15. Filtrar por Tipo STRING
+GET http://localhost:3001/api/configuracion/tipo/STRING
+
+### 16. Filtrar por Tipo NUMBER
+GET http://localhost:3001/api/configuracion/tipo/NUMBER
+
+### 17. Filtrar por Tipo BOOLEAN
+GET http://localhost:3001/api/configuracion/tipo/BOOLEAN
+
+### 18. Filtrar por Tipo JSON
+GET http://localhost:3001/api/configuracion/tipo/JSON
+
+### 19. Buscar por Texto en Clave o Descripción
+GET http://localhost:3001/api/configuracion?search=CUOTA
+
+### 20. Obtener Configuraciones por Categoría (CUOTA_*)
+GET http://localhost:3001/api/configuracion/categoria/CUOTA_SOCIO
+
+### 21. Obtener Configuraciones por Prefijo
+GET http://localhost:3001/api/configuracion/prefijo/EMAIL
+
+###################################################################
+### OBTENER POR ID Y CLAVE
+###################################################################
+
+### 22. Obtener Configuración por ID (reemplazar {id} con ID real)
+GET http://localhost:3001/api/configuracion/id/{id}
+
+### 23. Obtener Configuración por Clave
+GET http://localhost:3001/api/configuracion/clave/CUOTA_SOCIO_ACTIVO
+
+### 24. Error: ID No Existente
+GET http://localhost:3001/api/configuracion/id/id-inexistente
+
+### 25. Error: Clave No Existente
+GET http://localhost:3001/api/configuracion/clave/CLAVE_NO_EXISTE
+
+###################################################################
+### ACTUALIZACIÓN
+###################################################################
+
+### 26. Actualizar Configuración por ID
+PUT http://localhost:3001/api/configuracion/id/{id}
+Content-Type: application/json
+
+{
+  "valor": "6000",
+  "descripcion": "Cuota mensual actualizada para socios activos"
+}
+
+### 27. Actualizar Configuración por Clave
+PUT http://localhost:3001/api/configuracion/clave/CUOTA_SOCIO_ACTIVO
+Content-Type: application/json
+
+{
+  "valor": "5500",
+  "descripcion": "Nueva cuota mensual para socios activos"
+}
+
+### 28. Actualizar Tipo de Configuración
+PUT http://localhost:3001/api/configuracion/clave/LIMITE_ACTIVIDADES_SOCIO
+Content-Type: application/json
+
+{
+  "valor": "8",
+  "tipo": "NUMBER"
+}
+
+### 29. Error: Actualizar con Tipo Incompatible
+PUT http://localhost:3001/api/configuracion/clave/CUOTA_SOCIO_ACTIVO
+Content-Type: application/json
+
+{
+  "valor": "no-numero",
+  "tipo": "NUMBER"
+}
+
+###################################################################
+### UPSERT (CREAR O ACTUALIZAR)
+###################################################################
+
+### 30. Upsert - Crear Nueva Configuración
+POST http://localhost:3001/api/configuracion/clave/NUEVA_CONFIGURACION
+Content-Type: application/json
+
+{
+  "clave": "NUEVA_CONFIGURACION",
+  "valor": "valor inicial",
+  "descripcion": "Nueva configuración creada via upsert",
+  "tipo": "STRING"
+}
+
+### 31. Upsert - Actualizar Configuración Existente
+POST http://localhost:3001/api/configuracion/clave/NUEVA_CONFIGURACION
+Content-Type: application/json
+
+{
+  "clave": "NUEVA_CONFIGURACION",
+  "valor": "valor actualizado",
+  "descripcion": "Configuración actualizada via upsert",
+  "tipo": "STRING"
+}
+
+###################################################################
+### VALORES TIPADOS
+###################################################################
+
+### 32. Obtener Valor Tipado como STRING
+GET http://localhost:3001/api/configuracion/valor/NOMBRE_ASOCIACION/STRING
+
+### 33. Obtener Valor Tipado como NUMBER
+GET http://localhost:3001/api/configuracion/valor/CUOTA_SOCIO_ACTIVO/NUMBER
+
+### 34. Obtener Valor Tipado como BOOLEAN
+GET http://localhost:3001/api/configuracion/valor/BACKUP_AUTOMATICO/BOOLEAN
+
+### 35. Obtener Valor Tipado como JSON
+GET http://localhost:3001/api/configuracion/valor/FORMATO_RECIBO/JSON
+
+### 36. Establecer Valor Tipado NUMBER
+PUT http://localhost:3001/api/configuracion/valor/CUOTA_SOCIO_ACTIVO/NUMBER
+Content-Type: application/json
+
+{
+  "valor": 5800
+}
+
+### 37. Establecer Valor Tipado BOOLEAN
+PUT http://localhost:3001/api/configuracion/valor/BACKUP_AUTOMATICO/BOOLEAN
+Content-Type: application/json
+
+{
+  "valor": false
+}
+
+### 38. Establecer Valor Tipado JSON
+PUT http://localhost:3001/api/configuracion/valor/CONFIGURACION_TEMA/JSON
+Content-Type: application/json
+
+{
+  "valor": {
+    "color_primario": "#10b981",
+    "color_secundario": "#6b7280",
+    "modo_oscuro": true
+  }
+}
+
+###################################################################
+### OPERACIONES BULK
+###################################################################
+
+### 39. Importar Configuraciones en Bloque
+POST http://localhost:3001/api/configuracion/bulk-upsert
+Content-Type: application/json
+
+{
+  "configuraciones": [
+    {
+      "clave": "CONFIGURACION_BULK_1",
+      "valor": "valor1",
+      "descripcion": "Primera configuración bulk",
+      "tipo": "STRING"
+    },
+    {
+      "clave": "CONFIGURACION_BULK_2",
+      "valor": "100",
+      "descripcion": "Segunda configuración bulk",
+      "tipo": "NUMBER"
+    },
+    {
+      "clave": "CONFIGURACION_BULK_3",
+      "valor": "true",
+      "descripcion": "Tercera configuración bulk",
+      "tipo": "BOOLEAN"
+    }
+  ],
+  "sobrescribir": false
+}
+
+### 40. Bulk Import con Sobrescritura
+POST http://localhost:3001/api/configuracion/bulk-upsert
+Content-Type: application/json
+
+{
+  "configuraciones": [
+    {
+      "clave": "CUOTA_SOCIO_ACTIVO",
+      "valor": "6200",
+      "descripcion": "Cuota actualizada via bulk",
+      "tipo": "NUMBER"
+    },
+    {
+      "clave": "NUEVA_CONFIG_BULK",
+      "valor": "nuevo valor",
+      "descripcion": "Configuración nueva via bulk",
+      "tipo": "STRING"
+    }
+  ],
+  "sobrescribir": true
+}
+
+###################################################################
+### BÚSQUEDAS Y CONSULTAS AVANZADAS
+###################################################################
+
+### 41. Buscar por Valor
+GET http://localhost:3001/api/configuracion/search?q=5000
+
+### 42. Buscar por Parte del Valor
+GET http://localhost:3001/api/configuracion/search?q=Asociacion
+
+### 43. Obtener Configuraciones Modificadas Recientemente (7 días)
+GET http://localhost:3001/api/configuracion/modificadas-recientemente
+
+### 44. Obtener Configuraciones Modificadas en 30 días
+GET http://localhost:3001/api/configuracion/modificadas-recientemente?dias=30
+
+### 45. Exportar Todas las Configuraciones
+GET http://localhost:3001/api/configuracion/export
+
+### 46. Obtener Estadísticas por Tipo
+GET http://localhost:3001/api/configuracion/estadisticas
+
+###################################################################
+### VALIDACIÓN DE INTEGRIDAD
+###################################################################
+
+### 47. Validar Integridad del Sistema
+GET http://localhost:3001/api/configuracion/integridad
+
+###################################################################
+### ELIMINACIÓN
+###################################################################
+
+### 48. Intentar Eliminar Configuración del Sistema (debe fallar)
+DELETE http://localhost:3001/api/configuracion/clave/CUOTA_SOCIO_ACTIVO
+
+### 49. Eliminar Configuración Custom por ID
+DELETE http://localhost:3001/api/configuracion/id/{id-custom}
+
+### 50. Eliminar Configuración Custom por Clave
+DELETE http://localhost:3001/api/configuracion/clave/CONFIGURACION_BULK_1
+
+### 51. Error: Eliminar Configuración No Existente
+DELETE http://localhost:3001/api/configuracion/clave/CONFIG_INEXISTENTE
+
+###################################################################
+### CASOS ESPECIALES Y EDGE CASES
+###################################################################
+
+### 52. Crear Configuración con Descripción Muy Larga (debe fallar)
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "DESCRIPCION_LARGA",
+  "valor": "test",
+  "descripcion": "Esta es una descripción extremadamente larga que debería fallar la validación porque excede el límite máximo de 500 caracteres establecido en el esquema de validación de Zod. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.",
+  "tipo": "STRING"
+}
+
+### 53. Crear Configuración JSON Compleja
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "CONFIGURACION_COMPLEJA",
+  "valor": "{\"usuarios\": [{\"id\": 1, \"activo\": true}, {\"id\": 2, \"activo\": false}], \"configuracion\": {\"limite\": 100, \"timeout\": 5000}}",
+  "descripcion": "Configuración JSON compleja con arrays y objetos anidados",
+  "tipo": "JSON"
+}
+
+### 54. Probar Filtro por Tipo Inválido
+GET http://localhost:3001/api/configuracion/tipo/INVALID_TYPE
+
+### 55. Probar Búsqueda con String Vacío
+GET http://localhost:3001/api/configuracion/search?q=
+
+### 56. Probar Paginación con Parámetros Inválidos
+GET http://localhost:3001/api/configuracion?page=0&limit=-1
+
+### 57. Obtener Configuración por Categoría Inexistente
+GET http://localhost:3001/api/configuracion/categoria/CATEGORIA_INEXISTENTE
+
+### 58. Bulk Import con Configuración Inválida
+POST http://localhost:3001/api/configuracion/bulk-upsert
+Content-Type: application/json
+
+{
+  "configuraciones": [
+    {
+      "clave": "CONFIG_VALIDA",
+      "valor": "ok",
+      "tipo": "STRING"
+    },
+    {
+      "clave": "config_invalida",
+      "valor": "bad",
+      "tipo": "STRING"
+    }
+  ],
+  "sobrescribir": false
+}
+
+### 59. Crear Configuración con Valor JSON Array
+POST http://localhost:3001/api/configuracion
+Content-Type: application/json
+
+{
+  "clave": "LISTA_CATEGORIAS",
+  "valor": "[\"CORO\", \"PIANO\", \"GUITARRA\", \"VIOLIN\"]",
+  "descripcion": "Lista de categorías de actividades disponibles",
+  "tipo": "JSON"
+}
+
+### 60. Actualizar Solo Descripción
+PUT http://localhost:3001/api/configuracion/clave/MENSAJE_BIENVENIDA
+Content-Type: application/json
+
+{
+  "descripcion": "Mensaje de bienvenida actualizado para nueva temporada"
+}
+
+###################################################################
+### NOTAS PARA LAS PRUEBAS:
+### 1. Ejecutar la inicialización del sistema primero (caso 2)
+### 2. Reemplazar {id} con IDs reales obtenidos de las respuestas
+### 3. Las claves deben estar en MAYÚSCULAS con guiones bajos
+### 4. Probar validaciones de tipos para cada tipo de configuración
+### 5. Verificar que no se puedan eliminar configuraciones críticas del sistema
+### 6. La búsqueda es case-insensitive
+### 7. El bulk import puede fallar parcialmente, verificar errores
+### 8. Las estadísticas muestran conteos por cada tipo
+###################################################################

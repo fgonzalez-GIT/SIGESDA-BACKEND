@@ -1,0 +1,440 @@
+### SIGESDA API - Pruebas de Endpoints Participación Actividad
+### Base URL: http://localhost:3001
+
+### 1. Health Check
+GET http://localhost:3001/health
+
+###################################################################
+### SETUP - Obtener IDs de Personas y Actividades para las pruebas
+###################################################################
+
+### 2. Obtener Personas (para usar sus IDs en las pruebas)
+GET http://localhost:3001/api/personas?limit=5
+
+### 3. Obtener Actividades (para usar sus IDs en las pruebas)
+GET http://localhost:3001/api/actividades?limit=5
+
+###################################################################
+### CRUD PARTICIPACIÓN - Casos de Prueba
+###################################################################
+
+### 4. Crear Participación de Socio en Coro
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaInicio": "2025-09-26T10:00:00.000Z",
+  "fechaFin": "2025-12-26T10:00:00.000Z",
+  "observaciones": "Participación inicial en coro"
+}
+
+### 5. Crear Participación con Precio Especial
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00023l6c62wvdm8k",
+  "fechaInicio": "2025-09-27T14:00:00.000Z",
+  "precioEspecial": 2500.50,
+  "observaciones": "Descuento especial por estudiante"
+}
+
+### 6. Crear Participación Sin Fecha de Fin (Indefinida)
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00033l6c2w6w5hrj",
+  "fechaInicio": "2025-09-28T16:00:00.000Z",
+  "observaciones": "Clases de piano indefinidas"
+}
+
+###################################################################
+### VALIDACIONES Y CASOS DE ERROR
+###################################################################
+
+### 7. Error: Persona No Existente
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "persona-inexistente",
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaInicio": "2025-09-26T10:00:00.000Z"
+}
+
+### 8. Error: Actividad No Existente
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "actividad-inexistente",
+  "fechaInicio": "2025-09-26T10:00:00.000Z"
+}
+
+### 9. Error: Fecha de Fin Antes que Fecha de Inicio
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaInicio": "2025-09-26T10:00:00.000Z",
+  "fechaFin": "2025-09-25T10:00:00.000Z"
+}
+
+### 10. Error: Fecha de Inicio Muy Antigua
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaInicio": "2025-07-01T10:00:00.000Z"
+}
+
+### 11. Error: Precio Especial Negativo
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaInicio": "2025-09-26T10:00:00.000Z",
+  "precioEspecial": -100
+}
+
+###################################################################
+### CONSULTAS Y FILTROS
+###################################################################
+
+### 12. Listar Todas las Participaciones
+GET http://localhost:3001/api/participacion
+
+### 13. Listar con Paginación
+GET http://localhost:3001/api/participacion?page=1&limit=3
+
+### 14. Filtrar Solo Participaciones Activas
+GET http://localhost:3001/api/participacion?activa=true
+
+### 15. Filtrar Solo Participaciones Inactivas
+GET http://localhost:3001/api/participacion?activa=false
+
+### 16. Filtrar por Rango de Fechas
+GET http://localhost:3001/api/participacion?fechaDesde=2025-09-25T00:00:00.000Z&fechaHasta=2025-09-30T23:59:59.000Z
+
+### 17. Filtrar Solo con Precio Especial
+GET http://localhost:3001/api/participacion?conPrecioEspecial=true
+
+### 18. Filtrar Solo sin Precio Especial
+GET http://localhost:3001/api/participacion?conPrecioEspecial=false
+
+### 19. Buscar por Nombre de Persona o Actividad
+GET http://localhost:3001/api/participacion?search=Test
+
+### 20. Ordenar por Fecha de Inicio Descendente
+GET http://localhost:3001/api/participacion?sortBy=fechaInicio&sortOrder=desc
+
+### 21. Ordenar por Persona
+GET http://localhost:3001/api/participacion?sortBy=persona&sortOrder=asc
+
+###################################################################
+### OBTENER POR ID Y RELACIONES
+###################################################################
+
+### 22. Obtener Participación por ID (reemplazar {id} con ID real)
+GET http://localhost:3001/api/participacion/{id}
+
+### 23. Error: ID No Existente
+GET http://localhost:3001/api/participacion/id-inexistente
+
+### 24. Obtener Participaciones por Persona
+GET http://localhost:3001/api/participacion/persona/cmfzvtt8z0000868ls6c87427
+
+### 25. Obtener Participaciones por Actividad
+GET http://localhost:3001/api/participacion/actividad/cmfzwojhp00013l6cd0bfctyy
+
+###################################################################
+### PARTICIPACIONES ACTIVAS Y ESPECIALES
+###################################################################
+
+### 26. Obtener Todas las Participaciones Activas
+GET http://localhost:3001/api/participacion/activas
+
+### 27. Obtener Participaciones Activas de una Persona
+GET http://localhost:3001/api/participacion/activas?personaId=cmfzvtt8z0000868ls6c87427
+
+### 28. Obtener Participaciones Por Vencer (30 días)
+GET http://localhost:3001/api/participacion/por-vencer
+
+### 29. Obtener Participaciones Por Vencer (7 días)
+GET http://localhost:3001/api/participacion/por-vencer?dias=7
+
+###################################################################
+### ACTUALIZACIÓN
+###################################################################
+
+### 30. Actualizar Observaciones de Participación
+PUT http://localhost:3001/api/participacion/{id}
+Content-Type: application/json
+
+{
+  "observaciones": "Participación actualizada - buen rendimiento"
+}
+
+### 31. Actualizar Precio Especial
+PUT http://localhost:3001/api/participacion/{id}
+Content-Type: application/json
+
+{
+  "precioEspecial": 3000.00
+}
+
+### 32. Actualizar Fecha de Fin
+PUT http://localhost:3001/api/participacion/{id}
+Content-Type: application/json
+
+{
+  "fechaFin": "2025-11-30T23:59:59.000Z"
+}
+
+### 33. Desactivar Participación
+PUT http://localhost:3001/api/participacion/{id}
+Content-Type: application/json
+
+{
+  "activa": false
+}
+
+###################################################################
+### DESINSCRIPCIÓN Y REACTIVACIÓN
+###################################################################
+
+### 34. Desinscribir Participante
+POST http://localhost:3001/api/participacion/{id}/desinscribir
+Content-Type: application/json
+
+{
+  "fechaFin": "2025-09-30T23:59:59.000Z",
+  "motivoDesincripcion": "Cambio de ciudad"
+}
+
+### 35. Desinscribir Sin Fecha Específica (usa fecha actual)
+POST http://localhost:3001/api/participacion/{id}/desinscribir
+Content-Type: application/json
+
+{
+  "motivoDesincripcion": "Falta de tiempo"
+}
+
+### 36. Reactivar Participación
+POST http://localhost:3001/api/participacion/{id}/reactivar
+
+### 37. Error: Reactivar Participación Ya Activa
+POST http://localhost:3001/api/participacion/{id-activo}/reactivar
+
+###################################################################
+### INSCRIPCIÓN MASIVA
+###################################################################
+
+### 38. Inscribir Persona a Múltiples Actividades
+POST http://localhost:3001/api/participacion/inscripcion-masiva
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividades": [
+    {
+      "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+      "fechaInicio": "2025-10-01T10:00:00.000Z",
+      "fechaFin": "2025-12-31T23:59:59.000Z",
+      "observaciones": "Coro - inscripción masiva"
+    },
+    {
+      "actividadId": "cmfzwojhp00023l6c62wvdm8k",
+      "fechaInicio": "2025-10-01T14:00:00.000Z",
+      "precioEspecial": 2000,
+      "observaciones": "Piano - inscripción masiva con descuento"
+    }
+  ],
+  "aplicarDescuentoFamiliar": true
+}
+
+### 39. Inscripción Masiva con Errores (alguna actividad no existe)
+POST http://localhost:3001/api/participacion/inscripcion-masiva
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividades": [
+    {
+      "actividadId": "actividad-valida",
+      "fechaInicio": "2025-10-01T10:00:00.000Z"
+    },
+    {
+      "actividadId": "actividad-inexistente",
+      "fechaInicio": "2025-10-01T14:00:00.000Z"
+    }
+  ]
+}
+
+###################################################################
+### TRANSFERIR PARTICIPACIÓN
+###################################################################
+
+### 40. Transferir a Nueva Actividad Conservando Fecha
+POST http://localhost:3001/api/participacion/{id}/transferir
+Content-Type: application/json
+
+{
+  "nuevaActividadId": "cmfzwojhp00033l6c2w6w5hrj",
+  "conservarFechaInicio": true,
+  "observaciones": "Transferido de coro a piano"
+}
+
+### 41. Transferir a Nueva Actividad con Nueva Fecha
+POST http://localhost:3001/api/participacion/{id}/transferir
+Content-Type: application/json
+
+{
+  "nuevaActividadId": "cmfzwojhp00033l6c2w6w5hrj",
+  "fechaTransferencia": "2025-10-01T10:00:00.000Z",
+  "conservarFechaInicio": false,
+  "observaciones": "Cambio de actividad y fecha de inicio"
+}
+
+###################################################################
+### VERIFICACIÓN DE CUPOS
+###################################################################
+
+### 42. Verificar Cupos Disponibles en Actividad
+POST http://localhost:3001/api/participacion/verificar-cupos
+Content-Type: application/json
+
+{
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaConsulta": "2025-09-26T10:00:00.000Z"
+}
+
+### 43. Verificar Cupos en Fecha Actual
+POST http://localhost:3001/api/participacion/verificar-cupos
+Content-Type: application/json
+
+{
+  "actividadId": "cmfzwojhp00023l6c62wvdm8k"
+}
+
+###################################################################
+### ESTADÍSTICAS Y REPORTES
+###################################################################
+
+### 44. Estadísticas Generales por Mes
+GET http://localhost:3001/api/participacion/estadisticas?agruparPor=mes
+
+### 45. Estadísticas por Actividad
+GET http://localhost:3001/api/participacion/estadisticas?agruparPor=actividad
+
+### 46. Estadísticas por Persona
+GET http://localhost:3001/api/participacion/estadisticas?agruparPor=persona
+
+### 47. Estadísticas por Tipo de Actividad
+GET http://localhost:3001/api/participacion/estadisticas?agruparPor=tipo_actividad
+
+### 48. Estadísticas Solo Activas en Rango de Fechas
+GET http://localhost:3001/api/participacion/estadisticas?fechaDesde=2025-09-01&fechaHasta=2025-12-31&soloActivas=true
+
+### 49. Dashboard de Participación
+GET http://localhost:3001/api/participacion/dashboard
+
+### 50. Reporte de Inasistencias
+GET http://localhost:3001/api/participacion/reporte-inasistencias?fechaDesde=2025-09-01&fechaHasta=2025-09-30&umbralInasistencias=3
+
+### 51. Reporte de Inasistencias por Actividad
+GET http://localhost:3001/api/participacion/reporte-inasistencias?actividadId=cmfzwojhp00013l6cd0bfctyy&fechaDesde=2025-09-01&fechaHasta=2025-09-30
+
+###################################################################
+### ELIMINACIÓN
+###################################################################
+
+### 52. Eliminar Participación (Hard Delete)
+DELETE http://localhost:3001/api/participacion/{id}
+
+### 53. Error: Eliminar Participación No Existente
+DELETE http://localhost:3001/api/participacion/id-inexistente
+
+###################################################################
+### CASOS ESPECIALES Y EDGE CASES
+###################################################################
+
+### 54. Crear Participación con Observaciones Largas
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaInicio": "2025-10-01T10:00:00.000Z",
+  "observaciones": "Esta es una observación muy larga que describe detalladamente las circunstancias especiales de esta participación, incluyendo antecedentes médicos, preferencias de horarios, y cualquier otra información relevante que pueda ser útil para los instructores y administradores del sistema."
+}
+
+### 55. Error: Observaciones Demasiado Largas (>1000 caracteres)
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaInicio": "2025-10-01T10:00:00.000Z",
+  "observaciones": "Esta observación supera el límite de 1000 caracteres y debería fallar la validación. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
+}
+
+### 56. Crear Participación con Precio Especial 0
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaInicio": "2025-10-01T10:00:00.000Z",
+  "precioEspecial": 0,
+  "observaciones": "Participación gratuita por beca"
+}
+
+### 57. Probar Paginación con Límites Extremos
+GET http://localhost:3001/api/participacion?page=1&limit=100
+
+### 58. Probar Filtros Combinados
+GET http://localhost:3001/api/participacion?activa=true&conPrecioEspecial=true&sortBy=fechaInicio&sortOrder=desc&limit=5
+
+### 59. Estadísticas con Fechas Específicas
+GET http://localhost:3001/api/participacion/estadisticas?fechaDesde=2025-09-01T00:00:00.000Z&fechaHasta=2025-09-30T23:59:59.000Z&agruparPor=actividad
+
+### 60. Crear Participación en el Límite de Fecha (29 días atrás)
+POST http://localhost:3001/api/participacion
+Content-Type: application/json
+
+{
+  "personaId": "cmfzvtt8z0000868ls6c87427",
+  "actividadId": "cmfzwojhp00013l6cd0bfctyy",
+  "fechaInicio": "2025-08-27T10:00:00.000Z",
+  "observaciones": "Participación en el límite de fecha permitida"
+}
+
+###################################################################
+### NOTAS PARA LAS PRUEBAS:
+### 1. Ejecutar setup primero para obtener IDs reales (casos 2 y 3)
+### 2. Reemplazar {id} con IDs reales obtenidos de las respuestas
+### 3. Usar fechas futuras o recientes para evitar errores de validación
+### 4. Las fechas deben estar en formato ISO 8601
+### 5. Probar casos de error para validar manejo de errores
+### 6. Los conflictos de horarios se validan automáticamente
+### 7. Las capacidades de actividades se verifican antes de crear participaciones
+### 8. Los precios especiales pueden ser null para usar precio por defecto
+### 9. La inscripción masiva puede tener éxitos parciales
+### 10. Las estadísticas requieren datos existentes para ser útiles
+###################################################################
