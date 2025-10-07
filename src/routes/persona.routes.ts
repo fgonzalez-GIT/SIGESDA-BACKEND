@@ -21,5 +21,6 @@ router.get('/proveedores', personaController.getProveedores.bind(personaControll
 router.get('/:id', personaController.getPersonaById.bind(personaController));
 router.put('/:id', personaController.updatePersona.bind(personaController));
 router.delete('/:id', personaController.deletePersona.bind(personaController));
+//agregar Ruta NO-Socios
 
 export default router;

@@ -13,69 +13,85 @@ const personaBaseSchema = z.object({
 });
 
 // Create persona DTOs with discriminated unions
-export const createPersonaSchema = z.discriminatedUnion('tipo', [
-  // SOCIO
-  z.object({
-    ...personaBaseSchema.shape,
-    tipo: z.literal(TipoPersona.SOCIO),
-    categoria: z.nativeEnum(CategoriaSocio),
-    fechaIngreso: z.string().datetime().optional(),
-    numeroSocio: z.number().int().positive().optional()
-  }),
+export const createPersonaSchema = z.preprocess(
+  (data: any) => {
+    if (data && typeof data.tipo === 'string') {
+      return { ...data, tipo: data.tipo.toUpperCase() };
+    }
+    return data;
+  },
+  z.discriminatedUnion('tipo', [
+    // SOCIO
+    z.object({
+      ...personaBaseSchema.shape,
+      tipo: z.literal(TipoPersona.SOCIO),
+      categoria: z.nativeEnum(CategoriaSocio),
+      fechaIngreso: z.string().datetime().optional(),
+      numeroSocio: z.number().int().positive().optional()
+    }),
 
-  // NO_SOCIO
-  z.object({
-    ...personaBaseSchema.shape,
-    tipo: z.literal(TipoPersona.NO_SOCIO)
-  }),
+    // NO_SOCIO
+    z.object({
+      ...personaBaseSchema.shape,
+      tipo: z.literal(TipoPersona.NO_SOCIO)
+    }),
 
-  // DOCENTE
-  z.object({
-    ...personaBaseSchema.shape,
-    tipo: z.literal(TipoPersona.DOCENTE),
-    especialidad: z.string().min(1, 'Especialidad es requerida').max(100),
-    honorariosPorHora: z.number().positive().optional()
-  }),
+    // DOCENTE
+    z.object({
+      ...personaBaseSchema.shape,
+      tipo: z.literal(TipoPersona.DOCENTE),
+      especialidad: z.string().min(1, 'Especialidad es requerida').max(100),
+      honorariosPorHora: z.number().positive().optional()
+    }),
 
-  // PROVEEDOR
-  z.object({
-    ...personaBaseSchema.shape,
-    tipo: z.literal(TipoPersona.PROVEEDOR),
-    cuit: z.string().min(11, 'CUIT debe tener 11 caracteres').max(11),
-    razonSocial: z.string().min(1, 'Razón social es requerida').max(100)
-  })
-]);
+    // PROVEEDOR
+    z.object({
+      ...personaBaseSchema.shape,
+      tipo: z.literal(TipoPersona.PROVEEDOR),
+      cuit: z.string().min(11, 'CUIT debe tener 11 caracteres').max(11),
+      razonSocial: z.string().min(1, 'Razón social es requerida').max(100)
+    })
+  ])
+);
 
 // Update persona schema (partial)
-export const updatePersonaSchema = z.discriminatedUnion('tipo', [
-  z.object({
-    tipo: z.literal(TipoPersona.SOCIO),
-    ...personaBaseSchema.partial().shape,
-    categoria: z.nativeEnum(CategoriaSocio).optional(),
-    fechaIngreso: z.string().datetime().optional(),
-    fechaBaja: z.string().datetime().optional(),
-    motivoBaja: z.string().max(200).optional()
-  }),
+export const updatePersonaSchema = z.preprocess(
+  (data: any) => {
+    if (data && typeof data.tipo === 'string') {
+      return { ...data, tipo: data.tipo.toUpperCase() };
+    }
+    return data;
+  },
+  z.discriminatedUnion('tipo', [
+    z.object({
+      tipo: z.literal(TipoPersona.SOCIO),
+      ...personaBaseSchema.partial().shape,
+      categoria: z.nativeEnum(CategoriaSocio).optional(),
+      fechaIngreso: z.string().datetime().optional(),
+      fechaBaja: z.string().datetime().optional(),
+      motivoBaja: z.string().max(200).optional()
+    }),
 
-  z.object({
-    tipo: z.literal(TipoPersona.NO_SOCIO),
-    ...personaBaseSchema.partial().shape
-  }),
+    z.object({
+      tipo: z.literal(TipoPersona.NO_SOCIO),
+      ...personaBaseSchema.partial().shape
+    }),
 
-  z.object({
-    tipo: z.literal(TipoPersona.DOCENTE),
-    ...personaBaseSchema.partial().shape,
-    especialidad: z.string().max(100).optional(),
-    honorariosPorHora: z.number().positive().optional()
-  }),
+    z.object({
+      tipo: z.literal(TipoPersona.DOCENTE),
+      ...personaBaseSchema.partial().shape,
+      especialidad: z.string().max(100).optional(),
+      honorariosPorHora: z.number().positive().optional()
+    }),
 
-  z.object({
-    tipo: z.literal(TipoPersona.PROVEEDOR),
-    ...personaBaseSchema.partial().shape,
-    cuit: z.string().min(11).max(11).optional(),
-    razonSocial: z.string().max(100).optional()
-  })
-]);
+    z.object({
+      tipo: z.literal(TipoPersona.PROVEEDOR),
+      ...personaBaseSchema.partial().shape,
+      cuit: z.string().min(11).max(11).optional(),
+      razonSocial: z.string().max(100).optional()
+    })
+  ])
+);
 
 // Query filters
 export const personaQuerySchema = z.object({
