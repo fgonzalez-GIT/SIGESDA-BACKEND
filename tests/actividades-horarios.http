@@ -1,0 +1,302 @@
+### 📅 Tests - Sistema de Horarios para Actividades - SIGESDA
+### Base URL
+@baseUrl = http://localhost:8000/api
+@actividadId = {{createActividad.response.body.data.id}}
+@horarioId = {{agregarHorario.response.body.data.id}}
+
+###############################################################################
+### 1. Crear actividad CON múltiples horarios (Coro)
+### Expected: 201 Created con horarios incluidos
+POST {{baseUrl}}/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Coro Adultos",
+  "tipo": "CORO",
+  "descripcion": "Coro para adultos - Repertorio variado",
+  "precio": 0,
+  "capacidadMaxima": 40,
+  "horarios": [
+    {
+      "diaSemana": "LUNES",
+      "horaInicio": "18:00",
+      "horaFin": "20:00"
+    },
+    {
+      "diaSemana": "MIERCOLES",
+      "horaInicio": "18:00",
+      "horaFin": "20:00"
+    },
+    {
+      "diaSemana": "VIERNES",
+      "horaInicio": "18:00",
+      "horaFin": "20:00"
+    }
+  ]
+}
+
+###############################################################################
+### 2. Crear actividad con horarios superpuestos (debe fallar)
+### Expected: 400 Bad Request con mensaje de conflicto
+POST {{baseUrl}}/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Actividad con Conflicto",
+  "tipo": "CLASE_INSTRUMENTO",
+  "precio": 5000,
+  "horarios": [
+    {
+      "diaSemana": "LUNES",
+      "horaInicio": "10:00",
+      "horaFin": "12:00"
+    },
+    {
+      "diaSemana": "LUNES",
+      "horaInicio": "11:00",
+      "horaFin": "13:00"
+    }
+  ]
+}
+
+###############################################################################
+### 3. Crear actividad con horario inválido (horaFin < horaInicio)
+### Expected: 400 Bad Request
+POST {{baseUrl}}/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Clase Piano",
+  "tipo": "CLASE_INSTRUMENTO",
+  "precio": 5000,
+  "horarios": [
+    {
+      "diaSemana": "MARTES",
+      "horaInicio": "14:00",
+      "horaFin": "12:00"
+    }
+  ]
+}
+
+###############################################################################
+### 4. Crear actividad con múltiples horarios el mismo día
+### Expected: 201 Created
+POST {{baseUrl}}/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Canto Nivel 1",
+  "tipo": "CLASE_CANTO",
+  "precio": 4500,
+  "capacidadMaxima": 12,
+  "horarios": [
+    {
+      "diaSemana": "SABADO",
+      "horaInicio": "09:00",
+      "horaFin": "10:30"
+    },
+    {
+      "diaSemana": "SABADO",
+      "horaInicio": "11:00",
+      "horaFin": "12:30"
+    }
+  ]
+}
+
+###############################################################################
+### 5. Obtener actividad por ID (debe incluir horarios)
+### Expected: 200 OK con horarios ordenados
+GET {{baseUrl}}/actividades/{{actividadId}}
+
+###############################################################################
+### 6. Listar todas las actividades (debe incluir horarios)
+### Expected: 200 OK con array de actividades
+GET {{baseUrl}}/actividades?limit=20
+
+###############################################################################
+### 7. Buscar actividades por tipo CORO (debe incluir horarios)
+### Expected: 200 OK
+GET {{baseUrl}}/actividades?tipo=CORO
+
+###############################################################################
+### 8. Actualizar solo horarios de una actividad existente
+### Expected: 200 OK con nuevos horarios
+PUT {{baseUrl}}/actividades/{{actividadId}}
+Content-Type: application/json
+
+{
+  "horarios": [
+    {
+      "diaSemana": "MARTES",
+      "horaInicio": "15:00",
+      "horaFin": "17:00"
+    },
+    {
+      "diaSemana": "JUEVES",
+      "horaInicio": "15:00",
+      "horaFin": "17:00"
+    }
+  ]
+}
+
+###############################################################################
+### 9. Agregar horario individual a actividad existente
+### Expected: 201 Created
+# @name agregarHorario
+POST {{baseUrl}}/actividades/{{actividadId}}/horarios
+Content-Type: application/json
+
+{
+  "diaSemana": "SABADO",
+  "horaInicio": "09:00",
+  "horaFin": "11:00"
+}
+
+###############################################################################
+### 10. Actualizar un horario específico
+### Expected: 200 OK
+PUT {{baseUrl}}/actividades/{{actividadId}}/horarios/{{horarioId}}
+Content-Type: application/json
+
+{
+  "horaInicio": "10:00",
+  "horaFin": "12:00"
+}
+
+###############################################################################
+### 11. Eliminar un horario específico
+### Expected: 200 OK
+DELETE {{baseUrl}}/actividades/{{actividadId}}/horarios/{{horarioId}}
+
+###############################################################################
+### 12. Consultar actividades por día (LUNES)
+### Expected: 200 OK con actividades que tienen horarios los lunes
+GET {{baseUrl}}/actividades/horarios/dia/LUNES
+
+###############################################################################
+### 13. Consultar actividades por día (SABADO)
+### Expected: 200 OK
+GET {{baseUrl}}/actividades/horarios/dia/SABADO?soloActivas=true
+
+###############################################################################
+### 14. Verificar conflictos de horario
+### Expected: 200 OK con información de conflictos
+POST {{baseUrl}}/actividades/horarios/verificar-conflicto
+Content-Type: application/json
+
+{
+  "actividadId": "{{actividadId}}",
+  "diaSemana": "LUNES",
+  "horaInicio": "17:00",
+  "horaFin": "19:00"
+}
+
+###############################################################################
+### 15. Crear actividad completa (Clase de Piano)
+### Expected: 201 Created
+# @name createActividad
+POST {{baseUrl}}/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Piano Avanzado",
+  "tipo": "CLASE_INSTRUMENTO",
+  "descripcion": "Clase de piano para nivel avanzado",
+  "precio": 6000,
+  "duracion": 60,
+  "capacidadMaxima": 4,
+  "horarios": [
+    {
+      "diaSemana": "MARTES",
+      "horaInicio": "10:00",
+      "horaFin": "11:00"
+    },
+    {
+      "diaSemana": "JUEVES",
+      "horaInicio": "15:00",
+      "horaFin": "16:00"
+    }
+  ]
+}
+
+###############################################################################
+### 16. Búsqueda de actividades (debe incluir horarios)
+### Expected: 200 OK
+GET {{baseUrl}}/actividades/search?q=coro
+
+###############################################################################
+### 17. Test de día inválido
+### Expected: 400 Bad Request
+GET {{baseUrl}}/actividades/horarios/dia/INVALID_DAY
+
+###############################################################################
+### 18. Crear actividad sin horarios (válido)
+### Expected: 201 Created con array horarios vacío
+POST {{baseUrl}}/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Actividad Sin Horarios",
+  "tipo": "CLASE_CANTO",
+  "precio": 3000,
+  "capacidadMaxima": 10
+}
+
+###############################################################################
+### 19. Obtener coros (debe incluir horarios)
+### Expected: 200 OK
+GET {{baseUrl}}/actividades/coros
+
+###############################################################################
+### 20. Obtener clases de instrumento (debe incluir horarios)
+### Expected: 200 OK
+GET {{baseUrl}}/actividades/clases-instrumento
+
+###############################################################################
+### 21. Obtener clases de canto (debe incluir horarios)
+### Expected: 200 OK
+GET {{baseUrl}}/actividades/clases-canto
+
+###############################################################################
+### CASOS ESPECIALES
+###############################################################################
+
+### 22. Horario con formato inválido (hora > 24)
+### Expected: 400 Bad Request
+POST {{baseUrl}}/actividades
+Content-Type: application/json
+
+{
+  "nombre": "Test Horario Inválido",
+  "tipo": "CLASE_CANTO",
+  "precio": 3000,
+  "horarios": [
+    {
+      "diaSemana": "LUNES",
+      "horaInicio": "25:00",
+      "horaFin": "26:00"
+    }
+  ]
+}
+
+### 23. Agregar horario con conflicto a actividad existente
+### Expected: 400 Bad Request
+POST {{baseUrl}}/actividades/{{actividadId}}/horarios
+Content-Type: application/json
+
+{
+  "diaSemana": "MARTES",
+  "horaInicio": "14:00",
+  "horaFin": "16:00"
+}
+
+###############################################################################
+### NOTAS IMPORTANTES
+###############################################################################
+# 1. Asegurarse de que el servidor está corriendo en el puerto 8000
+# 2. Reemplazar {{actividadId}} con un ID válido de actividad existente
+# 3. Los horarios siempre se retornan ordenados por diaSemana y horaInicio
+# 4. La validación de conflictos internos se hace automáticamente
+# 5. Los días válidos son: LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, SABADO, DOMINGO
+# 6. El formato de hora debe ser HH:MM (ej: "09:00", "14:30")
+# 7. La horaFin siempre debe ser mayor que horaInicio

@@ -20,6 +20,14 @@ router.get('/clases-instrumento', actividadController.getClasesInstrumento.bind(
 router.get('/clases-canto', actividadController.getClasesCanto.bind(actividadController));
 router.get('/docentes-disponibles', actividadController.getDocentesDisponibles.bind(actividadController));
 
+// Rutas para consultas de horarios (antes de las rutas con :id)
+router.get('/horarios/semana', actividadController.getHorarioSemanal.bind(actividadController));
+router.get('/horarios/dia/:dia', actividadController.getActividadesPorDia.bind(actividadController));
+router.post('/horarios/verificar-conflicto', actividadController.verificarConflictosHorario.bind(actividadController));
+router.post('/horarios/verificar-aula', actividadController.verificarDisponibilidadAula.bind(actividadController));
+router.post('/horarios/verificar-docente', actividadController.verificarDisponibilidadDocente.bind(actividadController));
+router.get('/horarios/docente/:docenteId/carga', actividadController.getCargaHorariaDocente.bind(actividadController));
+
 // CRUD básico
 router.post('/', actividadController.createActividad.bind(actividadController));
 router.get('/', actividadController.getActividades.bind(actividadController));
@@ -34,5 +42,10 @@ router.get('/:id/estadisticas', actividadController.getEstadisticas.bind(activid
 // Gestión de docentes
 router.post('/:id/docentes', actividadController.asignarDocente.bind(actividadController));
 router.delete('/:id/docentes/:docenteId', actividadController.desasignarDocente.bind(actividadController));
+
+// Gestión individual de horarios
+router.post('/:id/horarios', actividadController.agregarHorario.bind(actividadController));
+router.put('/:id/horarios/:horarioId', actividadController.actualizarHorario.bind(actividadController));
+router.delete('/:id/horarios/:horarioId', actividadController.eliminarHorario.bind(actividadController));
 
 export default router;
