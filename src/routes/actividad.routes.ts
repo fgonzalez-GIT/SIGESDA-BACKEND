@@ -3,6 +3,7 @@ import { ActividadController } from '@/controllers/actividad.controller';
 import { ActividadService } from '@/services/actividad.service';
 import { ActividadRepository } from '@/repositories/actividad.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
+import { SeccionController } from '@/controllers/seccion.controller';
 import { prisma } from '@/config/database';
 
 const router = Router();
@@ -12,6 +13,7 @@ const actividadRepository = new ActividadRepository(prisma);
 const personaRepository = new PersonaRepository(prisma);
 const actividadService = new ActividadService(actividadRepository, personaRepository);
 const actividadController = new ActividadController(actividadService);
+const seccionController = new SeccionController(prisma);
 
 // Rutas de información y búsqueda (antes de las rutas con parámetros)
 router.get('/search', actividadController.searchActividades.bind(actividadController));
@@ -38,6 +40,9 @@ router.delete('/:id', actividadController.deleteActividad.bind(actividadControll
 // Rutas específicas por ID
 router.get('/:id/participantes', actividadController.getParticipantes.bind(actividadController));
 router.get('/:id/estadisticas', actividadController.getEstadisticas.bind(actividadController));
+
+// Rutas adicionales de secciones por actividad
+router.get('/:actividadId/secciones', seccionController.getSeccionesByActividad);
 
 // Gestión de docentes
 router.post('/:id/docentes', actividadController.asignarDocente.bind(actividadController));

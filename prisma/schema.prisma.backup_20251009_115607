@@ -1,0 +1,356 @@
+// Schema para Sistema de Gestión de Asociación Musical (SIGESDA)
+// Manejo de herencia con patrón Table Per Hierarchy (TPH)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUMS
+enum TipoPersona {
+  SOCIO
+  NO_SOCIO
+  DOCENTE
+  PROVEEDOR
+}
+
+enum CategoriaSocio {
+  ACTIVO
+  ESTUDIANTE
+  FAMILIAR
+  JUBILADO
+}
+
+enum TipoActividad {
+  CORO
+  CLASE_CANTO
+  CLASE_INSTRUMENTO
+}
+
+enum TipoRecibo {
+  CUOTA
+  SUELDO
+  DEUDA
+  PAGO_ACTIVIDAD
+}
+
+enum MedioPagoTipo {
+  EFECTIVO
+  TRANSFERENCIA
+  TARJETA_DEBITO
+  TARJETA_CREDITO
+  CHEQUE
+}
+
+enum TipoParentesco {
+  HIJO
+  HIJA
+  CONYUGE
+  PADRE
+  MADRE
+  HERMANO
+  HERMANA
+  OTRO
+}
+
+enum EstadoRecibo {
+  PENDIENTE
+  PAGADO
+  VENCIDO
+  CANCELADO
+}
+
+enum DiaSemana {
+  LUNES
+  MARTES
+  MIERCOLES
+  JUEVES
+  VIERNES
+  SABADO
+  DOMINGO
+}
+
+// MODELOS PRINCIPALES
+
+// Persona (TPH - Table Per Hierarchy con discriminador)
+model Persona {
+  id        String      @id @default(cuid())
+  tipo      TipoPersona
+
+  // Campos comunes
+  nombre    String
+  apellido  String
+  dni       String      @unique
+  email     String?     @unique
+  telefono  String?
+  direccion String?
+  fechaNacimiento DateTime?
+
+  // Campos específicos de SOCIO
+  numeroSocio    Int?           @unique
+  categoria      CategoriaSocio?
+  fechaIngreso   DateTime?
+  fechaBaja      DateTime?
+  motivoBaja     String?
+
+  // Campos específicos de DOCENTE
+  especialidad   String?
+  honorariosPorHora Decimal? @db.Decimal(10, 2)
+
+  // Campos específicos de PROVEEDOR
+  cuit           String?        @unique
+  razonSocial    String?
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  participaciones     ParticipacionActividad[]
+  recibosEmitidos    Recibo[] @relation("ReciboEmisor")
+  recibosRecibidos   Recibo[] @relation("ReciboReceptor")
+  familiares         Familiar[] @relation("SocioFamiliar")
+  parentescos        Familiar[] @relation("FamiliarParentesco")
+  comisionDirectiva  ComisionDirectiva?
+  actividadesImpartidas Actividad[] @relation("DocenteActividad")
+  reservasAula       ReservaAula[]
+
+  @@map("personas")
+}
+
+// Actividades (Coros, Clases)
+model Actividad {
+  id          String        @id @default(cuid())
+  nombre      String
+  tipo        TipoActividad
+  descripcion String?
+  precio      Decimal       @default(0) @db.Decimal(8, 2)
+  duracion    Int?          // duración en minutos
+  capacidadMaxima Int?
+  activa      Boolean       @default(true)
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  docentes        Persona[] @relation("DocenteActividad")
+  participaciones ParticipacionActividad[]
+  reservasAula    ReservaAula[]
+  horarios        HorarioActividad[]
+
+  @@map("actividades")
+}
+
+// Horarios de Actividades
+model HorarioActividad {
+  id          String     @id @default(cuid())
+  actividadId String
+  diaSemana   DiaSemana
+  horaInicio  String     // Formato HH:MM (ej: "10:00")
+  horaFin     String     // Formato HH:MM (ej: "12:00")
+  activo      Boolean    @default(true)
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  actividad  Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@unique([actividadId, diaSemana, horaInicio])
+  @@map("horarios_actividades")
+}
+
+// Participación en Actividades (Relación M:M con atributos)
+model ParticipacionActividad {
+  id          String    @id @default(cuid())
+  personaId   String
+  actividadId String
+  fechaInicio DateTime
+  fechaFin    DateTime?
+  precioEspecial Decimal? @db.Decimal(8, 2) // Para no socios o descuentos
+  activa      Boolean   @default(true)
+  observaciones String?
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  persona    Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  actividad  Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@unique([personaId, actividadId])
+  @@map("participacion_actividades")
+}
+
+// Recibos (Entidad débil)
+model Recibo {
+  id          String      @id @default(cuid())
+  numero      String      @unique // Número de recibo
+  tipo        TipoRecibo
+  importe     Decimal     @db.Decimal(10, 2)
+  fecha       DateTime    @default(now())
+  fechaVencimiento DateTime?
+  estado      EstadoRecibo @default(PENDIENTE)
+  concepto    String
+  observaciones String?
+
+  // Referencias a personas (emisor/receptor según tipo)
+  emisorId    String?
+  receptorId  String?
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  emisor      Persona? @relation("ReciboEmisor", fields: [emisorId], references: [id])
+  receptor    Persona? @relation("ReciboReceptor", fields: [receptorId], references: [id])
+  mediosPago  MedioPago[]
+  cuota       Cuota?
+
+  @@map("recibos")
+}
+
+// Cuotas Sociales
+model Cuota {
+  id          String   @id @default(cuid())
+  reciboId    String   @unique
+  categoria   CategoriaSocio
+  mes         Int      // 1-12
+  anio        Int
+  montoBase   Decimal  @db.Decimal(8, 2)
+  montoActividades Decimal @default(0) @db.Decimal(8, 2)
+  montoTotal  Decimal  @db.Decimal(8, 2)
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  recibo     Recibo   @relation(fields: [reciboId], references: [id], onDelete: Cascade)
+
+  @@unique([categoria, mes, anio])
+  @@map("cuotas")
+}
+
+// Medios de Pago
+model MedioPago {
+  id        String      @id @default(cuid())
+  reciboId  String
+  tipo      MedioPagoTipo
+  importe   Decimal     @db.Decimal(10, 2)
+  numero    String?     // número de cheque, comprobante, etc.
+  fecha     DateTime    @default(now())
+  banco     String?
+  observaciones String?
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  recibo    Recibo      @relation(fields: [reciboId], references: [id], onDelete: Cascade)
+
+  @@map("medios_pago")
+}
+
+// Familiares (Relación entre socios)
+model Familiar {
+  id          String        @id @default(cuid())
+  socioId     String
+  familiarId  String
+  parentesco  TipoParentesco
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  socio      Persona @relation("SocioFamiliar", fields: [socioId], references: [id], onDelete: Cascade)
+  familiar   Persona @relation("FamiliarParentesco", fields: [familiarId], references: [id], onDelete: Cascade)
+
+  @@unique([socioId, familiarId])
+  @@map("familiares")
+}
+
+// Comisión Directiva
+model ComisionDirectiva {
+  id        String   @id @default(cuid())
+  socioId   String   @unique
+  cargo     String
+  fechaInicio DateTime
+  fechaFin  DateTime?
+  activo    Boolean  @default(true)
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  socio     Persona  @relation(fields: [socioId], references: [id], onDelete: Cascade)
+
+  @@map("comision_directiva")
+}
+
+// Aulas
+model Aula {
+  id        String   @id @default(cuid())
+  nombre    String   @unique
+  capacidad Int
+  ubicacion String?
+  equipamiento String? // Descripción del equipamiento disponible
+  activa    Boolean  @default(true)
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  reservas  ReservaAula[]
+
+  @@map("aulas")
+}
+
+// Reserva de Aulas
+model ReservaAula {
+  id          String   @id @default(cuid())
+  aulaId      String
+  actividadId String?
+  docenteId   String
+  fechaInicio DateTime
+  fechaFin    DateTime
+  observaciones String?
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  aula       Aula      @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  actividad  Actividad? @relation(fields: [actividadId], references: [id], onDelete: SetNull)
+  docente    Persona   @relation(fields: [docenteId], references: [id], onDelete: Cascade)
+
+  @@map("reserva_aulas")
+}
+
+// Configuración del Sistema (para valores como montos de cuotas por categoría)
+model ConfiguracionSistema {
+  id    String @id @default(cuid())
+  clave String @unique
+  valor String
+  descripcion String?
+  tipo  String @default("STRING") // STRING, NUMBER, BOOLEAN, JSON
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("configuracion_sistema")
+}
