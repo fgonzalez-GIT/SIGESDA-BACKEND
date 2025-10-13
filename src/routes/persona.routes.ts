@@ -20,8 +20,13 @@ router.get('/search', personaController.searchPersonas.bind(personaController));
 router.get('/socios', personaController.getSocios.bind(personaController));
 router.get('/docentes', personaController.getDocentes.bind(personaController));
 router.get('/proveedores', personaController.getProveedores.bind(personaController));
+
+// Check DNI route (must be before /:id to avoid conflicts)
+router.get('/check-dni/:dni', personaController.checkDni.bind(personaController));
+
 router.get('/:id', personaController.getPersonaById.bind(personaController));
 router.put('/:id', personaController.updatePersona.bind(personaController));
+router.patch('/:id/reactivate', personaController.reactivatePersona.bind(personaController));
 router.delete('/:id', personaController.deletePersona.bind(personaController));
 
 // Rutas adicionales de secciones para personas

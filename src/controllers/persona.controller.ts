@@ -183,4 +183,51 @@ export class PersonaController {
       next(error);
     }
   }
+
+  async checkDni(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { dni } = req.params;
+
+      // Validate DNI format
+      if (!/^\d{7,8}$/.test(dni)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'DNI inválido',
+          message: 'El DNI debe contener entre 7 y 8 dígitos numéricos'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const result = await this.personaService.checkDniExists(dni);
+
+      const response: ApiResponse = {
+        success: true,
+        data: result
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async reactivatePersona(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { id } = req.params;
+      const validatedData = updatePersonaSchema.parse(req.body);
+
+      const persona = await this.personaService.reactivatePersona(id, validatedData);
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Persona reactivada exitosamente',
+        data: persona
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

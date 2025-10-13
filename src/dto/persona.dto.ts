@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TipoPersona, CategoriaSocio } from '@prisma/client';
+import { TipoPersona } from '@prisma/client';
 
 // Base persona schema
 const personaBaseSchema = z.object({
@@ -25,7 +25,7 @@ export const createPersonaSchema = z.preprocess(
     z.object({
       ...personaBaseSchema.shape,
       tipo: z.literal(TipoPersona.SOCIO),
-      categoria: z.nativeEnum(CategoriaSocio),
+      categoriaId: z.string().cuid('ID de categoría inválido'),
       fechaIngreso: z.string().datetime().optional(),
       numeroSocio: z.number().int().positive().optional()
     }),
@@ -66,7 +66,7 @@ export const updatePersonaSchema = z.preprocess(
     z.object({
       tipo: z.literal(TipoPersona.SOCIO),
       ...personaBaseSchema.partial().shape,
-      categoria: z.nativeEnum(CategoriaSocio).optional(),
+      categoriaId: z.string().cuid('ID de categoría inválido').optional(),
       fechaIngreso: z.string().datetime().optional(),
       fechaBaja: z.string().datetime().optional(),
       motivoBaja: z.string().max(200).optional()
@@ -96,7 +96,7 @@ export const updatePersonaSchema = z.preprocess(
 // Query filters
 export const personaQuerySchema = z.object({
   tipo: z.nativeEnum(TipoPersona).optional(),
-  categoria: z.nativeEnum(CategoriaSocio).optional(),
+  categoriaId: z.string().cuid().optional(),
   activo: z.preprocess((val) => {
     if (typeof val === 'string') {
       return val === 'true';

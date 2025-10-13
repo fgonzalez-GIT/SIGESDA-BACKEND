@@ -1,12 +1,9 @@
 import { z } from 'zod';
-import { CategoriaSocio } from '@prisma/client';
 
 // DTO para crear cuota individual
 export const createCuotaSchema = z.object({
   reciboId: z.string().cuid('ID de recibo inválido'),
-  categoria: z.nativeEnum(CategoriaSocio, {
-    errorMap: () => ({ message: 'Categoría de socio inválida' })
-  }),
+  categoriaId: z.string().cuid('ID de categoría inválido'),
   mes: z.number()
     .int('El mes debe ser un número entero')
     .min(1, 'El mes debe ser entre 1 y 12')
@@ -48,9 +45,7 @@ export type CreateCuotaDto = z.infer<typeof createCuotaSchema>;
 
 // DTO para actualizar cuota
 export const updateCuotaSchema = z.object({
-  categoria: z.nativeEnum(CategoriaSocio, {
-    errorMap: () => ({ message: 'Categoría de socio inválida' })
-  }).optional(),
+  categoriaId: z.string().cuid('ID de categoría inválido').optional(),
   mes: z.number()
     .int('El mes debe ser un número entero')
     .min(1, 'El mes debe ser entre 1 y 12')
@@ -87,8 +82,8 @@ export const generarCuotasSchema = z.object({
     .int('El año debe ser un número entero')
     .min(2020, 'El año debe ser 2020 o posterior')
     .max(2030, 'El año no puede ser mayor a 2030'),
-  categorias: z.array(z.nativeEnum(CategoriaSocio))
-    .min(1, 'Debe especificar al menos una categoría')
+  categoriaIds: z.array(z.string().cuid('ID de categoría inválido'))
+    .min(1, 'Debe especificar al menos un ID de categoría')
     .optional(),
   incluirInactivos: z.boolean()
     .default(false),
@@ -115,7 +110,7 @@ export type GenerarCuotasDto = z.infer<typeof generarCuotasSchema>;
 export const cuotaQuerySchema = z.object({
   page: z.number().int().positive().default(1),
   limit: z.number().int().positive().max(100).default(10),
-  categoria: z.nativeEnum(CategoriaSocio).optional(),
+  categoriaId: z.string().cuid().optional(),
   mes: z.number().int().min(1).max(12).optional(),
   anio: z.number().int().min(2020).max(2030).optional(),
   fechaDesde: z.string().datetime().optional(),
@@ -136,7 +131,7 @@ export type CuotaQueryDto = z.infer<typeof cuotaQuerySchema>;
 
 // DTO para calcular cuota
 export const calcularCuotaSchema = z.object({
-  categoria: z.nativeEnum(CategoriaSocio),
+  categoriaId: z.string().cuid('ID de categoría inválido'),
   mes: z.number().int().min(1).max(12),
   anio: z.number().int().min(2020).max(2030),
   socioId: z.string().cuid('ID de socio inválido').optional(),
@@ -153,7 +148,7 @@ export const cuotaSearchSchema = z.object({
     .max(50, 'El término de búsqueda no puede exceder 50 caracteres'),
   searchBy: z.enum(['socio', 'numero_recibo', 'all'])
     .default('all'),
-  categoria: z.nativeEnum(CategoriaSocio).optional(),
+  categoriaId: z.string().cuid().optional(),
   mes: z.number().int().min(1).max(12).optional(),
   anio: z.number().int().min(2020).max(2030).optional(),
   estado: z.enum(['PENDIENTE', 'PAGADO', 'VENCIDO', 'CANCELADO']).optional()
@@ -195,7 +190,7 @@ export type DeleteBulkCuotasDto = z.infer<typeof deleteBulkCuotasSchema>;
 export const recalcularCuotasSchema = z.object({
   mes: z.number().int().min(1).max(12),
   anio: z.number().int().min(2020).max(2030),
-  categoria: z.nativeEnum(CategoriaSocio).optional(),
+  categoriaId: z.string().cuid().optional(),
   aplicarDescuentos: z.boolean().default(true),
   actualizarRecibos: z.boolean().default(false)
 });
@@ -206,7 +201,7 @@ export type RecalcularCuotasDto = z.infer<typeof recalcularCuotasSchema>;
 export const reporteCuotasSchema = z.object({
   mes: z.number().int().min(1).max(12),
   anio: z.number().int().min(2020).max(2030),
-  categoria: z.nativeEnum(CategoriaSocio).optional(),
+  categoriaId: z.string().cuid().optional(),
   formato: z.enum(['json', 'excel', 'pdf']).default('json'),
   incluirDetalle: z.boolean().default(true),
   incluirEstadisticas: z.boolean().default(true)

@@ -2,6 +2,8 @@ import { Persona, TipoPersona } from '@prisma/client';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { CreatePersonaDto, UpdatePersonaDto, PersonaQueryDto } from '@/dto/persona.dto';
 import { logger } from '@/utils/logger';
+import { AppError } from '@/middleware/error.middleware';
+import { HttpStatus } from '@/types/enums';
 
 export class PersonaService {
   constructor(private personaRepository: PersonaRepository) {}
@@ -10,13 +12,13 @@ export class PersonaService {
     // Validate unique constraints
     const existingDni = await this.personaRepository.findByDni(data.dni);
     if (existingDni) {
-      throw new Error(`Ya existe una persona con DNI ${data.dni}`);
+      throw new AppError(`Ya existe una persona con DNI ${data.dni}`, HttpStatus.CONFLICT);
     }
 
     if (data.email) {
       const existingEmail = await this.personaRepository.findByEmail(data.email);
       if (existingEmail) {
-        throw new Error(`Ya existe una persona con email ${data.email}`);
+        throw new AppError(`Ya existe una persona con email ${data.email}`, HttpStatus.CONFLICT);
       }
     }
 
@@ -51,21 +53,21 @@ export class PersonaService {
     // Check if persona exists
     const existingPersona = await this.personaRepository.findById(id);
     if (!existingPersona) {
-      throw new Error(`Persona con ID ${id} no encontrada`);
+      throw new AppError(`Persona con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
     }
 
     // Validate unique constraints if being updated
     if (data.dni && data.dni !== existingPersona.dni) {
       const existingDni = await this.personaRepository.findByDni(data.dni);
       if (existingDni) {
-        throw new Error(`Ya existe una persona con DNI ${data.dni}`);
+        throw new AppError(`Ya existe una persona con DNI ${data.dni}`, HttpStatus.CONFLICT);
       }
     }
 
     if (data.email && data.email !== existingPersona.email) {
       const existingEmail = await this.personaRepository.findByEmail(data.email);
       if (existingEmail) {
-        throw new Error(`Ya existe una persona con email ${data.email}`);
+        throw new AppError(`Ya existe una persona con email ${data.email}`, HttpStatus.CONFLICT);
       }
     }
 
@@ -79,7 +81,7 @@ export class PersonaService {
   async deletePersona(id: string, hard = false, motivo?: string): Promise<Persona> {
     const existingPersona = await this.personaRepository.findById(id);
     if (!existingPersona) {
-      throw new Error(`Persona con ID ${id} no encontrada`);
+      throw new AppError(`Persona con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
     }
 
     let deletedPersona: Persona;
@@ -128,5 +130,76 @@ export class PersonaService {
     });
 
     return result.data;
+  }
+
+  async checkDniExists(dni: string): Promise<{ exists: boolean; isInactive: boolean; persona: Persona | null }> {
+    const persona = await this.personaRepository.findByDni(dni);
+
+    if (!persona) {
+      return {
+        exists: false,
+        isInactive: false,
+        persona: null
+      };
+    }
+
+    // A person is inactive if they have a fechaBaja
+    const isInactive = persona.fechaBaja !== null;
+
+    return {
+      exists: true,
+      isInactive,
+      persona
+    };
+  }
+
+  async reactivatePersona(id: string, data: UpdatePersonaDto): Promise<Persona> {
+    // Check if persona exists
+    const existingPersona = await this.personaRepository.findById(id);
+    if (!existingPersona) {
+      throw new AppError(`Persona con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
+    }
+
+    // Verify persona is inactive (has fechaBaja)
+    if (existingPersona.fechaBaja === null) {
+      throw new AppError(`La persona con ID ${id} ya tiene estado activo`, HttpStatus.BAD_REQUEST);
+    }
+
+    // Validate DNI matches if provided
+    if (data.dni && data.dni !== existingPersona.dni) {
+      throw new AppError('El DNI no coincide con el registro', HttpStatus.BAD_REQUEST);
+    }
+
+    // Validate unique constraints if email is being changed
+    if (data.email && data.email !== existingPersona.email) {
+      const existingEmail = await this.personaRepository.findByEmail(data.email);
+      if (existingEmail && existingEmail.id !== id) {
+        throw new AppError(`Ya existe una persona con email ${data.email}`, HttpStatus.CONFLICT);
+      }
+    }
+
+    // Prepare update data with reactivation fields
+    const updateData: any = {
+      ...data,
+      fechaBaja: null,
+      motivoBaja: null
+    };
+
+    // If changing to SOCIO and no fechaIngreso, set current date
+    if (data.tipo === TipoPersona.SOCIO && !existingPersona.fechaIngreso) {
+      updateData.fechaIngreso = new Date();
+    }
+
+    // Auto-assign numero socio if changing to SOCIO and doesn't have one
+    if (data.tipo === TipoPersona.SOCIO && !existingPersona.numeroSocio) {
+      const nextNumero = await this.personaRepository.getNextNumeroSocio();
+      updateData.numeroSocio = nextNumero;
+    }
+
+    const reactivatedPersona = await this.personaRepository.update(id, updateData);
+
+    logger.info(`Persona reactivated: ${reactivatedPersona.nombre} ${reactivatedPersona.apellido} (ID: ${id})`);
+
+    return reactivatedPersona;
   }
 }

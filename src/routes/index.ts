@@ -10,6 +10,7 @@ import reciboRoutes from './recibo.routes';
 import cuotaRoutes from './cuota.routes';
 import medioPagoRoutes from './medio-pago.routes';
 import seccionRoutes from './seccion.routes';
+import { categoriaSocioRouter } from './categoria-socio.routes';
 
 const router = Router();
 
@@ -25,6 +26,7 @@ router.use('/recibos', reciboRoutes);
 router.use('/cuotas', cuotaRoutes);
 router.use('/medios-pago', medioPagoRoutes);
 router.use('/secciones', seccionRoutes);
+router.use('/categorias-socios', categoriaSocioRouter);
 
 // Alias routes for convenience
 router.use('/socios', personaRoutes); // Redirect to personas with tipo=SOCIO filter
