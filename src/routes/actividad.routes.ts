@@ -2,55 +2,85 @@ import { Router } from 'express';
 import { ActividadController } from '@/controllers/actividad.controller';
 import { ActividadService } from '@/services/actividad.service';
 import { ActividadRepository } from '@/repositories/actividad.repository';
-import { PersonaRepository } from '@/repositories/persona.repository';
-import { SeccionController } from '@/controllers/seccion.controller';
 import { prisma } from '@/config/database';
 
 const router = Router();
 
 // Initialize dependencies
 const actividadRepository = new ActividadRepository(prisma);
-const personaRepository = new PersonaRepository(prisma);
-const actividadService = new ActividadService(actividadRepository, personaRepository);
+const actividadService = new ActividadService(actividadRepository);
 const actividadController = new ActividadController(actividadService);
-const seccionController = new SeccionController(prisma);
 
-// Rutas de información y búsqueda (antes de las rutas con parámetros)
-router.get('/search', actividadController.searchActividades.bind(actividadController));
-router.get('/coros', actividadController.getCoros.bind(actividadController));
-router.get('/clases-instrumento', actividadController.getClasesInstrumento.bind(actividadController));
-router.get('/clases-canto', actividadController.getClasesCanto.bind(actividadController));
-router.get('/docentes-disponibles', actividadController.getDocentesDisponibles.bind(actividadController));
+// ==================== CATÁLOGOS ====================
+// IMPORTANTE: Estas rutas deben ir ANTES de las rutas con :id para evitar conflictos
 
-// Rutas para consultas de horarios (antes de las rutas con :id)
-router.get('/horarios/semana', actividadController.getHorarioSemanal.bind(actividadController));
-router.get('/horarios/dia/:dia', actividadController.getActividadesPorDia.bind(actividadController));
-router.post('/horarios/verificar-conflicto', actividadController.verificarConflictosHorario.bind(actividadController));
-router.post('/horarios/verificar-aula', actividadController.verificarDisponibilidadAula.bind(actividadController));
-router.post('/horarios/verificar-docente', actividadController.verificarDisponibilidadDocente.bind(actividadController));
-router.get('/horarios/docente/:docenteId/carga', actividadController.getCargaHorariaDocente.bind(actividadController));
+router.get('/catalogos/todos', actividadController.getCatalogos.bind(actividadController));
+router.get('/catalogos/tipos', actividadController.getTiposActividades.bind(actividadController));
+router.get('/catalogos/categorias', actividadController.getCategoriasActividades.bind(actividadController));
+router.get('/catalogos/estados', actividadController.getEstadosActividades.bind(actividadController));
+router.get('/catalogos/dias-semana', actividadController.getDiasSemana.bind(actividadController));
+router.get('/catalogos/roles-docentes', actividadController.getRolesDocentes.bind(actividadController));
 
-// CRUD básico
+// ==================== DOCENTES DISPONIBLES ====================
+
+router.get('/docentes/disponibles', actividadController.getDocentesDisponibles.bind(actividadController));
+
+// ==================== REPORTES Y CONSULTAS ESPECIALES ====================
+
+router.get('/reportes/por-tipo', actividadController.getResumenPorTipo.bind(actividadController));
+router.get('/reportes/horario-semanal', actividadController.getHorarioSemanal.bind(actividadController));
+
+// ==================== BÚSQUEDA POR CÓDIGO ====================
+
+router.get('/codigo/:codigo', actividadController.getActividadByCodigo.bind(actividadController));
+
+// ==================== GESTIÓN DE HORARIOS (INDEPENDIENTES) ====================
+
+router.patch('/horarios/:horarioId', actividadController.actualizarHorario.bind(actividadController));
+router.delete('/horarios/:horarioId', actividadController.eliminarHorario.bind(actividadController));
+
+// ==================== CRUD PRINCIPAL ====================
+
+// Crear actividad
 router.post('/', actividadController.createActividad.bind(actividadController));
+
+// Listar actividades (con filtros y paginación)
 router.get('/', actividadController.getActividades.bind(actividadController));
+
+// Obtener actividad por ID
 router.get('/:id', actividadController.getActividadById.bind(actividadController));
-router.put('/:id', actividadController.updateActividad.bind(actividadController));
+
+// Actualizar actividad
+router.patch('/:id', actividadController.updateActividad.bind(actividadController));
+
+// Eliminar actividad
 router.delete('/:id', actividadController.deleteActividad.bind(actividadController));
 
-// Rutas específicas por ID
-router.get('/:id/participantes', actividadController.getParticipantes.bind(actividadController));
-router.get('/:id/estadisticas', actividadController.getEstadisticas.bind(actividadController));
+// ==================== GESTIÓN DE ESTADO ====================
 
-// Rutas adicionales de secciones por actividad
-router.get('/:actividadId/secciones', seccionController.getSeccionesByActividad);
+router.patch('/:id/estado', actividadController.cambiarEstado.bind(actividadController));
 
-// Gestión de docentes
-router.post('/:id/docentes', actividadController.asignarDocente.bind(actividadController));
-router.delete('/:id/docentes/:docenteId', actividadController.desasignarDocente.bind(actividadController));
+// ==================== DUPLICAR ACTIVIDAD ====================
 
-// Gestión individual de horarios
+router.post('/:id/duplicar', actividadController.duplicarActividad.bind(actividadController));
+
+// ==================== HORARIOS DE ACTIVIDAD ====================
+
+router.get('/:id/horarios', actividadController.getHorariosByActividad.bind(actividadController));
 router.post('/:id/horarios', actividadController.agregarHorario.bind(actividadController));
-router.put('/:id/horarios/:horarioId', actividadController.actualizarHorario.bind(actividadController));
-router.delete('/:id/horarios/:horarioId', actividadController.eliminarHorario.bind(actividadController));
+
+// ==================== DOCENTES DE ACTIVIDAD ====================
+
+router.get('/:id/docentes', actividadController.getDocentesByActividad.bind(actividadController));
+router.post('/:id/docentes', actividadController.asignarDocente.bind(actividadController));
+router.delete('/:id/docentes/:docenteId/rol/:rolDocenteId', actividadController.desasignarDocente.bind(actividadController));
+
+// ==================== PARTICIPANTES DE ACTIVIDAD ====================
+
+router.get('/:id/participantes', actividadController.getParticipantes.bind(actividadController));
+
+// ==================== ESTADÍSTICAS DE ACTIVIDAD ====================
+
+router.get('/:id/estadisticas', actividadController.getEstadisticas.bind(actividadController));
 
 export default router;

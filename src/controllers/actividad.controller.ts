@@ -3,20 +3,23 @@ import { ActividadService } from '@/services/actividad.service';
 import {
   createActividadSchema,
   updateActividadSchema,
-  actividadQuerySchema,
-  asignarDocenteSchema,
-  estadisticasActividadSchema,
-  createHorarioSchema,
-  updateHorarioSchema,
-  queryPorDiaSchema
-} from '@/dto/actividad.dto';
+  queryActividadesSchema,
+  cambiarEstadoActividadSchema,
+  duplicarActividadSchema
+} from '@/dto/actividad-v2.dto';
 import { ApiResponse } from '@/types/interfaces';
 import { HttpStatus } from '@/types/enums';
-import { TipoActividad } from '@prisma/client';
 
+/**
+ * Controller para manejo de endpoints de Actividades V2.0
+ */
 export class ActividadController {
   constructor(private actividadService: ActividadService) {}
 
+  /**
+   * POST /api/actividades
+   * Crea una nueva actividad
+   */
   async createActividad(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validatedData = createActividadSchema.parse(req.body);
@@ -34,19 +37,23 @@ export class ActividadController {
     }
   }
 
+  /**
+   * GET /api/actividades
+   * Obtiene todas las actividades con filtros y paginación
+   */
   async getActividades(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const query = actividadQuerySchema.parse(req.query);
+      const query = queryActividadesSchema.parse(req.query);
       const result = await this.actividadService.getActividades(query);
 
       const response: ApiResponse = {
         success: true,
-        data: result.data,
-        meta: {
+        data: {
+          data: result.data,
+          total: result.total,
           page: query.page,
           limit: query.limit,
-          total: result.total,
-          totalPages: result.pages
+          pages: result.pages
         }
       };
 
@@ -56,19 +63,24 @@ export class ActividadController {
     }
   }
 
+  /**
+   * GET /api/actividades/:id
+   * Obtiene una actividad por ID
+   */
   async getActividadById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-      const actividad = await this.actividadService.getActividadById(id);
+      const id = parseInt(req.params.id);
 
-      if (!actividad) {
+      if (isNaN(id)) {
         const response: ApiResponse = {
           success: false,
-          error: 'Actividad no encontrada'
+          error: 'ID de actividad inválido'
         };
-        res.status(HttpStatus.NOT_FOUND).json(response);
+        res.status(HttpStatus.BAD_REQUEST).json(response);
         return;
       }
+
+      const actividad = await this.actividadService.getActividadById(id);
 
       const response: ApiResponse = {
         success: true,
@@ -81,9 +93,43 @@ export class ActividadController {
     }
   }
 
+  /**
+   * GET /api/actividades/codigo/:codigo
+   * Obtiene una actividad por código
+   */
+  async getActividadByCodigo(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { codigo } = req.params;
+      const actividad = await this.actividadService.getActividadByCodigo(codigo);
+
+      const response: ApiResponse = {
+        success: true,
+        data: actividad
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * PATCH /api/actividades/:id
+   * Actualiza una actividad
+   */
   async updateActividad(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
       const validatedData = updateActividadSchema.parse(req.body);
       const actividad = await this.actividadService.updateActividad(id, validatedData);
 
@@ -99,17 +145,63 @@ export class ActividadController {
     }
   }
 
+  /**
+   * DELETE /api/actividades/:id
+   * Elimina una actividad
+   */
   async deleteActividad(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-      const { hard } = req.query;
-      const isHardDelete = hard === 'true';
+      const id = parseInt(req.params.id);
 
-      const actividad = await this.actividadService.deleteActividad(id, isHardDelete);
+      if (isNaN(id)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const result = await this.actividadService.deleteActividad(id);
 
       const response: ApiResponse = {
         success: true,
-        message: `Actividad ${isHardDelete ? 'eliminada permanentemente' : 'dada de baja'}`,
+        message: result.message
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * PATCH /api/actividades/:id/estado
+   * Cambia el estado de una actividad
+   */
+  async cambiarEstado(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const validatedData = cambiarEstadoActividadSchema.parse(req.body);
+      const actividad = await this.actividadService.cambiarEstado(
+        id,
+        validatedData.nuevoEstadoId,
+        validatedData.observaciones
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Estado de actividad cambiado exitosamente',
         data: actividad
       };
 
@@ -119,13 +211,61 @@ export class ActividadController {
     }
   }
 
-  async getCoros(req: Request, res: Response, next: NextFunction): Promise<void> {
+  // ==================== HORARIOS ====================
+
+  /**
+   * POST /api/actividades/:id/horarios
+   * Agrega un horario a una actividad
+   */
+  async agregarHorario(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const coros = await this.actividadService.getCoros();
+      const actividadId = parseInt(req.params.id);
+
+      if (isNaN(actividadId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const horario = await this.actividadService.agregarHorario(actividadId, req.body);
 
       const response: ApiResponse = {
         success: true,
-        data: coros
+        message: 'Horario agregado exitosamente',
+        data: horario
+      };
+
+      res.status(HttpStatus.CREATED).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/actividades/:id/horarios
+   * Obtiene todos los horarios de una actividad
+   */
+  async getHorariosByActividad(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actividadId = parseInt(req.params.id);
+
+      if (isNaN(actividadId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const horarios = await this.actividadService.getHorariosByActividad(actividadId);
+
+      const response: ApiResponse = {
+        success: true,
+        data: horarios
       };
 
       res.status(HttpStatus.OK).json(response);
@@ -134,13 +274,29 @@ export class ActividadController {
     }
   }
 
-  async getClasesInstrumento(req: Request, res: Response, next: NextFunction): Promise<void> {
+  /**
+   * PATCH /api/actividades/horarios/:horarioId
+   * Actualiza un horario
+   */
+  async actualizarHorario(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const clases = await this.actividadService.getClasesInstrumento();
+      const horarioId = parseInt(req.params.horarioId);
+
+      if (isNaN(horarioId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de horario inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const horario = await this.actividadService.actualizarHorario(horarioId, req.body);
 
       const response: ApiResponse = {
         success: true,
-        data: clases
+        message: 'Horario actualizado exitosamente',
+        data: horario
       };
 
       res.status(HttpStatus.OK).json(response);
@@ -149,13 +305,28 @@ export class ActividadController {
     }
   }
 
-  async getClasesCanto(req: Request, res: Response, next: NextFunction): Promise<void> {
+  /**
+   * DELETE /api/actividades/horarios/:horarioId
+   * Elimina un horario
+   */
+  async eliminarHorario(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const clases = await this.actividadService.getClasesCanto();
+      const horarioId = parseInt(req.params.horarioId);
+
+      if (isNaN(horarioId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de horario inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const result = await this.actividadService.eliminarHorario(horarioId);
 
       const response: ApiResponse = {
         success: true,
-        data: clases
+        message: result.message
       };
 
       res.status(HttpStatus.OK).json(response);
@@ -164,38 +335,84 @@ export class ActividadController {
     }
   }
 
+  // ==================== DOCENTES ====================
+
+  /**
+   * POST /api/actividades/:id/docentes
+   * Asigna un docente a una actividad
+   */
   async asignarDocente(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id: actividadId } = req.params;
-      const { docenteId } = asignarDocenteSchema.parse({
-        actividadId,
-        docenteId: req.body.docenteId
-      });
+      const actividadId = parseInt(req.params.id);
 
-      const actividad = await this.actividadService.asignarDocente(actividadId, docenteId);
+      if (isNaN(actividadId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const { docenteId, rolDocenteId, observaciones } = req.body;
+
+      if (!docenteId || !rolDocenteId) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'docenteId y rolDocenteId son requeridos'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const asignacion = await this.actividadService.asignarDocente(
+        actividadId,
+        docenteId,
+        parseInt(rolDocenteId),
+        observaciones
+      );
 
       const response: ApiResponse = {
         success: true,
         message: 'Docente asignado exitosamente',
-        data: actividad
+        data: asignacion
       };
 
-      res.status(HttpStatus.OK).json(response);
+      res.status(HttpStatus.CREATED).json(response);
     } catch (error) {
       next(error);
     }
   }
 
+  /**
+   * DELETE /api/actividades/:id/docentes/:docenteId/rol/:rolDocenteId
+   * Desasigna un docente de una actividad
+   */
   async desasignarDocente(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id: actividadId, docenteId } = req.params;
+      const actividadId = parseInt(req.params.id);
+      const { docenteId } = req.params;
+      const rolDocenteId = parseInt(req.params.rolDocenteId);
 
-      const actividad = await this.actividadService.desasignarDocente(actividadId, docenteId);
+      if (isNaN(actividadId) || isNaN(rolDocenteId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'IDs inválidos'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const desasignacion = await this.actividadService.desasignarDocente(
+        actividadId,
+        docenteId,
+        rolDocenteId
+      );
 
       const response: ApiResponse = {
         success: true,
         message: 'Docente desasignado exitosamente',
-        data: actividad
+        data: desasignacion
       };
 
       res.status(HttpStatus.OK).json(response);
@@ -204,14 +421,28 @@ export class ActividadController {
     }
   }
 
-  async getParticipantes(req: Request, res: Response, next: NextFunction): Promise<void> {
+  /**
+   * GET /api/actividades/:id/docentes
+   * Obtiene docentes de una actividad
+   */
+  async getDocentesByActividad(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-      const participantes = await this.actividadService.getParticipantes(id);
+      const actividadId = parseInt(req.params.id);
+
+      if (isNaN(actividadId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const docentes = await this.actividadService.getDocentesByActividad(actividadId);
 
       const response: ApiResponse = {
         success: true,
-        data: participantes
+        data: docentes
       };
 
       res.status(HttpStatus.OK).json(response);
@@ -220,22 +451,10 @@ export class ActividadController {
     }
   }
 
-  async getEstadisticas(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { id } = req.params;
-      const estadisticas = await this.actividadService.getEstadisticas(id);
-
-      const response: ApiResponse = {
-        success: true,
-        data: estadisticas
-      };
-
-      res.status(HttpStatus.OK).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-
+  /**
+   * GET /api/actividades/docentes/disponibles
+   * Obtiene docentes disponibles
+   */
   async getDocentesDisponibles(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const docentes = await this.actividadService.getDocentesDisponibles();
@@ -251,39 +470,30 @@ export class ActividadController {
     }
   }
 
-  async searchActividades(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { q: searchTerm, tipo } = req.query;
+  // ==================== PARTICIPACIONES ====================
 
-      if (!searchTerm || typeof searchTerm !== 'string') {
+  /**
+   * GET /api/actividades/:id/participantes
+   * Obtiene participantes de una actividad
+   */
+  async getParticipantes(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actividadId = parseInt(req.params.id);
+
+      if (isNaN(actividadId)) {
         const response: ApiResponse = {
           success: false,
-          error: 'Parámetro de búsqueda "q" es requerido'
+          error: 'ID de actividad inválido'
         };
         res.status(HttpStatus.BAD_REQUEST).json(response);
         return;
       }
 
-      // Validar tipo si se proporciona
-      let tipoActividad: TipoActividad | undefined;
-      if (tipo) {
-        if (Object.values(TipoActividad).includes(tipo as TipoActividad)) {
-          tipoActividad = tipo as TipoActividad;
-        } else {
-          const response: ApiResponse = {
-            success: false,
-            error: `Tipo de actividad inválido. Valores válidos: ${Object.values(TipoActividad).join(', ')}`
-          };
-          res.status(HttpStatus.BAD_REQUEST).json(response);
-          return;
-        }
-      }
-
-      const actividades = await this.actividadService.searchActividades(searchTerm, tipoActividad);
+      const participantes = await this.actividadService.getParticipantes(actividadId);
 
       const response: ApiResponse = {
         success: true,
-        data: actividades
+        data: participantes
       };
 
       res.status(HttpStatus.OK).json(response);
@@ -292,19 +502,187 @@ export class ActividadController {
     }
   }
 
-  // Endpoints para gestión de horarios
-
-  async agregarHorario(req: Request, res: Response, next: NextFunction): Promise<void> {
+  /**
+   * GET /api/actividades/:id/estadisticas
+   * Obtiene estadísticas de una actividad
+   */
+  async getEstadisticas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id: actividadId } = req.params;
-      const horarioData = createHorarioSchema.parse({ ...req.body, actividadId });
+      const actividadId = parseInt(req.params.id);
 
-      const horario = await this.actividadService.agregarHorario(actividadId, horarioData);
+      if (isNaN(actividadId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const estadisticas = await this.actividadService.getEstadisticas(actividadId);
 
       const response: ApiResponse = {
         success: true,
-        message: 'Horario agregado exitosamente',
-        data: horario
+        data: estadisticas
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ==================== CATÁLOGOS ====================
+
+  /**
+   * GET /api/actividades/catalogos/todos
+   * Obtiene todos los catálogos necesarios
+   */
+  async getCatalogos(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const catalogos = await this.actividadService.getCatalogos();
+
+      const response: ApiResponse = {
+        success: true,
+        data: catalogos
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/actividades/catalogos/tipos
+   * Obtiene tipos de actividades
+   */
+  async getTiposActividades(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const tipos = await this.actividadService.getTiposActividades();
+
+      const response: ApiResponse = {
+        success: true,
+        data: tipos
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/actividades/catalogos/categorias
+   * Obtiene categorías de actividades
+   */
+  async getCategoriasActividades(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const categorias = await this.actividadService.getCategoriasActividades();
+
+      const response: ApiResponse = {
+        success: true,
+        data: categorias
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/actividades/catalogos/estados
+   * Obtiene estados de actividades
+   */
+  async getEstadosActividades(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const estados = await this.actividadService.getEstadosActividades();
+
+      const response: ApiResponse = {
+        success: true,
+        data: estados
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/actividades/catalogos/dias-semana
+   * Obtiene días de la semana
+   */
+  async getDiasSemana(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const dias = await this.actividadService.getDiasSemana();
+
+      const response: ApiResponse = {
+        success: true,
+        data: dias
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/actividades/catalogos/roles-docentes
+   * Obtiene roles de docentes
+   */
+  async getRolesDocentes(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const roles = await this.actividadService.getRolesDocentes();
+
+      const response: ApiResponse = {
+        success: true,
+        data: roles
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ==================== CONSULTAS ESPECIALES ====================
+
+  /**
+   * POST /api/actividades/:id/duplicar
+   * Duplica una actividad
+   */
+  async duplicarActividad(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const idOriginal = parseInt(req.params.id);
+
+      if (isNaN(idOriginal)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const validatedData = duplicarActividadSchema.parse(req.body);
+
+      const nuevaActividad = await this.actividadService.duplicarActividad(
+        idOriginal,
+        validatedData.nuevoCodigoActividad,
+        validatedData.nuevoNombre,
+        validatedData.nuevaFechaDesde,
+        validatedData.nuevaFechaHasta,
+        validatedData.copiarHorarios,
+        validatedData.copiarDocentes
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Actividad duplicada exitosamente',
+        data: nuevaActividad
       };
 
       res.status(HttpStatus.CREATED).json(response);
@@ -313,17 +691,17 @@ export class ActividadController {
     }
   }
 
-  async actualizarHorario(req: Request, res: Response, next: NextFunction): Promise<void> {
+  /**
+   * GET /api/actividades/reportes/por-tipo
+   * Obtiene resumen de actividades agrupadas por tipo
+   */
+  async getResumenPorTipo(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { horarioId } = req.params;
-      const horarioData = updateHorarioSchema.parse(req.body);
-
-      const horario = await this.actividadService.actualizarHorario(horarioId, horarioData);
+      const resumen = await this.actividadService.getResumenPorTipo();
 
       const response: ApiResponse = {
         success: true,
-        message: 'Horario actualizado exitosamente',
-        data: horario
+        data: resumen
       };
 
       res.status(HttpStatus.OK).json(response);
@@ -332,68 +710,10 @@ export class ActividadController {
     }
   }
 
-  async eliminarHorario(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { id: actividadId, horarioId } = req.params;
-
-      const horario = await this.actividadService.eliminarHorario(actividadId, horarioId);
-
-      const response: ApiResponse = {
-        success: true,
-        message: 'Horario eliminado exitosamente',
-        data: horario
-      };
-
-      res.status(HttpStatus.OK).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getActividadesPorDia(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { dia } = req.params;
-      const { soloActivas } = queryPorDiaSchema.parse({ dia, ...req.query });
-
-      const actividades = await this.actividadService.getActividadesPorDia(dia, soloActivas);
-
-      const response: ApiResponse = {
-        success: true,
-        data: actividades
-      };
-
-      res.status(HttpStatus.OK).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async verificarConflictosHorario(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { actividadId, diaSemana, horaInicio, horaFin } = req.body;
-
-      if (!actividadId || !diaSemana || !horaInicio || !horaFin) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Faltan parámetros requeridos: actividadId, diaSemana, horaInicio, horaFin'
-        };
-        res.status(HttpStatus.BAD_REQUEST).json(response);
-        return;
-      }
-
-      const resultado = await this.actividadService.verificarConflictosHorario(actividadId, diaSemana, horaInicio, horaFin);
-
-      const response: ApiResponse = {
-        success: true,
-        data: resultado
-      };
-
-      res.status(HttpStatus.OK).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-
+  /**
+   * GET /api/actividades/reportes/horario-semanal
+   * Obtiene horario semanal completo
+   */
   async getHorarioSemanal(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const horarioSemanal = await this.actividadService.getHorarioSemanal();
@@ -401,75 +721,6 @@ export class ActividadController {
       const response: ApiResponse = {
         success: true,
         data: horarioSemanal
-      };
-
-      res.status(HttpStatus.OK).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async verificarDisponibilidadAula(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { aulaId, diaSemana, horaInicio, horaFin, excluirActividadId } = req.body;
-
-      if (!aulaId || !diaSemana || !horaInicio || !horaFin) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Faltan parámetros requeridos: aulaId, diaSemana, horaInicio, horaFin'
-        };
-        res.status(HttpStatus.BAD_REQUEST).json(response);
-        return;
-      }
-
-      const resultado = await this.actividadService.verificarDisponibilidadAula(aulaId, diaSemana, horaInicio, horaFin, excluirActividadId);
-
-      const response: ApiResponse = {
-        success: true,
-        data: resultado
-      };
-
-      res.status(HttpStatus.OK).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async verificarDisponibilidadDocente(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { docenteId, diaSemana, horaInicio, horaFin, excluirActividadId } = req.body;
-
-      if (!docenteId || !diaSemana || !horaInicio || !horaFin) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Faltan parámetros requeridos: docenteId, diaSemana, horaInicio, horaFin'
-        };
-        res.status(HttpStatus.BAD_REQUEST).json(response);
-        return;
-      }
-
-      const resultado = await this.actividadService.verificarDisponibilidadDocente(docenteId, diaSemana, horaInicio, horaFin, excluirActividadId);
-
-      const response: ApiResponse = {
-        success: true,
-        data: resultado
-      };
-
-      res.status(HttpStatus.OK).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getCargaHorariaDocente(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { docenteId } = req.params;
-
-      const cargaHoraria = await this.actividadService.getCargaHorariaDocente(docenteId);
-
-      const response: ApiResponse = {
-        success: true,
-        data: cargaHoraria
       };
 
       res.status(HttpStatus.OK).json(response);

@@ -1,413 +1,625 @@
-import { PrismaClient, Actividad, TipoActividad, TipoPersona } from '@prisma/client';
-import { CreateActividadDto, ActividadQueryDto } from '@/dto/actividad.dto';
+import { PrismaClient } from '@prisma/client';
+import { CreateActividadDto, UpdateActividadDto, QueryActividadesDto } from '@/dto/actividad-v2.dto';
 
+/**
+ * Repository para manejo de Actividades V2.0
+ * Basado en el nuevo modelo con tablas de catálogos e IDs SERIAL
+ */
 export class ActividadRepository {
   constructor(private prisma: PrismaClient) {}
 
-  async create(data: CreateActividadDto): Promise<Actividad> {
-    const { docenteIds, horarios, ...actividadData } = data;
+  /**
+   * Crea una nueva actividad con horarios, docentes y reservas opcionales
+   */
+  async create(data: CreateActividadDto) {
+    const { horarios, docentes, reservasAulas, ...actividadData } = data;
 
-    return this.prisma.actividad.create({
+    return this.prisma.actividades.create({
       data: {
-        ...actividadData,
-        docentes: docenteIds && docenteIds.length > 0 ? {
-          connect: docenteIds.map(id => ({ id }))
-        } : undefined,
-        horarios: horarios && horarios.length > 0 ? {
+        codigo_actividad: actividadData.codigoActividad,
+        nombre: actividadData.nombre,
+        tipo_actividad_id: actividadData.tipoActividadId,
+        categoria_id: actividadData.categoriaId,
+        estado_id: actividadData.estadoId,
+        descripcion: actividadData.descripcion ?? undefined,
+        fecha_desde: new Date(actividadData.fechaDesde),
+        fecha_hasta: actividadData.fechaHasta ? new Date(actividadData.fechaHasta) : undefined,
+        cupo_maximo: actividadData.cupoMaximo ?? undefined,
+        costo: actividadData.costo,
+        observaciones: actividadData.observaciones ?? undefined,
+
+        // Crear horarios inline
+        horarios_actividades: horarios && horarios.length > 0 ? {
           create: horarios.map(h => ({
-            diaSemana: h.diaSemana,
-            horaInicio: h.horaInicio,
-            horaFin: h.horaFin,
+            dia_semana_id: h.diaSemanaId,
+            hora_inicio: this.parseTimeToDate(h.horaInicio),
+            hora_fin: this.parseTimeToDate(h.horaFin),
             activo: h.activo
+          }))
+        } : undefined,
+
+        // Crear asignaciones de docentes inline
+        docentes_actividades: docentes && docentes.length > 0 ? {
+          create: docentes.map(d => ({
+            docente_id: d.docenteId,
+            rol_docente_id: d.rolDocenteId,
+            observaciones: d.observaciones ?? undefined,
+            activo: true
           }))
         } : undefined
       },
       include: {
-        docentes: {
-          select: {
-            id: true,
-            nombre: true,
-            apellido: true,
-            especialidad: true
-          }
-        },
-        horarios: {
+        tipos_actividades: true,
+        categorias_actividades: true,
+        estados_actividades: true,
+        horarios_actividades: {
+          include: {
+            dias_semana: true
+          },
           orderBy: [
-            { diaSemana: 'asc' },
-            { horaInicio: 'asc' }
+            { dia_semana_id: 'asc' },
+            { hora_inicio: 'asc' }
           ]
+        },
+        docentes_actividades: {
+          include: {
+            personas: {
+              select: {
+                id: true,
+                nombre: true,
+                apellido: true,
+                especialidad: true,
+                email: true
+              }
+            },
+            roles_docentes: true
+          },
+          where: { activo: true }
         }
       }
     });
   }
 
-  async findAll(query: ActividadQueryDto): Promise<{ data: Actividad[]; total: number }> {
+  /**
+   * Busca todas las actividades con filtros opcionales
+   */
+  async findAll(query: QueryActividadesDto) {
     const where: any = {};
 
-    if (query.tipo) {
-      where.tipo = query.tipo;
+    // Filtros básicos
+    if (query.tipoActividadId) {
+      where.tipo_actividad_id = query.tipoActividadId;
     }
 
-    if (query.activa !== undefined) {
-      where.activa = query.activa;
+    if (query.categoriaId) {
+      where.categoria_id = query.categoriaId;
     }
 
-    if (query.precioDesde !== undefined || query.precioHasta !== undefined) {
-      where.precio = {};
-      if (query.precioDesde !== undefined) {
-        where.precio.gte = query.precioDesde;
+    if (query.estadoId) {
+      where.estado_id = query.estadoId;
+    }
+
+    // Filtro por día de semana
+    if (query.diaSemanaId) {
+      where.horarios_actividades = {
+        some: {
+          dia_semana_id: query.diaSemanaId,
+          activo: true
+        }
+      };
+    }
+
+    // Filtro por docente
+    if (query.docenteId) {
+      where.docentes_actividades = {
+        some: {
+          docente_id: query.docenteId,
+          activo: true
+        }
+      };
+    }
+
+    // Filtro por aula
+    if (query.aulaId) {
+      where.horarios_actividades = {
+        ...where.horarios_actividades,
+        some: {
+          ...(where.horarios_actividades?.some || {}),
+          reservas_aulas_actividades: {
+            some: {
+              aula_id: query.aulaId
+            }
+          }
+        }
+      };
+    }
+
+    // Filtro por rango de costo
+    if (query.costoDesde !== undefined || query.costoHasta !== undefined) {
+      where.costo = {};
+      if (query.costoDesde !== undefined) {
+        where.costo.gte = query.costoDesde;
       }
-      if (query.precioHasta !== undefined) {
-        where.precio.lte = query.precioHasta;
+      if (query.costoHasta !== undefined) {
+        where.costo.lte = query.costoHasta;
       }
     }
 
-    if (query.conDocentes !== undefined) {
-      if (query.conDocentes) {
-        where.docentes = {
-          some: {}
-        };
-      } else {
-        where.docentes = {
-          none: {}
-        };
-      }
-    }
-
+    // Búsqueda de texto
     if (query.search) {
       where.OR = [
         { nombre: { contains: query.search, mode: 'insensitive' } },
-        { descripcion: { contains: query.search, mode: 'insensitive' } }
+        { descripcion: { contains: query.search, mode: 'insensitive' } },
+        { codigo_actividad: { contains: query.search, mode: 'insensitive' } }
+      ];
+    }
+
+    // Filtro por vigencia
+    if (query.vigentes) {
+      const hoy = new Date();
+      where.fecha_desde = { lte: hoy };
+      where.OR = [
+        { fecha_hasta: null },
+        { fecha_hasta: { gte: hoy } }
       ];
     }
 
     const skip = (query.page - 1) * query.limit;
 
+    // Configurar ordering
+    const orderBy: any = {};
+    if (query.orderBy === 'codigo') {
+      orderBy.codigo_actividad = query.orderDir;
+    } else if (query.orderBy === 'fechaDesde') {
+      orderBy.fecha_desde = query.orderDir;
+    } else if (query.orderBy === 'cupoMaximo') {
+      orderBy.cupo_maximo = query.orderDir;
+    } else if (query.orderBy === 'created_at') {
+      orderBy.created_at = query.orderDir;
+    } else {
+      orderBy.nombre = query.orderDir;
+    }
+
     const [data, total] = await Promise.all([
-      this.prisma.actividad.findMany({
+      this.prisma.actividades.findMany({
         where,
         skip,
         take: query.limit,
-        orderBy: [
-          { activa: 'desc' }, // Activas primero
-          { nombre: 'asc' }
-        ],
-        include: {
-          docentes: {
-            select: {
-              id: true,
-              nombre: true,
-              apellido: true,
-              especialidad: true
-            }
-          },
-          horarios: {
+        orderBy,
+        include: query.incluirRelaciones ? {
+          tipos_actividades: true,
+          categorias_actividades: true,
+          estados_actividades: true,
+          horarios_actividades: {
+            include: {
+              dias_semana: true
+            },
             orderBy: [
-              { diaSemana: 'asc' },
-              { horaInicio: 'asc' }
-            ]
+              { dia_semana_id: 'asc' },
+              { hora_inicio: 'asc' }
+            ],
+            where: { activo: true }
+          },
+          docentes_actividades: {
+            include: {
+              personas: {
+                select: {
+                  id: true,
+                  nombre: true,
+                  apellido: true,
+                  especialidad: true
+                }
+              },
+              roles_docentes: true
+            },
+            where: { activo: true }
           },
           _count: {
             select: {
-              participaciones: {
-                where: { activa: true }
+              participaciones_actividades: {
+                where: { activo: true }
               }
             }
           }
-        }
+        } : undefined
       }),
-      this.prisma.actividad.count({ where })
+      this.prisma.actividades.count({ where })
     ]);
+
+    // Si hay filtro de cupo disponible, filtrar en memoria
+    if (query.conCupo) {
+      const dataConCupo = data.filter(act => {
+        if (!act.cupo_maximo) return true; // Sin límite = siempre disponible
+        const inscritos = (act as any)._count?.participaciones_actividades || 0;
+        return inscritos < act.cupo_maximo;
+      });
+      return {
+        data: dataConCupo,
+        total: dataConCupo.length
+      };
+    }
 
     return { data, total };
   }
 
-  async findById(id: string): Promise<Actividad | null> {
-    return this.prisma.actividad.findUnique({
+  /**
+   * Busca una actividad por ID con todas sus relaciones
+   */
+  async findById(id: number) {
+    return this.prisma.actividades.findUnique({
       where: { id },
       include: {
-        docentes: {
-          select: {
-            id: true,
-            nombre: true,
-            apellido: true,
-            especialidad: true,
-            honorariosPorHora: true
-          }
-        },
-        horarios: {
+        tipos_actividades: true,
+        categorias_actividades: true,
+        estados_actividades: true,
+        horarios_actividades: {
+          include: {
+            dias_semana: true,
+            reservas_aulas_actividades: {
+              include: {
+                aulas: {
+                  select: {
+                    id: true,
+                    nombre: true,
+                    capacidad: true
+                  }
+                }
+              }
+            }
+          },
           orderBy: [
-            { diaSemana: 'asc' },
-            { horaInicio: 'asc' }
+            { dia_semana_id: 'asc' },
+            { hora_inicio: 'asc' }
           ]
         },
-        participaciones: {
-          where: { activa: true },
+        docentes_actividades: {
           include: {
-            persona: {
+            personas: {
+              select: {
+                id: true,
+                nombre: true,
+                apellido: true,
+                especialidad: true,
+                email: true,
+                telefono: true,
+                honorariosPorHora: true
+              }
+            },
+            roles_docentes: true
+          },
+          where: { activo: true }
+        },
+        participaciones_actividades: {
+          include: {
+            personas: {
               select: {
                 id: true,
                 nombre: true,
                 apellido: true,
                 tipo: true,
-                categoria: true
+                email: true,
+                telefono: true
               }
             }
-          }
+          },
+          where: { activo: true }
         },
-        reservasAula: {
-          include: {
-            aula: {
-              select: {
-                id: true,
-                nombre: true
-              }
-            },
-            docente: {
-              select: {
-                id: true,
-                nombre: true,
-                apellido: true
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  async findByTipo(tipo: TipoActividad): Promise<Actividad[]> {
-    return this.prisma.actividad.findMany({
-      where: {
-        tipo,
-        activa: true
-      },
-      orderBy: { nombre: 'asc' },
-      include: {
-        docentes: {
+        _count: {
           select: {
-            id: true,
-            nombre: true,
-            apellido: true,
-            especialidad: true
+            participaciones_actividades: {
+              where: { activo: true }
+            }
           }
-        },
-        horarios: {
-          orderBy: [
-            { diaSemana: 'asc' },
-            { horaInicio: 'asc' }
-          ]
         }
       }
     });
   }
 
-  async update(id: string, data: Partial<CreateActividadDto>): Promise<Actividad> {
-    const { docenteIds, horarios, ...actividadData } = data;
-
-    const updateData: any = { ...actividadData };
-
-    if (docenteIds !== undefined) {
-      // Primero desconectar todos los docentes
-      await this.prisma.actividad.update({
-        where: { id },
-        data: {
-          docentes: {
-            set: []
-          }
-        }
-      });
-
-      // Luego conectar los nuevos docentes
-      if (docenteIds.length > 0) {
-        updateData.docentes = {
-          connect: docenteIds.map(docenteId => ({ id: docenteId }))
-        };
+  /**
+   * Busca una actividad por código
+   */
+  async findByCodigoActividad(codigo: string) {
+    return this.prisma.actividades.findUnique({
+      where: { codigo_actividad: codigo },
+      include: {
+        tipos_actividades: true,
+        categorias_actividades: true,
+        estados_actividades: true
       }
+    });
+  }
+
+  /**
+   * Actualiza una actividad (sin tocar horarios/docentes)
+   */
+  async update(id: number, data: UpdateActividadDto) {
+    const updateData: any = {};
+
+    if (data.codigoActividad) updateData.codigo_actividad = data.codigoActividad;
+    if (data.nombre) updateData.nombre = data.nombre;
+    if (data.tipoActividadId) updateData.tipo_actividad_id = data.tipoActividadId;
+    if (data.categoriaId) updateData.categoria_id = data.categoriaId;
+    if (data.estadoId) updateData.estado_id = data.estadoId;
+    if (data.descripcion !== undefined) updateData.descripcion = data.descripcion;
+    if (data.fechaDesde) updateData.fecha_desde = new Date(data.fechaDesde);
+    if (data.fechaHasta !== undefined) {
+      updateData.fecha_hasta = data.fechaHasta ? new Date(data.fechaHasta) : null;
     }
+    if (data.cupoMaximo !== undefined) updateData.cupo_maximo = data.cupoMaximo;
+    if (data.costo !== undefined) updateData.costo = data.costo;
+    if (data.observaciones !== undefined) updateData.observaciones = data.observaciones;
 
-    if (horarios !== undefined) {
-      // Eliminar todos los horarios existentes
-      await this.prisma.horarioActividad.deleteMany({
-        where: { actividadId: id }
-      });
-
-      // Crear los nuevos horarios
-      if (horarios.length > 0) {
-        updateData.horarios = {
-          create: horarios.map(h => ({
-            diaSemana: h.diaSemana,
-            horaInicio: h.horaInicio,
-            horaFin: h.horaFin,
-            activo: h.activo
-          }))
-        };
-      }
-    }
-
-    return this.prisma.actividad.update({
+    return this.prisma.actividades.update({
       where: { id },
       data: updateData,
       include: {
-        docentes: {
-          select: {
-            id: true,
-            nombre: true,
-            apellido: true,
-            especialidad: true
-          }
-        },
-        horarios: {
+        tipos_actividades: true,
+        categorias_actividades: true,
+        estados_actividades: true,
+        horarios_actividades: {
+          include: { dias_semana: true },
           orderBy: [
-            { diaSemana: 'asc' },
-            { horaInicio: 'asc' }
+            { dia_semana_id: 'asc' },
+            { hora_inicio: 'asc' }
           ]
+        },
+        docentes_actividades: {
+          include: {
+            personas: {
+              select: {
+                id: true,
+                nombre: true,
+                apellido: true,
+                especialidad: true
+              }
+            },
+            roles_docentes: true
+          },
+          where: { activo: true }
         }
       }
     });
   }
 
-  async delete(id: string): Promise<Actividad> {
-    return this.prisma.actividad.delete({
+  /**
+   * Elimina una actividad (hard delete)
+   */
+  async delete(id: number) {
+    return this.prisma.actividades.delete({
       where: { id }
     });
   }
 
-  async softDelete(id: string): Promise<Actividad> {
-    return this.prisma.actividad.update({
+  /**
+   * Cambia el estado de una actividad
+   */
+  async cambiarEstado(id: number, nuevoEstadoId: number, observaciones?: string) {
+    return this.prisma.actividades.update({
       where: { id },
-      data: { activa: false }
+      data: {
+        estado_id: nuevoEstadoId,
+        observaciones: observaciones || undefined
+      },
+      include: {
+        estados_actividades: true
+      }
     });
   }
 
-  async asignarDocente(actividadId: string, docenteId: string): Promise<Actividad> {
-    return this.prisma.actividad.update({
-      where: { id: actividadId },
+  // ==================== HORARIOS ====================
+
+  /**
+   * Agrega un horario a una actividad
+   */
+  async agregarHorario(actividadId: number, horarioData: any) {
+    return this.prisma.horarios_actividades.create({
       data: {
-        docentes: {
-          connect: { id: docenteId }
-        }
+        actividad_id: actividadId,
+        dia_semana_id: horarioData.diaSemanaId,
+        hora_inicio: this.parseTimeToDate(horarioData.horaInicio),
+        hora_fin: this.parseTimeToDate(horarioData.horaFin),
+        activo: horarioData.activo !== false
       },
       include: {
-        docentes: {
+        dias_semana: true,
+        actividades: {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            especialidad: true
+            codigo_actividad: true
           }
         }
       }
     });
   }
 
-  async desasignarDocente(actividadId: string, docenteId: string): Promise<Actividad> {
-    return this.prisma.actividad.update({
-      where: { id: actividadId },
-      data: {
-        docentes: {
-          disconnect: { id: docenteId }
-        }
-      },
+  /**
+   * Actualiza un horario
+   */
+  async updateHorario(horarioId: number, horarioData: any) {
+    const updateData: any = {};
+
+    if (horarioData.diaSemanaId) updateData.dia_semana_id = horarioData.diaSemanaId;
+    if (horarioData.horaInicio) updateData.hora_inicio = this.parseTimeToDate(horarioData.horaInicio);
+    if (horarioData.horaFin) updateData.hora_fin = this.parseTimeToDate(horarioData.horaFin);
+    if (horarioData.activo !== undefined) updateData.activo = horarioData.activo;
+
+    return this.prisma.horarios_actividades.update({
+      where: { id: horarioId },
+      data: updateData,
       include: {
-        docentes: {
+        dias_semana: true,
+        actividades: {
           select: {
             id: true,
-            nombre: true,
-            apellido: true,
-            especialidad: true
+            nombre: true
           }
         }
       }
     });
   }
 
-  async getParticipantes(actividadId: string): Promise<any[]> {
-    const participaciones = await this.prisma.participacionActividad.findMany({
-      where: {
-        actividadId,
-        activa: true
-      },
+  /**
+   * Elimina un horario
+   */
+  async deleteHorario(horarioId: number) {
+    return this.prisma.horarios_actividades.delete({
+      where: { id: horarioId }
+    });
+  }
+
+  /**
+   * Obtiene todos los horarios de una actividad
+   */
+  async getHorariosByActividad(actividadId: number) {
+    return this.prisma.horarios_actividades.findMany({
+      where: { actividad_id: actividadId },
       include: {
-        persona: {
-          select: {
-            id: true,
-            nombre: true,
-            apellido: true,
-            tipo: true,
-            categoria: true,
-            email: true,
-            telefono: true
+        dias_semana: true,
+        reservas_aulas_actividades: {
+          include: {
+            aulas: true
           }
         }
       },
       orderBy: [
-        { persona: { apellido: 'asc' } },
-        { persona: { nombre: 'asc' } }
+        { dia_semana_id: 'asc' },
+        { hora_inicio: 'asc' }
       ]
     });
-
-    return participaciones;
   }
 
-  async getEstadisticas(actividadId: string): Promise<any> {
-    const actividad = await this.prisma.actividad.findUnique({
-      where: { id: actividadId },
+  async findHorarioById(horarioId: number) {
+    return this.prisma.horarios_actividades.findUnique({
+      where: { id: horarioId },
       include: {
-        _count: {
+        dias_semana: true,
+        actividades: {
           select: {
-            participaciones: {
-              where: { activa: true }
-            },
-            reservasAula: true
+            id: true,
+            nombre: true,
+            codigo_actividad: true
           }
         }
       }
     });
-
-    if (!actividad) return null;
-
-    const participacionesPorTipo = await this.prisma.participacionActividad.groupBy({
-      by: ['personaId'],
-      where: {
-        actividadId,
-        activa: true
-      },
-      _count: true
-    });
-
-    // Obtener tipos de persona de los participantes
-    const participantesIds = participacionesPorTipo.map(p => p.personaId);
-    const tiposPersona = await this.prisma.persona.groupBy({
-      by: ['tipo'],
-      where: {
-        id: { in: participantesIds }
-      },
-      _count: true
-    });
-
-    return {
-      totalParticipantes: actividad._count.participaciones,
-      totalReservas: actividad._count.reservasAula,
-      capacidadMaxima: actividad.capacidadMaxima,
-      porcentajeOcupacion: actividad.capacidadMaxima
-        ? Math.round((actividad._count.participaciones / actividad.capacidadMaxima) * 100)
-        : null,
-      participantesPorTipo: tiposPersona
-    };
   }
 
-  async getDocentesDisponibles(): Promise<any[]> {
+  // ==================== DOCENTES ====================
+
+  /**
+   * Asigna un docente a una actividad
+   */
+  async asignarDocente(actividadId: number, docenteId: string, rolDocenteId: number, observaciones?: string) {
+    return this.prisma.docentes_actividades.create({
+      data: {
+        actividad_id: actividadId,
+        docente_id: docenteId,
+        rol_docente_id: rolDocenteId,
+        observaciones,
+        activo: true
+      },
+      include: {
+        personas: {
+          select: {
+            id: true,
+            nombre: true,
+            apellido: true,
+            especialidad: true,
+            email: true
+          }
+        },
+        roles_docentes: true,
+        actividades: {
+          select: {
+            id: true,
+            nombre: true,
+            codigo_actividad: true
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Desasigna un docente de una actividad (soft delete)
+   */
+  async desasignarDocente(actividadId: number, docenteId: string, rolDocenteId: number) {
+    // Buscar la asignación activa
+    const asignacion = await this.prisma.docentes_actividades.findFirst({
+      where: {
+        actividad_id: actividadId,
+        docente_id: docenteId,
+        rol_docente_id: rolDocenteId,
+        activo: true
+      }
+    });
+
+    if (!asignacion) {
+      throw new Error('Asignación de docente no encontrada');
+    }
+
+    return this.prisma.docentes_actividades.update({
+      where: { id: asignacion.id },
+      data: {
+        activo: false,
+        fecha_desasignacion: new Date()
+      },
+      include: {
+        personas: {
+          select: {
+            id: true,
+            nombre: true,
+            apellido: true
+          }
+        },
+        roles_docentes: true
+      }
+    });
+  }
+
+  /**
+   * Obtiene docentes de una actividad
+   */
+  async getDocentesByActividad(actividadId: number) {
+    return this.prisma.docentes_actividades.findMany({
+      where: {
+        actividad_id: actividadId,
+        activo: true
+      },
+      include: {
+        personas: {
+          select: {
+            id: true,
+            nombre: true,
+            apellido: true,
+            especialidad: true,
+            email: true,
+            telefono: true,
+            honorariosPorHora: true
+          }
+        },
+        roles_docentes: true
+      }
+    });
+  }
+
+  /**
+   * Obtiene docentes disponibles (todos los de tipo DOCENTE activos)
+   */
+  async getDocentesDisponibles() {
     return this.prisma.persona.findMany({
       where: {
-        tipo: TipoPersona.DOCENTE,
-        fechaBaja: null // Solo docentes activos
+        tipo: 'DOCENTE',
+        fechaBaja: null
       },
       select: {
         id: true,
         nombre: true,
         apellido: true,
         especialidad: true,
+        email: true,
+        telefono: true,
         honorariosPorHora: true
       },
       orderBy: [
@@ -417,254 +629,167 @@ export class ActividadRepository {
     });
   }
 
-  // Métodos para gestión individual de horarios
+  // ==================== PARTICIPACIONES ====================
 
-  async getHorariosByActividad(actividadId: string): Promise<any[]> {
-    return this.prisma.horarioActividad.findMany({
-      where: { actividadId },
-      orderBy: [
-        { diaSemana: 'asc' },
-        { horaInicio: 'asc' }
-      ]
-    });
-  }
-
-  async findHorarioById(horarioId: string): Promise<any | null> {
-    return this.prisma.horarioActividad.findUnique({
-      where: { id: horarioId },
-      include: {
-        actividad: {
-          select: {
-            id: true,
-            nombre: true,
-            tipo: true
-          }
-        }
-      }
-    });
-  }
-
-  async createHorario(actividadId: string, horarioData: any): Promise<any> {
-    return this.prisma.horarioActividad.create({
-      data: {
-        actividadId,
-        diaSemana: horarioData.diaSemana,
-        horaInicio: horarioData.horaInicio,
-        horaFin: horarioData.horaFin,
-        activo: horarioData.activo ?? true
-      }
-    });
-  }
-
-  async updateHorario(horarioId: string, horarioData: any): Promise<any> {
-    return this.prisma.horarioActividad.update({
-      where: { id: horarioId },
-      data: horarioData
-    });
-  }
-
-  async deleteHorario(horarioId: string): Promise<any> {
-    return this.prisma.horarioActividad.delete({
-      where: { id: horarioId }
-    });
-  }
-
-  async softDeleteHorario(horarioId: string): Promise<any> {
-    return this.prisma.horarioActividad.update({
-      where: { id: horarioId },
-      data: { activo: false }
-    });
-  }
-
-  async findActividadesByDia(diaSemana: string, soloActivas: boolean = true): Promise<Actividad[]> {
-    return this.prisma.actividad.findMany({
+  /**
+   * Obtiene participantes de una actividad
+   */
+  async getParticipantes(actividadId: number) {
+    return this.prisma.participaciones_actividades.findMany({
       where: {
-        ...(soloActivas ? { activa: true } : {}),
-        horarios: {
-          some: {
-            diaSemana: diaSemana as any,
-            activo: true
-          }
-        }
+        actividad_id: actividadId,
+        activo: true
       },
       include: {
-        docentes: {
+        personas: {
           select: {
             id: true,
             nombre: true,
             apellido: true,
-            especialidad: true
+            tipo: true,
+            email: true,
+            telefono: true,
+            categoriaId: true,
+            categoria: true
           }
-        },
-        horarios: {
-          where: {
-            diaSemana: diaSemana as any,
-            activo: true
-          },
-          orderBy: { horaInicio: 'asc' }
         }
       },
-      orderBy: { nombre: 'asc' }
+      orderBy: [
+        { personas: { apellido: 'asc' } },
+        { personas: { nombre: 'asc' } }
+      ]
     });
   }
 
-  async verificarDisponibilidadAula(aulaId: string, diaSemana: string, horaInicio: string, horaFin: string, excluirActividadId?: string): Promise<any[]> {
-    // Convertir horas a minutos
-    const [inicioHora, inicioMin] = horaInicio.split(':').map(Number);
-    const [finHora, finMin] = horaFin.split(':').map(Number);
-    const inicioMinutos = inicioHora * 60 + inicioMin;
-    const finMinutos = finHora * 60 + finMin;
+  // ==================== ESTADÍSTICAS ====================
 
-    // Buscar actividades que usan esa aula en ese día
-    const actividades = await this.prisma.actividad.findMany({
-      where: {
-        ...(excluirActividadId ? { id: { not: excluirActividadId } } : {}),
-        activa: true,
-        horarios: {
-          some: {
-            diaSemana: diaSemana as any,
-            activo: true
-          }
-        },
-        reservasAula: {
-          some: {
-            aulaId: aulaId
-          }
-        }
-      },
+  /**
+   * Obtiene estadísticas de una actividad
+   */
+  async getEstadisticas(actividadId: number) {
+    const actividad = await this.prisma.actividades.findUnique({
+      where: { id: actividadId },
       include: {
-        horarios: {
-          where: {
-            diaSemana: diaSemana as any,
-            activo: true
-          }
-        },
-        reservasAula: {
-          where: {
-            aulaId: aulaId
-          },
-          include: {
-            aula: true
-          }
-        }
-      }
-    });
-
-    // Filtrar las que tienen superposición horaria
-    return actividades.filter(actividad => {
-      return actividad.horarios.some(horario => {
-        const [hInicioHora, hInicioMin] = horario.horaInicio.split(':').map(Number);
-        const [hFinHora, hFinMin] = horario.horaFin.split(':').map(Number);
-        const hInicioMinutos = hInicioHora * 60 + hInicioMin;
-        const hFinMinutos = hFinHora * 60 + hFinMin;
-
-        return (inicioMinutos < hFinMinutos && finMinutos > hInicioMinutos);
-      });
-    });
-  }
-
-  async verificarDisponibilidadDocente(docenteId: string, diaSemana: string, horaInicio: string, horaFin: string, excluirActividadId?: string): Promise<any[]> {
-    // Convertir horas a minutos
-    const [inicioHora, inicioMin] = horaInicio.split(':').map(Number);
-    const [finHora, finMin] = horaFin.split(':').map(Number);
-    const inicioMinutos = inicioHora * 60 + inicioMin;
-    const finMinutos = finHora * 60 + finMin;
-
-    // Buscar actividades del docente en ese día
-    const actividades = await this.prisma.actividad.findMany({
-      where: {
-        ...(excluirActividadId ? { id: { not: excluirActividadId } } : {}),
-        activa: true,
-        docentes: {
-          some: {
-            id: docenteId
-          }
-        },
-        horarios: {
-          some: {
-            diaSemana: diaSemana as any,
-            activo: true
-          }
-        }
-      },
-      include: {
-        horarios: {
-          where: {
-            diaSemana: diaSemana as any,
-            activo: true
-          }
-        },
-        docentes: {
+        _count: {
           select: {
-            id: true,
-            nombre: true,
-            apellido: true
+            participaciones_actividades: {
+              where: { activo: true }
+            },
+            horarios_actividades: {
+              where: { activo: true }
+            },
+            docentes_actividades: {
+              where: { activo: true }
+            }
           }
         }
       }
     });
 
-    // Filtrar las que tienen superposición horaria
-    return actividades.filter(actividad => {
-      return actividad.horarios.some(horario => {
-        const [hInicioHora, hInicioMin] = horario.horaInicio.split(':').map(Number);
-        const [hFinHora, hFinMin] = horario.horaFin.split(':').map(Number);
-        const hInicioMinutos = hInicioHora * 60 + hInicioMin;
-        const hFinMinutos = hFinHora * 60 + hFinMin;
+    if (!actividad) return null;
 
-        return (inicioMinutos < hFinMinutos && finMinutos > hInicioMinutos);
-      });
+    const participantesActivos = actividad._count.participaciones_actividades;
+    const porcentajeOcupacion = actividad.cupo_maximo
+      ? Math.round((participantesActivos / actividad.cupo_maximo) * 100)
+      : null;
+
+    return {
+      totalParticipantes: participantesActivos,
+      totalHorarios: actividad._count.horarios_actividades,
+      totalDocentes: actividad._count.docentes_actividades,
+      cupoMaximo: actividad.cupo_maximo,
+      cupoDisponible: actividad.cupo_maximo ? actividad.cupo_maximo - participantesActivos : null,
+      porcentajeOcupacion,
+      estaLlena: actividad.cupo_maximo ? participantesActivos >= actividad.cupo_maximo : false
+    };
+  }
+
+  // ==================== CATÁLOGOS ====================
+
+  /**
+   * Obtiene todos los tipos de actividades
+   */
+  async getTiposActividades() {
+    return this.prisma.tipos_actividades.findMany({
+      where: { activo: true },
+      orderBy: { orden: 'asc' }
     });
   }
 
-  async findConflictosHorario(actividadId: string, diaSemana: string, horaInicio: string, horaFin: string): Promise<any[]> {
-    // Convertir horas a minutos para comparación
-    const [inicioHora, inicioMin] = horaInicio.split(':').map(Number);
-    const [finHora, finMin] = horaFin.split(':').map(Number);
-    const inicioMinutos = inicioHora * 60 + inicioMin;
-    const finMinutos = finHora * 60 + finMin;
-
-    const actividades = await this.prisma.actividad.findMany({
-      where: {
-        id: { not: actividadId }, // Excluir la actividad actual
-        activa: true,
-        horarios: {
-          some: {
-            diaSemana: diaSemana as any,
-            activo: true
-          }
-        }
-      },
-      include: {
-        horarios: {
-          where: {
-            diaSemana: diaSemana as any,
-            activo: true
-          }
-        },
-        docentes: {
-          select: {
-            id: true,
-            nombre: true,
-            apellido: true
-          }
-        }
-      }
+  /**
+   * Obtiene todas las categorías de actividades
+   */
+  async getCategoriasActividades() {
+    return this.prisma.categorias_actividades.findMany({
+      where: { activo: true },
+      orderBy: { orden: 'asc' }
     });
+  }
 
-    // Filtrar las que tienen superposición horaria
-    return actividades.filter(actividad => {
-      return actividad.horarios.some(horario => {
-        const [hInicioHora, hInicioMin] = horario.horaInicio.split(':').map(Number);
-        const [hFinHora, hFinMin] = horario.horaFin.split(':').map(Number);
-        const hInicioMinutos = hInicioHora * 60 + hInicioMin;
-        const hFinMinutos = hFinHora * 60 + hFinMin;
-
-        // Verificar superposición
-        return (
-          (inicioMinutos < hFinMinutos && finMinutos > hInicioMinutos)
-        );
-      });
+  /**
+   * Obtiene todos los estados de actividades
+   */
+  async getEstadosActividades() {
+    return this.prisma.estados_actividades.findMany({
+      where: { activo: true },
+      orderBy: { orden: 'asc' }
     });
+  }
+
+  /**
+   * Obtiene todos los días de la semana
+   */
+  async getDiasSemana() {
+    return this.prisma.dias_semana.findMany({
+      orderBy: { orden: 'asc' }
+    });
+  }
+
+  /**
+   * Obtiene todos los roles de docentes
+   */
+  async getRolesDocentes() {
+    return this.prisma.roles_docentes.findMany({
+      where: { activo: true },
+      orderBy: { orden: 'asc' }
+    });
+  }
+
+  // ==================== UTILIDADES ====================
+
+  /**
+   * Convierte string de hora "HH:MM" o "HH:MM:SS" a Date para PostgreSQL TIME
+   */
+  private parseTimeToDate(time: string): Date {
+    // PostgreSQL TIME requiere un Date completo, pero solo usa la parte de hora
+    // Usamos UTC para evitar problemas con zonas horarias
+    const [hours, minutes, seconds = '00'] = time.split(':');
+    const date = new Date();
+    date.setUTCHours(parseInt(hours), parseInt(minutes), parseInt(seconds), 0);
+    return date;
+  }
+
+  /**
+   * Extrae el time de un Date (formato HH:MM:SS)
+   */
+  static formatTime(date: Date): string {
+    return date.toISOString().substring(11, 19); // HH:MM:SS
+  }
+
+  /**
+   * Convierte minutos a formato HH:MM
+   */
+  static minutesToTime(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  }
+
+  /**
+   * Convierte HH:MM a minutos
+   */
+  static timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
   }
 }

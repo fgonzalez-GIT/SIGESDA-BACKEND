@@ -15,7 +15,9 @@ export class AulaController {
 
   async createAula(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      console.log('🔍 [DEBUG] POST /api/aulas - Request body:', JSON.stringify(req.body, null, 2));
       const validatedData = createAulaSchema.parse(req.body);
+      console.log('✅ [DEBUG] Validation passed:', JSON.stringify(validatedData, null, 2));
       const aula = await this.aulaService.createAula(validatedData);
 
       const response: ApiResponse = {

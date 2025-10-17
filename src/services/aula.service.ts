@@ -2,6 +2,7 @@ import { Aula } from '@prisma/client';
 import { AulaRepository } from '@/repositories/aula.repository';
 import { CreateAulaDto, UpdateAulaDto, AulaQueryDto, DisponibilidadAulaDto } from '@/dto/aula.dto';
 import { logger } from '@/utils/logger';
+import { ConflictError, NotFoundError, ValidationError } from '@/utils/errors';
 
 export class AulaService {
   constructor(private aulaRepository: AulaRepository) {}
@@ -10,12 +11,12 @@ export class AulaService {
     // Validar que el nombre sea único
     const existingAula = await this.aulaRepository.findByNombre(data.nombre);
     if (existingAula) {
-      throw new Error(`Ya existe un aula con el nombre ${data.nombre}`);
+      throw new ConflictError(`Ya existe un aula con el nombre ${data.nombre}`);
     }
 
     // Validación de capacidad mínima
     if (data.capacidad < 1) {
-      throw new Error('La capacidad debe ser al menos 1 persona');
+      throw new ValidationError('La capacidad debe ser al menos 1 persona');
     }
 
     const aula = await this.aulaRepository.create(data);
@@ -43,20 +44,20 @@ export class AulaService {
     // Verificar que el aula existe
     const existingAula = await this.aulaRepository.findById(id);
     if (!existingAula) {
-      throw new Error(`Aula con ID ${id} no encontrada`);
+      throw new NotFoundError(`Aula con ID ${id} no encontrada`);
     }
 
     // Validar nombre único si se está actualizando
     if (data.nombre && data.nombre !== existingAula.nombre) {
       const aulaWithSameName = await this.aulaRepository.findByNombre(data.nombre);
       if (aulaWithSameName) {
-        throw new Error(`Ya existe un aula con el nombre ${data.nombre}`);
+        throw new ConflictError(`Ya existe un aula con el nombre ${data.nombre}`);
       }
     }
 
     // Validación de capacidad si se está actualizando
     if (data.capacidad !== undefined && data.capacidad < 1) {
-      throw new Error('La capacidad debe ser al menos 1 persona');
+      throw new ValidationError('La capacidad debe ser al menos 1 persona');
     }
 
     const updatedAula = await this.aulaRepository.update(id, data);
@@ -69,16 +70,20 @@ export class AulaService {
   async deleteAula(id: string, hard = false): Promise<Aula> {
     const existingAula = await this.aulaRepository.findById(id);
     if (!existingAula) {
-      throw new Error(`Aula con ID ${id} no encontrada`);
+      throw new NotFoundError(`Aula con ID ${id} no encontrada`);
     }
 
     // Verificar si tiene reservas activas
-    const reservas = (existingAula as any).reservas || [];
-    const reservasActivas = reservas.filter((reserva: any) => new Date(reserva.fechaFin) > new Date());
+    const reservas = (existingAula as any).reservas_aulas_actividades || [];
+    const ahora = new Date();
+    const reservasActivas = reservas.filter((reserva: any) => {
+      // Una reserva está activa si no tiene fecha de fin o si la fecha de fin es futura
+      return !reserva.fecha_vigencia_hasta || new Date(reserva.fecha_vigencia_hasta) > ahora;
+    });
 
     if (reservasActivas.length > 0) {
       if (hard) {
-        throw new Error('No se puede eliminar permanentemente un aula con reservas activas. Use eliminación lógica.');
+        throw new ValidationError('No se puede eliminar permanentemente un aula con reservas activas. Use eliminación lógica.');
       }
 
       // Soft delete si tiene reservas activas
@@ -107,7 +112,7 @@ export class AulaService {
   async verificarDisponibilidad(aulaId: string, data: DisponibilidadAulaDto): Promise<{ disponible: boolean; conflictos?: any[] }> {
     const aula = await this.aulaRepository.findById(aulaId);
     if (!aula) {
-      throw new Error(`Aula con ID ${aulaId} no encontrada`);
+      throw new NotFoundError(`Aula con ID ${aulaId} no encontrada`);
     }
 
     if (!aula.activa) {
@@ -123,7 +128,7 @@ export class AulaService {
     // Verificar que las fechas sean futuras
     const ahora = new Date();
     if (fechaInicio <= ahora) {
-      throw new Error('La fecha de inicio debe ser futura');
+      throw new ValidationError('La fecha de inicio debe ser futura');
     }
 
     const disponible = await this.aulaRepository.verificarDisponibilidad(
@@ -144,10 +149,11 @@ export class AulaService {
         disponible: false,
         conflictos: conflictos.map(reserva => ({
           id: reserva.id,
-          fechaInicio: reserva.fechaInicio,
-          fechaFin: reserva.fechaFin,
-          actividad: reserva.actividad?.nombre || 'Sin actividad',
-          docente: `${reserva.docente.nombre} ${reserva.docente.apellido}`
+          fechaInicio: reserva.fecha_vigencia_desde,
+          fechaFin: reserva.fecha_vigencia_hasta,
+          actividad: reserva.horarios_actividades?.actividades?.nombre || 'Sin actividad',
+          dia: reserva.horarios_actividades?.dias_semana?.nombre || 'N/A',
+          horario: `${reserva.horarios_actividades?.hora_inicio || ''} - ${reserva.horarios_actividades?.hora_fin || ''}`
         }))
       };
     }
@@ -158,7 +164,7 @@ export class AulaService {
   async getEstadisticas(aulaId: string): Promise<any> {
     const aula = await this.aulaRepository.findById(aulaId);
     if (!aula) {
-      throw new Error(`Aula con ID ${aulaId} no encontrada`);
+      throw new NotFoundError(`Aula con ID ${aulaId} no encontrada`);
     }
 
     return this.aulaRepository.getEstadisticas(aulaId);
@@ -203,7 +209,7 @@ export class AulaService {
   async getReservasDelAula(aulaId: string, fechaDesde?: string, fechaHasta?: string): Promise<any[]> {
     const aula = await this.aulaRepository.findById(aulaId);
     if (!aula) {
-      throw new Error(`Aula con ID ${aulaId} no encontrada`);
+      throw new NotFoundError(`Aula con ID ${aulaId} no encontrada`);
     }
 
     if (fechaDesde && fechaHasta) {

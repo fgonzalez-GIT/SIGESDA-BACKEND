@@ -3,10 +3,37 @@ import { z } from 'zod';
 // Schema base para aulas
 const aulaBaseSchema = z.object({
   nombre: z.string().min(1, 'Nombre es requerido').max(100),
-  capacidad: z.number().int().positive('La capacidad debe ser positiva'),
+  capacidad: z.preprocess((val) => {
+    // Convert string to number if needed
+    if (typeof val === 'string') {
+      const parsed = parseInt(val);
+      return isNaN(parsed) ? val : parsed;
+    }
+    return val;
+  }, z.number().int().positive('La capacidad debe ser positiva')),
   ubicacion: z.string().max(200).optional(),
-  equipamiento: z.string().max(500).optional(),
-  activa: z.boolean().default(true)
+  equipamiento: z.preprocess((val) => {
+    // Convert array to string if needed (frontend may send array)
+    if (Array.isArray(val)) {
+      return val.join(', ');
+    }
+    return val;
+  }, z.string().max(500).optional()),
+  activa: z.preprocess((val) => {
+    // Convert string to boolean if needed
+    if (typeof val === 'string') {
+      return val === 'true';
+    }
+    // Convert estado to activa (frontend compatibility)
+    if (val === 'disponible') return true;
+    if (val === 'no_disponible') return false;
+    return val;
+  }, z.boolean().default(true)),
+  // Campos adicionales del frontend que ignoramos o transformamos
+  tipo: z.string().optional(),
+  estado: z.string().optional(),
+  observaciones: z.string().max(500).optional(),
+  descripcion: z.string().max(500).optional()
 });
 
 // DTO para crear aula

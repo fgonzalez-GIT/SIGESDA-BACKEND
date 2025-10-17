@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { logger } from '@/utils/logger';
 import { HttpStatus } from '@/types/enums';
 import { ApiResponse } from '@/types/interfaces';
+import { NotFoundError, ValidationError, ConflictError } from '@/utils/errors';
+import { ZodError } from 'zod';
 
 // Custom error class
 export class AppError extends Error {
@@ -31,9 +33,26 @@ export const errorHandler = (
   if (error instanceof AppError) {
     statusCode = error.statusCode;
     message = error.message;
-  } else if (error.name === 'ValidationError') {
+  } else if (error instanceof NotFoundError) {
+    statusCode = error.statusCode;
+    message = error.message;
+  } else if (error instanceof ValidationError) {
+    statusCode = error.statusCode;
+    message = error.message;
+  } else if (error instanceof ConflictError) {
+    statusCode = error.statusCode;
+    message = error.message;
+  } else if (error instanceof ZodError) {
     statusCode = HttpStatus.BAD_REQUEST;
-    message = 'Validation Error';
+    // Format Zod validation errors into user-friendly messages
+    const validationErrors = error.errors.map((err) => {
+      const field = err.path.join('.');
+      return `${field}: ${err.message}`;
+    });
+    message = validationErrors.join(', ');
+  } else if (error.name === 'ZodError') {
+    statusCode = HttpStatus.BAD_REQUEST;
+    message = error.message;
   } else if (error.name === 'CastError') {
     statusCode = HttpStatus.BAD_REQUEST;
     message = 'Invalid ID format';
@@ -57,9 +76,12 @@ export const errorHandler = (
     error: message,
   };
 
-  // Add stack trace in development
-  if (process.env.NODE_ENV === 'development') {
-    response.error = error.message;
+  // Add stack trace in development (but not for validation/business logic errors)
+  if (process.env.NODE_ENV === 'development' &&
+      !(error instanceof ZodError) &&
+      !(error instanceof ValidationError) &&
+      !(error instanceof ConflictError) &&
+      !(error instanceof NotFoundError)) {
     (response as any).stack = error.stack;
   }
 
