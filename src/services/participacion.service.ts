@@ -1,6 +1,7 @@
 import { ParticipacionRepository } from '@/repositories/participacion.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { ActividadRepository } from '@/repositories/actividad.repository';
+import { AsistenciaRepository } from '@/repositories/asistencia.repository';
 import {
   CreateParticipacionDto,
   UpdateParticipacionDto,
@@ -20,7 +21,8 @@ export class ParticipacionService {
   constructor(
     private participacionRepository: ParticipacionRepository,
     private personaRepository: PersonaRepository,
-    private actividadRepository: ActividadRepository
+    private actividadRepository: ActividadRepository,
+    private asistenciaRepository?: AsistenciaRepository // Opcional para backward compatibility
   ) {}
 
   async create(data: CreateParticipacionDto) {
@@ -360,16 +362,49 @@ export class ParticipacionService {
   }
 
   async getReporteInasistencias(params: ReporteInasistenciasDto) {
-    // Implementación básica - en un sistema real tendríamos una tabla de asistencias
-    const participaciones = await this.participacionRepository.getReporteInasistencias(params);
+    // Si no hay repository de asistencias, usar implementación básica (backward compatibility)
+    if (!this.asistenciaRepository) {
+      const participaciones = await this.participacionRepository.getReporteInasistencias(params);
+      return participaciones.map(p => ({
+        ...p,
+        diasDesdeInicio: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24)),
+        estado: determinarEstado(p),
+        inasistenciasEstimadas: Math.floor(Math.random() * params.umbralInasistencias)
+      }));
+    }
 
-    return participaciones.map(p => ({
-      ...p,
-      diasDesdeInicio: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24)),
-      estado: determinarEstado(p),
-      // En un sistema real, aquí calcularíamos las inasistencias reales
-      inasistenciasEstimadas: Math.floor(Math.random() * params.umbralInasistencias)
-    }));
+    // Usar el repository de asistencias para obtener alertas reales
+    const alertas = await this.asistenciaRepository.getAlertasInasistencias({
+      umbral: params.umbralInasistencias,
+      actividadId: params.actividadId,
+      soloActivas: true
+    });
+
+    // Enriquecer las alertas con información de la participación
+    const resultado = await Promise.all(
+      alertas.map(async (alerta: any) => {
+        const participacion = await this.participacionRepository.findById(String(alerta.participacion_id));
+
+        return {
+          participacionId: alerta.participacion_id,
+          personaId: alerta.persona_id,
+          nombreCompleto: `${alerta.nombre} ${alerta.apellido}`,
+          actividadId: alerta.actividad_id,
+          actividadNombre: alerta.actividad_nombre,
+          inasistenciasConsecutivas: alerta.inasistencias_consecutivas,
+          periodoInasistencias: {
+            desde: alerta.fecha_inicio,
+            hasta: alerta.fecha_ultima
+          },
+          diasDesdeInicio: participacion
+            ? Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
+            : null,
+          estado: participacion ? determinarEstado(participacion) : null
+        };
+      })
+    );
+
+    return resultado;
   }
 
   async getDashboardParticipacion() {

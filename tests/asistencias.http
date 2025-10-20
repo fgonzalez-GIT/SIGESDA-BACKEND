@@ -1,0 +1,541 @@
+### SIGESDA API - Pruebas de Endpoints Asistencias
+### Base URL: http://localhost:8000
+### Versión: 1.0.0
+### Fecha: 2025-10-17
+
+### 1. Health Check
+GET http://localhost:8000/health
+
+###################################################################
+### SETUP - Obtener IDs necesarios para las pruebas
+###################################################################
+
+### 2. Obtener Participaciones (para usar sus IDs)
+GET http://localhost:8000/api/participacion?limit=10
+
+### 3. Obtener Actividades (para registro masivo)
+GET http://localhost:8000/api/actividades?limit=5
+
+### 4. Obtener Personas (para reportes por persona)
+GET http://localhost:8000/api/personas?limit=5
+
+###################################################################
+### CRUD BÁSICO - Asistencias Individuales
+###################################################################
+
+### 5. Crear Asistencia - Presente
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "2025-10-15T18:00:00.000Z",
+  "asistio": true,
+  "observaciones": "Llegó puntual y participó activamente"
+}
+
+### 6. Crear Asistencia - Ausente
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "2025-10-16T18:00:00.000Z",
+  "asistio": false,
+  "justificada": false,
+  "observaciones": "No asistió sin justificación"
+}
+
+### 7. Crear Asistencia - Ausente Justificada
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "2025-10-17T18:00:00.000Z",
+  "asistio": false,
+  "justificada": true,
+  "observaciones": "Enfermedad - presentó certificado médico"
+}
+
+### 8. Error: Participación No Existe
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": 99999,
+  "fechaSesion": "2025-10-15T18:00:00.000Z",
+  "asistio": true
+}
+
+### 9. Error: Asistencia Duplicada (misma participación y fecha)
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "2025-10-15T18:00:00.000Z",
+  "asistio": true
+}
+
+###################################################################
+### REGISTRO MASIVO - Sesión Completa
+###################################################################
+
+### 10. Registro Masivo de Sesión - Mix de Presentes y Ausentes
+POST http://localhost:8000/api/asistencias/registro-masivo
+Content-Type: application/json
+
+{
+  "actividadId": 1,
+  "fechaSesion": "2025-10-14T18:00:00.000Z",
+  "asistencias": [
+    {
+      "participacionId": 1,
+      "asistio": true
+    },
+    {
+      "participacionId": 2,
+      "asistio": true
+    },
+    {
+      "participacionId": 3,
+      "asistio": false,
+      "justificada": false
+    },
+    {
+      "participacionId": 4,
+      "asistio": false,
+      "justificada": true,
+      "observaciones": "Cita médica"
+    },
+    {
+      "participacionId": 5,
+      "asistio": true
+    }
+  ]
+}
+
+### 11. Registro Masivo - Solo Presentes
+POST http://localhost:8000/api/asistencias/registro-masivo
+Content-Type: application/json
+
+{
+  "actividadId": 1,
+  "fechaSesion": "2025-10-13T18:00:00.000Z",
+  "asistencias": [
+    {
+      "participacionId": 1,
+      "asistio": true
+    },
+    {
+      "participacionId": 2,
+      "asistio": true
+    }
+  ]
+}
+
+### 12. Error: Registro Masivo - Participación de Otra Actividad
+POST http://localhost:8000/api/asistencias/registro-masivo
+Content-Type: application/json
+
+{
+  "actividadId": 1,
+  "fechaSesion": "2025-10-12T18:00:00.000Z",
+  "asistencias": [
+    {
+      "participacionId": 1,
+      "asistio": true
+    },
+    {
+      "participacionId": 999,
+      "asistio": true
+    }
+  ]
+}
+
+###################################################################
+### CONSULTAS Y FILTROS
+###################################################################
+
+### 13. Listar Todas las Asistencias con Paginación
+GET http://localhost:8000/api/asistencias?page=1&limit=20
+
+### 14. Filtrar Solo Inasistencias
+GET http://localhost:8000/api/asistencias?soloInasistencias=true
+
+### 15. Filtrar Solo Justificadas
+GET http://localhost:8000/api/asistencias?soloJustificadas=true
+
+### 16. Filtrar por Rango de Fechas
+GET http://localhost:8000/api/asistencias?fechaDesde=2025-10-01T00:00:00.000Z&fechaHasta=2025-10-31T23:59:59.000Z
+
+### 17. Filtrar por Participación
+GET http://localhost:8000/api/asistencias?participacionId=1
+
+### 18. Filtrar por Actividad
+GET http://localhost:8000/api/asistencias?actividadId=1
+
+### 19. Filtrar por Persona
+GET http://localhost:8000/api/asistencias?personaId=cmfzvtt8z0000868ls6c87427
+
+### 20. Filtros Combinados - Inasistencias de una Actividad en Rango de Fechas
+GET http://localhost:8000/api/asistencias?actividadId=1&soloInasistencias=true&fechaDesde=2025-10-01&fechaHasta=2025-10-31
+
+###################################################################
+### CONSULTAS POR RECURSO RELACIONADO
+###################################################################
+
+### 21. Obtener Asistencias de una Participación Específica
+GET http://localhost:8000/api/asistencias/participacion/1
+
+### 22. Obtener Asistencias de una Actividad
+GET http://localhost:8000/api/asistencias/actividad/1
+
+### 23. Obtener Asistencias de una Actividad con Rango de Fechas
+GET http://localhost:8000/api/asistencias/actividad/1?fechaDesde=2025-10-01&fechaHasta=2025-10-31
+
+### 24. Obtener Asistencias de una Persona
+GET http://localhost:8000/api/asistencias/persona/cmfzvtt8z0000868ls6c87427
+
+### 25. Obtener Asistencias de una Persona con Rango de Fechas
+GET http://localhost:8000/api/asistencias/persona/cmfzvtt8z0000868ls6c87427?fechaDesde=2025-10-01&fechaHasta=2025-10-31
+
+###################################################################
+### ACTUALIZAR Y ELIMINAR
+###################################################################
+
+### 26. Obtener Asistencia por ID
+GET http://localhost:8000/api/asistencias/1
+
+### 27. Actualizar Asistencia - Cambiar a Presente
+PATCH http://localhost:8000/api/asistencias/1
+Content-Type: application/json
+
+{
+  "asistio": true,
+  "observaciones": "Se corrigió el registro - sí asistió"
+}
+
+### 28. Actualizar Asistencia - Justificar Inasistencia
+PATCH http://localhost:8000/api/asistencias/2
+Content-Type: application/json
+
+{
+  "justificada": true,
+  "observaciones": "Presentó justificante posteriormente"
+}
+
+### 29. Eliminar Asistencia
+DELETE http://localhost:8000/api/asistencias/1
+
+### 30. Error: Actualizar Asistencia No Existente
+PATCH http://localhost:8000/api/asistencias/99999
+Content-Type: application/json
+
+{
+  "asistio": true
+}
+
+###################################################################
+### TASA DE ASISTENCIA
+###################################################################
+
+### 31. Obtener Tasa de Asistencia de una Participación
+GET http://localhost:8000/api/asistencias/tasa/1
+
+### 32. Obtener Tasa de Asistencia con Rango de Fechas
+GET http://localhost:8000/api/asistencias/tasa/1?fechaDesde=2025-10-01&fechaHasta=2025-10-31
+
+### 33. Error: Tasa de Participación No Existente
+GET http://localhost:8000/api/asistencias/tasa/99999
+
+###################################################################
+### ALERTAS DE INASISTENCIAS
+###################################################################
+
+### 34. Obtener Alertas de Inasistencias (umbral 3)
+GET http://localhost:8000/api/asistencias/alertas
+
+### 35. Obtener Alertas con Umbral Personalizado (5 inasistencias)
+GET http://localhost:8000/api/asistencias/alertas?umbral=5
+
+### 36. Obtener Alertas de una Actividad Específica
+GET http://localhost:8000/api/asistencias/alertas?actividadId=1
+
+### 37. Obtener Alertas con Umbral Bajo (2 inasistencias)
+GET http://localhost:8000/api/asistencias/alertas?umbral=2&actividadId=1
+
+### 38. Obtener Alertas Incluyendo Participaciones Inactivas
+GET http://localhost:8000/api/asistencias/alertas?soloActivas=false
+
+###################################################################
+### REPORTES Y ESTADÍSTICAS
+###################################################################
+
+### 39. Reporte Agrupado por Persona
+GET http://localhost:8000/api/asistencias/reporte?fechaDesde=2025-10-01&fechaHasta=2025-10-31&agruparPor=persona
+
+### 40. Reporte Agrupado por Actividad
+GET http://localhost:8000/api/asistencias/reporte?fechaDesde=2025-10-01&fechaHasta=2025-10-31&agruparPor=actividad
+
+### 41. Reporte Agrupado por Mes
+GET http://localhost:8000/api/asistencias/reporte?fechaDesde=2025-09-01&fechaHasta=2025-12-31&agruparPor=mes
+
+### 42. Reporte Agrupado por Día
+GET http://localhost:8000/api/asistencias/reporte?fechaDesde=2025-10-01&fechaHasta=2025-10-15&agruparPor=dia
+
+### 43. Reporte de Actividad Específica
+GET http://localhost:8000/api/asistencias/reporte?actividadId=1&fechaDesde=2025-10-01&fechaHasta=2025-10-31&agruparPor=persona
+
+### 44. Reporte de Persona Específica
+GET http://localhost:8000/api/asistencias/reporte?personaId=cmfzvtt8z0000868ls6c87427&fechaDesde=2025-10-01&fechaHasta=2025-10-31&agruparPor=actividad
+
+### 45. Estadísticas Generales
+GET http://localhost:8000/api/asistencias/estadisticas
+
+### 46. Estadísticas de una Actividad
+GET http://localhost:8000/api/asistencias/estadisticas?actividadId=1
+
+### 47. Estadísticas con Rango de Fechas
+GET http://localhost:8000/api/asistencias/estadisticas?fechaDesde=2025-10-01&fechaHasta=2025-10-31
+
+###################################################################
+### RESÚMENES PERSONALIZADOS
+###################################################################
+
+### 48. Resumen de Persona
+GET http://localhost:8000/api/asistencias/resumen/persona/cmfzvtt8z0000868ls6c87427
+
+### 49. Resumen de Persona con Rango de Fechas
+GET http://localhost:8000/api/asistencias/resumen/persona/cmfzvtt8z0000868ls6c87427?fechaDesde=2025-10-01&fechaHasta=2025-10-31
+
+### 50. Resumen de Actividad
+GET http://localhost:8000/api/asistencias/resumen/actividad/1
+
+### 51. Resumen de Actividad con Rango de Fechas
+GET http://localhost:8000/api/asistencias/resumen/actividad/1?fechaDesde=2025-10-01&fechaHasta=2025-10-31
+
+###################################################################
+### DASHBOARD
+###################################################################
+
+### 52. Dashboard General de Asistencias
+GET http://localhost:8000/api/asistencias/dashboard
+
+### 53. Dashboard de Actividad Específica
+GET http://localhost:8000/api/asistencias/dashboard?actividadId=1
+
+###################################################################
+### CORRECCIÓN DE ASISTENCIAS
+###################################################################
+
+### 54. Corregir Asistencia (Crear o Actualizar)
+POST http://localhost:8000/api/asistencias/corregir
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "2025-10-15T18:00:00.000Z",
+  "asistio": true,
+  "observaciones": "Corrección administrativa"
+}
+
+### 55. Corregir Asistencia Existente
+POST http://localhost:8000/api/asistencias/corregir
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "2025-10-16T18:00:00.000Z",
+  "asistio": true,
+  "justificada": false,
+  "observaciones": "Se verificó que sí asistió - error de registro"
+}
+
+###################################################################
+### VALIDACIONES Y CASOS DE ERROR
+###################################################################
+
+### 56. Error: Fecha de Sesión Inválida
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "fecha-invalida",
+  "asistio": true
+}
+
+### 57. Error: Participación ID Negativo
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": -1,
+  "fechaSesion": "2025-10-15T18:00:00.000Z",
+  "asistio": true
+}
+
+### 58. Error: Justificada sin ser Inasistencia
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "2025-10-15T18:00:00.000Z",
+  "asistio": true,
+  "justificada": true
+}
+
+### 59. Error: Observaciones Muy Largas (>500 caracteres)
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "2025-10-15T18:00:00.000Z",
+  "asistio": false,
+  "observaciones": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam."
+}
+
+### 60. Error: Registro Masivo Sin Asistencias
+POST http://localhost:8000/api/asistencias/registro-masivo
+Content-Type: application/json
+
+{
+  "actividadId": 1,
+  "fechaSesion": "2025-10-15T18:00:00.000Z",
+  "asistencias": []
+}
+
+###################################################################
+### CASOS ESPECIALES Y EDGE CASES
+###################################################################
+
+### 61. Crear Asistencia Sin Observaciones
+POST http://localhost:8000/api/asistencias
+Content-Type: application/json
+
+{
+  "participacionId": 1,
+  "fechaSesion": "2025-10-18T18:00:00.000Z",
+  "asistio": true
+}
+
+### 62. Actualizar Solo Observaciones
+PATCH http://localhost:8000/api/asistencias/1
+Content-Type: application/json
+
+{
+  "observaciones": "Observación actualizada"
+}
+
+### 63. Registro Masivo - Todos Ausentes
+POST http://localhost:8000/api/asistencias/registro-masivo
+Content-Type: application/json
+
+{
+  "actividadId": 1,
+  "fechaSesion": "2025-10-11T18:00:00.000Z",
+  "asistencias": [
+    {
+      "participacionId": 1,
+      "asistio": false,
+      "justificada": false,
+      "observaciones": "Sesión cancelada por mal tiempo"
+    },
+    {
+      "participacionId": 2,
+      "asistio": false,
+      "justificada": true,
+      "observaciones": "Sesión cancelada por mal tiempo"
+    }
+  ]
+}
+
+### 64. Reportes con Fechas Muy Amplias (todo el año)
+GET http://localhost:8000/api/asistencias/reporte?fechaDesde=2025-01-01&fechaHasta=2025-12-31&agruparPor=mes
+
+### 65. Alertas con Umbral Muy Alto (no debería devolver nada)
+GET http://localhost:8000/api/asistencias/alertas?umbral=10
+
+###################################################################
+### INTEGRACIÓN CON PARTICIPACIÓN
+###################################################################
+
+### 66. Verificar Reporte de Inasistencias desde Participación (ahora usa datos reales)
+GET http://localhost:8000/api/participacion/reporte-inasistencias?fechaDesde=2025-10-01&fechaHasta=2025-10-31&umbralInasistencias=3
+
+### 67. Verificar Reporte de Inasistencias de Actividad Específica
+GET http://localhost:8000/api/participacion/reporte-inasistencias?actividadId=1&fechaDesde=2025-10-01&fechaHasta=2025-10-31&umbralInasistencias=3
+
+###################################################################
+### NOTAS PARA LAS PRUEBAS:
+### 1. Ejecutar setup primero (casos 2-4) para obtener IDs reales
+### 2. Reemplazar IDs de participación y actividad con valores reales
+### 3. Usar fechas recientes para las sesiones
+### 4. Las fechas deben estar en formato ISO 8601
+### 5. Una asistencia justificada DEBE tener asistio=false
+### 6. No se puede crear asistencia duplicada (misma participación + fecha)
+### 7. Las observaciones son opcionales pero tienen límite de 500 caracteres
+### 8. El registro masivo valida que todas las participaciones pertenezcan a la actividad
+### 9. Los reportes requieren datos existentes para ser útiles
+### 10. Las alertas solo muestran inasistencias CONSECUTIVAS y NO justificadas
+###################################################################
+
+###################################################################
+### ESCENARIO COMPLETO DE PRUEBA
+### Ejecutar en orden para crear datos de prueba completos
+###################################################################
+
+### ESCENARIO 1: Registrar asistencias de una semana completa
+### Lunes - Todos presentes
+POST http://localhost:8000/api/asistencias/registro-masivo
+Content-Type: application/json
+
+{
+  "actividadId": 1,
+  "fechaSesion": "2025-10-14T18:00:00.000Z",
+  "asistencias": [
+    {"participacionId": 1, "asistio": true},
+    {"participacionId": 2, "asistio": true},
+    {"participacionId": 3, "asistio": true}
+  ]
+}
+
+### Miércoles - Una inasistencia
+POST http://localhost:8000/api/asistencias/registro-masivo
+Content-Type: application/json
+
+{
+  "actividadId": 1,
+  "fechaSesion": "2025-10-16T18:00:00.000Z",
+  "asistencias": [
+    {"participacionId": 1, "asistio": true},
+    {"participacionId": 2, "asistio": false, "justificada": false},
+    {"participacionId": 3, "asistio": true}
+  ]
+}
+
+### Viernes - Dos inasistencias
+POST http://localhost:8000/api/asistencias/registro-masivo
+Content-Type: application/json
+
+{
+  "actividadId": 1,
+  "fechaSesion": "2025-10-18T18:00:00.000Z",
+  "asistencias": [
+    {"participacionId": 1, "asistio": true},
+    {"participacionId": 2, "asistio": false, "justificada": false},
+    {"participacionId": 3, "asistio": false, "justificada": true, "observaciones": "Enfermo"}
+  ]
+}
+
+### Verificar alertas (debería mostrar participación 2 con 2 inasistencias consecutivas)
+GET http://localhost:8000/api/asistencias/alertas?umbral=2&actividadId=1
+
+### Ver resumen de la actividad
+GET http://localhost:8000/api/asistencias/resumen/actividad/1?fechaDesde=2025-10-14&fechaHasta=2025-10-18
+
+###################################################################

@@ -356,6 +356,32 @@ export class ActividadService {
     return this.actividadRepository.getParticipantes(actividadId);
   }
 
+  /**
+   * Inscribe un participante en una actividad
+   */
+  async addParticipante(
+    actividadId: number,
+    personaId: string,
+    fechaInicio: string,
+    observaciones?: string
+  ) {
+    const actividad = await this.actividadRepository.findById(actividadId);
+    if (!actividad) {
+      throw new NotFoundError(`Actividad con ID ${actividadId} no encontrada`);
+    }
+
+    const participacion = await this.actividadRepository.addParticipante(
+      actividadId,
+      personaId,
+      fechaInicio,
+      observaciones
+    );
+
+    logger.info(`Participante inscrito: ${personaId} en actividad ${actividad.nombre} (ID: ${actividadId})`);
+
+    return participacion;
+  }
+
   // ==================== ESTADÍSTICAS ====================
 
   /**

@@ -10,13 +10,19 @@ const personaBaseSchema = zod_1.z.object({
     email: zod_1.z.string().email('Email inválido').optional(),
     telefono: zod_1.z.string().max(20).optional(),
     direccion: zod_1.z.string().max(200).optional(),
-    fechaNacimiento: zod_1.z.string().datetime().optional()
+    fechaNacimiento: zod_1.z.string().datetime().optional(),
+    observaciones: zod_1.z.string().max(500).optional()
 });
-exports.createPersonaSchema = zod_1.z.discriminatedUnion('tipo', [
+exports.createPersonaSchema = zod_1.z.preprocess((data) => {
+    if (data && typeof data.tipo === 'string') {
+        return { ...data, tipo: data.tipo.toUpperCase() };
+    }
+    return data;
+}, zod_1.z.discriminatedUnion('tipo', [
     zod_1.z.object({
         ...personaBaseSchema.shape,
         tipo: zod_1.z.literal(client_1.TipoPersona.SOCIO),
-        categoria: zod_1.z.nativeEnum(client_1.CategoriaSocio),
+        categoriaId: zod_1.z.number().int().positive('ID de categoría inválido'),
         fechaIngreso: zod_1.z.string().datetime().optional(),
         numeroSocio: zod_1.z.number().int().positive().optional()
     }),
@@ -36,36 +42,54 @@ exports.createPersonaSchema = zod_1.z.discriminatedUnion('tipo', [
         cuit: zod_1.z.string().min(11, 'CUIT debe tener 11 caracteres').max(11),
         razonSocial: zod_1.z.string().min(1, 'Razón social es requerida').max(100)
     })
-]);
-exports.updatePersonaSchema = zod_1.z.discriminatedUnion('tipo', [
+]));
+exports.updatePersonaSchema = zod_1.z.preprocess((data) => {
+    if (data && typeof data.tipo === 'string') {
+        return { ...data, tipo: data.tipo.toUpperCase() };
+    }
+    return data;
+}, zod_1.z.union([
+    zod_1.z.discriminatedUnion('tipo', [
+        zod_1.z.object({
+            tipo: zod_1.z.literal(client_1.TipoPersona.SOCIO),
+            ...personaBaseSchema.partial().shape,
+            categoriaId: zod_1.z.number().int().positive('ID de categoría inválido').optional(),
+            fechaIngreso: zod_1.z.string().datetime().optional(),
+            fechaBaja: zod_1.z.string().datetime().optional(),
+            motivoBaja: zod_1.z.string().max(200).optional()
+        }),
+        zod_1.z.object({
+            tipo: zod_1.z.literal(client_1.TipoPersona.NO_SOCIO),
+            ...personaBaseSchema.partial().shape
+        }),
+        zod_1.z.object({
+            tipo: zod_1.z.literal(client_1.TipoPersona.DOCENTE),
+            ...personaBaseSchema.partial().shape,
+            especialidad: zod_1.z.string().max(100).optional(),
+            honorariosPorHora: zod_1.z.number().positive().optional()
+        }),
+        zod_1.z.object({
+            tipo: zod_1.z.literal(client_1.TipoPersona.PROVEEDOR),
+            ...personaBaseSchema.partial().shape,
+            cuit: zod_1.z.string().min(11).max(11).optional(),
+            razonSocial: zod_1.z.string().max(100).optional()
+        })
+    ]),
     zod_1.z.object({
-        tipo: zod_1.z.literal(client_1.TipoPersona.SOCIO),
         ...personaBaseSchema.partial().shape,
-        categoria: zod_1.z.nativeEnum(client_1.CategoriaSocio).optional(),
+        categoriaId: zod_1.z.number().int().positive('ID de categoría inválido').optional(),
         fechaIngreso: zod_1.z.string().datetime().optional(),
         fechaBaja: zod_1.z.string().datetime().optional(),
-        motivoBaja: zod_1.z.string().max(200).optional()
-    }),
-    zod_1.z.object({
-        tipo: zod_1.z.literal(client_1.TipoPersona.NO_SOCIO),
-        ...personaBaseSchema.partial().shape
-    }),
-    zod_1.z.object({
-        tipo: zod_1.z.literal(client_1.TipoPersona.DOCENTE),
-        ...personaBaseSchema.partial().shape,
+        motivoBaja: zod_1.z.string().max(200).optional(),
         especialidad: zod_1.z.string().max(100).optional(),
-        honorariosPorHora: zod_1.z.number().positive().optional()
-    }),
-    zod_1.z.object({
-        tipo: zod_1.z.literal(client_1.TipoPersona.PROVEEDOR),
-        ...personaBaseSchema.partial().shape,
+        honorariosPorHora: zod_1.z.number().positive().optional(),
         cuit: zod_1.z.string().min(11).max(11).optional(),
         razonSocial: zod_1.z.string().max(100).optional()
     })
-]);
+]));
 exports.personaQuerySchema = zod_1.z.object({
     tipo: zod_1.z.nativeEnum(client_1.TipoPersona).optional(),
-    categoria: zod_1.z.nativeEnum(client_1.CategoriaSocio).optional(),
+    categoriaId: zod_1.z.number().int().positive().optional(),
     activo: zod_1.z.preprocess((val) => {
         if (typeof val === 'string') {
             return val === 'true';

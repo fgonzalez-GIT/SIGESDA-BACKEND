@@ -9,7 +9,9 @@ class AulaController {
     }
     async createAula(req, res, next) {
         try {
+            console.log('🔍 [DEBUG] POST /api/aulas - Request body:', JSON.stringify(req.body, null, 2));
             const validatedData = aula_dto_1.createAulaSchema.parse(req.body);
+            console.log('✅ [DEBUG] Validation passed:', JSON.stringify(validatedData, null, 2));
             const aula = await this.aulaService.createAula(validatedData);
             const response = {
                 success: true,

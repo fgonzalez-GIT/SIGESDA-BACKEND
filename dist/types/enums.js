@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LogLevel = exports.HttpStatus = exports.EstadoRecibo = exports.TipoParentesco = exports.MedioPagoTipo = exports.TipoRecibo = exports.TipoActividad = exports.CategoriaSocio = exports.TipoPersona = void 0;
+exports.LogLevel = exports.HttpStatus = exports.EstadoRecibo = exports.TipoParentesco = exports.MedioPagoTipo = exports.TipoRecibo = exports.TipoActividad = exports.TipoPersona = void 0;
 var client_1 = require("@prisma/client");
 Object.defineProperty(exports, "TipoPersona", { enumerable: true, get: function () { return client_1.TipoPersona; } });
-Object.defineProperty(exports, "CategoriaSocio", { enumerable: true, get: function () { return client_1.CategoriaSocio; } });
 Object.defineProperty(exports, "TipoActividad", { enumerable: true, get: function () { return client_1.TipoActividad; } });
 Object.defineProperty(exports, "TipoRecibo", { enumerable: true, get: function () { return client_1.TipoRecibo; } });
 Object.defineProperty(exports, "MedioPagoTipo", { enumerable: true, get: function () { return client_1.MedioPagoTipo; } });

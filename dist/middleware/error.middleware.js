@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.asyncHandler = exports.notFoundHandler = exports.errorHandler = exports.AppError = void 0;
 const logger_1 = require("@/utils/logger");
 const enums_1 = require("@/types/enums");
+const errors_1 = require("@/utils/errors");
+const zod_1 = require("zod");
 class AppError extends Error {
     constructor(message, statusCode = enums_1.HttpStatus.INTERNAL_SERVER_ERROR) {
         super(message);
@@ -19,9 +21,29 @@ const errorHandler = (error, req, res, next) => {
         statusCode = error.statusCode;
         message = error.message;
     }
-    else if (error.name === 'ValidationError') {
+    else if (error instanceof errors_1.NotFoundError) {
+        statusCode = error.statusCode;
+        message = error.message;
+    }
+    else if (error instanceof errors_1.ValidationError) {
+        statusCode = error.statusCode;
+        message = error.message;
+    }
+    else if (error instanceof errors_1.ConflictError) {
+        statusCode = error.statusCode;
+        message = error.message;
+    }
+    else if (error instanceof zod_1.ZodError) {
         statusCode = enums_1.HttpStatus.BAD_REQUEST;
-        message = 'Validation Error';
+        const validationErrors = error.errors.map((err) => {
+            const field = err.path.join('.');
+            return `${field}: ${err.message}`;
+        });
+        message = validationErrors.join(', ');
+    }
+    else if (error.name === 'ZodError') {
+        statusCode = enums_1.HttpStatus.BAD_REQUEST;
+        message = error.message;
     }
     else if (error.name === 'CastError') {
         statusCode = enums_1.HttpStatus.BAD_REQUEST;
@@ -42,8 +64,11 @@ const errorHandler = (error, req, res, next) => {
         success: false,
         error: message,
     };
-    if (process.env.NODE_ENV === 'development') {
-        response.error = error.message;
+    if (process.env.NODE_ENV === 'development' &&
+        !(error instanceof zod_1.ZodError) &&
+        !(error instanceof errors_1.ValidationError) &&
+        !(error instanceof errors_1.ConflictError) &&
+        !(error instanceof errors_1.NotFoundError)) {
         response.stack = error.stack;
     }
     res.status(statusCode).json(response);

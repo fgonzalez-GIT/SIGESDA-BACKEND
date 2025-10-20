@@ -8,12 +8,12 @@ export declare class PersonaRepository {
         data: Persona[];
         total: number;
     }>;
-    findById(id: string): Promise<Persona | null>;
+    findById(id: number): Promise<Persona | null>;
     findByDni(dni: string): Promise<Persona | null>;
     findByEmail(email: string): Promise<Persona | null>;
-    update(id: string, data: Partial<CreatePersonaDto>): Promise<Persona>;
-    softDelete(id: string, motivo?: string): Promise<Persona>;
-    hardDelete(id: string): Promise<Persona>;
+    update(id: number, data: Partial<CreatePersonaDto>): Promise<Persona>;
+    softDelete(id: number, motivo?: string): Promise<Persona>;
+    hardDelete(id: number): Promise<Persona>;
     getNextNumeroSocio(): Promise<number>;
     getSocios(categoria?: CategoriaSocio, activos?: boolean): Promise<Persona[]>;
 }

@@ -12,5 +12,7 @@ export declare class PersonaController {
     getDocentes(req: Request, res: Response, next: NextFunction): Promise<void>;
     getProveedores(req: Request, res: Response, next: NextFunction): Promise<void>;
     searchPersonas(req: Request, res: Response, next: NextFunction): Promise<void>;
+    checkDni(req: Request, res: Response, next: NextFunction): Promise<void>;
+    reactivatePersona(req: Request, res: Response, next: NextFunction): Promise<void>;
 }
 //# sourceMappingURL=persona.controller.d.ts.map

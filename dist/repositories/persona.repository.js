@@ -7,9 +7,15 @@ class PersonaRepository {
         this.prisma = prisma;
     }
     async create(data) {
+        const { categoriaId, ...rest } = data;
         return this.prisma.persona.create({
             data: {
-                ...data,
+                ...rest,
+                ...(categoriaId && {
+                    categoria: {
+                        connect: { id: categoriaId }
+                    }
+                }),
                 fechaIngreso: data.tipo === client_1.TipoPersona.SOCIO && data.fechaIngreso
                     ? new Date(data.fechaIngreso)
                     : data.tipo === client_1.TipoPersona.SOCIO
@@ -24,8 +30,8 @@ class PersonaRepository {
         if (query.tipo) {
             where.tipo = query.tipo;
         }
-        if (query.categoria) {
-            where.categoria = query.categoria;
+        if (query.categoriaId) {
+            where.categoriaId = query.categoriaId;
         }
         if (query.activo !== undefined) {
             if (query.activo) {
@@ -62,9 +68,9 @@ class PersonaRepository {
         return this.prisma.persona.findUnique({
             where: { id },
             include: {
-                participaciones: {
+                participaciones_actividades: {
                     include: {
-                        actividad: true
+                        actividades: true
                     }
                 },
                 familiares: {
@@ -79,7 +85,8 @@ class PersonaRepository {
                         }
                     }
                 },
-                comisionDirectiva: true
+                comisionDirectiva: true,
+                categoria: true
             }
         });
     }
@@ -94,7 +101,16 @@ class PersonaRepository {
         });
     }
     async update(id, data) {
-        const updateData = { ...data };
+        const { categoriaId, ...rest } = data;
+        const updateData = { ...rest };
+        if (categoriaId !== undefined) {
+            if (categoriaId === null) {
+                updateData.categoria = { disconnect: true };
+            }
+            else {
+                updateData.categoria = { connect: { id: categoriaId } };
+            }
+        }
         if (updateData.fechaIngreso) {
             updateData.fechaIngreso = new Date(updateData.fechaIngreso);
         }

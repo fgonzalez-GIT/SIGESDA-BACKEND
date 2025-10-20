@@ -50,7 +50,7 @@ export class PersonaController {
   async getPersonaById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const persona = await this.personaService.getPersonaById(id);
+      const persona = await this.personaService.getPersonaById(parseInt(id));
 
       if (!persona) {
         const response: ApiResponse = {
@@ -76,7 +76,7 @@ export class PersonaController {
     try {
       const { id } = req.params;
       const validatedData = updatePersonaSchema.parse(req.body);
-      const persona = await this.personaService.updatePersona(id, validatedData);
+      const persona = await this.personaService.updatePersona(parseInt(id), validatedData);
 
       const response: ApiResponse = {
         success: true,
@@ -96,7 +96,7 @@ export class PersonaController {
       const { hard, motivo } = req.query;
       const isHardDelete = hard === 'true';
 
-      const persona = await this.personaService.deletePersona(id, isHardDelete, motivo as string);
+      const persona = await this.personaService.deletePersona(parseInt(id), isHardDelete, motivo as string);
 
       const response: ApiResponse = {
         success: true,
@@ -217,7 +217,7 @@ export class PersonaController {
       const { id } = req.params;
       const validatedData = updatePersonaSchema.parse(req.body);
 
-      const persona = await this.personaService.reactivatePersona(id, validatedData);
+      const persona = await this.personaService.reactivatePersona(parseInt(id), validatedData);
 
       const response: ApiResponse = {
         success: true,

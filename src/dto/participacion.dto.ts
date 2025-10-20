@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 // Schema base para participación en actividad
 const participacionBaseSchema = z.object({
-  personaId: z.string().min(1, 'ID de persona es requerido'),
-  actividadId: z.string().min(1, 'ID de actividad es requerido'),
+  personaId: z.string().cuid('ID de persona inválido'),
+  actividadId: z.number().int('El ID de actividad debe ser un número entero').positive('El ID de actividad debe ser positivo'),
   fechaInicio: z.coerce.date({
     required_error: 'Fecha de inicio es requerida',
     invalid_type_error: 'Fecha de inicio debe ser una fecha válida'
@@ -76,7 +76,10 @@ export const updateParticipacionSchema = z.object({
 // Query filters para listar participaciones
 export const participacionQuerySchema = z.object({
   personaId: z.string().optional(),
-  actividadId: z.string().optional(),
+  actividadId: z.preprocess((val) => {
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? undefined : parsed;
+  }, z.number().int().positive().optional()),
   activa: z.preprocess((val) => {
     if (val === 'true') return true;
     if (val === 'false') return false;
@@ -104,9 +107,9 @@ export const participacionQuerySchema = z.object({
 
 // DTO para inscripción masiva (una persona a múltiples actividades)
 export const inscripcionMasivaSchema = z.object({
-  personaId: z.string().min(1, 'ID de persona es requerido'),
+  personaId: z.string().cuid('ID de persona inválido'),
   actividades: z.array(z.object({
-    actividadId: z.string().min(1, 'ID de actividad es requerido'),
+    actividadId: z.number().int().positive('El ID de actividad debe ser positivo'),
     fechaInicio: z.coerce.date(),
     fechaFin: z.coerce.date().optional().nullable(),
     precioEspecial: z.number().min(0).optional().nullable(),
@@ -131,7 +134,12 @@ export const estadisticasParticipacionSchema = z.object({
 
 // DTO para reporte de inasistencias
 export const reporteInasistenciasSchema = z.object({
-  actividadId: z.string().optional(),
+  actividadId: z.preprocess((val) => {
+    if (!val) return undefined;
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? undefined : parsed;
+  }, z.number().int().positive().optional()),
+  personaId: z.string().optional(),
   fechaDesde: z.coerce.date(),
   fechaHasta: z.coerce.date(),
   umbralInasistencias: z.number().int().min(1).default(3) // Número de faltas consecutivas
@@ -139,13 +147,13 @@ export const reporteInasistenciasSchema = z.object({
 
 // Schema para validar disponibilidad de cupos
 export const verificarCuposSchema = z.object({
-  actividadId: z.string().min(1, 'ID de actividad es requerido'),
+  actividadId: z.number().int().positive('El ID de actividad debe ser positivo'),
   fechaConsulta: z.coerce.date().default(() => new Date())
 });
 
 // Schema para transferir participación (cambiar actividad)
 export const transferirParticipacionSchema = z.object({
-  nuevaActividadId: z.string().min(1, 'ID de nueva actividad es requerido'),
+  nuevaActividadId: z.number().int().positive('El ID de nueva actividad debe ser positivo'),
   fechaTransferencia: z.coerce.date().default(() => new Date()),
   conservarFechaInicio: z.boolean().default(false),
   observaciones: z.string().max(500).optional()
@@ -188,14 +196,14 @@ export const calcularDuracionParticipacion = (
 export const validarSolapamientoParticipaciones = (
   nuevaParticipacion: {
     personaId: string;
-    actividadId: string;
+    actividadId: number;
     fechaInicio: Date;
     fechaFin?: Date | null;
   },
   participacionesExistentes: Array<{
-    id: string;
+    id: number;
     personaId: string;
-    actividadId: string;
+    actividadId: number;
     fechaInicio: Date;
     fechaFin: Date | null;
     activa: boolean;

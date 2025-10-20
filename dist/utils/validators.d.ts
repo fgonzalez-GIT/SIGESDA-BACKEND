@@ -23,77 +23,76 @@ export declare const personaSchemas: {
         telefono: z.ZodOptional<z.ZodString>;
         direccion: z.ZodOptional<z.ZodString>;
         fechaNacimiento: z.ZodOptional<z.ZodString>;
-        categoria: z.ZodOptional<z.ZodNativeEnum<{
-            ACTIVO: "ACTIVO";
-            ESTUDIANTE: "ESTUDIANTE";
-            FAMILIAR: "FAMILIAR";
-            JUBILADO: "JUBILADO";
-        }>>;
+        categoria: z.ZodOptional<z.ZodNativeEnum<any>>;
         fechaIngreso: z.ZodOptional<z.ZodString>;
         especialidad: z.ZodOptional<z.ZodString>;
         honorariosPorHora: z.ZodOptional<z.ZodEffects<z.ZodUnion<[z.ZodNumber, z.ZodEffects<z.ZodString, number, string>]>, number, string | number>>;
         cuit: z.ZodOptional<z.ZodString>;
         razonSocial: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        tipo: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR";
-        nombre: string;
-        apellido: string;
-        dni: string;
-        email?: string | undefined;
-        telefono?: string | undefined;
-        direccion?: string | undefined;
-        fechaNacimiento?: string | undefined;
-        categoria?: "ACTIVO" | "ESTUDIANTE" | "FAMILIAR" | "JUBILADO" | undefined;
-        fechaIngreso?: string | undefined;
-        especialidad?: string | undefined;
-        honorariosPorHora?: number | undefined;
-        cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        [x: string]: any;
+        tipo?: unknown;
+        nombre?: unknown;
+        apellido?: unknown;
+        dni?: unknown;
+        email?: unknown;
+        telefono?: unknown;
+        direccion?: unknown;
+        fechaNacimiento?: unknown;
+        categoria?: unknown;
+        fechaIngreso?: unknown;
+        especialidad?: unknown;
+        honorariosPorHora?: unknown;
+        cuit?: unknown;
+        razonSocial?: unknown;
     }, {
-        tipo: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR";
-        nombre: string;
-        apellido: string;
-        dni: string;
-        email?: string | undefined;
-        telefono?: string | undefined;
-        direccion?: string | undefined;
-        fechaNacimiento?: string | undefined;
-        categoria?: "ACTIVO" | "ESTUDIANTE" | "FAMILIAR" | "JUBILADO" | undefined;
-        fechaIngreso?: string | undefined;
-        especialidad?: string | undefined;
-        honorariosPorHora?: string | number | undefined;
-        cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        [x: string]: any;
+        tipo?: unknown;
+        nombre?: unknown;
+        apellido?: unknown;
+        dni?: unknown;
+        email?: unknown;
+        telefono?: unknown;
+        direccion?: unknown;
+        fechaNacimiento?: unknown;
+        categoria?: unknown;
+        fechaIngreso?: unknown;
+        especialidad?: unknown;
+        honorariosPorHora?: unknown;
+        cuit?: unknown;
+        razonSocial?: unknown;
     }>, {
-        tipo: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR";
-        nombre: string;
-        apellido: string;
-        dni: string;
-        email?: string | undefined;
-        telefono?: string | undefined;
-        direccion?: string | undefined;
-        fechaNacimiento?: string | undefined;
-        categoria?: "ACTIVO" | "ESTUDIANTE" | "FAMILIAR" | "JUBILADO" | undefined;
-        fechaIngreso?: string | undefined;
-        especialidad?: string | undefined;
-        honorariosPorHora?: number | undefined;
-        cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        [x: string]: any;
+        tipo?: unknown;
+        nombre?: unknown;
+        apellido?: unknown;
+        dni?: unknown;
+        email?: unknown;
+        telefono?: unknown;
+        direccion?: unknown;
+        fechaNacimiento?: unknown;
+        categoria?: unknown;
+        fechaIngreso?: unknown;
+        especialidad?: unknown;
+        honorariosPorHora?: unknown;
+        cuit?: unknown;
+        razonSocial?: unknown;
     }, {
-        tipo: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR";
-        nombre: string;
-        apellido: string;
-        dni: string;
-        email?: string | undefined;
-        telefono?: string | undefined;
-        direccion?: string | undefined;
-        fechaNacimiento?: string | undefined;
-        categoria?: "ACTIVO" | "ESTUDIANTE" | "FAMILIAR" | "JUBILADO" | undefined;
-        fechaIngreso?: string | undefined;
-        especialidad?: string | undefined;
-        honorariosPorHora?: string | number | undefined;
-        cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        [x: string]: any;
+        tipo?: unknown;
+        nombre?: unknown;
+        apellido?: unknown;
+        dni?: unknown;
+        email?: unknown;
+        telefono?: unknown;
+        direccion?: unknown;
+        fechaNacimiento?: unknown;
+        categoria?: unknown;
+        fechaIngreso?: unknown;
+        especialidad?: unknown;
+        honorariosPorHora?: unknown;
+        cuit?: unknown;
+        razonSocial?: unknown;
     }>;
     update: z.ZodObject<{
         nombre: z.ZodOptional<z.ZodString>;
@@ -102,43 +101,40 @@ export declare const personaSchemas: {
         telefono: z.ZodOptional<z.ZodString>;
         direccion: z.ZodOptional<z.ZodString>;
         fechaNacimiento: z.ZodOptional<z.ZodString>;
-        categoria: z.ZodOptional<z.ZodNativeEnum<{
-            ACTIVO: "ACTIVO";
-            ESTUDIANTE: "ESTUDIANTE";
-            FAMILIAR: "FAMILIAR";
-            JUBILADO: "JUBILADO";
-        }>>;
+        categoria: z.ZodOptional<z.ZodNativeEnum<any>>;
         fechaBaja: z.ZodOptional<z.ZodString>;
         motivoBaja: z.ZodOptional<z.ZodString>;
         especialidad: z.ZodOptional<z.ZodString>;
         honorariosPorHora: z.ZodOptional<z.ZodEffects<z.ZodUnion<[z.ZodNumber, z.ZodEffects<z.ZodString, number, string>]>, number, string | number>>;
         razonSocial: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        nombre?: string | undefined;
-        apellido?: string | undefined;
-        email?: string | undefined;
-        telefono?: string | undefined;
-        direccion?: string | undefined;
-        fechaNacimiento?: string | undefined;
-        categoria?: "ACTIVO" | "ESTUDIANTE" | "FAMILIAR" | "JUBILADO" | undefined;
-        fechaBaja?: string | undefined;
-        motivoBaja?: string | undefined;
-        especialidad?: string | undefined;
-        honorariosPorHora?: number | undefined;
-        razonSocial?: string | undefined;
+        [x: string]: any;
+        nombre?: unknown;
+        apellido?: unknown;
+        email?: unknown;
+        telefono?: unknown;
+        direccion?: unknown;
+        fechaNacimiento?: unknown;
+        categoria?: unknown;
+        fechaBaja?: unknown;
+        motivoBaja?: unknown;
+        especialidad?: unknown;
+        honorariosPorHora?: unknown;
+        razonSocial?: unknown;
     }, {
-        nombre?: string | undefined;
-        apellido?: string | undefined;
-        email?: string | undefined;
-        telefono?: string | undefined;
-        direccion?: string | undefined;
-        fechaNacimiento?: string | undefined;
-        categoria?: "ACTIVO" | "ESTUDIANTE" | "FAMILIAR" | "JUBILADO" | undefined;
-        fechaBaja?: string | undefined;
-        motivoBaja?: string | undefined;
-        especialidad?: string | undefined;
-        honorariosPorHora?: string | number | undefined;
-        razonSocial?: string | undefined;
+        [x: string]: any;
+        nombre?: unknown;
+        apellido?: unknown;
+        email?: unknown;
+        telefono?: unknown;
+        direccion?: unknown;
+        fechaNacimiento?: unknown;
+        categoria?: unknown;
+        fechaBaja?: unknown;
+        motivoBaja?: unknown;
+        especialidad?: unknown;
+        honorariosPorHora?: unknown;
+        razonSocial?: unknown;
     }>;
     filter: z.ZodObject<{
         tipo: z.ZodOptional<z.ZodNativeEnum<{
@@ -147,55 +143,50 @@ export declare const personaSchemas: {
             DOCENTE: "DOCENTE";
             PROVEEDOR: "PROVEEDOR";
         }>>;
-        categoria: z.ZodOptional<z.ZodNativeEnum<{
-            ACTIVO: "ACTIVO";
-            ESTUDIANTE: "ESTUDIANTE";
-            FAMILIAR: "FAMILIAR";
-            JUBILADO: "JUBILADO";
-        }>>;
+        categoria: z.ZodOptional<z.ZodNativeEnum<any>>;
         activo: z.ZodOptional<z.ZodBoolean>;
         search: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        tipo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
-        categoria?: "ACTIVO" | "ESTUDIANTE" | "FAMILIAR" | "JUBILADO" | undefined;
-        activo?: boolean | undefined;
-        search?: string | undefined;
+        [x: string]: any;
+        tipo?: unknown;
+        categoria?: unknown;
+        activo?: unknown;
+        search?: unknown;
     }, {
-        tipo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
-        categoria?: "ACTIVO" | "ESTUDIANTE" | "FAMILIAR" | "JUBILADO" | undefined;
-        activo?: boolean | undefined;
-        search?: string | undefined;
+        [x: string]: any;
+        tipo?: unknown;
+        categoria?: unknown;
+        activo?: unknown;
+        search?: unknown;
     }>;
 };
 export declare const actividadSchemas: {
     create: z.ZodObject<{
         nombre: z.ZodString;
-        tipo: z.ZodNativeEnum<{
-            CORO: "CORO";
-            CLASE_CANTO: "CLASE_CANTO";
-            CLASE_INSTRUMENTO: "CLASE_INSTRUMENTO";
-        }>;
+        tipo: z.ZodNativeEnum<any>;
         descripcion: z.ZodOptional<z.ZodString>;
         precio: z.ZodDefault<z.ZodEffects<z.ZodUnion<[z.ZodNumber, z.ZodEffects<z.ZodString, number, string>]>, number, string | number>>;
         duracion: z.ZodOptional<z.ZodNumber>;
         capacidadMaxima: z.ZodOptional<z.ZodNumber>;
         docenteIds: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     }, "strip", z.ZodTypeAny, {
-        tipo: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO";
-        nombre: string;
-        precio: number;
-        descripcion?: string | undefined;
-        duracion?: number | undefined;
-        capacidadMaxima?: number | undefined;
-        docenteIds?: string[] | undefined;
+        [x: string]: any;
+        nombre?: unknown;
+        tipo?: unknown;
+        descripcion?: unknown;
+        precio?: unknown;
+        duracion?: unknown;
+        capacidadMaxima?: unknown;
+        docenteIds?: unknown;
     }, {
-        tipo: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO";
-        nombre: string;
-        descripcion?: string | undefined;
-        precio?: string | number | undefined;
-        duracion?: number | undefined;
-        capacidadMaxima?: number | undefined;
-        docenteIds?: string[] | undefined;
+        [x: string]: any;
+        nombre?: unknown;
+        tipo?: unknown;
+        descripcion?: unknown;
+        precio?: unknown;
+        duracion?: unknown;
+        capacidadMaxima?: unknown;
+        docenteIds?: unknown;
     }>;
     update: z.ZodObject<{
         nombre: z.ZodOptional<z.ZodString>;
@@ -209,38 +200,36 @@ export declare const actividadSchemas: {
         nombre?: string | undefined;
         activa?: boolean | undefined;
         descripcion?: string | undefined;
+        capacidadMaxima?: number | undefined;
         precio?: number | undefined;
         duracion?: number | undefined;
-        capacidadMaxima?: number | undefined;
         docenteIds?: string[] | undefined;
     }, {
         nombre?: string | undefined;
         activa?: boolean | undefined;
         descripcion?: string | undefined;
+        capacidadMaxima?: number | undefined;
         precio?: string | number | undefined;
         duracion?: number | undefined;
-        capacidadMaxima?: number | undefined;
         docenteIds?: string[] | undefined;
     }>;
     filter: z.ZodObject<{
-        tipo: z.ZodOptional<z.ZodNativeEnum<{
-            CORO: "CORO";
-            CLASE_CANTO: "CLASE_CANTO";
-            CLASE_INSTRUMENTO: "CLASE_INSTRUMENTO";
-        }>>;
+        tipo: z.ZodOptional<z.ZodNativeEnum<any>>;
         activa: z.ZodOptional<z.ZodBoolean>;
         conDocente: z.ZodOptional<z.ZodBoolean>;
         search: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        tipo?: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO" | undefined;
-        activa?: boolean | undefined;
-        conDocente?: boolean | undefined;
-        search?: string | undefined;
+        [x: string]: any;
+        tipo?: unknown;
+        activa?: unknown;
+        conDocente?: unknown;
+        search?: unknown;
     }, {
-        tipo?: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO" | undefined;
-        activa?: boolean | undefined;
-        conDocente?: boolean | undefined;
-        search?: string | undefined;
+        [x: string]: any;
+        tipo?: unknown;
+        activa?: unknown;
+        conDocente?: unknown;
+        search?: unknown;
     }>;
 };
 export declare const participacionSchemas: {
@@ -253,32 +242,32 @@ export declare const participacionSchemas: {
         observaciones: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         personaId: string;
-        actividadId: string;
         fechaInicio: string;
+        actividadId: string;
+        observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: number | undefined;
-        observaciones?: string | undefined;
     }, {
         personaId: string;
-        actividadId: string;
         fechaInicio: string;
+        actividadId: string;
+        observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: string | number | undefined;
-        observaciones?: string | undefined;
     }>, {
         personaId: string;
-        actividadId: string;
         fechaInicio: string;
+        actividadId: string;
+        observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: number | undefined;
-        observaciones?: string | undefined;
     }, {
         personaId: string;
-        actividadId: string;
         fechaInicio: string;
+        actividadId: string;
+        observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: string | number | undefined;
-        observaciones?: string | undefined;
     }>;
     update: z.ZodObject<{
         fechaFin: z.ZodOptional<z.ZodString>;
@@ -286,15 +275,15 @@ export declare const participacionSchemas: {
         activa: z.ZodOptional<z.ZodBoolean>;
         observaciones: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
+        observaciones?: string | undefined;
         activa?: boolean | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: number | undefined;
-        observaciones?: string | undefined;
     }, {
+        observaciones?: string | undefined;
         activa?: boolean | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: string | number | undefined;
-        observaciones?: string | undefined;
     }>;
 };
 export declare const reciboSchemas: {
@@ -443,46 +432,46 @@ export declare const reservaSchemas: {
         observaciones: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         docenteId: string;
+        aulaId: string;
         fechaInicio: string;
         fechaFin: string;
-        aulaId: string;
-        actividadId?: string | undefined;
         observaciones?: string | undefined;
+        actividadId?: string | undefined;
     }, {
         docenteId: string;
+        aulaId: string;
         fechaInicio: string;
         fechaFin: string;
-        aulaId: string;
-        actividadId?: string | undefined;
         observaciones?: string | undefined;
+        actividadId?: string | undefined;
     }>, {
         docenteId: string;
+        aulaId: string;
         fechaInicio: string;
         fechaFin: string;
-        aulaId: string;
-        actividadId?: string | undefined;
         observaciones?: string | undefined;
+        actividadId?: string | undefined;
     }, {
         docenteId: string;
+        aulaId: string;
         fechaInicio: string;
         fechaFin: string;
-        aulaId: string;
-        actividadId?: string | undefined;
         observaciones?: string | undefined;
+        actividadId?: string | undefined;
     }>, {
         docenteId: string;
+        aulaId: string;
         fechaInicio: string;
         fechaFin: string;
-        aulaId: string;
-        actividadId?: string | undefined;
         observaciones?: string | undefined;
+        actividadId?: string | undefined;
     }, {
         docenteId: string;
+        aulaId: string;
         fechaInicio: string;
         fechaFin: string;
-        aulaId: string;
-        actividadId?: string | undefined;
         observaciones?: string | undefined;
+        actividadId?: string | undefined;
     }>;
 };
 //# sourceMappingURL=validators.d.ts.map

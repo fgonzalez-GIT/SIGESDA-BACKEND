@@ -661,6 +661,44 @@ export class ActividadRepository {
     });
   }
 
+  /**
+   * Inscribe un participante en una actividad
+   */
+  async addParticipante(
+    actividadId: number,
+    personaId: string,
+    fechaInicio: string,
+    observaciones?: string
+  ) {
+    return this.prisma.participaciones_actividades.create({
+      data: {
+        actividad_id: actividadId,
+        persona_id: personaId,
+        fecha_inicio: new Date(fechaInicio),
+        observaciones: observaciones || null,
+        activo: true
+      },
+      include: {
+        personas: {
+          select: {
+            id: true,
+            nombre: true,
+            apellido: true,
+            tipo: true,
+            email: true
+          }
+        },
+        actividades: {
+          select: {
+            id: true,
+            nombre: true,
+            codigo_actividad: true
+          }
+        }
+      }
+    });
+  }
+
   // ==================== ESTADÍSTICAS ====================
 
   /**

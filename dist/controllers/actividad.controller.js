@@ -1,16 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActividadController = void 0;
-const actividad_dto_1 = require("@/dto/actividad.dto");
+const actividad_v2_dto_1 = require("@/dto/actividad-v2.dto");
 const enums_1 = require("@/types/enums");
-const client_1 = require("@prisma/client");
 class ActividadController {
     constructor(actividadService) {
         this.actividadService = actividadService;
     }
     async createActividad(req, res, next) {
         try {
-            const validatedData = actividad_dto_1.createActividadSchema.parse(req.body);
+            const validatedData = actividad_v2_dto_1.createActividadSchema.parse(req.body);
             const actividad = await this.actividadService.createActividad(validatedData);
             const response = {
                 success: true,
@@ -25,16 +24,16 @@ class ActividadController {
     }
     async getActividades(req, res, next) {
         try {
-            const query = actividad_dto_1.actividadQuerySchema.parse(req.query);
+            const query = actividad_v2_dto_1.queryActividadesSchema.parse(req.query);
             const result = await this.actividadService.getActividades(query);
             const response = {
                 success: true,
-                data: result.data,
-                meta: {
+                data: {
+                    data: result.data,
+                    total: result.total,
                     page: query.page,
                     limit: query.limit,
-                    total: result.total,
-                    totalPages: result.pages
+                    pages: result.pages
                 }
             };
             res.status(enums_1.HttpStatus.OK).json(response);
@@ -45,16 +44,30 @@ class ActividadController {
     }
     async getActividadById(req, res, next) {
         try {
-            const { id } = req.params;
-            const actividad = await this.actividadService.getActividadById(id);
-            if (!actividad) {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
                 const response = {
                     success: false,
-                    error: 'Actividad no encontrada'
+                    error: 'ID de actividad inválido'
                 };
-                res.status(enums_1.HttpStatus.NOT_FOUND).json(response);
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
                 return;
             }
+            const actividad = await this.actividadService.getActividadById(id);
+            const response = {
+                success: true,
+                data: actividad
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getActividadByCodigo(req, res, next) {
+        try {
+            const { codigo } = req.params;
+            const actividad = await this.actividadService.getActividadByCodigo(codigo);
             const response = {
                 success: true,
                 data: actividad
@@ -67,8 +80,16 @@ class ActividadController {
     }
     async updateActividad(req, res, next) {
         try {
-            const { id } = req.params;
-            const validatedData = actividad_dto_1.updateActividadSchema.parse(req.body);
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const validatedData = actividad_v2_dto_1.updateActividadSchema.parse(req.body);
             const actividad = await this.actividadService.updateActividad(id, validatedData);
             const response = {
                 success: true,
@@ -83,13 +104,42 @@ class ActividadController {
     }
     async deleteActividad(req, res, next) {
         try {
-            const { id } = req.params;
-            const { hard } = req.query;
-            const isHardDelete = hard === 'true';
-            const actividad = await this.actividadService.deleteActividad(id, isHardDelete);
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const result = await this.actividadService.deleteActividad(id);
             const response = {
                 success: true,
-                message: `Actividad ${isHardDelete ? 'eliminada permanentemente' : 'dada de baja'}`,
+                message: result.message
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async cambiarEstado(req, res, next) {
+        try {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const validatedData = actividad_v2_dto_1.cambiarEstadoActividadSchema.parse(req.body);
+            const actividad = await this.actividadService.cambiarEstado(id, validatedData.nuevoEstadoId, validatedData.observaciones);
+            const response = {
+                success: true,
+                message: 'Estado de actividad cambiado exitosamente',
                 data: actividad
             };
             res.status(enums_1.HttpStatus.OK).json(response);
@@ -98,12 +148,44 @@ class ActividadController {
             next(error);
         }
     }
-    async getCoros(req, res, next) {
+    async agregarHorario(req, res, next) {
         try {
-            const coros = await this.actividadService.getCoros();
+            const actividadId = parseInt(req.params.id);
+            if (isNaN(actividadId)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const horario = await this.actividadService.agregarHorario(actividadId, req.body);
             const response = {
                 success: true,
-                data: coros
+                message: 'Horario agregado exitosamente',
+                data: horario
+            };
+            res.status(enums_1.HttpStatus.CREATED).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getHorariosByActividad(req, res, next) {
+        try {
+            const actividadId = parseInt(req.params.id);
+            if (isNaN(actividadId)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const horarios = await this.actividadService.getHorariosByActividad(actividadId);
+            const response = {
+                success: true,
+                data: horarios
             };
             res.status(enums_1.HttpStatus.OK).json(response);
         }
@@ -111,12 +193,22 @@ class ActividadController {
             next(error);
         }
     }
-    async getClasesInstrumento(req, res, next) {
+    async actualizarHorario(req, res, next) {
         try {
-            const clases = await this.actividadService.getClasesInstrumento();
+            const horarioId = parseInt(req.params.horarioId);
+            if (isNaN(horarioId)) {
+                const response = {
+                    success: false,
+                    error: 'ID de horario inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const horario = await this.actividadService.actualizarHorario(horarioId, req.body);
             const response = {
                 success: true,
-                data: clases
+                message: 'Horario actualizado exitosamente',
+                data: horario
             };
             res.status(enums_1.HttpStatus.OK).json(response);
         }
@@ -124,12 +216,21 @@ class ActividadController {
             next(error);
         }
     }
-    async getClasesCanto(req, res, next) {
+    async eliminarHorario(req, res, next) {
         try {
-            const clases = await this.actividadService.getClasesCanto();
+            const horarioId = parseInt(req.params.horarioId);
+            if (isNaN(horarioId)) {
+                const response = {
+                    success: false,
+                    error: 'ID de horario inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const result = await this.actividadService.eliminarHorario(horarioId);
             const response = {
                 success: true,
-                data: clases
+                message: result.message
             };
             res.status(enums_1.HttpStatus.OK).json(response);
         }
@@ -139,18 +240,31 @@ class ActividadController {
     }
     async asignarDocente(req, res, next) {
         try {
-            const { id: actividadId } = req.params;
-            const { docenteId } = actividad_dto_1.asignarDocenteSchema.parse({
-                actividadId,
-                docenteId: req.body.docenteId
-            });
-            const actividad = await this.actividadService.asignarDocente(actividadId, docenteId);
+            const actividadId = parseInt(req.params.id);
+            if (isNaN(actividadId)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const { docenteId, rolDocenteId, observaciones } = req.body;
+            if (!docenteId || !rolDocenteId) {
+                const response = {
+                    success: false,
+                    error: 'docenteId y rolDocenteId son requeridos'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const asignacion = await this.actividadService.asignarDocente(actividadId, docenteId, parseInt(rolDocenteId), observaciones);
             const response = {
                 success: true,
                 message: 'Docente asignado exitosamente',
-                data: actividad
+                data: asignacion
             };
-            res.status(enums_1.HttpStatus.OK).json(response);
+            res.status(enums_1.HttpStatus.CREATED).json(response);
         }
         catch (error) {
             next(error);
@@ -158,12 +272,22 @@ class ActividadController {
     }
     async desasignarDocente(req, res, next) {
         try {
-            const { id: actividadId, docenteId } = req.params;
-            const actividad = await this.actividadService.desasignarDocente(actividadId, docenteId);
+            const actividadId = parseInt(req.params.id);
+            const { docenteId } = req.params;
+            const rolDocenteId = parseInt(req.params.rolDocenteId);
+            if (isNaN(actividadId) || isNaN(rolDocenteId)) {
+                const response = {
+                    success: false,
+                    error: 'IDs inválidos'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const desasignacion = await this.actividadService.desasignarDocente(actividadId, docenteId, rolDocenteId);
             const response = {
                 success: true,
                 message: 'Docente desasignado exitosamente',
-                data: actividad
+                data: desasignacion
             };
             res.status(enums_1.HttpStatus.OK).json(response);
         }
@@ -171,27 +295,21 @@ class ActividadController {
             next(error);
         }
     }
-    async getParticipantes(req, res, next) {
+    async getDocentesByActividad(req, res, next) {
         try {
-            const { id } = req.params;
-            const participantes = await this.actividadService.getParticipantes(id);
+            const actividadId = parseInt(req.params.id);
+            if (isNaN(actividadId)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const docentes = await this.actividadService.getDocentesByActividad(actividadId);
             const response = {
                 success: true,
-                data: participantes
-            };
-            res.status(enums_1.HttpStatus.OK).json(response);
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getEstadisticas(req, res, next) {
-        try {
-            const { id } = req.params;
-            const estadisticas = await this.actividadService.getEstadisticas(id);
-            const response = {
-                success: true,
-                data: estadisticas
+                data: docentes
             };
             res.status(enums_1.HttpStatus.OK).json(response);
         }
@@ -212,35 +330,203 @@ class ActividadController {
             next(error);
         }
     }
-    async searchActividades(req, res, next) {
+    async getParticipantes(req, res, next) {
         try {
-            const { q: searchTerm, tipo } = req.query;
-            if (!searchTerm || typeof searchTerm !== 'string') {
+            const actividadId = parseInt(req.params.id);
+            if (isNaN(actividadId)) {
                 const response = {
                     success: false,
-                    error: 'Parámetro de búsqueda "q" es requerido'
+                    error: 'ID de actividad inválido'
                 };
                 res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
                 return;
             }
-            let tipoActividad;
-            if (tipo) {
-                if (Object.values(client_1.TipoActividad).includes(tipo)) {
-                    tipoActividad = tipo;
-                }
-                else {
-                    const response = {
-                        success: false,
-                        error: `Tipo de actividad inválido. Valores válidos: ${Object.values(client_1.TipoActividad).join(', ')}`
-                    };
-                    res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
-                    return;
-                }
-            }
-            const actividades = await this.actividadService.searchActividades(searchTerm, tipoActividad);
+            const participantes = await this.actividadService.getParticipantes(actividadId);
             const response = {
                 success: true,
-                data: actividades
+                data: participantes
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async addParticipante(req, res, next) {
+        try {
+            const actividadId = parseInt(req.params.id);
+            if (isNaN(actividadId)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const { persona_id, fecha_inicio, observaciones } = req.body;
+            if (!persona_id || !fecha_inicio) {
+                const response = {
+                    success: false,
+                    error: 'persona_id y fecha_inicio son requeridos'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const participacion = await this.actividadService.addParticipante(actividadId, persona_id, fecha_inicio, observaciones);
+            const response = {
+                success: true,
+                message: 'Participante inscrito exitosamente',
+                data: participacion
+            };
+            res.status(enums_1.HttpStatus.CREATED).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getEstadisticas(req, res, next) {
+        try {
+            const actividadId = parseInt(req.params.id);
+            if (isNaN(actividadId)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const estadisticas = await this.actividadService.getEstadisticas(actividadId);
+            const response = {
+                success: true,
+                data: estadisticas
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getCatalogos(req, res, next) {
+        try {
+            const catalogos = await this.actividadService.getCatalogos();
+            const response = {
+                success: true,
+                data: catalogos
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getTiposActividades(req, res, next) {
+        try {
+            const tipos = await this.actividadService.getTiposActividades();
+            const response = {
+                success: true,
+                data: tipos
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getCategoriasActividades(req, res, next) {
+        try {
+            const categorias = await this.actividadService.getCategoriasActividades();
+            const response = {
+                success: true,
+                data: categorias
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getEstadosActividades(req, res, next) {
+        try {
+            const estados = await this.actividadService.getEstadosActividades();
+            const response = {
+                success: true,
+                data: estados
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getDiasSemana(req, res, next) {
+        try {
+            const dias = await this.actividadService.getDiasSemana();
+            const response = {
+                success: true,
+                data: dias
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getRolesDocentes(req, res, next) {
+        try {
+            const roles = await this.actividadService.getRolesDocentes();
+            const response = {
+                success: true,
+                data: roles
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async duplicarActividad(req, res, next) {
+        try {
+            const idOriginal = parseInt(req.params.id);
+            if (isNaN(idOriginal)) {
+                const response = {
+                    success: false,
+                    error: 'ID de actividad inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const validatedData = actividad_v2_dto_1.duplicarActividadSchema.parse(req.body);
+            const nuevaActividad = await this.actividadService.duplicarActividad(idOriginal, validatedData.nuevoCodigoActividad, validatedData.nuevoNombre, validatedData.nuevaFechaDesde, validatedData.nuevaFechaHasta, validatedData.copiarHorarios, validatedData.copiarDocentes);
+            const response = {
+                success: true,
+                message: 'Actividad duplicada exitosamente',
+                data: nuevaActividad
+            };
+            res.status(enums_1.HttpStatus.CREATED).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getResumenPorTipo(req, res, next) {
+        try {
+            const resumen = await this.actividadService.getResumenPorTipo();
+            const response = {
+                success: true,
+                data: resumen
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getHorarioSemanal(req, res, next) {
+        try {
+            const horarioSemanal = await this.actividadService.getHorarioSemanal();
+            const response = {
+                success: true,
+                data: horarioSemanal
             };
             res.status(enums_1.HttpStatus.OK).json(response);
         }

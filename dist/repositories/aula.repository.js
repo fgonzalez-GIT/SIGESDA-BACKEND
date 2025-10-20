@@ -54,7 +54,7 @@ class AulaRepository {
                 include: {
                     _count: {
                         select: {
-                            reservas: true
+                            reservas_aulas_actividades: true
                         }
                     }
                 }
@@ -67,26 +67,29 @@ class AulaRepository {
         return this.prisma.aula.findUnique({
             where: { id },
             include: {
-                reservas: {
+                reservas_aulas_actividades: {
                     include: {
-                        actividad: {
-                            select: {
-                                id: true,
-                                nombre: true,
-                                tipo: true
-                            }
-                        },
-                        docente: {
-                            select: {
-                                id: true,
-                                nombre: true,
-                                apellido: true,
-                                especialidad: true
+                        horarios_actividades: {
+                            include: {
+                                actividades: {
+                                    select: {
+                                        id: true,
+                                        nombre: true,
+                                        tipo_actividad_id: true
+                                    }
+                                },
+                                dias_semana: {
+                                    select: {
+                                        id: true,
+                                        nombre: true,
+                                        codigo: true
+                                    }
+                                }
                             }
                         }
                     },
                     orderBy: {
-                        fechaInicio: 'asc'
+                        fecha_vigencia_desde: 'asc'
                     }
                 }
             }
@@ -125,79 +128,92 @@ class AulaRepository {
     }
     async verificarDisponibilidad(aulaId, fechaInicio, fechaFin, excluirReservaId) {
         const where = {
-            aulaId,
+            aula_id: aulaId,
             OR: [
                 {
-                    fechaInicio: {
+                    fecha_vigencia_desde: {
                         gte: fechaInicio,
                         lt: fechaFin
                     }
                 },
                 {
-                    fechaFin: {
+                    fecha_vigencia_hasta: {
                         gt: fechaInicio,
                         lte: fechaFin
                     }
                 },
                 {
                     AND: [
-                        { fechaInicio: { lte: fechaInicio } },
-                        { fechaFin: { gte: fechaFin } }
+                        { fecha_vigencia_desde: { lte: fechaInicio } },
+                        {
+                            OR: [
+                                { fecha_vigencia_hasta: { gte: fechaFin } },
+                                { fecha_vigencia_hasta: null }
+                            ]
+                        }
                     ]
                 }
             ]
         };
         if (excluirReservaId) {
-            where.id = { not: excluirReservaId };
+            where.id = { not: parseInt(excluirReservaId) };
         }
-        const conflictingReservations = await this.prisma.reservaAula.findFirst({
+        const conflictingReservations = await this.prisma.reservas_aulas_actividades.findFirst({
             where
         });
         return !conflictingReservations;
     }
     async getReservasEnPeriodo(aulaId, fechaInicio, fechaFin) {
-        return this.prisma.reservaAula.findMany({
+        return this.prisma.reservas_aulas_actividades.findMany({
             where: {
-                aulaId,
+                aula_id: aulaId,
                 OR: [
                     {
-                        fechaInicio: {
+                        fecha_vigencia_desde: {
                             gte: fechaInicio,
                             lte: fechaFin
                         }
                     },
                     {
-                        fechaFin: {
+                        fecha_vigencia_hasta: {
                             gte: fechaInicio,
                             lte: fechaFin
                         }
                     },
                     {
                         AND: [
-                            { fechaInicio: { lte: fechaInicio } },
-                            { fechaFin: { gte: fechaFin } }
+                            { fecha_vigencia_desde: { lte: fechaInicio } },
+                            {
+                                OR: [
+                                    { fecha_vigencia_hasta: { gte: fechaFin } },
+                                    { fecha_vigencia_hasta: null }
+                                ]
+                            }
                         ]
                     }
                 ]
             },
             include: {
-                actividad: {
-                    select: {
-                        id: true,
-                        nombre: true,
-                        tipo: true
-                    }
-                },
-                docente: {
-                    select: {
-                        id: true,
-                        nombre: true,
-                        apellido: true
+                horarios_actividades: {
+                    include: {
+                        actividades: {
+                            select: {
+                                id: true,
+                                nombre: true,
+                                tipo_actividad_id: true
+                            }
+                        },
+                        dias_semana: {
+                            select: {
+                                nombre: true,
+                                codigo: true
+                            }
+                        }
                     }
                 }
             },
             orderBy: {
-                fechaInicio: 'asc'
+                fecha_vigencia_desde: 'asc'
             }
         });
     }
@@ -207,35 +223,43 @@ class AulaRepository {
             include: {
                 _count: {
                     select: {
-                        reservas: true
+                        reservas_aulas_actividades: true
                     }
                 }
             }
         });
         if (!aula)
             return null;
-        const reservasPorActividad = await this.prisma.reservaAula.groupBy({
-            by: ['actividadId'],
+        const reservasConActividades = await this.prisma.reservas_aulas_actividades.findMany({
             where: {
-                aulaId,
-                actividadId: { not: null }
+                aula_id: aulaId
             },
-            _count: true
+            include: {
+                horarios_actividades: {
+                    include: {
+                        actividades: {
+                            select: {
+                                id: true,
+                                nombre: true,
+                                tipo_actividad_id: true
+                            }
+                        }
+                    }
+                }
+            }
         });
-        const actividadIds = reservasPorActividad
-            .map(r => r.actividadId)
-            .filter(id => id !== null);
-        const actividades = await this.prisma.actividad.findMany({
-            where: { id: { in: actividadIds } },
-            select: { id: true, nombre: true, tipo: true }
+        const actividadMap = new Map();
+        reservasConActividades.forEach(reserva => {
+            const actividadId = reserva.horarios_actividades.actividades.id;
+            if (!actividadMap.has(actividadId)) {
+                actividadMap.set(actividadId, {
+                    actividad: reserva.horarios_actividades.actividades,
+                    count: 0
+                });
+            }
+            actividadMap.get(actividadId).count++;
         });
-        const reservasPorActividadConNombre = reservasPorActividad.map(reserva => {
-            const actividad = actividades.find(a => a.id === reserva.actividadId);
-            return {
-                actividad: actividad || { nombre: 'Sin actividad', tipo: null },
-                count: reserva._count
-            };
-        });
+        const reservasPorActividadConNombre = Array.from(actividadMap.values());
         const inicioMes = new Date();
         inicioMes.setDate(1);
         inicioMes.setHours(0, 0, 0, 0);
@@ -243,17 +267,17 @@ class AulaRepository {
         finMes.setMonth(finMes.getMonth() + 1);
         finMes.setDate(0);
         finMes.setHours(23, 59, 59, 999);
-        const reservasMesActual = await this.prisma.reservaAula.count({
+        const reservasMesActual = await this.prisma.reservas_aulas_actividades.count({
             where: {
-                aulaId,
-                fechaInicio: {
+                aula_id: aulaId,
+                fecha_vigencia_desde: {
                     gte: inicioMes,
                     lte: finMes
                 }
             }
         });
         return {
-            totalReservas: aula._count.reservas,
+            totalReservas: aula._count.reservas_aulas_actividades,
             capacidad: aula.capacidad,
             reservasPorActividad: reservasPorActividadConNombre,
             reservasMesActual,
@@ -270,12 +294,12 @@ class AulaRepository {
             include: {
                 _count: {
                     select: {
-                        reservas: true
+                        reservas_aulas_actividades: true
                     }
                 }
             },
             orderBy: {
-                reservas: {
+                reservas_aulas_actividades: {
                     _count: 'asc'
                 }
             }
@@ -285,7 +309,7 @@ class AulaRepository {
             nombre: aula.nombre,
             capacidad: aula.capacidad,
             ubicacion: aula.ubicacion,
-            totalReservas: aula._count.reservas
+            totalReservas: aula._count.reservas_aulas_actividades
         }));
     }
 }

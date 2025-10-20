@@ -9,7 +9,8 @@ const personaBaseSchema = z.object({
   email: z.string().email('Email inválido').optional(),
   telefono: z.string().max(20).optional(),
   direccion: z.string().max(200).optional(),
-  fechaNacimiento: z.string().datetime().optional()
+  fechaNacimiento: z.string().datetime().optional(),
+  observaciones: z.string().max(500).optional()
 });
 
 // Create persona DTOs with discriminated unions
@@ -25,7 +26,7 @@ export const createPersonaSchema = z.preprocess(
     z.object({
       ...personaBaseSchema.shape,
       tipo: z.literal(TipoPersona.SOCIO),
-      categoriaId: z.string().cuid('ID de categoría inválido'),
+      categoriaId: z.number().int().positive('ID de categoría inválido'),
       fechaIngreso: z.string().datetime().optional(),
       numeroSocio: z.number().int().positive().optional()
     }),
@@ -54,7 +55,7 @@ export const createPersonaSchema = z.preprocess(
   ])
 );
 
-// Update persona schema (partial)
+// Update persona schema (partial) - allows updates without requiring tipo
 export const updatePersonaSchema = z.preprocess(
   (data: any) => {
     if (data && typeof data.tipo === 'string') {
@@ -62,31 +63,46 @@ export const updatePersonaSchema = z.preprocess(
     }
     return data;
   },
-  z.discriminatedUnion('tipo', [
+  z.union([
+    // When tipo is provided, validate according to specific type
+    z.discriminatedUnion('tipo', [
+      z.object({
+        tipo: z.literal(TipoPersona.SOCIO),
+        ...personaBaseSchema.partial().shape,
+        categoriaId: z.number().int().positive('ID de categoría inválido').optional(),
+        fechaIngreso: z.string().datetime().optional(),
+        fechaBaja: z.string().datetime().optional(),
+        motivoBaja: z.string().max(200).optional()
+      }),
+
+      z.object({
+        tipo: z.literal(TipoPersona.NO_SOCIO),
+        ...personaBaseSchema.partial().shape
+      }),
+
+      z.object({
+        tipo: z.literal(TipoPersona.DOCENTE),
+        ...personaBaseSchema.partial().shape,
+        especialidad: z.string().max(100).optional(),
+        honorariosPorHora: z.number().positive().optional()
+      }),
+
+      z.object({
+        tipo: z.literal(TipoPersona.PROVEEDOR),
+        ...personaBaseSchema.partial().shape,
+        cuit: z.string().min(11).max(11).optional(),
+        razonSocial: z.string().max(100).optional()
+      })
+    ]),
+    // When tipo is not provided, allow basic persona fields only
     z.object({
-      tipo: z.literal(TipoPersona.SOCIO),
       ...personaBaseSchema.partial().shape,
-      categoriaId: z.string().cuid('ID de categoría inválido').optional(),
+      categoriaId: z.number().int().positive('ID de categoría inválido').optional(),
       fechaIngreso: z.string().datetime().optional(),
       fechaBaja: z.string().datetime().optional(),
-      motivoBaja: z.string().max(200).optional()
-    }),
-
-    z.object({
-      tipo: z.literal(TipoPersona.NO_SOCIO),
-      ...personaBaseSchema.partial().shape
-    }),
-
-    z.object({
-      tipo: z.literal(TipoPersona.DOCENTE),
-      ...personaBaseSchema.partial().shape,
+      motivoBaja: z.string().max(200).optional(),
       especialidad: z.string().max(100).optional(),
-      honorariosPorHora: z.number().positive().optional()
-    }),
-
-    z.object({
-      tipo: z.literal(TipoPersona.PROVEEDOR),
-      ...personaBaseSchema.partial().shape,
+      honorariosPorHora: z.number().positive().optional(),
       cuit: z.string().min(11).max(11).optional(),
       razonSocial: z.string().max(100).optional()
     })
@@ -96,7 +112,7 @@ export const updatePersonaSchema = z.preprocess(
 // Query filters
 export const personaQuerySchema = z.object({
   tipo: z.nativeEnum(TipoPersona).optional(),
-  categoriaId: z.string().cuid().optional(),
+  categoriaId: z.number().int().positive().optional(),
   activo: z.preprocess((val) => {
     if (typeof val === 'string') {
       return val === 'true';

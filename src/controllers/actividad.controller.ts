@@ -503,6 +503,53 @@ export class ActividadController {
   }
 
   /**
+   * POST /api/actividades/:id/participantes
+   * Inscribe un participante a una actividad
+   */
+  async addParticipante(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actividadId = parseInt(req.params.id);
+
+      if (isNaN(actividadId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de actividad inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const { persona_id, fecha_inicio, observaciones } = req.body;
+
+      if (!persona_id || !fecha_inicio) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'persona_id y fecha_inicio son requeridos'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const participacion = await this.actividadService.addParticipante(
+        actividadId,
+        persona_id,
+        fecha_inicio,
+        observaciones
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Participante inscrito exitosamente',
+        data: participacion
+      };
+
+      res.status(HttpStatus.CREATED).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * GET /api/actividades/:id/estadisticas
    * Obtiene estadísticas de una actividad
    */

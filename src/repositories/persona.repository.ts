@@ -5,9 +5,16 @@ export class PersonaRepository {
   constructor(private prisma: PrismaClient) {}
 
   async create(data: CreatePersonaDto): Promise<Persona> {
+    const { categoriaId, ...rest } = data as any;
+
     return this.prisma.persona.create({
       data: {
-        ...data,
+        ...rest,
+        ...(categoriaId && {
+          categoria: {
+            connect: { id: categoriaId }
+          }
+        }),
         fechaIngreso: data.tipo === TipoPersona.SOCIO && data.fechaIngreso
           ? new Date(data.fechaIngreso)
           : data.tipo === TipoPersona.SOCIO
@@ -25,8 +32,8 @@ export class PersonaRepository {
       where.tipo = query.tipo;
     }
 
-    if (query.categoria) {
-      where.categoria = query.categoria;
+    if (query.categoriaId) {
+      where.categoriaId = query.categoriaId;
     }
 
     if (query.activo !== undefined) {
@@ -64,13 +71,13 @@ export class PersonaRepository {
     return { data, total };
   }
 
-  async findById(id: string): Promise<Persona | null> {
+  async findById(id: number): Promise<Persona | null> {
     return this.prisma.persona.findUnique({
       where: { id },
       include: {
-        participaciones: {
+        participaciones_actividades: {
           include: {
-            actividad: true
+            actividades: true
           }
         },
         familiares: {
@@ -85,7 +92,8 @@ export class PersonaRepository {
             }
           }
         },
-        comisionDirectiva: true
+        comisionDirectiva: true,
+        categoria: true
       }
     });
   }
@@ -102,8 +110,17 @@ export class PersonaRepository {
     });
   }
 
-  async update(id: string, data: Partial<CreatePersonaDto>): Promise<Persona> {
-    const updateData: any = { ...data };
+  async update(id: number, data: Partial<CreatePersonaDto>): Promise<Persona> {
+    const { categoriaId, ...rest } = data as any;
+    const updateData: any = { ...rest };
+
+    if (categoriaId !== undefined) {
+      if (categoriaId === null) {
+        updateData.categoria = { disconnect: true };
+      } else {
+        updateData.categoria = { connect: { id: categoriaId } };
+      }
+    }
 
     if (updateData.fechaIngreso) {
       updateData.fechaIngreso = new Date(updateData.fechaIngreso);
@@ -123,7 +140,7 @@ export class PersonaRepository {
     });
   }
 
-  async softDelete(id: string, motivo?: string): Promise<Persona> {
+  async softDelete(id: number, motivo?: string): Promise<Persona> {
     return this.prisma.persona.update({
       where: { id },
       data: {
@@ -133,7 +150,7 @@ export class PersonaRepository {
     });
   }
 
-  async hardDelete(id: string): Promise<Persona> {
+  async hardDelete(id: number): Promise<Persona> {
     return this.prisma.persona.delete({
       where: { id }
     });

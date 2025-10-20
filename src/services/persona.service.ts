@@ -8,7 +8,15 @@ import { HttpStatus } from '@/types/enums';
 export class PersonaService {
   constructor(private personaRepository: PersonaRepository) {}
 
-  async createPersona(data: CreatePersonaDto): Promise<Persona> {
+  // Helper para agregar el campo estado calculado
+  private addEstadoField(persona: Persona): Persona & { estado: 'activo' | 'inactivo' } {
+    return {
+      ...persona,
+      estado: persona.fechaBaja === null ? 'activo' : 'inactivo'
+    };
+  }
+
+  async createPersona(data: CreatePersonaDto): Promise<Persona & { estado: 'activo' | 'inactivo' }> {
     // Validate unique constraints
     const existingDni = await this.personaRepository.findByDni(data.dni);
     if (existingDni) {
@@ -32,24 +40,26 @@ export class PersonaService {
 
     logger.info(`Persona created: ${persona.tipo} - ${persona.nombre} ${persona.apellido} (ID: ${persona.id})`);
 
-    return persona;
+    return this.addEstadoField(persona);
   }
 
-  async getPersonas(query: PersonaQueryDto): Promise<{ data: Persona[]; total: number; pages: number }> {
+  async getPersonas(query: PersonaQueryDto): Promise<{ data: (Persona & { estado: 'activo' | 'inactivo' })[]; total: number; pages: number }> {
     const result = await this.personaRepository.findAll(query);
     const pages = Math.ceil(result.total / query.limit);
 
     return {
-      ...result,
+      data: result.data.map(p => this.addEstadoField(p)),
+      total: result.total,
       pages
     };
   }
 
-  async getPersonaById(id: string): Promise<Persona | null> {
-    return this.personaRepository.findById(id);
+  async getPersonaById(id: number): Promise<(Persona & { estado: 'activo' | 'inactivo' }) | null> {
+    const persona = await this.personaRepository.findById(id);
+    return persona ? this.addEstadoField(persona) : null;
   }
 
-  async updatePersona(id: string, data: UpdatePersonaDto): Promise<Persona> {
+  async updatePersona(id: number, data: UpdatePersonaDto): Promise<Persona & { estado: 'activo' | 'inactivo' }> {
     // Check if persona exists
     const existingPersona = await this.personaRepository.findById(id);
     if (!existingPersona) {
@@ -75,10 +85,10 @@ export class PersonaService {
 
     logger.info(`Persona updated: ${updatedPersona.nombre} ${updatedPersona.apellido} (ID: ${id})`);
 
-    return updatedPersona;
+    return this.addEstadoField(updatedPersona);
   }
 
-  async deletePersona(id: string, hard = false, motivo?: string): Promise<Persona> {
+  async deletePersona(id: number, hard = false, motivo?: string): Promise<Persona & { estado: 'activo' | 'inactivo' }> {
     const existingPersona = await this.personaRepository.findById(id);
     if (!existingPersona) {
       throw new AppError(`Persona con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
@@ -94,7 +104,7 @@ export class PersonaService {
       logger.info(`Persona soft deleted: ${deletedPersona.nombre} ${deletedPersona.apellido} (ID: ${id})`);
     }
 
-    return deletedPersona;
+    return this.addEstadoField(deletedPersona);
   }
 
   async getSocios(categoria?: string, activos = true): Promise<Persona[]> {
@@ -153,7 +163,7 @@ export class PersonaService {
     };
   }
 
-  async reactivatePersona(id: string, data: UpdatePersonaDto): Promise<Persona> {
+  async reactivatePersona(id: number, data: UpdatePersonaDto): Promise<Persona> {
     // Check if persona exists
     const existingPersona = await this.personaRepository.findById(id);
     if (!existingPersona) {

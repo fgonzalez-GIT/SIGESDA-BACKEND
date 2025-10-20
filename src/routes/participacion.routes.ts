@@ -4,6 +4,7 @@ import { ParticipacionService } from '@/services/participacion.service';
 import { ParticipacionRepository } from '@/repositories/participacion.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { ActividadRepository } from '@/repositories/actividad.repository';
+import { AsistenciaRepository } from '@/repositories/asistencia.repository';
 import { prisma } from '@/config/database';
 
 const router = Router();
@@ -12,10 +13,12 @@ const router = Router();
 const participacionRepository = new ParticipacionRepository(prisma);
 const personaRepository = new PersonaRepository(prisma);
 const actividadRepository = new ActividadRepository(prisma);
+const asistenciaRepository = new AsistenciaRepository(prisma);
 const participacionService = new ParticipacionService(
   participacionRepository,
   personaRepository,
-  actividadRepository
+  actividadRepository,
+  asistenciaRepository
 );
 const participacionController = new ParticipacionController(participacionService);
 

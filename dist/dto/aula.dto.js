@@ -4,10 +4,34 @@ exports.estadisticasAulaSchema = exports.disponibilidadAulaSchema = exports.aula
 const zod_1 = require("zod");
 const aulaBaseSchema = zod_1.z.object({
     nombre: zod_1.z.string().min(1, 'Nombre es requerido').max(100),
-    capacidad: zod_1.z.number().int().positive('La capacidad debe ser positiva'),
+    capacidad: zod_1.z.preprocess((val) => {
+        if (typeof val === 'string') {
+            const parsed = parseInt(val);
+            return isNaN(parsed) ? val : parsed;
+        }
+        return val;
+    }, zod_1.z.number().int().positive('La capacidad debe ser positiva')),
     ubicacion: zod_1.z.string().max(200).optional(),
-    equipamiento: zod_1.z.string().max(500).optional(),
-    activa: zod_1.z.boolean().default(true)
+    equipamiento: zod_1.z.preprocess((val) => {
+        if (Array.isArray(val)) {
+            return val.join(', ');
+        }
+        return val;
+    }, zod_1.z.string().max(500).optional()),
+    activa: zod_1.z.preprocess((val) => {
+        if (typeof val === 'string') {
+            return val === 'true';
+        }
+        if (val === 'disponible')
+            return true;
+        if (val === 'no_disponible')
+            return false;
+        return val;
+    }, zod_1.z.boolean().default(true)),
+    tipo: zod_1.z.string().optional(),
+    estado: zod_1.z.string().optional(),
+    observaciones: zod_1.z.string().max(500).optional(),
+    descripcion: zod_1.z.string().max(500).optional()
 });
 exports.createAulaSchema = zod_1.z.object({
     ...aulaBaseSchema.shape

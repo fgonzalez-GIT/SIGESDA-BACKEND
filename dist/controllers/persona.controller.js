@@ -45,7 +45,7 @@ class PersonaController {
     async getPersonaById(req, res, next) {
         try {
             const { id } = req.params;
-            const persona = await this.personaService.getPersonaById(id);
+            const persona = await this.personaService.getPersonaById(parseInt(id));
             if (!persona) {
                 const response = {
                     success: false,
@@ -68,7 +68,7 @@ class PersonaController {
         try {
             const { id } = req.params;
             const validatedData = persona_dto_1.updatePersonaSchema.parse(req.body);
-            const persona = await this.personaService.updatePersona(id, validatedData);
+            const persona = await this.personaService.updatePersona(parseInt(id), validatedData);
             const response = {
                 success: true,
                 message: 'Persona actualizada exitosamente',
@@ -85,7 +85,7 @@ class PersonaController {
             const { id } = req.params;
             const { hard, motivo } = req.query;
             const isHardDelete = hard === 'true';
-            const persona = await this.personaService.deletePersona(id, isHardDelete, motivo);
+            const persona = await this.personaService.deletePersona(parseInt(id), isHardDelete, motivo);
             const response = {
                 success: true,
                 message: `Persona ${isHardDelete ? 'eliminada permanentemente' : 'dada de baja'}`,
@@ -153,6 +153,45 @@ class PersonaController {
             const response = {
                 success: true,
                 data: personas
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async checkDni(req, res, next) {
+        try {
+            const { dni } = req.params;
+            if (!/^\d{7,8}$/.test(dni)) {
+                const response = {
+                    success: false,
+                    error: 'DNI inválido',
+                    message: 'El DNI debe contener entre 7 y 8 dígitos numéricos'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const result = await this.personaService.checkDniExists(dni);
+            const response = {
+                success: true,
+                data: result
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async reactivatePersona(req, res, next) {
+        try {
+            const { id } = req.params;
+            const validatedData = persona_dto_1.updatePersonaSchema.parse(req.body);
+            const persona = await this.personaService.reactivatePersona(parseInt(id), validatedData);
+            const response = {
+                success: true,
+                message: 'Persona reactivada exitosamente',
+                data: persona
             };
             res.status(enums_1.HttpStatus.OK).json(response);
         }

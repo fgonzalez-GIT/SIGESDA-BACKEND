@@ -1,41 +1,65 @@
 import { z } from 'zod';
 export declare const createAulaSchema: z.ZodObject<{
     nombre: z.ZodString;
-    capacidad: z.ZodNumber;
+    capacidad: z.ZodEffects<z.ZodNumber, number, unknown>;
     ubicacion: z.ZodOptional<z.ZodString>;
-    equipamiento: z.ZodOptional<z.ZodString>;
-    activa: z.ZodDefault<z.ZodBoolean>;
+    equipamiento: z.ZodEffects<z.ZodOptional<z.ZodString>, string | undefined, unknown>;
+    activa: z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown>;
+    tipo: z.ZodOptional<z.ZodString>;
+    estado: z.ZodOptional<z.ZodString>;
+    observaciones: z.ZodOptional<z.ZodString>;
+    descripcion: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     nombre: string;
     activa: boolean;
     capacidad: number;
+    tipo?: string | undefined;
+    observaciones?: string | undefined;
+    estado?: string | undefined;
+    descripcion?: string | undefined;
     ubicacion?: string | undefined;
     equipamiento?: string | undefined;
 }, {
     nombre: string;
-    capacidad: number;
-    activa?: boolean | undefined;
+    tipo?: string | undefined;
+    observaciones?: string | undefined;
+    activa?: unknown;
+    estado?: string | undefined;
+    descripcion?: string | undefined;
+    capacidad?: unknown;
     ubicacion?: string | undefined;
-    equipamiento?: string | undefined;
+    equipamiento?: unknown;
 }>;
 export declare const updateAulaSchema: z.ZodObject<{
     nombre: z.ZodOptional<z.ZodString>;
-    capacidad: z.ZodOptional<z.ZodNumber>;
+    capacidad: z.ZodOptional<z.ZodEffects<z.ZodNumber, number, unknown>>;
     ubicacion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    equipamiento: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    activa: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
+    equipamiento: z.ZodOptional<z.ZodEffects<z.ZodOptional<z.ZodString>, string | undefined, unknown>>;
+    activa: z.ZodOptional<z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown>>;
+    tipo: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    estado: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    observaciones: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    descripcion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
+    tipo?: string | undefined;
     nombre?: string | undefined;
+    observaciones?: string | undefined;
     activa?: boolean | undefined;
+    estado?: string | undefined;
+    descripcion?: string | undefined;
     capacidad?: number | undefined;
     ubicacion?: string | undefined;
     equipamiento?: string | undefined;
 }, {
+    tipo?: string | undefined;
     nombre?: string | undefined;
-    activa?: boolean | undefined;
-    capacidad?: number | undefined;
+    observaciones?: string | undefined;
+    activa?: unknown;
+    estado?: string | undefined;
+    descripcion?: string | undefined;
+    capacidad?: unknown;
     ubicacion?: string | undefined;
-    equipamiento?: string | undefined;
+    equipamiento?: unknown;
 }>;
 export declare const aulaQuerySchema: z.ZodObject<{
     activa: z.ZodEffects<z.ZodOptional<z.ZodBoolean>, boolean | undefined, unknown>;
@@ -50,16 +74,16 @@ export declare const aulaQuerySchema: z.ZodObject<{
     limit: number;
     activa?: boolean | undefined;
     search?: string | undefined;
-    capacidadMaxima?: number | undefined;
     capacidadMinima?: number | undefined;
+    capacidadMaxima?: number | undefined;
     conEquipamiento?: boolean | undefined;
 }, {
     activa?: unknown;
     search?: string | undefined;
     page?: unknown;
     limit?: unknown;
-    capacidadMaxima?: unknown;
     capacidadMinima?: unknown;
+    capacidadMaxima?: unknown;
     conEquipamiento?: unknown;
 }>;
 export declare const disponibilidadAulaSchema: z.ZodEffects<z.ZodObject<{
