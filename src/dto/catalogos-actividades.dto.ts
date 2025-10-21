@@ -136,3 +136,31 @@ export const queryCatalogosSchema = z.object({
 });
 
 export type QueryCatalogosDto = z.infer<typeof queryCatalogosSchema>;
+
+// ============================================================================
+// QUERY ESPECÍFICO PARA TIPOS Y CATEGORÍAS (con includeInactive)
+// ============================================================================
+
+export const queryTiposCatalogoSchema = z.object({
+  includeInactive: z.preprocess((val) => {
+    if (typeof val === 'string') {
+      return val === 'true';
+    }
+    return val;
+  }, z.boolean().default(false)),
+  search: z.string().max(100).optional(),
+  orderBy: z.enum(['codigo', 'nombre', 'orden', 'created_at']).default('orden'),
+  orderDir: z.enum(['asc', 'desc']).default('asc')
+});
+
+export type QueryTiposCatalogoDto = z.infer<typeof queryTiposCatalogoSchema>;
+
+// ============================================================================
+// REORDER SCHEMA
+// ============================================================================
+
+export const reorderCatalogoSchema = z.object({
+  ids: z.array(z.number().int().positive()).min(1, 'Debe proporcionar al menos un ID')
+});
+
+export type ReorderCatalogoDto = z.infer<typeof reorderCatalogoSchema>;

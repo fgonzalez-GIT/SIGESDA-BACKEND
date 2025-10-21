@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.queryCatalogosSchema = exports.updateRolDocenteSchema = exports.createRolDocenteSchema = exports.diaSemanaSchema = exports.updateEstadoActividadSchema = exports.createEstadoActividadSchema = exports.updateCategoriaActividadSchema = exports.createCategoriaActividadSchema = exports.updateTipoActividadSchema = exports.createTipoActividadSchema = void 0;
+exports.reorderCatalogoSchema = exports.queryTiposCatalogoSchema = exports.queryCatalogosSchema = exports.updateRolDocenteSchema = exports.createRolDocenteSchema = exports.diaSemanaSchema = exports.updateEstadoActividadSchema = exports.createEstadoActividadSchema = exports.updateCategoriaActividadSchema = exports.createCategoriaActividadSchema = exports.updateTipoActividadSchema = exports.createTipoActividadSchema = void 0;
 const zod_1 = require("zod");
 exports.createTipoActividadSchema = zod_1.z.object({
     codigo: zod_1.z.string()
@@ -88,5 +88,19 @@ exports.queryCatalogosSchema = zod_1.z.object({
         const parsed = parseInt(val);
         return isNaN(parsed) ? 50 : parsed;
     }, zod_1.z.number().int().positive().max(100).default(50))
+});
+exports.queryTiposCatalogoSchema = zod_1.z.object({
+    includeInactive: zod_1.z.preprocess((val) => {
+        if (typeof val === 'string') {
+            return val === 'true';
+        }
+        return val;
+    }, zod_1.z.boolean().default(false)),
+    search: zod_1.z.string().max(100).optional(),
+    orderBy: zod_1.z.enum(['codigo', 'nombre', 'orden', 'created_at']).default('orden'),
+    orderDir: zod_1.z.enum(['asc', 'desc']).default('asc')
+});
+exports.reorderCatalogoSchema = zod_1.z.object({
+    ids: zod_1.z.array(zod_1.z.number().int().positive()).min(1, 'Debe proporcionar al menos un ID')
 });
 //# sourceMappingURL=catalogos-actividades.dto.js.map

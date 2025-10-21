@@ -49,26 +49,6 @@ export declare class ActividadRepository {
             created_at: Date;
             updated_at: Date;
         };
-        estados_actividades: {
-            id: number;
-            nombre: string;
-            activo: boolean;
-            codigo: string;
-            descripcion: string | null;
-            orden: number;
-            created_at: Date;
-            updated_at: Date;
-        };
-        tipos_actividades: {
-            id: number;
-            nombre: string;
-            activo: boolean;
-            codigo: string;
-            descripcion: string | null;
-            orden: number;
-            created_at: Date;
-            updated_at: Date;
-        };
         docentes_actividades: ({
             roles_docentes: {
                 id: number;
@@ -101,6 +81,16 @@ export declare class ActividadRepository {
             rol_docente_id: number;
             actividad_id: number;
         })[];
+        estados_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
         horarios_actividades: ({
             dias_semana: {
                 id: number;
@@ -155,6 +145,16 @@ export declare class ActividadRepository {
             fecha_fin: Date | null;
             precio_especial: import("@prisma/client/runtime/library").Decimal | null;
         })[];
+        tipos_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
         _count: {
             participaciones_actividades: number;
         };
@@ -232,26 +232,6 @@ export declare class ActividadRepository {
             created_at: Date;
             updated_at: Date;
         };
-        estados_actividades: {
-            id: number;
-            nombre: string;
-            activo: boolean;
-            codigo: string;
-            descripcion: string | null;
-            orden: number;
-            created_at: Date;
-            updated_at: Date;
-        };
-        tipos_actividades: {
-            id: number;
-            nombre: string;
-            activo: boolean;
-            codigo: string;
-            descripcion: string | null;
-            orden: number;
-            created_at: Date;
-            updated_at: Date;
-        };
         docentes_actividades: ({
             roles_docentes: {
                 id: number;
@@ -281,6 +261,16 @@ export declare class ActividadRepository {
             rol_docente_id: number;
             actividad_id: number;
         })[];
+        estados_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
         horarios_actividades: ({
             dias_semana: {
                 id: number;
@@ -298,6 +288,16 @@ export declare class ActividadRepository {
             dia_semana_id: number;
             actividad_id: number;
         })[];
+        tipos_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
     } & {
         id: number;
         nombre: string;
@@ -358,16 +358,16 @@ export declare class ActividadRepository {
         estado_id: number;
     }>;
     agregarHorario(actividadId: number, horarioData: any): Promise<{
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+        };
         dias_semana: {
             id: number;
             nombre: string;
             codigo: string;
             orden: number;
-        };
-        actividades: {
-            id: number;
-            nombre: string;
-            codigo_actividad: string;
         };
     } & {
         id: number;
@@ -380,15 +380,15 @@ export declare class ActividadRepository {
         actividad_id: number;
     }>;
     updateHorario(horarioId: number, horarioData: any): Promise<{
+        actividades: {
+            id: number;
+            nombre: string;
+        };
         dias_semana: {
             id: number;
             nombre: string;
             codigo: string;
             orden: number;
-        };
-        actividades: {
-            id: number;
-            nombre: string;
         };
     } & {
         id: number;
@@ -453,16 +453,16 @@ export declare class ActividadRepository {
         actividad_id: number;
     })[]>;
     findHorarioById(horarioId: number): Promise<({
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+        };
         dias_semana: {
             id: number;
             nombre: string;
             codigo: string;
             orden: number;
-        };
-        actividades: {
-            id: number;
-            nombre: string;
-            codigo_actividad: string;
         };
     } & {
         id: number;

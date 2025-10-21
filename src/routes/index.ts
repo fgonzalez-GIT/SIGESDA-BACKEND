@@ -11,10 +11,17 @@ import reciboRoutes from './recibo.routes';
 import cuotaRoutes from './cuota.routes';
 import medioPagoRoutes from './medio-pago.routes';
 import { categoriaSocioRouter } from './categoria-socio.routes';
+import tiposActividadRoutes from './tiposActividad.routes';
+import categoriasActividadRoutes from './categoriasActividad.routes';
 
 const router = Router();
 
 // Mount routes
+// IMPORTANTE: Rutas más específicas PRIMERO (antes de /actividades)
+router.use('/actividades/tipos-actividad', tiposActividadRoutes);
+router.use('/actividades/categorias-actividad', categoriasActividadRoutes);
+
+// Rutas generales
 router.use('/personas', personaRoutes);
 router.use('/actividades', actividadRoutes);
 router.use('/aulas', aulaRoutes);

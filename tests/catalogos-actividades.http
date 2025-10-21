@@ -1,0 +1,244 @@
+### ============================================================================
+### TIPOS DE ACTIVIDADES
+### ============================================================================
+
+### 1. Listar todos los tipos (incluye inactivos)
+GET http://localhost:8000/api/actividades-v2/tipos-actividad?includeInactive=true
+Content-Type: application/json
+
+### 2. Listar solo activos
+GET http://localhost:8000/api/actividades-v2/tipos-actividad
+Content-Type: application/json
+
+### 3. Buscar tipos por nombre
+GET http://localhost:8000/api/actividades-v2/tipos-actividad?search=CORO
+Content-Type: application/json
+
+### 4. Listar con ordenamiento
+GET http://localhost:8000/api/actividades-v2/tipos-actividad?orderBy=nombre&orderDir=desc
+Content-Type: application/json
+
+### 5. Crear nuevo tipo - TALLER_PINTURA
+POST http://localhost:8000/api/actividades-v2/tipos-actividad
+Content-Type: application/json
+
+{
+  "codigo": "TALLER_PINTURA",
+  "nombre": "Taller de Pintura",
+  "descripcion": "Talleres de técnicas de pintura artística",
+  "activo": true,
+  "orden": 10
+}
+
+### 6. Crear nuevo tipo - CLASE_GUITARRA
+POST http://localhost:8000/api/actividades-v2/tipos-actividad
+Content-Type: application/json
+
+{
+  "codigo": "CLASE_GUITARRA",
+  "nombre": "Clase de Guitarra",
+  "descripcion": "Clases individuales de guitarra clásica y popular"
+}
+
+### 7. Crear tipo con código duplicado (debe fallar)
+POST http://localhost:8000/api/actividades-v2/tipos-actividad
+Content-Type: application/json
+
+{
+  "codigo": "CORO",
+  "nombre": "Coro Duplicado",
+  "descripcion": "Este debe fallar"
+}
+
+### 8. Obtener tipo por ID
+GET http://localhost:8000/api/actividades-v2/tipos-actividad/1
+Content-Type: application/json
+
+### 9. Actualizar tipo
+PUT http://localhost:8000/api/actividades-v2/tipos-actividad/1
+Content-Type: application/json
+
+{
+  "nombre": "Coro de la Sociedad Italiana",
+  "descripcion": "Coro mixto de música vocal"
+}
+
+### 10. Actualizar solo el orden
+PUT http://localhost:8000/api/actividades-v2/tipos-actividad/1
+Content-Type: application/json
+
+{
+  "orden": 5
+}
+
+### 11. Desactivar tipo (debe fallar si tiene actividades activas)
+DELETE http://localhost:8000/api/actividades-v2/tipos-actividad/1
+Content-Type: application/json
+
+### 12. Reordenar tipos
+PATCH http://localhost:8000/api/actividades-v2/tipos-actividad/reorder
+Content-Type: application/json
+
+{
+  "ids": [3, 1, 2, 4, 5]
+}
+
+### ============================================================================
+### CATEGORÍAS DE ACTIVIDADES
+### ============================================================================
+
+### 1. Listar todas las categorías
+GET http://localhost:8000/api/actividades-v2/categorias-actividad
+Content-Type: application/json
+
+### 2. Listar incluyendo inactivas
+GET http://localhost:8000/api/actividades-v2/categorias-actividad?includeInactive=true
+Content-Type: application/json
+
+### 3. Buscar categorías
+GET http://localhost:8000/api/actividades-v2/categorias-actividad?search=INFANTIL
+Content-Type: application/json
+
+### 4. Crear nueva categoría - SENIOR
+POST http://localhost:8000/api/actividades-v2/categorias-actividad
+Content-Type: application/json
+
+{
+  "codigo": "SENIOR",
+  "nombre": "Adultos Mayores",
+  "descripcion": "Actividades especialmente diseñadas para adultos mayores",
+  "activo": true,
+  "orden": 5
+}
+
+### 5. Crear categoría - PRINCIPIANTE
+POST http://localhost:8000/api/actividades-v2/categorias-actividad
+Content-Type: application/json
+
+{
+  "codigo": "PRINCIPIANTE",
+  "nombre": "Nivel Principiante",
+  "descripcion": "Para personas sin experiencia previa"
+}
+
+### 6. Crear con código duplicado (debe fallar)
+POST http://localhost:8000/api/actividades-v2/categorias-actividad
+Content-Type: application/json
+
+{
+  "codigo": "INFANTIL",
+  "nombre": "Infantil Duplicado"
+}
+
+### 7. Obtener categoría por ID
+GET http://localhost:8000/api/actividades-v2/categorias-actividad/1
+Content-Type: application/json
+
+### 8. Actualizar categoría
+PUT http://localhost:8000/api/actividades-v2/categorias-actividad/1
+Content-Type: application/json
+
+{
+  "nombre": "Infantil (6-12 años)",
+  "descripcion": "Actividades para niños de 6 a 12 años"
+}
+
+### 9. Actualizar solo activo
+PUT http://localhost:8000/api/actividades-v2/categorias-actividad/1
+Content-Type: application/json
+
+{
+  "activo": false
+}
+
+### 10. Desactivar categoría
+DELETE http://localhost:8000/api/actividades-v2/categorias-actividad/1
+Content-Type: application/json
+
+### 11. Reordenar categorías
+PATCH http://localhost:8000/api/actividades-v2/categorias-actividad/reorder
+Content-Type: application/json
+
+{
+  "ids": [2, 3, 1, 4]
+}
+
+### ============================================================================
+### PRUEBAS DE VALIDACIÓN
+### ============================================================================
+
+### Crear tipo con código en minúsculas (debe convertir a mayúsculas)
+POST http://localhost:8000/api/actividades-v2/tipos-actividad
+Content-Type: application/json
+
+{
+  "codigo": "teatro_musical",
+  "nombre": "Teatro Musical",
+  "descripcion": "Obras de teatro musical"
+}
+
+### Crear tipo con código inválido (debe fallar)
+POST http://localhost:8000/api/actividades-v2/tipos-actividad
+Content-Type: application/json
+
+{
+  "codigo": "código con espacios",
+  "nombre": "Test Inválido"
+}
+
+### Crear categoría con nombre vacío (debe fallar)
+POST http://localhost:8000/api/actividades-v2/categorias-actividad
+Content-Type: application/json
+
+{
+  "codigo": "TEST",
+  "nombre": ""
+}
+
+### Actualizar con ID inválido (debe fallar)
+PUT http://localhost:8000/api/actividades-v2/tipos-actividad/abc
+Content-Type: application/json
+
+{
+  "nombre": "Test"
+}
+
+### Reordenar con array vacío (debe fallar)
+PATCH http://localhost:8000/api/actividades-v2/tipos-actividad/reorder
+Content-Type: application/json
+
+{
+  "ids": []
+}
+
+### ============================================================================
+### PRUEBAS DE INTEGRACIÓN CON ACTIVIDADES
+### ============================================================================
+
+### Verificar que tipos incluyen conteo de actividades
+GET http://localhost:8000/api/actividades-v2/tipos-actividad/1
+Content-Type: application/json
+
+### Verificar que categorías incluyen conteo de actividades
+GET http://localhost:8000/api/actividades-v2/categorias-actividad/1
+Content-Type: application/json
+
+### ============================================================================
+### COMPARACIÓN CON ENDPOINTS LEGACY
+### ============================================================================
+
+### Endpoint LEGACY (solo lectura, solo activos)
+GET http://localhost:8000/api/actividades/catalogos/tipos
+Content-Type: application/json
+
+### Endpoint NUEVO (CRUD completo, filtros avanzados)
+GET http://localhost:8000/api/actividades-v2/tipos-actividad
+Content-Type: application/json
+
+### Endpoint LEGACY - Categorías
+GET http://localhost:8000/api/actividades/catalogos/categorias
+Content-Type: application/json
+
+### Endpoint NUEVO - Categorías
+GET http://localhost:8000/api/actividades-v2/categorias-actividad
+Content-Type: application/json

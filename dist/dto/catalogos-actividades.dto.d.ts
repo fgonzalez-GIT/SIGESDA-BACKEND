@@ -193,4 +193,29 @@ export declare const queryCatalogosSchema: z.ZodObject<{
     limit?: unknown;
 }>;
 export type QueryCatalogosDto = z.infer<typeof queryCatalogosSchema>;
+export declare const queryTiposCatalogoSchema: z.ZodObject<{
+    includeInactive: z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown>;
+    search: z.ZodOptional<z.ZodString>;
+    orderBy: z.ZodDefault<z.ZodEnum<["codigo", "nombre", "orden", "created_at"]>>;
+    orderDir: z.ZodDefault<z.ZodEnum<["asc", "desc"]>>;
+}, "strip", z.ZodTypeAny, {
+    orderBy: "nombre" | "codigo" | "orden" | "created_at";
+    orderDir: "asc" | "desc";
+    includeInactive: boolean;
+    search?: string | undefined;
+}, {
+    orderBy?: "nombre" | "codigo" | "orden" | "created_at" | undefined;
+    search?: string | undefined;
+    orderDir?: "asc" | "desc" | undefined;
+    includeInactive?: unknown;
+}>;
+export type QueryTiposCatalogoDto = z.infer<typeof queryTiposCatalogoSchema>;
+export declare const reorderCatalogoSchema: z.ZodObject<{
+    ids: z.ZodArray<z.ZodNumber, "many">;
+}, "strip", z.ZodTypeAny, {
+    ids: number[];
+}, {
+    ids: number[];
+}>;
+export type ReorderCatalogoDto = z.infer<typeof reorderCatalogoSchema>;
 //# sourceMappingURL=catalogos-actividades.dto.d.ts.map
