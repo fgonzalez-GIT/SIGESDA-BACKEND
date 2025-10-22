@@ -166,11 +166,11 @@ export class ParticipacionRepository {
     return { data, total };
   }
 
-  async findById(id: string): Promise<ParticipacionConRelaciones | null> {
+  async findById(id: number): Promise<ParticipacionConRelaciones | null> {
     return this.prisma.participaciones_actividades.findUnique({
       where: { id },
       include: {
-        persona: {
+        personas: {
           select: {
             id: true,
             nombre: true,
@@ -180,14 +180,14 @@ export class ParticipacionRepository {
             email: true
           }
         },
-        actividad: {
+        actividades: {
           select: {
             id: true,
             nombre: true,
-            tipo: true,
-            precio: true,
+            codigo_actividad: true,
+            costo: true,
             descripcion: true,
-            capacidadMaxima: true
+            cupo_maximo: true
           }
         }
       }
@@ -335,10 +335,10 @@ export class ParticipacionRepository {
     });
   }
 
-  async finalizarParticipacion(id: string, fechaFin?: Date, motivo?: string): Promise<ParticipacionConRelaciones> {
+  async finalizarParticipacion(id: number, fechaFin?: Date, motivo?: string): Promise<ParticipacionConRelaciones> {
     const updateData: any = {
-      activa: false,
-      fechaFin: fechaFin || new Date()
+      activo: false,
+      fecha_fin: fechaFin || new Date()
     };
 
     if (motivo) {
@@ -349,7 +349,7 @@ export class ParticipacionRepository {
       where: { id },
       data: updateData,
       include: {
-        persona: {
+        personas: {
           select: {
             id: true,
             nombre: true,
@@ -357,27 +357,27 @@ export class ParticipacionRepository {
             tipo: true
           }
         },
-        actividad: {
+        actividades: {
           select: {
             id: true,
             nombre: true,
-            tipo: true,
-            precio: true
+            codigo_actividad: true,
+            costo: true
           }
         }
       }
     });
   }
 
-  async reactivarParticipacion(id: string): Promise<ParticipacionConRelaciones> {
+  async reactivarParticipacion(id: number): Promise<ParticipacionConRelaciones> {
     return this.prisma.participaciones_actividades.update({
       where: { id },
       data: {
-        activa: true,
-        fechaFin: null
+        activo: true,
+        fecha_fin: null
       },
       include: {
-        persona: {
+        personas: {
           select: {
             id: true,
             nombre: true,
@@ -385,12 +385,12 @@ export class ParticipacionRepository {
             tipo: true
           }
         },
-        actividad: {
+        actividades: {
           select: {
             id: true,
             nombre: true,
-            tipo: true,
-            precio: true
+            codigo_actividad: true,
+            costo: true
           }
         }
       }

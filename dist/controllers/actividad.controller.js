@@ -273,9 +273,9 @@ class ActividadController {
     async desasignarDocente(req, res, next) {
         try {
             const actividadId = parseInt(req.params.id);
-            const { docenteId } = req.params;
+            const docenteId = parseInt(req.params.docenteId);
             const rolDocenteId = parseInt(req.params.rolDocenteId);
-            if (isNaN(actividadId) || isNaN(rolDocenteId)) {
+            if (isNaN(actividadId) || isNaN(docenteId) || isNaN(rolDocenteId)) {
                 const response = {
                     success: false,
                     error: 'IDs inválidos'

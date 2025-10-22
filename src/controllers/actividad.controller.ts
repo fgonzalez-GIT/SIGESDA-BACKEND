@@ -391,10 +391,10 @@ export class ActividadController {
   async desasignarDocente(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const actividadId = parseInt(req.params.id);
-      const { docenteId } = req.params;
+      const docenteId = parseInt(req.params.docenteId);
       const rolDocenteId = parseInt(req.params.rolDocenteId);
 
-      if (isNaN(actividadId) || isNaN(rolDocenteId)) {
+      if (isNaN(actividadId) || isNaN(docenteId) || isNaN(rolDocenteId)) {
         const response: ApiResponse = {
           success: false,
           error: 'IDs inválidos'

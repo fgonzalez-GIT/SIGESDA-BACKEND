@@ -544,7 +544,7 @@ export class ActividadRepository {
   /**
    * Desasigna un docente de una actividad (soft delete)
    */
-  async desasignarDocente(actividadId: number, docenteId: string, rolDocenteId: number) {
+  async desasignarDocente(actividadId: number, docenteId: number, rolDocenteId: number) {
     // Buscar la asignación activa
     const asignacion = await this.prisma.docentes_actividades.findFirst({
       where: {

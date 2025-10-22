@@ -234,7 +234,15 @@ export class ParticipacionController {
 
   async desinscribir(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID inválido'
+        });
+      }
+
       const validatedData = desincripcionSchema.parse(req.body);
 
       const participacion = await this.participacionService.desinscribir(id, validatedData);
@@ -256,8 +264,14 @@ export class ParticipacionController {
         });
       }
 
-      const statusCode = error instanceof Error &&
-        (error.message.includes('no encontrada') || error.message.includes('ya está inactiva')) ? 404 : 500;
+      let statusCode = 500;
+      if (error instanceof Error) {
+        if (error.message.includes('no encontrada')) {
+          statusCode = 404;
+        } else if (error.message.includes('ya está inactiv')) {
+          statusCode = 400;
+        }
+      }
 
       res.status(statusCode).json({
         success: false,
@@ -268,7 +282,15 @@ export class ParticipacionController {
 
   async reactivarParticipacion(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID inválido'
+        });
+      }
+
       const participacion = await this.participacionService.reactivar(id);
 
       res.json({

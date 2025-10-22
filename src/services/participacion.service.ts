@@ -248,13 +248,13 @@ export class ParticipacionService {
     };
   }
 
-  async desinscribir(id: string, data: DesincripcionDto) {
+  async desinscribir(id: number, data: DesincripcionDto) {
     const participacion = await this.participacionRepository.findById(id);
     if (!participacion) {
       throw new Error(`Participación con ID ${id} no encontrada`);
     }
 
-    if (!participacion.activa) {
+    if (!participacion.activo) {
       throw new Error('La participación ya está inactiva');
     }
 
@@ -265,13 +265,13 @@ export class ParticipacionService {
     );
   }
 
-  async reactivar(id: string) {
+  async reactivar(id: number) {
     const participacion = await this.participacionRepository.findById(id);
     if (!participacion) {
       throw new Error(`Participación con ID ${id} no encontrada`);
     }
 
-    if (participacion.activa) {
+    if (participacion.activo) {
       throw new Error('La participación ya está activa');
     }
 

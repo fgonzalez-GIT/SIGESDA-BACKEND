@@ -310,7 +310,7 @@ export class ActividadService {
   /**
    * Desasigna un docente de una actividad
    */
-  async desasignarDocente(actividadId: number, docenteId: string, rolDocenteId: number) {
+  async desasignarDocente(actividadId: number, docenteId: number, rolDocenteId: number) {
     const actividad = await this.actividadRepository.findById(actividadId);
     if (!actividad) {
       throw new NotFoundError(`Actividad con ID ${actividadId} no encontrada`);

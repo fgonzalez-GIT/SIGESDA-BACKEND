@@ -486,7 +486,7 @@ export declare class ActividadRepository {
         rol_docente_id: number;
         actividad_id: number;
     }>;
-    desasignarDocente(actividadId: number, docenteId: string, rolDocenteId: number): Promise<{
+    desasignarDocente(actividadId: number, docenteId: number, rolDocenteId: number): Promise<{
         roles_docentes: {
             id: number;
             nombre: string;
