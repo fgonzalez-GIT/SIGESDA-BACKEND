@@ -31,6 +31,7 @@ router.get('/reporte-inasistencias', participacionController.getReporteInasisten
 
 // Operaciones especiales
 router.post('/inscripcion-masiva', participacionController.inscripcionMasiva.bind(participacionController));
+router.post('/inscripcion-multiple-personas', participacionController.inscripcionMultiplePersonas.bind(participacionController));
 router.post('/verificar-cupos', participacionController.verificarCupos.bind(participacionController));
 
 // CRUD básico

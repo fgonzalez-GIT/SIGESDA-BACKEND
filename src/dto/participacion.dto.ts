@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Schema base para participación en actividad
 const participacionBaseSchema = z.object({
-  personaId: z.string().cuid('ID de persona inválido'),
+  personaId: z.number().int('El ID de persona debe ser un número entero').positive('El ID de persona debe ser positivo'),
   actividadId: z.number().int('El ID de actividad debe ser un número entero').positive('El ID de actividad debe ser positivo'),
   fechaInicio: z.coerce.date({
     required_error: 'Fecha de inicio es requerida',
@@ -14,7 +14,7 @@ const participacionBaseSchema = z.object({
     const num = parseFloat(val as string);
     return isNaN(num) ? val : num;
   }, z.number().min(0, 'El precio especial debe ser mayor o igual a 0').nullable().optional()),
-  activa: z.boolean().default(true),
+  activa: z.boolean().optional().default(true),
   observaciones: z.string().max(1000, 'Las observaciones no pueden exceder 1000 caracteres').optional()
 });
 
@@ -75,8 +75,13 @@ export const updateParticipacionSchema = z.object({
 
 // Query filters para listar participaciones
 export const participacionQuerySchema = z.object({
-  personaId: z.string().optional(),
+  personaId: z.preprocess((val) => {
+    if (!val) return undefined;
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? undefined : parsed;
+  }, z.number().int().positive().optional()),
   actividadId: z.preprocess((val) => {
+    if (!val) return undefined;
     const parsed = parseInt(val as string);
     return isNaN(parsed) ? undefined : parsed;
   }, z.number().int().positive().optional()),
@@ -107,7 +112,7 @@ export const participacionQuerySchema = z.object({
 
 // DTO para inscripción masiva (una persona a múltiples actividades)
 export const inscripcionMasivaSchema = z.object({
-  personaId: z.string().cuid('ID de persona inválido'),
+  personaId: z.number().int().positive('El ID de persona debe ser positivo'),
   actividades: z.array(z.object({
     actividadId: z.number().int().positive('El ID de actividad debe ser positivo'),
     fechaInicio: z.coerce.date(),
@@ -116,6 +121,20 @@ export const inscripcionMasivaSchema = z.object({
     observaciones: z.string().max(1000).optional()
   })).min(1, 'Debe seleccionar al menos una actividad'),
   aplicarDescuentoFamiliar: z.boolean().default(false)
+});
+
+// DTO para inscripción múltiple (múltiples personas a una actividad)
+export const inscripcionMultiplePersonasSchema = z.object({
+  actividadId: z.number().int().positive('El ID de actividad debe ser positivo'),
+  personas: z.array(z.object({
+    personaId: z.number().int().positive('El ID de persona debe ser positivo'),
+    fechaInicio: z.coerce.date(),
+    precioEspecial: z.number().min(0).optional().nullable(),
+    observaciones: z.string().max(1000).optional()
+  })).min(1, 'Debe seleccionar al menos una persona'),
+  fechaInicioComun: z.coerce.date().optional(), // Si todas empiezan en la misma fecha
+  precioEspecialComun: z.number().min(0).optional().nullable(), // Si todas tienen el mismo precio
+  observacionesComunes: z.string().max(1000).optional() // Observaciones para todas
 });
 
 // DTO para desincripción
@@ -139,7 +158,11 @@ export const reporteInasistenciasSchema = z.object({
     const parsed = parseInt(val as string);
     return isNaN(parsed) ? undefined : parsed;
   }, z.number().int().positive().optional()),
-  personaId: z.string().optional(),
+  personaId: z.preprocess((val) => {
+    if (!val) return undefined;
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? undefined : parsed;
+  }, z.number().int().positive().optional()),
   fechaDesde: z.coerce.date(),
   fechaHasta: z.coerce.date(),
   umbralInasistencias: z.number().int().min(1).default(3) // Número de faltas consecutivas
@@ -244,6 +267,7 @@ export type CreateParticipacionDto = z.infer<typeof createParticipacionSchema>;
 export type UpdateParticipacionDto = z.infer<typeof updateParticipacionSchema>;
 export type ParticipacionQueryDto = z.infer<typeof participacionQuerySchema>;
 export type InscripcionMasivaDto = z.infer<typeof inscripcionMasivaSchema>;
+export type InscripcionMultiplePersonasDto = z.infer<typeof inscripcionMultiplePersonasSchema>;
 export type DesincripcionDto = z.infer<typeof desincripcionSchema>;
 export type EstadisticasParticipacionDto = z.infer<typeof estadisticasParticipacionSchema>;
 export type ReporteInasistenciasDto = z.infer<typeof reporteInasistenciasSchema>;
