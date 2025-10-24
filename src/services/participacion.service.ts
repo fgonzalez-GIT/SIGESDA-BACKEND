@@ -39,6 +39,25 @@ export class ParticipacionService {
       throw new Error(`Actividad con ID ${data.actividadId} no encontrada`);
     }
 
+    // Verificar si ya existe una participación (activa o inactiva)
+    const participacionExistente = await this.participacionRepository.findByPersonaAndActividad(
+      data.personaId,
+      data.actividadId
+    );
+
+    if (participacionExistente) {
+      if (participacionExistente.activo) {
+        throw new Error(
+          `${persona.nombre} ${persona.apellido} ya está inscrito activamente en la actividad ${actividad.nombre}`
+        );
+      } else {
+        throw new Error(
+          `${persona.nombre} ${persona.apellido} ya estuvo inscrito en la actividad ${actividad.nombre}. ` +
+          `Debe reactivar la participación existente (ID: ${participacionExistente.id}) en lugar de crear una nueva.`
+        );
+      }
+    }
+
     // Validar capacidad de la actividad
     const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
     if (actividad.cupoMaximo && participantesActuales.activos >= actividad.cupoMaximo) {
@@ -283,18 +302,26 @@ export class ParticipacionService {
           continue;
         }
 
-        // Verificar si ya está inscrita
+        // Verificar si ya está inscrita (activa o inactiva)
         const participacionExistente = await this.participacionRepository.findByPersonaAndActividad(
           inscripcion.personaId,
           data.actividadId
         );
 
-        if (participacionExistente && participacionExistente.activo) {
-          errores.push({
-            personaId: inscripcion.personaId,
-            error: `${persona.nombre} ${persona.apellido} ya está inscrito en esta actividad`
-          });
-          continue;
+        if (participacionExistente) {
+          if (participacionExistente.activo) {
+            errores.push({
+              personaId: inscripcion.personaId,
+              error: `${persona.nombre} ${persona.apellido} ya está inscrito activamente en esta actividad`
+            });
+            continue;
+          } else {
+            errores.push({
+              personaId: inscripcion.personaId,
+              error: `${persona.nombre} ${persona.apellido} ya estuvo inscrito en esta actividad. Debe reactivar la participación existente (ID: ${participacionExistente.id}) en lugar de crear una nueva.`
+            });
+            continue;
+          }
         }
 
         // Usar valores comunes si no se especifican individuales

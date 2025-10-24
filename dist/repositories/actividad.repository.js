@@ -600,6 +600,18 @@ class ActividadRepository {
             }
         });
     }
+    async deleteParticipante(actividadId, participanteId) {
+        return this.prisma.participaciones_actividades.update({
+            where: {
+                id: participanteId,
+                actividad_id: actividadId
+            },
+            data: {
+                activo: false,
+                fecha_fin: new Date()
+            }
+        });
+    }
     async getEstadisticas(actividadId) {
         const actividad = await this.prisma.actividades.findUnique({
             where: { id: actividadId },

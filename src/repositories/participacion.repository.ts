@@ -23,15 +23,16 @@ type ParticipacionConRelaciones = {
     apellido: string;
     tipo: string;
     dni?: string;
-    email?: string;
+    email?: string | null;
   };
   actividades: {
     id: number;
     nombre: string;
     codigo_actividad: string;
     costo: any; // Decimal
-    descripcion?: string;
-    cupo_maximo?: number;
+    descripcion?: string | null;
+    cupo_maximo?: number | null;
+    tipo_actividad_id: number;
   };
 };
 
@@ -55,20 +56,25 @@ export class ParticipacionRepository {
     return this.prisma.participaciones_actividades.create({
       data: this.mapDtoToPrisma(data),
       include: {
-        persona: {
+        personas: {
           select: {
             id: true,
             nombre: true,
             apellido: true,
-            tipo: true
+            tipo: true,
+            dni: true,
+            email: true
           }
         },
-        actividad: {
+        actividades: {
           select: {
             id: true,
             nombre: true,
-            tipo: true,
-            precio: true
+            codigo_actividad: true,
+            descripcion: true,
+            cupo_maximo: true,
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       }
@@ -118,7 +124,7 @@ export class ParticipacionRepository {
     if (query.search) {
       where.OR = [
         {
-          persona: {
+          personas: {
             OR: [
               { nombre: { contains: query.search, mode: 'insensitive' } },
               { apellido: { contains: query.search, mode: 'insensitive' } }
@@ -126,7 +132,7 @@ export class ParticipacionRepository {
           }
         },
         {
-          actividad: {
+          actividades: {
             nombre: { contains: query.search, mode: 'insensitive' }
           }
         }
@@ -137,10 +143,10 @@ export class ParticipacionRepository {
     const orderBy: any = {};
     switch (query.sortBy) {
       case 'persona':
-        orderBy.persona = { apellido: query.sortOrder };
+        orderBy.personas = { apellido: query.sortOrder };
         break;
       case 'actividad':
-        orderBy.actividad = { nombre: query.sortOrder };
+        orderBy.actividades = { nombre: query.sortOrder };
         break;
       default:
         orderBy[query.sortBy] = query.sortOrder;
@@ -156,20 +162,24 @@ export class ParticipacionRepository {
         take: query.limit,
         orderBy,
         include: {
-          persona: {
+          personas: {
             select: {
               id: true,
               nombre: true,
               apellido: true,
-              tipo: true
+              tipo: true,
+              dni: true,
+              email: true
             }
           },
-          actividad: {
+          actividades: {
             select: {
               id: true,
               nombre: true,
-              tipo: true,
-              precio: true
+              codigo_actividad: true,
+              descripcion: true,
+              cupo_maximo: true,
+              costo: true
             }
           }
         }
@@ -225,7 +235,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       },
@@ -250,7 +261,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       },
@@ -278,7 +290,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       }
@@ -314,7 +327,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       },
@@ -350,7 +364,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       }
@@ -374,7 +389,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       }
@@ -408,7 +424,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       }
@@ -436,7 +453,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       }
@@ -501,7 +519,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       }
@@ -628,7 +647,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       },
@@ -683,7 +703,8 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             codigo_actividad: true,
-            costo: true
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       }
@@ -708,19 +729,25 @@ export class ParticipacionRepository {
     return this.prisma.participacionActividad.findMany({
       where,
       include: {
-        persona: {
+        personas: {
           select: {
             id: true,
             nombre: true,
             apellido: true,
-            tipo: true
+            tipo: true,
+            dni: true,
+            email: true
           }
         },
-        actividad: {
+        actividades: {
           select: {
             id: true,
             nombre: true,
-            tipo: true
+            codigo_actividad: true,
+            descripcion: true,
+            cupo_maximo: true,
+            costo: true,
+            tipo_actividad_id: true
           }
         }
       }

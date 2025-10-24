@@ -71,7 +71,13 @@ class ParticipacionController {
     }
     async getParticipacionById(req, res) {
         try {
-            const { id } = req.params;
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID inválido'
+                });
+            }
             const participacion = await this.participacionService.findById(id);
             res.json({
                 success: true,
@@ -89,7 +95,13 @@ class ParticipacionController {
     }
     async getParticipacionesByPersona(req, res) {
         try {
-            const { personaId } = req.params;
+            const personaId = parseInt(req.params.personaId);
+            if (isNaN(personaId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID de persona inválido'
+                });
+            }
             const participaciones = await this.participacionService.findByPersonaId(personaId);
             res.json({
                 success: true,
@@ -107,7 +119,13 @@ class ParticipacionController {
     }
     async getParticipacionesByActividad(req, res) {
         try {
-            const { actividadId } = req.params;
+            const actividadId = parseInt(req.params.actividadId);
+            if (isNaN(actividadId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID de actividad inválido'
+                });
+            }
             const participaciones = await this.participacionService.findByActividadId(actividadId);
             res.json({
                 success: true,
@@ -125,7 +143,13 @@ class ParticipacionController {
     }
     async updateParticipacion(req, res) {
         try {
-            const { id } = req.params;
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID inválido'
+                });
+            }
             const validatedData = participacion_dto_1.updateParticipacionSchema.parse(req.body);
             const participacion = await this.participacionService.update(id, validatedData);
             res.json({
@@ -154,7 +178,13 @@ class ParticipacionController {
     }
     async deleteParticipacion(req, res) {
         try {
-            const { id } = req.params;
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID inválido'
+                });
+            }
             const participacion = await this.participacionService.delete(id);
             res.json({
                 success: true,
@@ -203,9 +233,51 @@ class ParticipacionController {
             });
         }
     }
+    async inscripcionMultiplePersonas(req, res) {
+        try {
+            const validatedData = participacion_dto_1.inscripcionMultiplePersonasSchema.parse(req.body);
+            const resultado = await this.participacionService.inscripcionMultiplePersonas(validatedData);
+            const statusCode = resultado.totalErrores > 0 ? 207 : 201;
+            res.status(statusCode).json({
+                success: resultado.totalErrores === 0,
+                message: `${resultado.totalCreadas} personas inscritas exitosamente a ${resultado.actividadNombre}${resultado.totalErrores > 0 ? `, ${resultado.totalErrores} errores` : ''}`,
+                data: {
+                    participacionesCreadas: resultado.participacionesCreadas,
+                    totalCreadas: resultado.totalCreadas,
+                    totalErrores: resultado.totalErrores,
+                    errores: resultado.errores,
+                    actividadNombre: resultado.actividadNombre
+                }
+            });
+        }
+        catch (error) {
+            if (error instanceof zod_1.z.ZodError) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Error de validación',
+                    errors: error.errors.map(e => ({
+                        path: e.path.join('.'),
+                        message: e.message
+                    }))
+                });
+            }
+            const statusCode = error instanceof Error &&
+                (error.message.includes('no encontrada') || error.message.includes('no hay suficientes cupos')) ? 400 : 500;
+            res.status(statusCode).json({
+                success: false,
+                message: error instanceof Error ? error.message : 'Error interno del servidor'
+            });
+        }
+    }
     async desinscribir(req, res) {
         try {
-            const { id } = req.params;
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID inválido'
+                });
+            }
             const validatedData = participacion_dto_1.desincripcionSchema.parse(req.body);
             const participacion = await this.participacionService.desinscribir(id, validatedData);
             res.json({
@@ -225,8 +297,15 @@ class ParticipacionController {
                     }))
                 });
             }
-            const statusCode = error instanceof Error &&
-                (error.message.includes('no encontrada') || error.message.includes('ya está inactiva')) ? 404 : 500;
+            let statusCode = 500;
+            if (error instanceof Error) {
+                if (error.message.includes('no encontrada')) {
+                    statusCode = 404;
+                }
+                else if (error.message.includes('ya está inactiv')) {
+                    statusCode = 400;
+                }
+            }
             res.status(statusCode).json({
                 success: false,
                 message: error instanceof Error ? error.message : 'Error interno del servidor'
@@ -235,7 +314,13 @@ class ParticipacionController {
     }
     async reactivarParticipacion(req, res) {
         try {
-            const { id } = req.params;
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID inválido'
+                });
+            }
             const participacion = await this.participacionService.reactivar(id);
             res.json({
                 success: true,
@@ -255,7 +340,13 @@ class ParticipacionController {
     }
     async transferirParticipacion(req, res) {
         try {
-            const { id } = req.params;
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID inválido'
+                });
+            }
             const validatedData = participacion_dto_1.transferirParticipacionSchema.parse(req.body);
             const participacion = await this.participacionService.transferir(id, validatedData);
             res.json({
@@ -314,7 +405,8 @@ class ParticipacionController {
     async getParticipacionesActivas(req, res) {
         try {
             const { personaId } = req.query;
-            const participaciones = await this.participacionService.getParticipacionesActivas(personaId);
+            const personaIdNum = personaId ? parseInt(personaId) : undefined;
+            const participaciones = await this.participacionService.getParticipacionesActivas(personaIdNum);
             res.json({
                 success: true,
                 message: 'Participaciones activas obtenidas exitosamente',

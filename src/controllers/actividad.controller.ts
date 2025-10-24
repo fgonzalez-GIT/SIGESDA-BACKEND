@@ -196,7 +196,7 @@ export class ActividadController {
       const actividad = await this.actividadService.cambiarEstado(
         id,
         validatedData.nuevoEstadoId,
-        validatedData.observaciones
+        validatedData.observaciones ?? undefined
       );
 
       const response: ApiResponse = {
@@ -365,10 +365,22 @@ export class ActividadController {
         return;
       }
 
+      const docenteIdParsed = parseInt(docenteId);
+      const rolDocenteIdParsed = parseInt(rolDocenteId);
+
+      if (isNaN(docenteIdParsed) || isNaN(rolDocenteIdParsed)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'docenteId y rolDocenteId deben ser números válidos'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
       const asignacion = await this.actividadService.asignarDocente(
         actividadId,
-        docenteId,
-        parseInt(rolDocenteId),
+        docenteIdParsed,
+        rolDocenteIdParsed,
         observaciones
       );
 
@@ -530,9 +542,20 @@ export class ActividadController {
         return;
       }
 
+      const personaIdParsed = parseInt(persona_id);
+
+      if (isNaN(personaIdParsed)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'persona_id debe ser un número válido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
       const participacion = await this.actividadService.addParticipante(
         actividadId,
-        persona_id,
+        personaIdParsed,
         fecha_inicio,
         observaciones
       );
@@ -544,6 +567,41 @@ export class ActividadController {
       };
 
       res.status(HttpStatus.CREATED).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * DELETE /api/actividades/:id/participantes/:participanteId
+   * Elimina un participante de una actividad
+   */
+  async deleteParticipante(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actividadId = parseInt(req.params.id);
+      const participanteId = parseInt(req.params.participanteId);
+
+      if (isNaN(actividadId) || isNaN(participanteId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'IDs inválidos'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const participacion = await this.actividadService.deleteParticipante(
+        actividadId,
+        participanteId
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Participante eliminado exitosamente',
+        data: participacion
+      };
+
+      res.status(HttpStatus.OK).json(response);
     } catch (error) {
       next(error);
     }

@@ -2,39 +2,398 @@ import { ParticipacionRepository } from '@/repositories/participacion.repository
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { ActividadRepository } from '@/repositories/actividad.repository';
 import { AsistenciaRepository } from '@/repositories/asistencia.repository';
-import { CreateParticipacionDto, UpdateParticipacionDto, ParticipacionQueryDto, InscripcionMasivaDto, DesincripcionDto, EstadisticasParticipacionDto, ReporteInasistenciasDto, VerificarCuposDto, TransferirParticipacionDto } from '@/dto/participacion.dto';
+import { CreateParticipacionDto, UpdateParticipacionDto, ParticipacionQueryDto, InscripcionMasivaDto, InscripcionMultiplePersonasDto, DesincripcionDto, EstadisticasParticipacionDto, ReporteInasistenciasDto, VerificarCuposDto, TransferirParticipacionDto, EstadoParticipacion } from '@/dto/participacion.dto';
 export declare class ParticipacionService {
     private participacionRepository;
     private personaRepository;
     private actividadRepository;
     private asistenciaRepository?;
     constructor(participacionRepository: ParticipacionRepository, personaRepository: PersonaRepository, actividadRepository: ActividadRepository, asistenciaRepository?: AsistenciaRepository | undefined);
-    create(data: CreateParticipacionDto): Promise<any>;
+    create(data: CreateParticipacionDto): Promise<{
+        estado: EstadoParticipacion;
+        diasTranscurridos: number;
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }>;
     findAll(query: ParticipacionQueryDto): Promise<{
-        data: any[];
+        data: {
+            estado: EstadoParticipacion;
+            diasTranscurridos: number;
+            id: number;
+            persona_id: number;
+            actividad_id: number;
+            fecha_inicio: Date;
+            fecha_fin: Date | null;
+            precio_especial: any;
+            activo: boolean;
+            observaciones: string | null;
+            created_at: Date;
+            updated_at: Date;
+            personas: {
+                id: number;
+                nombre: string;
+                apellido: string;
+                tipo: string;
+                dni?: string;
+                email?: string | null;
+            };
+            actividades: {
+                id: number;
+                nombre: string;
+                codigo_actividad: string;
+                costo: any;
+                descripcion?: string;
+                cupo_maximo?: number;
+                tipo_actividad_id: number;
+            };
+        }[];
         total: number;
         page: number;
         totalPages: number;
     }>;
-    findById(id: string): Promise<any>;
-    findByPersonaId(personaId: string): Promise<any[]>;
-    findByActividadId(actividadId: string): Promise<any[]>;
-    update(id: string, data: UpdateParticipacionDto): Promise<any>;
-    delete(id: string): Promise<any>;
+    findById(id: number): Promise<{
+        estado: EstadoParticipacion;
+        diasTranscurridos: number;
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }>;
+    findByPersonaId(personaId: number): Promise<{
+        estado: EstadoParticipacion;
+        diasTranscurridos: number;
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }[]>;
+    findByActividadId(actividadId: number): Promise<{
+        estado: EstadoParticipacion;
+        diasTranscurridos: number;
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }[]>;
+    update(id: number, data: UpdateParticipacionDto): Promise<{
+        estado: EstadoParticipacion;
+        diasTranscurridos: number;
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }>;
+    delete(id: number): Promise<{
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }>;
     inscripcionMasiva(data: InscripcionMasivaDto): Promise<{
-        participacionesCreadas: any[];
+        participacionesCreadas: {
+            id: number;
+            persona_id: number;
+            actividad_id: number;
+            fecha_inicio: Date;
+            fecha_fin: Date | null;
+            precio_especial: any;
+            activo: boolean;
+            observaciones: string | null;
+            created_at: Date;
+            updated_at: Date;
+            personas: {
+                id: number;
+                nombre: string;
+                apellido: string;
+                tipo: string;
+                dni?: string;
+                email?: string | null;
+            };
+            actividades: {
+                id: number;
+                nombre: string;
+                codigo_actividad: string;
+                costo: any;
+                descripcion?: string;
+                cupo_maximo?: number;
+                tipo_actividad_id: number;
+            };
+        }[];
         errores: string[];
         totalCreadas: number;
         totalErrores: number;
     }>;
-    desinscribir(id: string, data: DesincripcionDto): Promise<any>;
-    reactivar(id: string): Promise<any>;
-    transferir(id: string, data: TransferirParticipacionDto): Promise<any>;
+    inscripcionMultiplePersonas(data: InscripcionMultiplePersonasDto): Promise<{
+        participacionesCreadas: {
+            personaNombre: string;
+            id: number;
+            persona_id: number;
+            actividad_id: number;
+            fecha_inicio: Date;
+            fecha_fin: Date | null;
+            precio_especial: any;
+            activo: boolean;
+            observaciones: string | null;
+            created_at: Date;
+            updated_at: Date;
+            personas: {
+                id: number;
+                nombre: string;
+                apellido: string;
+                tipo: string;
+                dni?: string;
+                email?: string | null;
+            };
+            actividades: {
+                id: number;
+                nombre: string;
+                codigo_actividad: string;
+                costo: any;
+                descripcion?: string;
+                cupo_maximo?: number;
+                tipo_actividad_id: number;
+            };
+        }[];
+        errores: {
+            personaId: number;
+            error: string;
+        }[];
+        totalCreadas: number;
+        totalErrores: number;
+        actividadNombre: string;
+    }>;
+    desinscribir(id: number, data: DesincripcionDto): Promise<{
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }>;
+    reactivar(id: number): Promise<{
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }>;
+    transferir(id: number, data: TransferirParticipacionDto): Promise<{
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }>;
     verificarCupos(data: VerificarCuposDto): Promise<{
         actividad: {
             id: number;
             nombre: string;
-            capacidadMaxima: any;
+            cupoMaximo: any;
         };
         participantes: {
             total: number;
@@ -45,8 +404,68 @@ export declare class ParticipacionService {
         disponible: boolean;
     }>;
     getEstadisticas(params: EstadisticasParticipacionDto): Promise<any[]>;
-    getParticipacionesActivas(personaId?: string): Promise<any[]>;
-    getParticipacionesPorVencer(dias?: number): Promise<any[]>;
+    getParticipacionesActivas(personaId?: number): Promise<{
+        estado: EstadoParticipacion;
+        diasTranscurridos: number;
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }[]>;
+    getParticipacionesPorVencer(dias?: number): Promise<{
+        estado: EstadoParticipacion;
+        diasRestantes: number | null;
+        id: number;
+        persona_id: number;
+        actividad_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: any;
+        activo: boolean;
+        observaciones: string | null;
+        created_at: Date;
+        updated_at: Date;
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            tipo: string;
+            dni?: string;
+            email?: string | null;
+        };
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+            costo: any;
+            descripcion?: string;
+            cupo_maximo?: number;
+            tipo_actividad_id: number;
+        };
+    }[]>;
     getReporteInasistencias(params: ReporteInasistenciasDto): Promise<any[]>;
     getDashboardParticipacion(): Promise<{
         resumen: {

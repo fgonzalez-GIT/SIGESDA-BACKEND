@@ -214,6 +214,15 @@ class ActividadService {
         logger_1.logger.info(`Participante inscrito: ${personaId} en actividad ${actividad.nombre} (ID: ${actividadId})`);
         return participacion;
     }
+    async deleteParticipante(actividadId, participanteId) {
+        const actividad = await this.actividadRepository.findById(actividadId);
+        if (!actividad) {
+            throw new errors_1.NotFoundError(`Actividad con ID ${actividadId} no encontrada`);
+        }
+        const participacion = await this.actividadRepository.deleteParticipante(actividadId, participanteId);
+        logger_1.logger.info(`Participante eliminado: ID ${participanteId} de actividad ${actividad.nombre} (ID: ${actividadId})`);
+        return participacion;
+    }
     async getEstadisticas(actividadId) {
         const estadisticas = await this.actividadRepository.getEstadisticas(actividadId);
         if (!estadisticas) {

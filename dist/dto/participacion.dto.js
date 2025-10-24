@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validarSolapamientoParticipaciones = exports.calcularDuracionParticipacion = exports.determinarEstado = exports.EstadoParticipacion = exports.transferirParticipacionSchema = exports.verificarCuposSchema = exports.reporteInasistenciasSchema = exports.estadisticasParticipacionSchema = exports.desincripcionSchema = exports.inscripcionMasivaSchema = exports.participacionQuerySchema = exports.updateParticipacionSchema = exports.createParticipacionSchema = void 0;
+exports.validarSolapamientoParticipaciones = exports.calcularDuracionParticipacion = exports.determinarEstado = exports.EstadoParticipacion = exports.transferirParticipacionSchema = exports.verificarCuposSchema = exports.reporteInasistenciasSchema = exports.estadisticasParticipacionSchema = exports.desincripcionSchema = exports.inscripcionMultiplePersonasSchema = exports.inscripcionMasivaSchema = exports.participacionQuerySchema = exports.updateParticipacionSchema = exports.createParticipacionSchema = void 0;
 const zod_1 = require("zod");
 const participacionBaseSchema = zod_1.z.object({
-    personaId: zod_1.z.string().cuid('ID de persona inválido'),
+    personaId: zod_1.z.number().int('El ID de persona debe ser un número entero').positive('El ID de persona debe ser positivo'),
     actividadId: zod_1.z.number().int('El ID de actividad debe ser un número entero').positive('El ID de actividad debe ser positivo'),
     fechaInicio: zod_1.z.coerce.date({
         required_error: 'Fecha de inicio es requerida',
@@ -16,7 +16,7 @@ const participacionBaseSchema = zod_1.z.object({
         const num = parseFloat(val);
         return isNaN(num) ? val : num;
     }, zod_1.z.number().min(0, 'El precio especial debe ser mayor o igual a 0').nullable().optional()),
-    activa: zod_1.z.boolean().default(true),
+    activa: zod_1.z.boolean().optional().default(true),
     observaciones: zod_1.z.string().max(1000, 'Las observaciones no pueden exceder 1000 caracteres').optional()
 });
 const validarFechas = (data) => {
@@ -66,8 +66,15 @@ exports.updateParticipacionSchema = zod_1.z.object({
     path: ['fechaFin']
 });
 exports.participacionQuerySchema = zod_1.z.object({
-    personaId: zod_1.z.string().optional(),
+    personaId: zod_1.z.preprocess((val) => {
+        if (!val)
+            return undefined;
+        const parsed = parseInt(val);
+        return isNaN(parsed) ? undefined : parsed;
+    }, zod_1.z.number().int().positive().optional()),
     actividadId: zod_1.z.preprocess((val) => {
+        if (!val)
+            return undefined;
         const parsed = parseInt(val);
         return isNaN(parsed) ? undefined : parsed;
     }, zod_1.z.number().int().positive().optional()),
@@ -100,7 +107,7 @@ exports.participacionQuerySchema = zod_1.z.object({
     sortOrder: zod_1.z.enum(['asc', 'desc']).default('desc')
 });
 exports.inscripcionMasivaSchema = zod_1.z.object({
-    personaId: zod_1.z.string().cuid('ID de persona inválido'),
+    personaId: zod_1.z.number().int().positive('El ID de persona debe ser positivo'),
     actividades: zod_1.z.array(zod_1.z.object({
         actividadId: zod_1.z.number().int().positive('El ID de actividad debe ser positivo'),
         fechaInicio: zod_1.z.coerce.date(),
@@ -109,6 +116,18 @@ exports.inscripcionMasivaSchema = zod_1.z.object({
         observaciones: zod_1.z.string().max(1000).optional()
     })).min(1, 'Debe seleccionar al menos una actividad'),
     aplicarDescuentoFamiliar: zod_1.z.boolean().default(false)
+});
+exports.inscripcionMultiplePersonasSchema = zod_1.z.object({
+    actividadId: zod_1.z.number().int().positive('El ID de actividad debe ser positivo'),
+    personas: zod_1.z.array(zod_1.z.object({
+        personaId: zod_1.z.number().int().positive('El ID de persona debe ser positivo'),
+        fechaInicio: zod_1.z.coerce.date(),
+        precioEspecial: zod_1.z.number().min(0).optional().nullable(),
+        observaciones: zod_1.z.string().max(1000).optional()
+    })).min(1, 'Debe seleccionar al menos una persona'),
+    fechaInicioComun: zod_1.z.coerce.date().optional(),
+    precioEspecialComun: zod_1.z.number().min(0).optional().nullable(),
+    observacionesComunes: zod_1.z.string().max(1000).optional()
 });
 exports.desincripcionSchema = zod_1.z.object({
     fechaFin: zod_1.z.coerce.date().optional(),
@@ -127,7 +146,12 @@ exports.reporteInasistenciasSchema = zod_1.z.object({
         const parsed = parseInt(val);
         return isNaN(parsed) ? undefined : parsed;
     }, zod_1.z.number().int().positive().optional()),
-    personaId: zod_1.z.string().optional(),
+    personaId: zod_1.z.preprocess((val) => {
+        if (!val)
+            return undefined;
+        const parsed = parseInt(val);
+        return isNaN(parsed) ? undefined : parsed;
+    }, zod_1.z.number().int().positive().optional()),
     fechaDesde: zod_1.z.coerce.date(),
     fechaHasta: zod_1.z.coerce.date(),
     umbralInasistencias: zod_1.z.number().int().min(1).default(3)

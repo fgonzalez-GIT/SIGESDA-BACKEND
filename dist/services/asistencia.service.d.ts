@@ -235,7 +235,7 @@ export declare class AsistenciaService {
     }>;
     getTasaAsistencia(params: TasaAsistenciaDto): Promise<{
         participacion: {
-            id: any;
+            id: number;
             persona: string;
             actividad: any;
         };

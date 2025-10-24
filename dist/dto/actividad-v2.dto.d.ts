@@ -26,15 +26,15 @@ declare const horarioInlineSchema: z.ZodEffects<z.ZodObject<{
     activo?: boolean | undefined;
 }>;
 declare const docenteInlineSchema: z.ZodObject<{
-    docenteId: z.ZodString;
+    docenteId: z.ZodNumber;
     rolDocenteId: z.ZodNumber;
     observaciones: z.ZodNullable<z.ZodOptional<z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
-    docenteId: string;
+    docenteId: number;
     rolDocenteId: number;
     observaciones?: string | null | undefined;
 }, {
-    docenteId: string;
+    docenteId: number;
     rolDocenteId: number;
     observaciones?: string | null | undefined;
 }>;
@@ -100,15 +100,15 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
         activo?: boolean | undefined;
     }>, "many">>>;
     docentes: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodObject<{
-        docenteId: z.ZodString;
+        docenteId: z.ZodNumber;
         rolDocenteId: z.ZodNumber;
         observaciones: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     }, "strip", z.ZodTypeAny, {
-        docenteId: string;
+        docenteId: number;
         rolDocenteId: number;
         observaciones?: string | null | undefined;
     }, {
-        docenteId: string;
+        docenteId: number;
         rolDocenteId: number;
         observaciones?: string | null | undefined;
     }>, "many">>>;
@@ -149,7 +149,7 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
         horaFin: string;
     }[];
     docentes: {
-        docenteId: string;
+        docenteId: number;
         rolDocenteId: number;
         observaciones?: string | null | undefined;
     }[];
@@ -184,7 +184,7 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
         activo?: boolean | undefined;
     }[] | undefined;
     docentes?: {
-        docenteId: string;
+        docenteId: number;
         rolDocenteId: number;
         observaciones?: string | null | undefined;
     }[] | undefined;
@@ -211,7 +211,7 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
         horaFin: string;
     }[];
     docentes: {
-        docenteId: string;
+        docenteId: number;
         rolDocenteId: number;
         observaciones?: string | null | undefined;
     }[];
@@ -246,7 +246,7 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
         activo?: boolean | undefined;
     }[] | undefined;
     docentes?: {
-        docenteId: string;
+        docenteId: number;
         rolDocenteId: number;
         observaciones?: string | null | undefined;
     }[] | undefined;

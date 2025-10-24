@@ -62,7 +62,7 @@ const horarioInlineSchema = zod_1.z.object({
     message: 'La hora de fin debe ser posterior a la hora de inicio'
 });
 const docenteInlineSchema = zod_1.z.object({
-    docenteId: zod_1.z.string().cuid('ID de docente inválido'),
+    docenteId: zod_1.z.number().int().positive('ID de docente inválido'),
     rolDocenteId: zod_1.z.number().int().positive(),
     observaciones: zod_1.z.string().max(500).optional().nullable()
 });

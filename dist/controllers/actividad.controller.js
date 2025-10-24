@@ -136,7 +136,7 @@ class ActividadController {
                 return;
             }
             const validatedData = actividad_v2_dto_1.cambiarEstadoActividadSchema.parse(req.body);
-            const actividad = await this.actividadService.cambiarEstado(id, validatedData.nuevoEstadoId, validatedData.observaciones);
+            const actividad = await this.actividadService.cambiarEstado(id, validatedData.nuevoEstadoId, validatedData.observaciones ?? undefined);
             const response = {
                 success: true,
                 message: 'Estado de actividad cambiado exitosamente',
@@ -258,7 +258,17 @@ class ActividadController {
                 res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
                 return;
             }
-            const asignacion = await this.actividadService.asignarDocente(actividadId, docenteId, parseInt(rolDocenteId), observaciones);
+            const docenteIdParsed = parseInt(docenteId);
+            const rolDocenteIdParsed = parseInt(rolDocenteId);
+            if (isNaN(docenteIdParsed) || isNaN(rolDocenteIdParsed)) {
+                const response = {
+                    success: false,
+                    error: 'docenteId y rolDocenteId deben ser números válidos'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const asignacion = await this.actividadService.asignarDocente(actividadId, docenteIdParsed, rolDocenteIdParsed, observaciones);
             const response = {
                 success: true,
                 message: 'Docente asignado exitosamente',
@@ -372,13 +382,46 @@ class ActividadController {
                 res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
                 return;
             }
-            const participacion = await this.actividadService.addParticipante(actividadId, persona_id, fecha_inicio, observaciones);
+            const personaIdParsed = parseInt(persona_id);
+            if (isNaN(personaIdParsed)) {
+                const response = {
+                    success: false,
+                    error: 'persona_id debe ser un número válido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const participacion = await this.actividadService.addParticipante(actividadId, personaIdParsed, fecha_inicio, observaciones);
             const response = {
                 success: true,
                 message: 'Participante inscrito exitosamente',
                 data: participacion
             };
             res.status(enums_1.HttpStatus.CREATED).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async deleteParticipante(req, res, next) {
+        try {
+            const actividadId = parseInt(req.params.id);
+            const participanteId = parseInt(req.params.participanteId);
+            if (isNaN(actividadId) || isNaN(participanteId)) {
+                const response = {
+                    success: false,
+                    error: 'IDs inválidos'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const participacion = await this.actividadService.deleteParticipante(actividadId, participanteId);
+            const response = {
+                success: true,
+                message: 'Participante eliminado exitosamente',
+                data: participacion
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
         }
         catch (error) {
             next(error);

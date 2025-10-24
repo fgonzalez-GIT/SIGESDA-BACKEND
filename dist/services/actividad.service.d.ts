@@ -4,6 +4,84 @@ export declare class ActividadService {
     private actividadRepository;
     constructor(actividadRepository: ActividadRepository);
     createActividad(data: CreateActividadDto): Promise<{
+        categorias_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
+        docentes_actividades: ({
+            roles_docentes: {
+                id: number;
+                nombre: string;
+                activo: boolean;
+                codigo: string;
+                descripcion: string | null;
+                orden: number;
+                created_at: Date;
+                updated_at: Date;
+            };
+            personas: {
+                id: number;
+                nombre: string;
+                apellido: string;
+                email: string | null;
+                especialidad: string | null;
+            };
+        } & {
+            id: number;
+            observaciones: string | null;
+            activo: boolean;
+            created_at: Date;
+            updated_at: Date;
+            fecha_asignacion: Date;
+            fecha_desasignacion: Date | null;
+            docente_id: number;
+            rol_docente_id: number;
+            actividad_id: number;
+        })[];
+        estados_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
+        horarios_actividades: ({
+            dias_semana: {
+                id: number;
+                nombre: string;
+                codigo: string;
+                orden: number;
+            };
+        } & {
+            id: number;
+            activo: boolean;
+            created_at: Date;
+            updated_at: Date;
+            hora_inicio: Date;
+            hora_fin: Date;
+            dia_semana_id: number;
+            actividad_id: number;
+        })[];
+        tipos_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
+    } & {
         id: number;
         nombre: string;
         observaciones: string | null;
@@ -434,7 +512,30 @@ export declare class ActividadService {
         dia_semana_id: number;
         actividad_id: number;
     })[]>;
-    asignarDocente(actividadId: number, docenteId: string, rolDocenteId: number, observaciones?: string): Promise<{
+    asignarDocente(actividadId: number, docenteId: number, rolDocenteId: number, observaciones?: string): Promise<{
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+        };
+        roles_docentes: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
+        personas: {
+            id: number;
+            nombre: string;
+            apellido: string;
+            email: string | null;
+            especialidad: string | null;
+        };
+    } & {
         id: number;
         observaciones: string | null;
         activo: boolean;
@@ -549,7 +650,32 @@ export declare class ActividadService {
         fecha_fin: Date | null;
         precio_especial: import("@prisma/client/runtime/library").Decimal | null;
     })[]>;
-    addParticipante(actividadId: number, personaId: string, fechaInicio: string, observaciones?: string): Promise<{
+    addParticipante(actividadId: number, personaId: number, fechaInicio: string, observaciones?: string): Promise<{
+        actividades: {
+            id: number;
+            nombre: string;
+            codigo_actividad: string;
+        };
+        personas: {
+            id: number;
+            tipo: import(".prisma/client").$Enums.TipoPersona;
+            nombre: string;
+            apellido: string;
+            email: string | null;
+        };
+    } & {
+        id: number;
+        observaciones: string | null;
+        activo: boolean;
+        created_at: Date;
+        updated_at: Date;
+        actividad_id: number;
+        persona_id: number;
+        fecha_inicio: Date;
+        fecha_fin: Date | null;
+        precio_especial: import("@prisma/client/runtime/library").Decimal | null;
+    }>;
+    deleteParticipante(actividadId: number, participanteId: number): Promise<{
         id: number;
         observaciones: string | null;
         activo: boolean;
@@ -665,6 +791,84 @@ export declare class ActividadService {
         updated_at: Date;
     }[]>;
     duplicarActividad(idOriginal: number, nuevoCodigoActividad: string, nuevoNombre: string, nuevaFechaDesde: string | Date, nuevaFechaHasta?: string | Date | null, copiarHorarios?: boolean, copiarDocentes?: boolean): Promise<{
+        categorias_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
+        docentes_actividades: ({
+            roles_docentes: {
+                id: number;
+                nombre: string;
+                activo: boolean;
+                codigo: string;
+                descripcion: string | null;
+                orden: number;
+                created_at: Date;
+                updated_at: Date;
+            };
+            personas: {
+                id: number;
+                nombre: string;
+                apellido: string;
+                email: string | null;
+                especialidad: string | null;
+            };
+        } & {
+            id: number;
+            observaciones: string | null;
+            activo: boolean;
+            created_at: Date;
+            updated_at: Date;
+            fecha_asignacion: Date;
+            fecha_desasignacion: Date | null;
+            docente_id: number;
+            rol_docente_id: number;
+            actividad_id: number;
+        })[];
+        estados_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
+        horarios_actividades: ({
+            dias_semana: {
+                id: number;
+                nombre: string;
+                codigo: string;
+                orden: number;
+            };
+        } & {
+            id: number;
+            activo: boolean;
+            created_at: Date;
+            updated_at: Date;
+            hora_inicio: Date;
+            hora_fin: Date;
+            dia_semana_id: number;
+            actividad_id: number;
+        })[];
+        tipos_actividades: {
+            id: number;
+            nombre: string;
+            activo: boolean;
+            codigo: string;
+            descripcion: string | null;
+            orden: number;
+            created_at: Date;
+            updated_at: Date;
+        };
+    } & {
         id: number;
         nombre: string;
         observaciones: string | null;

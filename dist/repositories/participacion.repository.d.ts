@@ -1,17 +1,32 @@
-import { PrismaClient, ParticipacionActividad } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { CreateParticipacionDto, ParticipacionQueryDto, EstadisticasParticipacionDto, ReporteInasistenciasDto } from '@/dto/participacion.dto';
-type ParticipacionConRelaciones = ParticipacionActividad & {
-    persona: {
-        id: string;
+type ParticipacionConRelaciones = {
+    id: number;
+    persona_id: number;
+    actividad_id: number;
+    fecha_inicio: Date;
+    fecha_fin: Date | null;
+    precio_especial: any;
+    activo: boolean;
+    observaciones: string | null;
+    created_at: Date;
+    updated_at: Date;
+    personas: {
+        id: number;
         nombre: string;
         apellido: string;
         tipo: string;
+        dni?: string;
+        email?: string | null;
     };
-    actividad: {
-        id: string;
+    actividades: {
+        id: number;
         nombre: string;
-        tipo: string;
-        precio: number;
+        codigo_actividad: string;
+        costo: any;
+        descripcion?: string;
+        cupo_maximo?: number;
+        tipo_actividad_id: number;
     };
 };
 export declare class ParticipacionRepository {
@@ -23,16 +38,17 @@ export declare class ParticipacionRepository {
         data: ParticipacionConRelaciones[];
         total: number;
     }>;
-    findById(id: string): Promise<ParticipacionConRelaciones | null>;
-    findByPersonaId(personaId: string): Promise<ParticipacionConRelaciones[]>;
-    findByActividadId(actividadId: string): Promise<ParticipacionConRelaciones[]>;
-    findParticipacionesActivas(personaId?: string): Promise<ParticipacionConRelaciones[]>;
-    update(id: string, data: Partial<CreateParticipacionDto>): Promise<ParticipacionConRelaciones>;
-    delete(id: string): Promise<ParticipacionConRelaciones>;
-    finalizarParticipacion(id: string, fechaFin?: Date, motivo?: string): Promise<ParticipacionConRelaciones>;
-    reactivarParticipacion(id: string): Promise<ParticipacionConRelaciones>;
-    verificarConflictosHorarios(personaId: string, fechaInicio: Date, fechaFin?: Date, excluirId?: string): Promise<ParticipacionConRelaciones[]>;
-    contarParticipantesPorActividad(actividadId: string): Promise<{
+    findById(id: number): Promise<ParticipacionConRelaciones | null>;
+    findByPersonaId(personaId: number): Promise<ParticipacionConRelaciones[]>;
+    findByActividadId(actividadId: number): Promise<ParticipacionConRelaciones[]>;
+    findByPersonaAndActividad(personaId: number, actividadId: number): Promise<ParticipacionConRelaciones | null>;
+    findParticipacionesActivas(personaId?: number): Promise<ParticipacionConRelaciones[]>;
+    update(id: number, data: Partial<CreateParticipacionDto>): Promise<ParticipacionConRelaciones>;
+    delete(id: number): Promise<ParticipacionConRelaciones>;
+    finalizarParticipacion(id: number, fechaFin?: Date, motivo?: string): Promise<ParticipacionConRelaciones>;
+    reactivarParticipacion(id: number): Promise<ParticipacionConRelaciones>;
+    verificarConflictosHorarios(personaId: number, fechaInicio: Date, fechaFin?: Date, excluirId?: number): Promise<ParticipacionConRelaciones[]>;
+    contarParticipantesPorActividad(actividadId: number): Promise<{
         total: number;
         activos: number;
         inactivos: number;
@@ -40,7 +56,7 @@ export declare class ParticipacionRepository {
     getEstadisticasParticipacion(params: EstadisticasParticipacionDto): Promise<any[]>;
     getParticipacionesPorVencer(diasAnticipacion?: number): Promise<ParticipacionConRelaciones[]>;
     bulkCreate(participaciones: CreateParticipacionDto[]): Promise<number>;
-    transferirParticipacion(id: string, nuevaActividadId: string, fechaTransferencia: Date, conservarFechaInicio?: boolean): Promise<ParticipacionConRelaciones>;
+    transferirParticipacion(id: number, nuevaActividadId: number, fechaTransferencia: Date, conservarFechaInicio?: boolean): Promise<ParticipacionConRelaciones>;
     getReporteInasistencias(params: ReporteInasistenciasDto): Promise<any[]>;
 }
 export {};

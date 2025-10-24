@@ -21,6 +21,7 @@ router.get('/estadisticas', participacionController.getEstadisticas.bind(partici
 router.get('/dashboard', participacionController.getDashboard.bind(participacionController));
 router.get('/reporte-inasistencias', participacionController.getReporteInasistencias.bind(participacionController));
 router.post('/inscripcion-masiva', participacionController.inscripcionMasiva.bind(participacionController));
+router.post('/inscripcion-multiple-personas', participacionController.inscripcionMultiplePersonas.bind(participacionController));
 router.post('/verificar-cupos', participacionController.verificarCupos.bind(participacionController));
 router.post('/', participacionController.createParticipacion.bind(participacionController));
 router.get('/', participacionController.getParticipaciones.bind(participacionController));

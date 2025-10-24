@@ -19,8 +19,8 @@ class ParticipacionService {
             throw new Error(`Actividad con ID ${data.actividadId} no encontrada`);
         }
         const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
-        if (actividad.capacidadMaxima && participantesActuales.activos >= actividad.capacidadMaxima) {
-            throw new Error(`La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima de ${actividad.capacidadMaxima} participantes`);
+        if (actividad.cupoMaximo && participantesActuales.activos >= actividad.cupoMaximo) {
+            throw new Error(`La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima de ${actividad.cupoMaximo} participantes`);
         }
         const conflictos = await this.participacionRepository.verificarConflictosHorarios(data.personaId, data.fechaInicio, data.fechaFin || undefined);
         if (conflictos.length > 0) {
@@ -42,8 +42,8 @@ class ParticipacionService {
         });
         return {
             ...participacion,
-            estado: (0, participacion_dto_1.determinarEstado)(participacion),
-            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: participacion.activo, fechaFin: participacion.fecha_fin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
         };
     }
     async findAll(query) {
@@ -51,8 +51,8 @@ class ParticipacionService {
         const totalPages = Math.ceil(result.total / query.limit);
         const participacionesConEstado = result.data.map(p => ({
             ...p,
-            estado: (0, participacion_dto_1.determinarEstado)(p),
-            diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: p.activo, fechaFin: p.fecha_fin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
         }));
         return {
             data: participacionesConEstado,
@@ -68,8 +68,8 @@ class ParticipacionService {
         }
         return {
             ...participacion,
-            estado: (0, participacion_dto_1.determinarEstado)(participacion),
-            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: participacion.activo, fechaFin: participacion.fecha_fin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
         };
     }
     async findByPersonaId(personaId) {
@@ -80,8 +80,8 @@ class ParticipacionService {
         const participaciones = await this.participacionRepository.findByPersonaId(personaId);
         return participaciones.map(p => ({
             ...p,
-            estado: (0, participacion_dto_1.determinarEstado)(p),
-            diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: p.activo, fechaFin: p.fecha_fin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
         }));
     }
     async findByActividadId(actividadId) {
@@ -92,8 +92,8 @@ class ParticipacionService {
         const participaciones = await this.participacionRepository.findByActividadId(actividadId);
         return participaciones.map(p => ({
             ...p,
-            estado: (0, participacion_dto_1.determinarEstado)(p),
-            diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: p.activo, fechaFin: p.fecha_fin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
         }));
     }
     async update(id, data) {
@@ -102,19 +102,19 @@ class ParticipacionService {
             throw new Error(`Participación con ID ${id} no encontrada`);
         }
         if (data.fechaInicio || data.fechaFin) {
-            const fechaInicio = data.fechaInicio || existing.fechaInicio;
-            const fechaFin = data.fechaFin !== undefined ? data.fechaFin : existing.fechaFin;
-            const conflictos = await this.participacionRepository.verificarConflictosHorarios(existing.personaId, fechaInicio, fechaFin || undefined, id);
+            const fechaInicio = data.fechaInicio || existing.fecha_inicio;
+            const fechaFin = data.fechaFin !== undefined ? data.fechaFin : existing.fecha_fin;
+            const conflictos = await this.participacionRepository.verificarConflictosHorarios(existing.persona_id, fechaInicio, fechaFin || undefined, id);
             if (conflictos.length > 0) {
-                const nombreConflictos = conflictos.map(c => c.actividad.nombre).join(', ');
+                const nombreConflictos = conflictos.map(c => c.actividades.nombre).join(', ');
                 throw new Error(`Las nuevas fechas se solapan con participaciones existentes en: ${nombreConflictos}`);
             }
         }
         const participacion = await this.participacionRepository.update(id, data);
         return {
             ...participacion,
-            estado: (0, participacion_dto_1.determinarEstado)(participacion),
-            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: participacion.activo, fechaFin: participacion.fecha_fin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
         };
     }
     async delete(id) {
@@ -139,7 +139,7 @@ class ParticipacionService {
                     continue;
                 }
                 const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(inscripcion.actividadId);
-                if (actividad.capacidadMaxima && participantesActuales.activos >= actividad.capacidadMaxima) {
+                if (actividad.cupoMaximo && participantesActuales.activos >= actividad.cupoMaximo) {
                     errores.push(`La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima`);
                     continue;
                 }
@@ -173,12 +173,72 @@ class ParticipacionService {
             totalErrores: errores.length
         };
     }
+    async inscripcionMultiplePersonas(data) {
+        const actividad = await this.actividadRepository.findById(data.actividadId);
+        if (!actividad) {
+            throw new Error(`Actividad con ID ${data.actividadId} no encontrada`);
+        }
+        const participacionesCreadas = [];
+        const errores = [];
+        const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
+        const cupoDisponible = actividad.cupoMaximo ? actividad.cupoMaximo - participantesActuales.activos : null;
+        if (cupoDisponible !== null && data.personas.length > cupoDisponible) {
+            throw new Error(`No hay suficientes cupos disponibles. Cupos disponibles: ${cupoDisponible}, Personas a inscribir: ${data.personas.length}`);
+        }
+        for (const inscripcion of data.personas) {
+            try {
+                const persona = await this.personaRepository.findById(inscripcion.personaId);
+                if (!persona) {
+                    errores.push({
+                        personaId: inscripcion.personaId,
+                        error: `Persona con ID ${inscripcion.personaId} no encontrada`
+                    });
+                    continue;
+                }
+                const participacionExistente = await this.participacionRepository.findByPersonaAndActividad(inscripcion.personaId, data.actividadId);
+                if (participacionExistente && participacionExistente.activo) {
+                    errores.push({
+                        personaId: inscripcion.personaId,
+                        error: `${persona.nombre} ${persona.apellido} ya está inscrito en esta actividad`
+                    });
+                    continue;
+                }
+                const fechaInicio = inscripcion.fechaInicio || data.fechaInicioComun || new Date();
+                const precioEspecial = inscripcion.precioEspecial ?? data.precioEspecialComun;
+                const observaciones = inscripcion.observaciones || data.observacionesComunes;
+                const participacion = await this.participacionRepository.create({
+                    personaId: inscripcion.personaId,
+                    actividadId: data.actividadId,
+                    fechaInicio: fechaInicio,
+                    precioEspecial: precioEspecial,
+                    observaciones: observaciones
+                });
+                participacionesCreadas.push({
+                    ...participacion,
+                    personaNombre: `${persona.nombre} ${persona.apellido}`
+                });
+            }
+            catch (error) {
+                errores.push({
+                    personaId: inscripcion.personaId,
+                    error: `Error al inscribir persona ${inscripcion.personaId}: ${error}`
+                });
+            }
+        }
+        return {
+            participacionesCreadas,
+            errores,
+            totalCreadas: participacionesCreadas.length,
+            totalErrores: errores.length,
+            actividadNombre: actividad.nombre
+        };
+    }
     async desinscribir(id, data) {
         const participacion = await this.participacionRepository.findById(id);
         if (!participacion) {
             throw new Error(`Participación con ID ${id} no encontrada`);
         }
-        if (!participacion.activa) {
+        if (!participacion.activo) {
             throw new Error('La participación ya está inactiva');
         }
         return this.participacionRepository.finalizarParticipacion(id, data.fechaFin, data.motivoDesincripcion);
@@ -188,13 +248,13 @@ class ParticipacionService {
         if (!participacion) {
             throw new Error(`Participación con ID ${id} no encontrada`);
         }
-        if (participacion.activa) {
+        if (participacion.activo) {
             throw new Error('La participación ya está activa');
         }
-        const actividad = await this.actividadRepository.findById(participacion.actividadId);
-        if (actividad?.capacidadMaxima) {
-            const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(participacion.actividadId);
-            if (participantesActuales.activos >= actividad.capacidadMaxima) {
+        const actividad = await this.actividadRepository.findById(participacion.actividad_id);
+        if (actividad?.cupoMaximo) {
+            const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(participacion.actividad_id);
+            if (participantesActuales.activos >= actividad.cupoMaximo) {
                 throw new Error(`La actividad "${actividad.nombre}" ya no tiene cupos disponibles`);
             }
         }
@@ -210,7 +270,7 @@ class ParticipacionService {
             throw new Error(`Actividad destino con ID ${data.nuevaActividadId} no encontrada`);
         }
         const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.nuevaActividadId);
-        if (nuevaActividad.capacidadMaxima && participantesActuales.activos >= nuevaActividad.capacidadMaxima) {
+        if (nuevaActividad.cupoMaximo && participantesActuales.activos >= nuevaActividad.cupoMaximo) {
             throw new Error(`La actividad destino "${nuevaActividad.nombre}" ha alcanzado su capacidad máxima`);
         }
         return this.participacionRepository.transferirParticipacion(id, data.nuevaActividadId, data.fechaTransferencia, data.conservarFechaInicio);
@@ -221,14 +281,14 @@ class ParticipacionService {
             throw new Error(`Actividad con ID ${data.actividadId} no encontrada`);
         }
         const participantes = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
-        const cuposDisponibles = actividad.capacidadMaxima ?
-            actividad.capacidadMaxima - participantes.activos :
+        const cuposDisponibles = actividad.cupoMaximo ?
+            actividad.cupoMaximo - participantes.activos :
             null;
         return {
             actividad: {
                 id: actividad.id,
                 nombre: actividad.nombre,
-                capacidadMaxima: actividad.capacidadMaxima
+                cupoMaximo: actividad.cupoMaximo
             },
             participantes,
             cuposDisponibles,
@@ -243,7 +303,7 @@ class ParticipacionService {
         return participaciones.map(p => ({
             ...p,
             estado: participacion_dto_1.EstadoParticipacion.ACTIVA,
-            diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
+            diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
         }));
     }
     async getParticipacionesPorVencer(dias = 30) {
@@ -251,8 +311,8 @@ class ParticipacionService {
         return participaciones.map(p => ({
             ...p,
             estado: participacion_dto_1.EstadoParticipacion.ACTIVA,
-            diasRestantes: p.fechaFin ?
-                Math.ceil((p.fechaFin.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) :
+            diasRestantes: p.fecha_fin ?
+                Math.ceil((p.fecha_fin.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) :
                 null
         }));
     }

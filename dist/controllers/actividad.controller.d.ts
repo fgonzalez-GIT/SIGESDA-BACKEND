@@ -20,6 +20,7 @@ export declare class ActividadController {
     getDocentesDisponibles(req: Request, res: Response, next: NextFunction): Promise<void>;
     getParticipantes(req: Request, res: Response, next: NextFunction): Promise<void>;
     addParticipante(req: Request, res: Response, next: NextFunction): Promise<void>;
+    deleteParticipante(req: Request, res: Response, next: NextFunction): Promise<void>;
     getEstadisticas(req: Request, res: Response, next: NextFunction): Promise<void>;
     getCatalogos(req: Request, res: Response, next: NextFunction): Promise<void>;
     getTiposActividades(req: Request, res: Response, next: NextFunction): Promise<void>;

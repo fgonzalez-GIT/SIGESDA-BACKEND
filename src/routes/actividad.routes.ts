@@ -79,6 +79,7 @@ router.delete('/:id/docentes/:docenteId/rol/:rolDocenteId', actividadController.
 
 router.get('/:id/participantes', actividadController.getParticipantes.bind(actividadController));
 router.post('/:id/participantes', actividadController.addParticipante.bind(actividadController));
+router.delete('/:id/participantes/:participanteId', actividadController.deleteParticipante.bind(actividadController));
 
 // ==================== ESTADÍSTICAS DE ACTIVIDAD ====================
 

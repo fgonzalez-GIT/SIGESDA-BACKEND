@@ -80,7 +80,7 @@ const horarioInlineSchema = z.object({
 
 // Sub-schema para docentes inline al crear actividad
 const docenteInlineSchema = z.object({
-  docenteId: z.string().cuid('ID de docente inválido'),
+  docenteId: z.number().int().positive('ID de docente inválido'),
   rolDocenteId: z.number().int().positive(),
   observaciones: z.string().max(500).optional().nullable()
 });

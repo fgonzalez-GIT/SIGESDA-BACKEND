@@ -35,6 +35,7 @@ router.post('/:id/docentes', actividadController.asignarDocente.bind(actividadCo
 router.delete('/:id/docentes/:docenteId/rol/:rolDocenteId', actividadController.desasignarDocente.bind(actividadController));
 router.get('/:id/participantes', actividadController.getParticipantes.bind(actividadController));
 router.post('/:id/participantes', actividadController.addParticipante.bind(actividadController));
+router.delete('/:id/participantes/:participanteId', actividadController.deleteParticipante.bind(actividadController));
 router.get('/:id/estadisticas', actividadController.getEstadisticas.bind(actividadController));
 exports.default = router;
 //# sourceMappingURL=actividad.routes.js.map

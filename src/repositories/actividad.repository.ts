@@ -510,7 +510,7 @@ export class ActividadRepository {
   /**
    * Asigna un docente a una actividad
    */
-  async asignarDocente(actividadId: number, docenteId: string, rolDocenteId: number, observaciones?: string) {
+  async asignarDocente(actividadId: number, docenteId: number, rolDocenteId: number, observaciones?: string) {
     return this.prisma.docentes_actividades.create({
       data: {
         actividad_id: actividadId,
@@ -662,11 +662,32 @@ export class ActividadRepository {
   }
 
   /**
+   * Busca una participación existente por persona y actividad
+   */
+  async findParticipacionByPersonaAndActividad(
+    actividadId: number,
+    personaId: number
+  ) {
+    return this.prisma.participaciones_actividades.findFirst({
+      where: {
+        actividad_id: actividadId,
+        persona_id: personaId
+      },
+      select: {
+        id: true,
+        activo: true,
+        fecha_inicio: true,
+        fecha_fin: true
+      }
+    });
+  }
+
+  /**
    * Inscribe un participante en una actividad
    */
   async addParticipante(
     actividadId: number,
-    personaId: string,
+    personaId: number,
     fechaInicio: string,
     observaciones?: string
   ) {
@@ -695,6 +716,25 @@ export class ActividadRepository {
             codigo_actividad: true
           }
         }
+      }
+    });
+  }
+
+  /**
+   * Elimina (soft delete) un participante de una actividad
+   */
+  async deleteParticipante(
+    actividadId: number,
+    participanteId: number
+  ) {
+    return this.prisma.participaciones_actividades.update({
+      where: {
+        id: participanteId,
+        actividad_id: actividadId
+      },
+      data: {
+        activo: false,
+        fecha_fin: new Date()
       }
     });
   }

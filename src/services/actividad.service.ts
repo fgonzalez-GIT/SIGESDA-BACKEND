@@ -1,7 +1,7 @@
 import { ActividadRepository } from '@/repositories/actividad.repository';
 import { CreateActividadDto, UpdateActividadDto, QueryActividadesDto } from '@/dto/actividad-v2.dto';
 import { logger } from '@/utils/logger';
-import { NotFoundError, ValidationError } from '@/utils/errors';
+import { NotFoundError, ValidationError, ConflictError } from '@/utils/errors';
 
 /**
  * Service para manejo de lógica de negocio de Actividades V2.0
@@ -291,7 +291,7 @@ export class ActividadService {
   /**
    * Asigna un docente a una actividad
    */
-  async asignarDocente(actividadId: number, docenteId: string, rolDocenteId: number, observaciones?: string) {
+  async asignarDocente(actividadId: number, docenteId: number, rolDocenteId: number, observaciones?: string) {
     const actividad = await this.actividadRepository.findById(actividadId);
     if (!actividad) {
       throw new NotFoundError(`Actividad con ID ${actividadId} no encontrada`);
@@ -361,13 +361,32 @@ export class ActividadService {
    */
   async addParticipante(
     actividadId: number,
-    personaId: string,
+    personaId: number,
     fechaInicio: string,
     observaciones?: string
   ) {
     const actividad = await this.actividadRepository.findById(actividadId);
     if (!actividad) {
       throw new NotFoundError(`Actividad con ID ${actividadId} no encontrada`);
+    }
+
+    // Check if the person is already enrolled (active or inactive)
+    const existingParticipacion = await this.actividadRepository.findParticipacionByPersonaAndActividad(
+      actividadId,
+      personaId
+    );
+
+    if (existingParticipacion) {
+      if (existingParticipacion.activo) {
+        throw new ConflictError(
+          `La persona con ID ${personaId} ya está inscrita activamente en la actividad ${actividad.nombre}`
+        );
+      } else {
+        throw new ConflictError(
+          `La persona con ID ${personaId} ya estuvo inscrita en la actividad ${actividad.nombre}. ` +
+          `Debe reactivar la participación existente (ID: ${existingParticipacion.id}) en lugar de crear una nueva.`
+        );
+      }
     }
 
     const participacion = await this.actividadRepository.addParticipante(
@@ -378,6 +397,25 @@ export class ActividadService {
     );
 
     logger.info(`Participante inscrito: ${personaId} en actividad ${actividad.nombre} (ID: ${actividadId})`);
+
+    return participacion;
+  }
+
+  /**
+   * Elimina un participante de una actividad
+   */
+  async deleteParticipante(actividadId: number, participanteId: number) {
+    const actividad = await this.actividadRepository.findById(actividadId);
+    if (!actividad) {
+      throw new NotFoundError(`Actividad con ID ${actividadId} no encontrada`);
+    }
+
+    const participacion = await this.actividadRepository.deleteParticipante(
+      actividadId,
+      participanteId
+    );
+
+    logger.info(`Participante eliminado: ID ${participanteId} de actividad ${actividad.nombre} (ID: ${actividadId})`);
 
     return participacion;
   }
