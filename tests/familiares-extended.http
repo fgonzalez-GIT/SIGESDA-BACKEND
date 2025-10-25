@@ -1,0 +1,403 @@
+### TESTS PARA MÓDULO DE FAMILIARES EXTENDIDO
+### Backend SIGESDA - Integración con Frontend
+
+@baseUrl = http://localhost:8000
+@contentType = application/json
+
+###############################################
+# 1. CREAR RELACIÓN FAMILIAR CON TODOS LOS CAMPOS
+###############################################
+
+POST {{baseUrl}}/api/familiares
+Content-Type: {{contentType}}
+
+{
+  "socioId": 21,
+  "familiarId": 19,
+  "parentesco": "HIJO",
+  "descripcion": "Relación padre-hijo creada desde el backend extendido",
+  "permisoResponsableFinanciero": true,
+  "permisoContactoEmergencia": true,
+  "permisoAutorizadoRetiro": false,
+  "descuento": 15.5,
+  "activo": true,
+  "grupoFamiliarId": null
+}
+
+###############################################
+# 2. CREAR RELACIÓN CON DESCUENTO MÁXIMO
+###############################################
+
+POST {{baseUrl}}/api/familiares
+Content-Type: {{contentType}}
+
+{
+  "socioId": 21,
+  "familiarId": 11,
+  "parentesco": "CONYUGE",
+  "descripcion": "Cónyuge con descuento familiar completo",
+  "permisoResponsableFinanciero": true,
+  "permisoContactoEmergencia": true,
+  "permisoAutorizadoRetiro": true,
+  "descuento": 100,
+  "activo": true,
+  "grupoFamiliarId": 1
+}
+
+###############################################
+# 3. CREAR RELACIÓN CON TIPO EXTENDIDO (ABUELO)
+###############################################
+
+POST {{baseUrl}}/api/familiares
+Content-Type: {{contentType}}
+
+{
+  "socioId": 19,
+  "familiarId": 13,
+  "parentesco": "ABUELO",
+  "descripcion": "Abuelo paterno",
+  "permisoResponsableFinanciero": false,
+  "permisoContactoEmergencia": true,
+  "permisoAutorizadoRetiro": false,
+  "descuento": 0,
+  "activo": true
+}
+
+###############################################
+# 4. OBTENER FAMILIARES DE UN SOCIO
+###############################################
+
+GET {{baseUrl}}/api/familiares/socio/21?includeInactivos=false
+
+###############################################
+# 5. OBTENER FAMILIARES INCLUYENDO INACTIVOS
+###############################################
+
+GET {{baseUrl}}/api/familiares/socio/21?includeInactivos=true
+
+###############################################
+# 6. ACTUALIZAR PERMISOS Y DESCUENTO
+###############################################
+
+PUT {{baseUrl}}/api/familiares/2
+Content-Type: {{contentType}}
+
+{
+  "descuento": 25,
+  "permisoAutorizadoRetiro": true,
+  "descripcion": "Actualización de permisos y descuento - ahora puede retirar"
+}
+
+###############################################
+# 7. ACTUALIZAR SOLO DESCUENTO
+###############################################
+
+PUT {{baseUrl}}/api/familiares/2
+Content-Type: {{contentType}}
+
+{
+  "descuento": 50
+}
+
+###############################################
+# 8. DESACTIVAR RELACIÓN (SOFT DELETE)
+###############################################
+
+PUT {{baseUrl}}/api/familiares/2
+Content-Type: {{contentType}}
+
+{
+  "activo": false,
+  "descripcion": "Relación temporalmente inactiva"
+}
+
+###############################################
+# 9. REACTIVAR RELACIÓN
+###############################################
+
+PUT {{baseUrl}}/api/familiares/2
+Content-Type: {{contentType}}
+
+{
+  "activo": true,
+  "descripcion": "Relación reactivada"
+}
+
+###############################################
+# 10. CAMBIAR TIPO DE PARENTESCO
+###############################################
+
+PUT {{baseUrl}}/api/familiares/2
+Content-Type: {{contentType}}
+
+{
+  "parentesco": "HIJA"
+}
+
+###############################################
+# 11. OBTENER RELACIÓN POR ID
+###############################################
+
+GET {{baseUrl}}/api/familiares/2
+
+###############################################
+# 12. OBTENER TIPOS DE PARENTESCO DISPONIBLES
+###############################################
+
+GET {{baseUrl}}/api/familiares/tipos/parentesco
+
+###############################################
+# 13. LISTAR TODAS LAS RELACIONES (CON PAGINACIÓN)
+###############################################
+
+GET {{baseUrl}}/api/familiares?page=1&limit=10
+
+###############################################
+# 14. FILTRAR POR TIPO DE PARENTESCO
+###############################################
+
+GET {{baseUrl}}/api/familiares?parentesco=HIJO&page=1&limit=10
+
+###############################################
+# 15. FILTRAR POR GRUPO FAMILIAR
+###############################################
+
+GET {{baseUrl}}/api/familiares?grupoFamiliarId=1&page=1&limit=10
+
+###############################################
+# 16. FILTRAR SOLO ACTIVOS
+###############################################
+
+GET {{baseUrl}}/api/familiares?soloActivos=true&page=1&limit=10
+
+###############################################
+# 17. VERIFICAR SI EXISTE RELACIÓN
+###############################################
+
+GET {{baseUrl}}/api/familiares/verify/21/19
+
+###############################################
+# 18. OBTENER ÁRBOL FAMILIAR
+###############################################
+
+GET {{baseUrl}}/api/familiares/socio/21/tree
+
+###############################################
+# 19. OBTENER ESTADÍSTICAS DE PARENTESCO
+###############################################
+
+GET {{baseUrl}}/api/familiares/stats/parentesco
+
+###############################################
+# 20. BÚSQUEDA AVANZADA POR NOMBRE
+###############################################
+
+GET {{baseUrl}}/api/familiares/search/avanzada?search=Gonzalez&searchBy=nombre
+
+###############################################
+# 21. BÚSQUEDA POR DNI
+###############################################
+
+GET {{baseUrl}}/api/familiares/search/avanzada?search=29903361&searchBy=dni
+
+###############################################
+# 22. BÚSQUEDA GENERAL (ALL)
+###############################################
+
+GET {{baseUrl}}/api/familiares/search/avanzada?search=Francisco&searchBy=all
+
+###############################################
+# 23. CREAR MÚLTIPLES RELACIONES (BULK)
+###############################################
+
+POST {{baseUrl}}/api/familiares/bulk/create
+Content-Type: {{contentType}}
+
+{
+  "familiares": [
+    {
+      "socioId": 21,
+      "familiarId": 11,
+      "parentesco": "CONYUGE",
+      "descripcion": "Cónyuge",
+      "permisoResponsableFinanciero": true,
+      "permisoContactoEmergencia": true,
+      "permisoAutorizadoRetiro": true,
+      "descuento": 50,
+      "activo": true,
+      "grupoFamiliarId": 1
+    },
+    {
+      "socioId": 21,
+      "familiarId": 13,
+      "parentesco": "HERMANA",
+      "descripcion": "Hermana",
+      "permisoResponsableFinanciero": false,
+      "permisoContactoEmergencia": true,
+      "permisoAutorizadoRetiro": false,
+      "descuento": 10,
+      "activo": true,
+      "grupoFamiliarId": 1
+    }
+  ]
+}
+
+###############################################
+# 24. ELIMINAR MÚLTIPLES RELACIONES (BULK)
+###############################################
+
+DELETE {{baseUrl}}/api/familiares/bulk/delete
+Content-Type: {{contentType}}
+
+{
+  "ids": [3, 4, 5]
+}
+
+###############################################
+# 25. ELIMINAR RELACIÓN INDIVIDUAL
+###############################################
+
+DELETE {{baseUrl}}/api/familiares/2
+
+###############################################
+# 26. OBTENER FAMILIARES DISPONIBLES PARA UN SOCIO
+###############################################
+
+GET {{baseUrl}}/api/familiares/socio/21/disponibles
+
+###############################################
+# CASOS DE PRUEBA DE VALIDACIÓN
+###############################################
+
+### 27. ERROR: Descuento fuera de rango (>100)
+
+POST {{baseUrl}}/api/familiares
+Content-Type: {{contentType}}
+
+{
+  "socioId": 21,
+  "familiarId": 19,
+  "parentesco": "HIJO",
+  "descuento": 150,
+  "activo": true
+}
+
+### 28. ERROR: Descuento negativo
+
+POST {{baseUrl}}/api/familiares
+Content-Type: {{contentType}}
+
+{
+  "socioId": 21,
+  "familiarId": 19,
+  "parentesco": "HIJO",
+  "descuento": -10,
+  "activo": true
+}
+
+### 29. ERROR: Persona no puede ser familiar de sí misma
+
+POST {{baseUrl}}/api/familiares
+Content-Type: {{contentType}}
+
+{
+  "socioId": 21,
+  "familiarId": 21,
+  "parentesco": "HIJO",
+  "activo": true
+}
+
+### 30. ERROR: Tipo de parentesco inválido
+
+POST {{baseUrl}}/api/familiares
+Content-Type: {{contentType}}
+
+{
+  "socioId": 21,
+  "familiarId": 19,
+  "parentesco": "AMIGO",
+  "activo": true
+}
+
+###############################################
+# CASOS DE USO DEL FRONTEND
+###############################################
+
+### 31. Caso de Uso: Agregar familiar desde PersonasPageSimple
+### El usuario expande la fila de Francisco Gonzalez (ID: 21)
+### y hace click en "Agregar Familiar"
+
+POST {{baseUrl}}/api/familiares
+Content-Type: {{contentType}}
+
+{
+  "socioId": 21,
+  "familiarId": 19,
+  "parentesco": "HIJO",
+  "descripcion": "Mi hijo menor que estudia guitarra",
+  "permisoResponsableFinanciero": true,
+  "permisoContactoEmergencia": true,
+  "permisoAutorizadoRetiro": true,
+  "descuento": 20,
+  "activo": true,
+  "grupoFamiliarId": null
+}
+
+### 32. Caso de Uso: Editar permisos desde FamiliarItem
+### El usuario hace click en el ícono de editar
+
+PUT {{baseUrl}}/api/familiares/2
+Content-Type: {{contentType}}
+
+{
+  "permisoResponsableFinanciero": true,
+  "permisoContactoEmergencia": true,
+  "permisoAutorizadoRetiro": false,
+  "descuento": 15
+}
+
+### 33. Caso de Uso: Eliminar relación desde ConfirmDeleteDialog
+### El usuario confirma la eliminación
+
+DELETE {{baseUrl}}/api/familiares/2
+
+### 34. Caso de Uso: Cargar familiares al expandir fila
+### Frontend llama a fetchRelacionesDePersona(personaId)
+
+GET {{baseUrl}}/api/familiares/socio/21
+
+###############################################
+# INTEGRACIÓN CON REDUX SLICE
+###############################################
+
+### 35. Redux: fetchRelacionesDePersona
+### Endpoint que usa el thunk de Redux
+
+GET {{baseUrl}}/api/familiares/socio/21?includeInactivos=false
+
+### Respuesta esperada por Redux:
+# {
+#   success: true,
+#   data: [
+#     {
+#       id: number,
+#       socioId: number,
+#       familiarId: number,
+#       parentesco: string,
+#       descripcion: string,
+#       permisoResponsableFinanciero: boolean,
+#       permisoContactoEmergencia: boolean,
+#       permisoAutorizadoRetiro: boolean,
+#       descuento: string,
+#       activo: boolean,
+#       grupoFamiliarId: number | null,
+#       familiar: {
+#         id: number,
+#         nombre: string,
+#         apellido: string,
+#         dni: string,
+#         numeroSocio: number
+#       }
+#     }
+#   ]
+# }

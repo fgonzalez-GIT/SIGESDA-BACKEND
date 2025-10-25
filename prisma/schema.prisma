@@ -189,16 +189,25 @@ model estados_actividades {
 }
 
 model Familiar {
-  id         Int            @id @default(autoincrement())
-  socioId    Int
-  familiarId Int
-  parentesco TipoParentesco
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-  familiar   Persona        @relation("FamiliarParentesco", fields: [familiarId], references: [id], onDelete: Cascade)
-  socio      Persona        @relation("SocioFamiliar", fields: [socioId], references: [id], onDelete: Cascade)
+  id                           Int            @id @default(autoincrement())
+  socioId                      Int
+  familiarId                   Int
+  parentesco                   TipoParentesco
+  descripcion                  String?
+  permisoResponsableFinanciero Boolean        @default(false)
+  permisoContactoEmergencia    Boolean        @default(false)
+  permisoAutorizadoRetiro      Boolean        @default(false)
+  descuento                    Decimal        @default(0) @db.Decimal(5, 2)
+  activo                       Boolean        @default(true)
+  grupoFamiliarId              Int?
+  createdAt                    DateTime       @default(now())
+  updatedAt                    DateTime       @updatedAt
+  familiar                     Persona        @relation("FamiliarParentesco", fields: [familiarId], references: [id], onDelete: Cascade)
+  socio                        Persona        @relation("SocioFamiliar", fields: [socioId], references: [id], onDelete: Cascade)
 
   @@unique([socioId, familiarId])
+  @@index([grupoFamiliarId])
+  @@index([activo])
   @@map("familiares")
 }
 
@@ -381,6 +390,16 @@ enum TipoParentesco {
   MADRE
   HERMANO
   HERMANA
+  ABUELO
+  ABUELA
+  NIETO
+  NIETA
+  TIO
+  TIA
+  SOBRINO
+  SOBRINA
+  PRIMO
+  PRIMA
   OTRO
 }
 

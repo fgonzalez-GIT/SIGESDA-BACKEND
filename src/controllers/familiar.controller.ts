@@ -57,7 +57,7 @@ export class FamiliarController {
   async getFamiliarById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const familiar = await this.familiarService.getFamiliarById(id);
+      const familiar = await this.familiarService.getFamiliarById(parseInt(id));
 
       if (!familiar) {
         const response: ApiResponse = {
@@ -85,7 +85,7 @@ export class FamiliarController {
       const { includeInactivos } = req.query;
       const includeInactivosFlag = includeInactivos === 'true';
 
-      const familiares = await this.familiarService.getFamiliarsBySocio(socioId, includeInactivosFlag);
+      const familiares = await this.familiarService.getFamiliarsBySocio(parseInt(socioId), includeInactivosFlag);
 
       const response: ApiResponse = {
         success: true,
@@ -107,7 +107,7 @@ export class FamiliarController {
     try {
       const { id } = req.params;
       const validatedData = updateFamiliarSchema.parse(req.body);
-      const familiar = await this.familiarService.updateFamiliar(id, validatedData);
+      const familiar = await this.familiarService.updateFamiliar(parseInt(id), validatedData);
 
       const response: ApiResponse = {
         success: true,
@@ -124,7 +124,7 @@ export class FamiliarController {
   async deleteFamiliar(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const familiar = await this.familiarService.deleteFamiliar(id);
+      const familiar = await this.familiarService.deleteFamiliar(parseInt(id));
 
       const response: ApiResponse = {
         success: true,
@@ -225,7 +225,7 @@ export class FamiliarController {
   async getFamilyTree(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { socioId } = req.params;
-      const familyTree = await this.familiarService.getFamilyTree(socioId);
+      const familyTree = await this.familiarService.getFamilyTree(parseInt(socioId));
 
       const response: ApiResponse = {
         success: true,
@@ -262,10 +262,12 @@ export class FamiliarController {
       const { socioId, familiarId } = req.params;
 
       const existing = await this.familiarService.getFamiliares({
-        socioId,
-        familiarId,
+        socioId: parseInt(socioId),
+        familiarId: parseInt(familiarId),
         page: 1,
-        limit: 1
+        limit: 1,
+        includeInactivos: false,
+        soloActivos: true
       });
 
       const exists = existing.total > 0;
@@ -290,7 +292,7 @@ export class FamiliarController {
       const { socioId } = req.params;
 
       // Get all familiares of the socio
-      const existingFamiliares = await this.familiarService.getFamiliarsBySocio(socioId, false);
+      const existingFamiliares = await this.familiarService.getFamiliarsBySocio(parseInt(socioId), false);
       const familiarIds = existingFamiliares.map(f => f.familiarId);
 
       // This would require a method in PersonaService to get socios excluding certain IDs

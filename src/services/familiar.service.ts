@@ -32,22 +32,19 @@ export class FamiliarService {
       throw new Error(`Familiar con ID ${data.familiarId} no encontrado`);
     }
 
-    // Both must be SOCIO type
-    if (socio.tipo !== TipoPersona.SOCIO) {
-      throw new Error(`La persona ${socio.nombre} ${socio.apellido} no es un socio`);
-    }
-
-    if (familiar.tipo !== TipoPersona.SOCIO) {
-      throw new Error(`La persona ${familiar.nombre} ${familiar.apellido} no es un socio`);
-    }
+    // Allow family relationships between any type of persons (SOCIO, NO_SOCIO, DOCENTE, ESTUDIANTE, PROVEEDOR)
+    // This is more flexible and realistic for family relationships in a conservatory
+    // For example: A parent (NO_SOCIO) can have a child (ESTUDIANTE),
+    // or two siblings where one is SOCIO and the other is DOCENTE
+    logger.info(`Creando relación familiar entre ${socio.nombre} ${socio.apellido} (${socio.tipo}) y ${familiar.nombre} ${familiar.apellido} (${familiar.tipo})`);
 
     // Both must be active (not have fechaBaja)
     if (socio.fechaBaja) {
-      throw new Error(`El socio ${socio.nombre} ${socio.apellido} está dado de baja`);
+      throw new Error(`La persona ${socio.nombre} ${socio.apellido} está dado de baja`);
     }
 
     if (familiar.fechaBaja) {
-      throw new Error(`El socio ${familiar.nombre} ${familiar.apellido} está dado de baja`);
+      throw new Error(`La persona ${familiar.nombre} ${familiar.apellido} está dado de baja`);
     }
 
     // Check for existing relationship
@@ -59,9 +56,14 @@ export class FamiliarService {
     // Validate parentesco logic
     this.validateParentesco(data.parentesco, socio, familiar);
 
+    // Validate descuento range
+    if (data.descuento && (data.descuento < 0 || data.descuento > 100)) {
+      throw new Error('El descuento debe estar entre 0 y 100');
+    }
+
     const relacion = await this.familiarRepository.create(data);
 
-    logger.info(`Relación familiar creada: ${socio.nombre} ${socio.apellido} - ${data.parentesco} - ${familiar.nombre} ${familiar.apellido} (ID: ${relacion.id})`);
+    logger.info(`Relación familiar creada: ${socio.nombre} ${socio.apellido} - ${data.parentesco} - ${familiar.nombre} ${familiar.apellido} (ID: ${relacion.id}, Descuento: ${data.descuento || 0}%)`);
 
     return relacion;
   }
@@ -76,25 +78,24 @@ export class FamiliarService {
     };
   }
 
-  async getFamiliarById(id: string): Promise<Familiar | null> {
+  async getFamiliarById(id: number): Promise<Familiar | null> {
     return this.familiarRepository.findById(id);
   }
 
-  async getFamiliarsBySocio(socioId: string, includeInactivos = false): Promise<Familiar[]> {
-    // Validate socio exists
-    const socio = await this.personaRepository.findById(socioId);
-    if (!socio) {
-      throw new Error(`Socio con ID ${socioId} no encontrado`);
+  async getFamiliarsBySocio(socioId: number, includeInactivos = false): Promise<Familiar[]> {
+    // Validate persona exists
+    const persona = await this.personaRepository.findById(socioId);
+    if (!persona) {
+      throw new Error(`Persona con ID ${socioId} no encontrada`);
     }
 
-    if (socio.tipo !== TipoPersona.SOCIO) {
-      throw new Error(`La persona ${socio.nombre} ${socio.apellido} no es un socio`);
-    }
+    // Note: We allow both SOCIO and NO_SOCIO to have familiares
+    // This is more flexible for family relationships
 
     return this.familiarRepository.findBySocioId(socioId, includeInactivos);
   }
 
-  async updateFamiliar(id: string, data: UpdateFamiliarDto): Promise<Familiar> {
+  async updateFamiliar(id: number, data: UpdateFamiliarDto): Promise<Familiar> {
     const existingRelacion = await this.familiarRepository.findById(id);
     if (!existingRelacion) {
       throw new Error(`Relación familiar con ID ${id} no encontrada`);
@@ -105,14 +106,19 @@ export class FamiliarService {
       this.validateParentesco(data.parentesco, existingRelacion.socio as any, existingRelacion.familiar as any);
     }
 
+    // Validate descuento range if provided
+    if (data.descuento !== undefined && (data.descuento < 0 || data.descuento > 100)) {
+      throw new Error('El descuento debe estar entre 0 y 100');
+    }
+
     const updatedRelacion = await this.familiarRepository.update(id, data);
 
-    logger.info(`Relación familiar actualizada: ID ${id} - Nuevo parentesco: ${data.parentesco || 'sin cambios'}`);
+    logger.info(`Relación familiar actualizada: ID ${id} - Cambios: ${JSON.stringify(data)}`);
 
     return updatedRelacion;
   }
 
-  async deleteFamiliar(id: string): Promise<Familiar> {
+  async deleteFamiliar(id: number): Promise<Familiar> {
     const existingRelacion = await this.familiarRepository.findById(id);
     if (!existingRelacion) {
       throw new Error(`Relación familiar con ID ${id} no encontrada`);
@@ -138,13 +144,20 @@ export class FamiliarService {
           this.personaRepository.findById(familiar.familiarId)
         ]);
 
-        if (!socio || socio.tipo !== TipoPersona.SOCIO || socio.fechaBaja) {
-          errors.push(`Socio ${familiar.socioId} inválido o inactivo`);
+        if (!socio || socio.fechaBaja) {
+          errors.push(`Persona ${familiar.socioId} no encontrada o inactiva`);
           continue;
         }
 
-        if (!familiarPerson || familiarPerson.tipo !== TipoPersona.SOCIO || familiarPerson.fechaBaja) {
-          errors.push(`Familiar ${familiar.familiarId} inválido o inactivo`);
+        if (!familiarPerson || familiarPerson.fechaBaja) {
+          errors.push(`Persona ${familiar.familiarId} no encontrada o inactiva`);
+          continue;
+        }
+
+        // At least one must be SOCIO
+        const isSocioRelation = socio.tipo === TipoPersona.SOCIO || familiarPerson.tipo === TipoPersona.SOCIO;
+        if (!isSocioRelation) {
+          errors.push(`Al menos una de las personas debe ser un socio (${familiar.socioId} y ${familiar.familiarId})`);
           continue;
         }
 
@@ -190,27 +203,24 @@ export class FamiliarService {
     return this.familiarRepository.getParentescoStats();
   }
 
-  async getFamilyTree(socioId: string): Promise<any> {
-    // Validate socio exists
-    const socio = await this.personaRepository.findById(socioId);
-    if (!socio) {
-      throw new Error(`Socio con ID ${socioId} no encontrado`);
-    }
-
-    if (socio.tipo !== TipoPersona.SOCIO) {
-      throw new Error(`La persona ${socio.nombre} ${socio.apellido} no es un socio`);
+  async getFamilyTree(socioId: number): Promise<any> {
+    // Validate persona exists
+    const persona = await this.personaRepository.findById(socioId);
+    if (!persona) {
+      throw new Error(`Persona con ID ${socioId} no encontrada`);
     }
 
     const familyTree = await this.familiarRepository.getFamilyTree(socioId);
 
     return {
       ...familyTree,
-      socio: {
-        id: socio.id,
-        nombre: socio.nombre,
-        apellido: socio.apellido,
-        dni: socio.dni,
-        numeroSocio: socio.numeroSocio
+      persona: {
+        id: persona.id,
+        tipo: persona.tipo,
+        nombre: persona.nombre,
+        apellido: persona.apellido,
+        dni: persona.dni,
+        numeroSocio: persona.numeroSocio
       }
     };
   }

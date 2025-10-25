@@ -6,7 +6,18 @@ export class FamiliarRepository {
 
   async create(data: CreateFamiliarDto): Promise<Familiar> {
     return this.prisma.familiar.create({
-      data,
+      data: {
+        socioId: data.socioId,
+        familiarId: data.familiarId,
+        parentesco: data.parentesco,
+        descripcion: data.descripcion,
+        permisoResponsableFinanciero: data.permisoResponsableFinanciero ?? false,
+        permisoContactoEmergencia: data.permisoContactoEmergencia ?? false,
+        permisoAutorizadoRetiro: data.permisoAutorizadoRetiro ?? false,
+        descuento: data.descuento ?? 0,
+        activo: data.activo ?? true,
+        grupoFamiliarId: data.grupoFamiliarId
+      },
       include: {
         socio: {
           select: {
@@ -14,7 +25,9 @@ export class FamiliarRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            numeroSocio: true
+            numeroSocio: true,
+            email: true,
+            telefono: true
           }
         },
         familiar: {
@@ -23,7 +36,9 @@ export class FamiliarRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            numeroSocio: true
+            numeroSocio: true,
+            email: true,
+            telefono: true
           }
         }
       }
@@ -43,6 +58,15 @@ export class FamiliarRepository {
 
     if (query.parentesco) {
       where.parentesco = query.parentesco;
+    }
+
+    if (query.grupoFamiliarId) {
+      where.grupoFamiliarId = query.grupoFamiliarId;
+    }
+
+    // Filter by activo status
+    if (query.soloActivos) {
+      where.activo = true;
     }
 
     // Filter by active socios only (unless explicitly including inactivos)
@@ -103,7 +127,7 @@ export class FamiliarRepository {
     return { data, total };
   }
 
-  async findById(id: string): Promise<Familiar | null> {
+  async findById(id: number): Promise<Familiar | null> {
     return this.prisma.familiar.findUnique({
       where: { id },
       include: {
@@ -133,7 +157,7 @@ export class FamiliarRepository {
     });
   }
 
-  async findBySocioId(socioId: string, includeInactivos = false): Promise<Familiar[]> {
+  async findBySocioId(socioId: number, includeInactivos = false): Promise<Familiar[]> {
     const where: any = { socioId };
 
     if (!includeInactivos) {
@@ -165,7 +189,7 @@ export class FamiliarRepository {
     });
   }
 
-  async findByFamiliarId(familiarId: string, includeInactivos = false): Promise<Familiar[]> {
+  async findByFamiliarId(familiarId: number, includeInactivos = false): Promise<Familiar[]> {
     const where: any = { familiarId };
 
     if (!includeInactivos) {
@@ -196,7 +220,7 @@ export class FamiliarRepository {
     });
   }
 
-  async findExistingRelation(socioId: string, familiarId: string): Promise<Familiar | null> {
+  async findExistingRelation(socioId: number, familiarId: number): Promise<Familiar | null> {
     return this.prisma.familiar.findUnique({
       where: {
         socioId_familiarId: {
@@ -207,7 +231,16 @@ export class FamiliarRepository {
     });
   }
 
-  async update(id: string, data: { parentesco?: TipoParentesco }): Promise<Familiar> {
+  async update(id: number, data: {
+    parentesco?: TipoParentesco;
+    descripcion?: string | null;
+    permisoResponsableFinanciero?: boolean;
+    permisoContactoEmergencia?: boolean;
+    permisoAutorizadoRetiro?: boolean;
+    descuento?: number;
+    activo?: boolean;
+    grupoFamiliarId?: number | null;
+  }): Promise<Familiar> {
     return this.prisma.familiar.update({
       where: { id },
       data,
@@ -218,7 +251,9 @@ export class FamiliarRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            numeroSocio: true
+            numeroSocio: true,
+            email: true,
+            telefono: true
           }
         },
         familiar: {
@@ -227,20 +262,22 @@ export class FamiliarRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            numeroSocio: true
+            numeroSocio: true,
+            email: true,
+            telefono: true
           }
         }
       }
     });
   }
 
-  async delete(id: string): Promise<Familiar> {
+  async delete(id: number): Promise<Familiar> {
     return this.prisma.familiar.delete({
       where: { id }
     });
   }
 
-  async deleteBulk(ids: string[]): Promise<{ count: number }> {
+  async deleteBulk(ids: number[]): Promise<{ count: number }> {
     return this.prisma.familiar.deleteMany({
       where: {
         id: {
@@ -358,7 +395,7 @@ export class FamiliarRepository {
     }));
   }
 
-  async getFamilyTree(socioId: string): Promise<any> {
+  async getFamilyTree(socioId: number): Promise<any> {
     const directFamily = await this.findBySocioId(socioId, false);
     const inverseFamily = await this.findByFamiliarId(socioId, false);
 
