@@ -85,32 +85,32 @@ model categorias_actividades {
 }
 
 model CategoriaSocio {
-  id          Int       @id @default(autoincrement())
-  codigo      String    @unique
-  nombre      String    @unique
-  descripcion String?
-  montoCuota  Decimal   @default(0) @db.Decimal(10, 2)
-  descuento   Decimal   @default(0) @db.Decimal(5, 2)
-  activa      Boolean   @default(true)
-  orden       Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  cuotas      Cuota[]
-  personas    Persona[]
+  id           Int           @id @default(autoincrement())
+  codigo       String        @unique
+  nombre       String        @unique
+  descripcion  String?
+  montoCuota   Decimal       @default(0) @db.Decimal(10, 2)
+  descuento    Decimal       @default(0) @db.Decimal(5, 2)
+  activa       Boolean       @default(true)
+  orden        Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  cuotas       Cuota[]
+  personasTipo PersonaTipo[]
 
   @@map("categorias_socios")
 }
 
 model ComisionDirectiva {
   id          Int       @id @default(autoincrement())
-  socioId     Int       @unique
+  personaId   Int       @unique
   cargo       String
   fechaInicio DateTime
   fechaFin    DateTime?
   activo      Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  socio       Persona   @relation(fields: [socioId], references: [id], onDelete: Cascade)
+  persona     Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
 
   @@map("comision_directiva")
 }
@@ -190,7 +190,7 @@ model estados_actividades {
 
 model Familiar {
   id                           Int            @id @default(autoincrement())
-  socioId                      Int
+  personaPrincipalId           Int
   familiarId                   Int
   parentesco                   TipoParentesco
   descripcion                  String?
@@ -203,9 +203,9 @@ model Familiar {
   createdAt                    DateTime       @default(now())
   updatedAt                    DateTime       @updatedAt
   familiar                     Persona        @relation("FamiliarParentesco", fields: [familiarId], references: [id], onDelete: Cascade)
-  socio                        Persona        @relation("SocioFamiliar", fields: [socioId], references: [id], onDelete: Cascade)
+  personaPrincipal             Persona        @relation("SocioFamiliar", fields: [personaPrincipalId], references: [id], onDelete: Cascade)
 
-  @@unique([socioId, familiarId])
+  @@unique([personaPrincipalId, familiarId])
   @@index([grupoFamiliarId])
   @@index([activo])
   @@map("familiares")
@@ -268,38 +268,117 @@ model participaciones_actividades {
   @@index([persona_id], map: "idx_participaciones_persona")
 }
 
+model TipoPersonaCatalogo {
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  personasTipo PersonaTipo[]
+
+  @@map("tipos_persona")
+}
+
+model EspecialidadDocente {
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  personasTipo PersonaTipo[]
+
+  @@map("especialidades_docentes")
+}
+
+model PersonaTipo {
+  id                  Int                   @id @default(autoincrement())
+  personaId           Int
+  tipoPersonaId       Int
+  fechaAsignacion     DateTime              @default(now())
+  fechaDesasignacion  DateTime?
+  activo              Boolean               @default(true)
+
+  // Campos opcionales específicos por tipo - SOCIO
+  categoriaId         Int?
+  numeroSocio         Int?                  @unique
+  fechaIngreso        DateTime?
+  fechaBaja           DateTime?
+  motivoBaja          String?
+
+  // Campos opcionales específicos por tipo - DOCENTE
+  especialidadId      Int?
+  honorariosPorHora   Decimal?              @db.Decimal(10, 2)
+
+  // Campos opcionales específicos por tipo - PROVEEDOR
+  cuit                String?               @unique @db.VarChar(11)
+  razonSocial         String?               @db.VarChar(200)
+
+  observaciones       String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  persona             Persona               @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  tipoPersona         TipoPersonaCatalogo   @relation(fields: [tipoPersonaId], references: [id])
+  categoria           CategoriaSocio?       @relation(fields: [categoriaId], references: [id])
+  especialidad        EspecialidadDocente?  @relation(fields: [especialidadId], references: [id])
+
+  @@unique([personaId, tipoPersonaId])
+  @@index([personaId])
+  @@index([tipoPersonaId])
+  @@index([activo])
+  @@map("persona_tipos")
+}
+
+model ContactoPersona {
+  id            Int           @id @default(autoincrement())
+  personaId     Int
+  tipoContacto  TipoContacto
+  valor         String        @db.VarChar(200)
+  principal     Boolean       @default(false)
+  observaciones String?
+  activo        Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  persona       Persona       @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@index([personaId])
+  @@index([tipoContacto])
+  @@index([activo])
+  @@map("contactos_persona")
+}
+
 model Persona {
   id                          Int                           @id @default(autoincrement())
-  tipo                        TipoPersona
-  nombre                      String
-  apellido                    String
-  dni                         String                        @unique
-  email                       String?                       @unique
-  telefono                    String?
-  direccion                   String?
+  nombre                      String                        @db.VarChar(100)
+  apellido                    String                        @db.VarChar(100)
+  dni                         String                        @unique @db.VarChar(8)
+  email                       String?                       @unique @db.VarChar(150)
+  telefono                    String?                       @db.VarChar(20)
+  direccion                   String?                       @db.VarChar(200)
   fechaNacimiento             DateTime?
-  numeroSocio                 Int?                          @unique
-  fechaIngreso                DateTime?
-  fechaBaja                   DateTime?
-  motivoBaja                  String?
-  especialidad                String?
-  honorariosPorHora           Decimal?                      @db.Decimal(10, 2)
-  cuit                        String?                       @unique
-  razonSocial                 String?
   observaciones               String?
   createdAt                   DateTime                      @default(now())
   updatedAt                   DateTime                      @updatedAt
-  categoriaId                 Int?
+
+  // Relaciones
+  tipos                       PersonaTipo[]
+  contactos                   ContactoPersona[]
   comisionDirectiva           ComisionDirectiva?
   docentes_actividades        docentes_actividades[]
   parentescos                 Familiar[]                    @relation("FamiliarParentesco")
   familiares                  Familiar[]                    @relation("SocioFamiliar")
   participaciones_actividades participaciones_actividades[]
-  categoria                   CategoriaSocio?               @relation(fields: [categoriaId], references: [id])
   recibosEmitidos             Recibo[]                      @relation("ReciboEmisor")
   recibosRecibidos            Recibo[]                      @relation("ReciboReceptor")
 
-  @@index([categoriaId])
+  @@index([dni])
   @@map("personas")
 }
 
@@ -403,11 +482,16 @@ enum TipoParentesco {
   OTRO
 }
 
-enum TipoPersona {
-  SOCIO
-  NO_SOCIO
-  DOCENTE
-  PROVEEDOR
+enum TipoContacto {
+  EMAIL
+  TELEFONO
+  CELULAR
+  WHATSAPP
+  FACEBOOK
+  INSTAGRAM
+  LINKEDIN
+  TWITTER
+  OTRO
 }
 
 enum TipoRecibo {
