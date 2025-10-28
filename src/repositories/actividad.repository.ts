@@ -786,51 +786,62 @@ export class ActividadRepository {
 
   /**
    * Obtiene todos los tipos de actividades
+   * Temporary: Returns enum values as catalog data
    */
   async getTiposActividades() {
-    return this.prisma.tipos_actividades.findMany({
-      where: { activo: true },
-      orderBy: { orden: 'asc' }
-    });
+    return [
+      { id: '1', codigo: 'CORO', nombre: 'Coro', activo: true, orden: 1 },
+      { id: '2', codigo: 'CLASE_CANTO', nombre: 'Clase de Canto', activo: true, orden: 2 },
+      { id: '3', codigo: 'CLASE_INSTRUMENTO', nombre: 'Clase de Instrumento', activo: true, orden: 3 }
+    ];
   }
 
   /**
    * Obtiene todas las categorías de actividades
+   * Temporary: Returns empty array as no categories defined yet
    */
   async getCategoriasActividades() {
-    return this.prisma.categorias_actividades.findMany({
-      where: { activo: true },
-      orderBy: { orden: 'asc' }
-    });
+    return [];
   }
 
   /**
    * Obtiene todos los estados de actividades
+   * Temporary: Returns basic states
    */
   async getEstadosActividades() {
-    return this.prisma.estados_actividades.findMany({
-      where: { activo: true },
-      orderBy: { orden: 'asc' }
-    });
+    return [
+      { id: '1', codigo: 'ACTIVA', nombre: 'Activa', activo: true, orden: 1 },
+      { id: '2', codigo: 'INACTIVA', nombre: 'Inactiva', activo: true, orden: 2 },
+      { id: '3', codigo: 'SUSPENDIDA', nombre: 'Suspendida', activo: true, orden: 3 }
+    ];
   }
 
   /**
    * Obtiene todos los días de la semana
+   * Temporary: Returns enum values as catalog data
    */
   async getDiasSemana() {
-    return this.prisma.dias_semana.findMany({
-      orderBy: { orden: 'asc' }
-    });
+    return [
+      { id: '1', codigo: 'LUNES', nombre: 'Lunes', orden: 1 },
+      { id: '2', codigo: 'MARTES', nombre: 'Martes', orden: 2 },
+      { id: '3', codigo: 'MIERCOLES', nombre: 'Miércoles', orden: 3 },
+      { id: '4', codigo: 'JUEVES', nombre: 'Jueves', orden: 4 },
+      { id: '5', codigo: 'VIERNES', nombre: 'Viernes', orden: 5 },
+      { id: '6', codigo: 'SABADO', nombre: 'Sábado', orden: 6 },
+      { id: '7', codigo: 'DOMINGO', nombre: 'Domingo', orden: 7 }
+    ];
   }
 
   /**
    * Obtiene todos los roles de docentes
+   * Temporary: Returns basic roles
    */
   async getRolesDocentes() {
-    return this.prisma.roles_docentes.findMany({
-      where: { activo: true },
-      orderBy: { orden: 'asc' }
-    });
+    return [
+      { id: '1', codigo: 'TITULAR', nombre: 'Docente Titular', activo: true, orden: 1 },
+      { id: '2', codigo: 'SUPLENTE', nombre: 'Docente Suplente', activo: true, orden: 2 },
+      { id: '3', codigo: 'ASISTENTE', nombre: 'Docente Asistente', activo: true, orden: 3 }
+    ];
   }
 
   // ==================== UTILIDADES ====================

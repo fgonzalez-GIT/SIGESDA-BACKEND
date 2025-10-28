@@ -1,4 +1,5 @@
-import { PrismaClient, Persona, TipoPersona, CategoriaSocio } from '@prisma/client';
+import { PrismaClient, Persona } from '@prisma/client';
+import { TipoPersona } from '@/types/enums';
 import { CreatePersonaDto, PersonaQueryDto } from '@/dto/persona.dto';
 
 export class PersonaRepository {

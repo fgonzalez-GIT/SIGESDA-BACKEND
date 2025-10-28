@@ -1,4 +1,5 @@
-import { Familiar, TipoPersona, TipoParentesco } from '@prisma/client';
+import { Familiar, TipoParentesco } from '@prisma/client';
+import { TipoPersona } from '@/types/enums';
 import { FamiliarRepository } from '@/repositories/familiar.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import {

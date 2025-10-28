@@ -1,4 +1,5 @@
-import { ReservaAula, TipoPersona } from '@prisma/client';
+import { ReservaAula } from '@prisma/client';
+import { TipoPersona } from '@/types/enums';
 import { ReservaAulaRepository } from '@/repositories/reserva-aula.repository';
 import { AulaRepository } from '@/repositories/aula.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';

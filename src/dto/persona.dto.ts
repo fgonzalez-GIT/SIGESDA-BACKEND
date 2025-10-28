@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TipoPersona } from '@prisma/client';
+import { TipoPersona } from '../types/enums';
 
 // Base persona schema
 const personaBaseSchema = z.object({

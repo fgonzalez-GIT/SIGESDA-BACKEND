@@ -1,4 +1,5 @@
-import { Recibo, TipoPersona, TipoRecibo, EstadoRecibo } from '@prisma/client';
+import { Recibo, TipoRecibo, EstadoRecibo } from '@prisma/client';
+import { TipoPersona } from '@/types/enums';
 import { ReciboRepository } from '@/repositories/recibo.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import {

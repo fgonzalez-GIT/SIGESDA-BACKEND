@@ -1,4 +1,12 @@
-import { PrismaClient, TipoPersona, TipoParentesco } from '@prisma/client';
+import { PrismaClient, TipoParentesco } from '@prisma/client';
+
+// Local enum for TipoPersona (now managed as catalog table)
+enum TipoPersona {
+  SOCIO = 'SOCIO',
+  NO_SOCIO = 'NO_SOCIO',
+  DOCENTE = 'DOCENTE',
+  PROVEEDOR = 'PROVEEDOR'
+}
 
 const prisma = new PrismaClient();
 
