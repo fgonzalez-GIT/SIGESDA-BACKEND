@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReservaAulaService = void 0;
-const client_1 = require("@prisma/client");
+const enums_1 = require("@/types/enums");
 const logger_1 = require("@/utils/logger");
 class ReservaAulaService {
     constructor(reservaAulaRepository, aulaRepository, personaRepository, actividadRepository) {
@@ -22,7 +22,7 @@ class ReservaAulaService {
         if (!docente) {
             throw new Error(`Docente con ID ${data.docenteId} no encontrado`);
         }
-        if (docente.tipo !== client_1.TipoPersona.DOCENTE) {
+        if (docente.tipo !== enums_1.TipoPersona.DOCENTE) {
             throw new Error(`La persona ${docente.nombre} ${docente.apellido} no es un docente`);
         }
         if (docente.fechaBaja) {
@@ -96,7 +96,7 @@ class ReservaAulaService {
         }
         if (data.docenteId && data.docenteId !== existingReserva.docenteId) {
             const docente = await this.personaRepository.findById(data.docenteId);
-            if (!docente || docente.tipo !== client_1.TipoPersona.DOCENTE || docente.fechaBaja) {
+            if (!docente || docente.tipo !== enums_1.TipoPersona.DOCENTE || docente.fechaBaja) {
                 throw new Error(`Docente con ID ${data.docenteId} no válido`);
             }
         }
@@ -158,7 +158,7 @@ class ReservaAulaService {
                     errors.push(`Aula ${reserva.aulaId} no válida`);
                     continue;
                 }
-                if (!docente || docente.tipo !== client_1.TipoPersona.DOCENTE || docente.fechaBaja) {
+                if (!docente || docente.tipo !== enums_1.TipoPersona.DOCENTE || docente.fechaBaja) {
                     errors.push(`Docente ${reserva.docenteId} no válido`);
                     continue;
                 }

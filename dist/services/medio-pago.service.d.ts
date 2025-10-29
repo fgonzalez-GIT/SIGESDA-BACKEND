@@ -36,15 +36,15 @@ export declare class MedioPagoService {
         errores: string[];
     }>;
     search(data: MedioPagoSearchDto): Promise<({
-        id: number;
+        id: string;
         tipo: import(".prisma/client").$Enums.MedioPagoTipo;
-        observaciones: string | null;
         createdAt: Date;
         updatedAt: Date;
+        observaciones: string | null;
         importe: import("@prisma/client/runtime/library").Decimal;
         fecha: Date;
         numero: string | null;
-        reciboId: number;
+        reciboId: string;
         banco: string | null;
     } & {
         recibo: {
@@ -128,15 +128,15 @@ export declare class MedioPagoService {
         };
     }>;
     findByTipo(tipo: MedioPagoTipo, limit?: number): Promise<{
-        id: number;
+        id: string;
         tipo: import(".prisma/client").$Enums.MedioPagoTipo;
-        observaciones: string | null;
         createdAt: Date;
         updatedAt: Date;
+        observaciones: string | null;
         importe: import("@prisma/client/runtime/library").Decimal;
         fecha: Date;
         numero: string | null;
-        reciboId: number;
+        reciboId: string;
         banco: string | null;
     }[]>;
     getQuickStats(): Promise<{
@@ -153,15 +153,15 @@ export declare class MedioPagoService {
         recientesPorTipo: {
             tipo: "EFECTIVO" | "TRANSFERENCIA" | "TARJETA_DEBITO" | "TARJETA_CREDITO" | "CHEQUE";
             mediosPago: {
-                id: number;
+                id: string;
                 tipo: import(".prisma/client").$Enums.MedioPagoTipo;
-                observaciones: string | null;
                 createdAt: Date;
                 updatedAt: Date;
+                observaciones: string | null;
                 importe: import("@prisma/client/runtime/library").Decimal;
                 fecha: Date;
                 numero: string | null;
-                reciboId: number;
+                reciboId: string;
                 banco: string | null;
             }[];
         }[];

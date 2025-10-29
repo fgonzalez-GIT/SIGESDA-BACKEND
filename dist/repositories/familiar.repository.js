@@ -7,7 +7,18 @@ class FamiliarRepository {
     }
     async create(data) {
         return this.prisma.familiar.create({
-            data,
+            data: {
+                socioId: data.socioId,
+                familiarId: data.familiarId,
+                parentesco: data.parentesco,
+                descripcion: data.descripcion,
+                permisoResponsableFinanciero: data.permisoResponsableFinanciero ?? false,
+                permisoContactoEmergencia: data.permisoContactoEmergencia ?? false,
+                permisoAutorizadoRetiro: data.permisoAutorizadoRetiro ?? false,
+                descuento: data.descuento ?? 0,
+                activo: data.activo ?? true,
+                grupoFamiliarId: data.grupoFamiliarId
+            },
             include: {
                 socio: {
                     select: {
@@ -15,7 +26,8 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true
+                        email: true,
+                        telefono: true
                     }
                 },
                 familiar: {
@@ -24,7 +36,8 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true
+                        email: true,
+                        telefono: true
                     }
                 }
             }
@@ -41,19 +54,11 @@ class FamiliarRepository {
         if (query.parentesco) {
             where.parentesco = query.parentesco;
         }
-        if (!query.includeInactivos) {
-            where.AND = [
-                {
-                    socio: {
-                        fechaBaja: null
-                    }
-                },
-                {
-                    familiar: {
-                        fechaBaja: null
-                    }
-                }
-            ];
+        if (query.grupoFamiliarId) {
+            where.grupoFamiliarId = query.grupoFamiliarId;
+        }
+        if (query.soloActivos) {
+            where.activo = true;
         }
         const skip = (query.page - 1) * query.limit;
         const [data, total] = await Promise.all([
@@ -68,8 +73,8 @@ class FamiliarRepository {
                             nombre: true,
                             apellido: true,
                             dni: true,
-                            numeroSocio: true,
-                            fechaBaja: true
+                            email: true,
+                            telefono: true
                         }
                     },
                     familiar: {
@@ -78,13 +83,14 @@ class FamiliarRepository {
                             nombre: true,
                             apellido: true,
                             dni: true,
-                            numeroSocio: true,
-                            fechaBaja: true
+                            email: true,
+                            telefono: true
                         }
                     }
                 },
                 orderBy: [
-                    { socio: { numeroSocio: 'asc' } },
+                    { socio: { apellido: 'asc' } },
+                    { socio: { nombre: 'asc' } },
                     { parentesco: 'asc' },
                     { familiar: { apellido: 'asc' } },
                     { familiar: { nombre: 'asc' } }
@@ -104,9 +110,8 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true,
-                        categoria: true,
-                        fechaBaja: true
+                        email: true,
+                        telefono: true
                     }
                 },
                 familiar: {
@@ -115,9 +120,8 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true,
-                        categoria: true,
-                        fechaBaja: true
+                        email: true,
+                        telefono: true
                     }
                 }
             }
@@ -126,9 +130,7 @@ class FamiliarRepository {
     async findBySocioId(socioId, includeInactivos = false) {
         const where = { socioId };
         if (!includeInactivos) {
-            where.familiar = {
-                fechaBaja: null
-            };
+            where.activo = true;
         }
         return this.prisma.familiar.findMany({
             where,
@@ -139,9 +141,8 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true,
-                        categoria: true,
-                        fechaBaja: true
+                        email: true,
+                        telefono: true
                     }
                 }
             },
@@ -155,9 +156,7 @@ class FamiliarRepository {
     async findByFamiliarId(familiarId, includeInactivos = false) {
         const where = { familiarId };
         if (!includeInactivos) {
-            where.socio = {
-                fechaBaja: null
-            };
+            where.activo = true;
         }
         return this.prisma.familiar.findMany({
             where,
@@ -168,15 +167,15 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true,
-                        categoria: true,
-                        fechaBaja: true
+                        email: true,
+                        telefono: true
                     }
                 }
             },
             orderBy: [
                 { parentesco: 'asc' },
-                { socio: { numeroSocio: 'asc' } }
+                { socio: { apellido: 'asc' } },
+                { socio: { nombre: 'asc' } }
             ]
         });
     }
@@ -201,7 +200,8 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true
+                        email: true,
+                        telefono: true
                     }
                 },
                 familiar: {
@@ -210,7 +210,8 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true
+                        email: true,
+                        telefono: true
                     }
                 }
             }
@@ -255,10 +256,7 @@ class FamiliarRepository {
             where.parentesco = parentesco;
         }
         if (!includeInactivos) {
-            where.AND = [
-                { socio: { fechaBaja: null } },
-                { familiar: { fechaBaja: null } }
-            ];
+            where.activo = true;
         }
         return this.prisma.familiar.findMany({
             where,
@@ -269,9 +267,8 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true,
                         email: true,
-                        fechaBaja: true
+                        telefono: true
                     }
                 },
                 familiar: {
@@ -280,14 +277,14 @@ class FamiliarRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        numeroSocio: true,
                         email: true,
-                        fechaBaja: true
+                        telefono: true
                     }
                 }
             },
             orderBy: [
-                { socio: { numeroSocio: 'asc' } },
+                { socio: { apellido: 'asc' } },
+                { socio: { nombre: 'asc' } },
                 { parentesco: 'asc' }
             ]
         });
@@ -299,10 +296,7 @@ class FamiliarRepository {
                 id: true
             },
             where: {
-                AND: [
-                    { socio: { fechaBaja: null } },
-                    { familiar: { fechaBaja: null } }
-                ]
+                activo: true
             },
             orderBy: {
                 _count: {

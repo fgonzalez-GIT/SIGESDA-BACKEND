@@ -38,23 +38,23 @@ export declare const registroAsistenciaMasivaSchema: z.ZodObject<{
         justificada?: boolean | undefined;
     }>, "many">;
 }, "strip", z.ZodTypeAny, {
+    actividadId: number;
+    fechaSesion: string;
     asistencias: {
         participacionId: number;
         asistio: boolean;
         justificada: boolean;
         observaciones?: string | undefined;
     }[];
+}, {
     actividadId: number;
     fechaSesion: string;
-}, {
     asistencias: {
         participacionId: number;
         asistio: boolean;
         observaciones?: string | undefined;
         justificada?: boolean | undefined;
     }[];
-    actividadId: number;
-    fechaSesion: string;
 }>;
 export declare const updateAsistenciaSchema: z.ZodObject<{
     asistio: z.ZodOptional<z.ZodBoolean>;
@@ -109,7 +109,7 @@ export declare const reporteAsistenciasSchema: z.ZodEffects<z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     fechaDesde: string;
     fechaHasta: string;
-    agruparPor: "persona" | "dia" | "actividad" | "mes";
+    agruparPor: "persona" | "actividad" | "mes" | "dia";
     personaId?: string | undefined;
     actividadId?: number | undefined;
 }, {
@@ -117,11 +117,11 @@ export declare const reporteAsistenciasSchema: z.ZodEffects<z.ZodObject<{
     fechaHasta: string;
     personaId?: string | undefined;
     actividadId?: unknown;
-    agruparPor?: "persona" | "dia" | "actividad" | "mes" | undefined;
+    agruparPor?: "persona" | "actividad" | "mes" | "dia" | undefined;
 }>, {
     fechaDesde: string;
     fechaHasta: string;
-    agruparPor: "persona" | "dia" | "actividad" | "mes";
+    agruparPor: "persona" | "actividad" | "mes" | "dia";
     personaId?: string | undefined;
     actividadId?: number | undefined;
 }, {
@@ -129,7 +129,7 @@ export declare const reporteAsistenciasSchema: z.ZodEffects<z.ZodObject<{
     fechaHasta: string;
     personaId?: string | undefined;
     actividadId?: unknown;
-    agruparPor?: "persona" | "dia" | "actividad" | "mes" | undefined;
+    agruparPor?: "persona" | "actividad" | "mes" | "dia" | undefined;
 }>;
 export declare const tasaAsistenciaSchema: z.ZodObject<{
     participacionId: z.ZodNumber;

@@ -12,10 +12,10 @@ export declare class FamiliarService {
         total: number;
         pages: number;
     }>;
-    getFamiliarById(id: string): Promise<Familiar | null>;
-    getFamiliarsBySocio(socioId: string, includeInactivos?: boolean): Promise<Familiar[]>;
-    updateFamiliar(id: string, data: UpdateFamiliarDto): Promise<Familiar>;
-    deleteFamiliar(id: string): Promise<Familiar>;
+    getFamiliarById(id: number): Promise<Familiar | null>;
+    getFamiliarsBySocio(socioId: number, includeInactivos?: boolean): Promise<Familiar[]>;
+    updateFamiliar(id: number, data: UpdateFamiliarDto): Promise<Familiar>;
+    deleteFamiliar(id: number): Promise<Familiar>;
     createBulkFamiliares(data: CreateBulkFamiliaresDto): Promise<{
         count: number;
         errors: string[];
@@ -28,7 +28,7 @@ export declare class FamiliarService {
         parentesco: TipoParentesco;
         count: number;
     }>>;
-    getFamilyTree(socioId: string): Promise<any>;
+    getFamilyTree(socioId: number): Promise<any>;
     getTiposParentesco(): Promise<TipoParentesco[]>;
     private validateParentesco;
 }

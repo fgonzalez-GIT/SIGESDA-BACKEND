@@ -14,17 +14,17 @@ export declare const createAulaSchema: z.ZodObject<{
     activa: boolean;
     capacidad: number;
     tipo?: string | undefined;
-    observaciones?: string | undefined;
     estado?: string | undefined;
+    observaciones?: string | undefined;
     descripcion?: string | undefined;
     ubicacion?: string | undefined;
     equipamiento?: string | undefined;
 }, {
     nombre: string;
     tipo?: string | undefined;
-    observaciones?: string | undefined;
     activa?: unknown;
     estado?: string | undefined;
+    observaciones?: string | undefined;
     descripcion?: string | undefined;
     capacidad?: unknown;
     ubicacion?: string | undefined;
@@ -43,9 +43,9 @@ export declare const updateAulaSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     tipo?: string | undefined;
     nombre?: string | undefined;
-    observaciones?: string | undefined;
     activa?: boolean | undefined;
     estado?: string | undefined;
+    observaciones?: string | undefined;
     descripcion?: string | undefined;
     capacidad?: number | undefined;
     ubicacion?: string | undefined;
@@ -53,9 +53,9 @@ export declare const updateAulaSchema: z.ZodObject<{
 }, {
     tipo?: string | undefined;
     nombre?: string | undefined;
-    observaciones?: string | undefined;
     activa?: unknown;
     estado?: string | undefined;
+    observaciones?: string | undefined;
     descripcion?: string | undefined;
     capacidad?: unknown;
     ubicacion?: string | undefined;
@@ -74,16 +74,16 @@ export declare const aulaQuerySchema: z.ZodObject<{
     limit: number;
     activa?: boolean | undefined;
     search?: string | undefined;
-    capacidadMinima?: number | undefined;
     capacidadMaxima?: number | undefined;
+    capacidadMinima?: number | undefined;
     conEquipamiento?: boolean | undefined;
 }, {
     activa?: unknown;
     search?: string | undefined;
     page?: unknown;
     limit?: unknown;
-    capacidadMinima?: unknown;
     capacidadMaxima?: unknown;
+    capacidadMinima?: unknown;
     conEquipamiento?: unknown;
 }>;
 export declare const disponibilidadAulaSchema: z.ZodEffects<z.ZodObject<{

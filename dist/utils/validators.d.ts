@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TipoPersona, TipoActividad } from '@/types/enums';
 export declare const commonValidations: {
     email: z.ZodOptional<z.ZodString>;
     phone: z.ZodOptional<z.ZodString>;
@@ -10,12 +11,7 @@ export declare const commonValidations: {
 };
 export declare const personaSchemas: {
     create: z.ZodEffects<z.ZodObject<{
-        tipo: z.ZodNativeEnum<{
-            SOCIO: "SOCIO";
-            NO_SOCIO: "NO_SOCIO";
-            DOCENTE: "DOCENTE";
-            PROVEEDOR: "PROVEEDOR";
-        }>;
+        tipo: z.ZodNativeEnum<typeof TipoPersona>;
         nombre: z.ZodString;
         apellido: z.ZodString;
         dni: z.ZodString;
@@ -137,12 +133,7 @@ export declare const personaSchemas: {
         razonSocial?: unknown;
     }>;
     filter: z.ZodObject<{
-        tipo: z.ZodOptional<z.ZodNativeEnum<{
-            SOCIO: "SOCIO";
-            NO_SOCIO: "NO_SOCIO";
-            DOCENTE: "DOCENTE";
-            PROVEEDOR: "PROVEEDOR";
-        }>>;
+        tipo: z.ZodOptional<z.ZodNativeEnum<typeof TipoPersona>>;
         categoria: z.ZodOptional<z.ZodNativeEnum<any>>;
         activo: z.ZodOptional<z.ZodBoolean>;
         search: z.ZodOptional<z.ZodString>;
@@ -163,30 +154,28 @@ export declare const personaSchemas: {
 export declare const actividadSchemas: {
     create: z.ZodObject<{
         nombre: z.ZodString;
-        tipo: z.ZodNativeEnum<any>;
+        tipo: z.ZodNativeEnum<typeof TipoActividad>;
         descripcion: z.ZodOptional<z.ZodString>;
         precio: z.ZodDefault<z.ZodEffects<z.ZodUnion<[z.ZodNumber, z.ZodEffects<z.ZodString, number, string>]>, number, string | number>>;
         duracion: z.ZodOptional<z.ZodNumber>;
         capacidadMaxima: z.ZodOptional<z.ZodNumber>;
         docenteIds: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     }, "strip", z.ZodTypeAny, {
-        [x: string]: any;
-        nombre?: unknown;
-        tipo?: unknown;
-        descripcion?: unknown;
-        precio?: unknown;
-        duracion?: unknown;
-        capacidadMaxima?: unknown;
-        docenteIds?: unknown;
+        tipo: TipoActividad;
+        nombre: string;
+        precio: number;
+        descripcion?: string | undefined;
+        duracion?: number | undefined;
+        capacidadMaxima?: number | undefined;
+        docenteIds?: string[] | undefined;
     }, {
-        [x: string]: any;
-        nombre?: unknown;
-        tipo?: unknown;
-        descripcion?: unknown;
-        precio?: unknown;
-        duracion?: unknown;
-        capacidadMaxima?: unknown;
-        docenteIds?: unknown;
+        tipo: TipoActividad;
+        nombre: string;
+        descripcion?: string | undefined;
+        precio?: string | number | undefined;
+        duracion?: number | undefined;
+        capacidadMaxima?: number | undefined;
+        docenteIds?: string[] | undefined;
     }>;
     update: z.ZodObject<{
         nombre: z.ZodOptional<z.ZodString>;
@@ -200,36 +189,34 @@ export declare const actividadSchemas: {
         nombre?: string | undefined;
         activa?: boolean | undefined;
         descripcion?: string | undefined;
-        capacidadMaxima?: number | undefined;
         precio?: number | undefined;
         duracion?: number | undefined;
+        capacidadMaxima?: number | undefined;
         docenteIds?: string[] | undefined;
     }, {
         nombre?: string | undefined;
         activa?: boolean | undefined;
         descripcion?: string | undefined;
-        capacidadMaxima?: number | undefined;
         precio?: string | number | undefined;
         duracion?: number | undefined;
+        capacidadMaxima?: number | undefined;
         docenteIds?: string[] | undefined;
     }>;
     filter: z.ZodObject<{
-        tipo: z.ZodOptional<z.ZodNativeEnum<any>>;
+        tipo: z.ZodOptional<z.ZodNativeEnum<typeof TipoActividad>>;
         activa: z.ZodOptional<z.ZodBoolean>;
         conDocente: z.ZodOptional<z.ZodBoolean>;
         search: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        [x: string]: any;
-        tipo?: unknown;
-        activa?: unknown;
-        conDocente?: unknown;
-        search?: unknown;
+        tipo?: TipoActividad | undefined;
+        activa?: boolean | undefined;
+        conDocente?: boolean | undefined;
+        search?: string | undefined;
     }, {
-        [x: string]: any;
-        tipo?: unknown;
-        activa?: unknown;
-        conDocente?: unknown;
-        search?: unknown;
+        tipo?: TipoActividad | undefined;
+        activa?: boolean | undefined;
+        conDocente?: boolean | undefined;
+        search?: string | undefined;
     }>;
 };
 export declare const participacionSchemas: {
@@ -242,29 +229,29 @@ export declare const participacionSchemas: {
         observaciones: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         personaId: string;
-        fechaInicio: string;
         actividadId: string;
+        fechaInicio: string;
         observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: number | undefined;
     }, {
         personaId: string;
-        fechaInicio: string;
         actividadId: string;
+        fechaInicio: string;
         observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: string | number | undefined;
     }>, {
         personaId: string;
-        fechaInicio: string;
         actividadId: string;
+        fechaInicio: string;
         observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: number | undefined;
     }, {
         personaId: string;
-        fechaInicio: string;
         actividadId: string;
+        fechaInicio: string;
         observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: string | number | undefined;
@@ -275,13 +262,13 @@ export declare const participacionSchemas: {
         activa: z.ZodOptional<z.ZodBoolean>;
         observaciones: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        observaciones?: string | undefined;
         activa?: boolean | undefined;
+        observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: number | undefined;
     }, {
-        observaciones?: string | undefined;
         activa?: boolean | undefined;
+        observaciones?: string | undefined;
         fechaFin?: string | undefined;
         precioEspecial?: string | number | undefined;
     }>;

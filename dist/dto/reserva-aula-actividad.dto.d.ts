@@ -115,8 +115,8 @@ export declare const queryReservasAulasActividadesSchema: z.ZodObject<{
     aulaId?: string | undefined;
     vigentes?: boolean | undefined;
     fechaReferencia?: string | undefined;
-    horarioId?: number | undefined;
     actividadId?: number | undefined;
+    horarioId?: number | undefined;
 }, {
     page?: unknown;
     limit?: unknown;
@@ -125,8 +125,8 @@ export declare const queryReservasAulasActividadesSchema: z.ZodObject<{
     incluirRelaciones?: unknown;
     vigentes?: unknown;
     fechaReferencia?: string | undefined;
-    horarioId?: unknown;
     actividadId?: unknown;
+    horarioId?: unknown;
 }>;
 export declare const verificarDisponibilidadAulaSchema: z.ZodEffects<z.ZodObject<{
     aulaId: z.ZodString;

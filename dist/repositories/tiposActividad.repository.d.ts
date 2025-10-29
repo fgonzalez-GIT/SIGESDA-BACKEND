@@ -3,64 +3,11 @@ import { CreateTipoActividadDto, UpdateTipoActividadDto, QueryTiposCatalogoDto, 
 export declare class TiposActividadRepository {
     private prisma;
     constructor(prisma: PrismaClient);
-    create(data: CreateTipoActividadDto): Promise<{
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    }>;
-    findAll(query: QueryTiposCatalogoDto): Promise<({
-        _count: {
-            actividades: number;
-        };
-    } & {
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    })[]>;
-    findById(id: number): Promise<{
-        _count: {
-            actividades: number;
-        };
-    } & {
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    }>;
-    update(id: number, data: UpdateTipoActividadDto): Promise<{
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    }>;
-    delete(id: number): Promise<{
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    }>;
+    create(data: CreateTipoActividadDto): Promise<any>;
+    findAll(query: QueryTiposCatalogoDto): Promise<any>;
+    findById(id: number): Promise<any>;
+    update(id: number, data: UpdateTipoActividadDto): Promise<any>;
+    delete(id: number): Promise<any>;
     reorder(data: ReorderCatalogoDto): Promise<{
         message: string;
         count: number;

@@ -11,6 +11,9 @@ const personaRepository = new PersonaRepository(prisma);
 const personaService = new PersonaService(personaRepository);
 const personaController = new PersonaController(personaService);
 
+// Catálogos - ANTES de las rutas CRUD
+router.get('/catalogos/tipos-persona', personaController.getTiposPersona.bind(personaController));
+
 // CRUD Routes
 router.post('/', personaController.createPersona.bind(personaController));
 router.get('/', personaController.getPersonas.bind(personaController));

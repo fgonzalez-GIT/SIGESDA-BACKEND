@@ -90,8 +90,8 @@ export declare const updateReciboSchema: z.ZodEffects<z.ZodObject<{
     receptorId: z.ZodNullable<z.ZodOptional<z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
     tipo?: "CUOTA" | "SUELDO" | "DEUDA" | "PAGO_ACTIVIDAD" | undefined;
-    observaciones?: string | null | undefined;
     estado?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "CANCELADO" | undefined;
+    observaciones?: string | null | undefined;
     importe?: number | undefined;
     fecha?: string | undefined;
     fechaVencimiento?: string | null | undefined;
@@ -100,8 +100,8 @@ export declare const updateReciboSchema: z.ZodEffects<z.ZodObject<{
     receptorId?: string | null | undefined;
 }, {
     tipo?: "CUOTA" | "SUELDO" | "DEUDA" | "PAGO_ACTIVIDAD" | undefined;
-    observaciones?: string | null | undefined;
     estado?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "CANCELADO" | undefined;
+    observaciones?: string | null | undefined;
     importe?: number | undefined;
     fecha?: string | undefined;
     fechaVencimiento?: string | null | undefined;
@@ -110,8 +110,8 @@ export declare const updateReciboSchema: z.ZodEffects<z.ZodObject<{
     receptorId?: string | null | undefined;
 }>, {
     tipo?: "CUOTA" | "SUELDO" | "DEUDA" | "PAGO_ACTIVIDAD" | undefined;
-    observaciones?: string | null | undefined;
     estado?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "CANCELADO" | undefined;
+    observaciones?: string | null | undefined;
     importe?: number | undefined;
     fecha?: string | undefined;
     fechaVencimiento?: string | null | undefined;
@@ -120,8 +120,8 @@ export declare const updateReciboSchema: z.ZodEffects<z.ZodObject<{
     receptorId?: string | null | undefined;
 }, {
     tipo?: "CUOTA" | "SUELDO" | "DEUDA" | "PAGO_ACTIVIDAD" | undefined;
-    observaciones?: string | null | undefined;
     estado?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "CANCELADO" | undefined;
+    observaciones?: string | null | undefined;
     importe?: number | undefined;
     fecha?: string | undefined;
     fechaVencimiento?: string | null | undefined;

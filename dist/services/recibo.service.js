@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReciboService = void 0;
 const client_1 = require("@prisma/client");
+const enums_1 = require("@/types/enums");
 const logger_1 = require("@/utils/logger");
 class ReciboService {
     constructor(reciboRepository, personaRepository) {
@@ -221,7 +222,7 @@ class ReciboService {
     validateReceptorByTipo(tipo, receptor) {
         switch (tipo) {
             case client_1.TipoRecibo.CUOTA:
-                if (receptor.tipo !== client_1.TipoPersona.SOCIO) {
+                if (receptor.tipo !== enums_1.TipoPersona.SOCIO) {
                     throw new Error(`Las cuotas solo pueden ser emitidas a socios`);
                 }
                 if (receptor.fechaBaja) {
@@ -229,7 +230,7 @@ class ReciboService {
                 }
                 break;
             case client_1.TipoRecibo.SUELDO:
-                if (receptor.tipo !== client_1.TipoPersona.DOCENTE) {
+                if (receptor.tipo !== enums_1.TipoPersona.DOCENTE) {
                     throw new Error(`Los sueldos solo pueden ser emitidos a docentes`);
                 }
                 if (receptor.fechaBaja) {

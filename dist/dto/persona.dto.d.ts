@@ -1,6 +1,7 @@
 import { z } from 'zod';
+import { TipoPersona } from '../types/enums';
 export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"tipo", [z.ZodObject<{
-    tipo: z.ZodLiteral<"SOCIO">;
+    tipo: z.ZodLiteral<TipoPersona.SOCIO>;
     categoriaId: z.ZodNumber;
     fechaIngreso: z.ZodOptional<z.ZodString>;
     numeroSocio: z.ZodOptional<z.ZodNumber>;
@@ -13,7 +14,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaNacimiento: z.ZodOptional<z.ZodString>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    tipo: "SOCIO";
+    tipo: TipoPersona.SOCIO;
     nombre: string;
     apellido: string;
     dni: string;
@@ -26,7 +27,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaIngreso?: string | undefined;
     observaciones?: string | undefined;
 }, {
-    tipo: "SOCIO";
+    tipo: TipoPersona.SOCIO;
     nombre: string;
     apellido: string;
     dni: string;
@@ -39,7 +40,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaIngreso?: string | undefined;
     observaciones?: string | undefined;
 }>, z.ZodObject<{
-    tipo: z.ZodLiteral<"NO_SOCIO">;
+    tipo: z.ZodLiteral<TipoPersona.NO_SOCIO>;
     nombre: z.ZodString;
     apellido: z.ZodString;
     dni: z.ZodString;
@@ -49,7 +50,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaNacimiento: z.ZodOptional<z.ZodString>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    tipo: "NO_SOCIO";
+    tipo: TipoPersona.NO_SOCIO;
     nombre: string;
     apellido: string;
     dni: string;
@@ -59,7 +60,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaNacimiento?: string | undefined;
     observaciones?: string | undefined;
 }, {
-    tipo: "NO_SOCIO";
+    tipo: TipoPersona.NO_SOCIO;
     nombre: string;
     apellido: string;
     dni: string;
@@ -69,7 +70,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaNacimiento?: string | undefined;
     observaciones?: string | undefined;
 }>, z.ZodObject<{
-    tipo: z.ZodLiteral<"DOCENTE">;
+    tipo: z.ZodLiteral<TipoPersona.DOCENTE>;
     especialidad: z.ZodString;
     honorariosPorHora: z.ZodOptional<z.ZodNumber>;
     nombre: z.ZodString;
@@ -81,7 +82,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaNacimiento: z.ZodOptional<z.ZodString>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    tipo: "DOCENTE";
+    tipo: TipoPersona.DOCENTE;
     nombre: string;
     apellido: string;
     dni: string;
@@ -93,7 +94,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     honorariosPorHora?: number | undefined;
     observaciones?: string | undefined;
 }, {
-    tipo: "DOCENTE";
+    tipo: TipoPersona.DOCENTE;
     nombre: string;
     apellido: string;
     dni: string;
@@ -105,7 +106,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     honorariosPorHora?: number | undefined;
     observaciones?: string | undefined;
 }>, z.ZodObject<{
-    tipo: z.ZodLiteral<"PROVEEDOR">;
+    tipo: z.ZodLiteral<TipoPersona.PROVEEDOR>;
     cuit: z.ZodString;
     razonSocial: z.ZodString;
     nombre: z.ZodString;
@@ -117,7 +118,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaNacimiento: z.ZodOptional<z.ZodString>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    tipo: "PROVEEDOR";
+    tipo: TipoPersona.PROVEEDOR;
     nombre: string;
     apellido: string;
     dni: string;
@@ -129,7 +130,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaNacimiento?: string | undefined;
     observaciones?: string | undefined;
 }, {
-    tipo: "PROVEEDOR";
+    tipo: TipoPersona.PROVEEDOR;
     nombre: string;
     apellido: string;
     dni: string;
@@ -141,7 +142,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaNacimiento?: string | undefined;
     observaciones?: string | undefined;
 }>]>, {
-    tipo: "SOCIO";
+    tipo: TipoPersona.SOCIO;
     nombre: string;
     apellido: string;
     dni: string;
@@ -154,7 +155,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaIngreso?: string | undefined;
     observaciones?: string | undefined;
 } | {
-    tipo: "NO_SOCIO";
+    tipo: TipoPersona.NO_SOCIO;
     nombre: string;
     apellido: string;
     dni: string;
@@ -164,7 +165,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     fechaNacimiento?: string | undefined;
     observaciones?: string | undefined;
 } | {
-    tipo: "DOCENTE";
+    tipo: TipoPersona.DOCENTE;
     nombre: string;
     apellido: string;
     dni: string;
@@ -176,7 +177,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodDiscriminatedUnion<"
     honorariosPorHora?: number | undefined;
     observaciones?: string | undefined;
 } | {
-    tipo: "PROVEEDOR";
+    tipo: TipoPersona.PROVEEDOR;
     nombre: string;
     apellido: string;
     dni: string;
@@ -201,9 +202,9 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     direccion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     fechaNacimiento: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     observaciones: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    tipo: z.ZodLiteral<"SOCIO">;
+    tipo: z.ZodLiteral<TipoPersona.SOCIO>;
 }, "strip", z.ZodTypeAny, {
-    tipo: "SOCIO";
+    tipo: TipoPersona.SOCIO;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -214,10 +215,10 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     fechaIngreso?: string | undefined;
     fechaBaja?: string | undefined;
     motivoBaja?: string | undefined;
-    observaciones?: string | undefined;
     categoriaId?: number | undefined;
+    observaciones?: string | undefined;
 }, {
-    tipo: "SOCIO";
+    tipo: TipoPersona.SOCIO;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -228,8 +229,8 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     fechaIngreso?: string | undefined;
     fechaBaja?: string | undefined;
     motivoBaja?: string | undefined;
-    observaciones?: string | undefined;
     categoriaId?: number | undefined;
+    observaciones?: string | undefined;
 }>, z.ZodObject<{
     nombre: z.ZodOptional<z.ZodString>;
     apellido: z.ZodOptional<z.ZodString>;
@@ -239,9 +240,9 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     direccion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     fechaNacimiento: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     observaciones: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    tipo: z.ZodLiteral<"NO_SOCIO">;
+    tipo: z.ZodLiteral<TipoPersona.NO_SOCIO>;
 }, "strip", z.ZodTypeAny, {
-    tipo: "NO_SOCIO";
+    tipo: TipoPersona.NO_SOCIO;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -251,7 +252,7 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     fechaNacimiento?: string | undefined;
     observaciones?: string | undefined;
 }, {
-    tipo: "NO_SOCIO";
+    tipo: TipoPersona.NO_SOCIO;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -271,9 +272,9 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     direccion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     fechaNacimiento: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     observaciones: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    tipo: z.ZodLiteral<"DOCENTE">;
+    tipo: z.ZodLiteral<TipoPersona.DOCENTE>;
 }, "strip", z.ZodTypeAny, {
-    tipo: "DOCENTE";
+    tipo: TipoPersona.DOCENTE;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -285,7 +286,7 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     honorariosPorHora?: number | undefined;
     observaciones?: string | undefined;
 }, {
-    tipo: "DOCENTE";
+    tipo: TipoPersona.DOCENTE;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -307,9 +308,9 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     direccion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     fechaNacimiento: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     observaciones: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    tipo: z.ZodLiteral<"PROVEEDOR">;
+    tipo: z.ZodLiteral<TipoPersona.PROVEEDOR>;
 }, "strip", z.ZodTypeAny, {
-    tipo: "PROVEEDOR";
+    tipo: TipoPersona.PROVEEDOR;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -321,7 +322,7 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     razonSocial?: string | undefined;
     observaciones?: string | undefined;
 }, {
-    tipo: "PROVEEDOR";
+    tipo: TipoPersona.PROVEEDOR;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -364,8 +365,8 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     honorariosPorHora?: number | undefined;
     cuit?: string | undefined;
     razonSocial?: string | undefined;
-    observaciones?: string | undefined;
     categoriaId?: number | undefined;
+    observaciones?: string | undefined;
 }, {
     nombre?: string | undefined;
     apellido?: string | undefined;
@@ -381,10 +382,10 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     honorariosPorHora?: number | undefined;
     cuit?: string | undefined;
     razonSocial?: string | undefined;
-    observaciones?: string | undefined;
     categoriaId?: number | undefined;
+    observaciones?: string | undefined;
 }>]>, {
-    tipo: "SOCIO";
+    tipo: TipoPersona.SOCIO;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -395,10 +396,10 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     fechaIngreso?: string | undefined;
     fechaBaja?: string | undefined;
     motivoBaja?: string | undefined;
-    observaciones?: string | undefined;
     categoriaId?: number | undefined;
+    observaciones?: string | undefined;
 } | {
-    tipo: "NO_SOCIO";
+    tipo: TipoPersona.NO_SOCIO;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -408,7 +409,7 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     fechaNacimiento?: string | undefined;
     observaciones?: string | undefined;
 } | {
-    tipo: "DOCENTE";
+    tipo: TipoPersona.DOCENTE;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -420,7 +421,7 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     honorariosPorHora?: number | undefined;
     observaciones?: string | undefined;
 } | {
-    tipo: "PROVEEDOR";
+    tipo: TipoPersona.PROVEEDOR;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -446,16 +447,11 @@ export declare const updatePersonaSchema: z.ZodEffects<z.ZodUnion<[z.ZodDiscrimi
     honorariosPorHora?: number | undefined;
     cuit?: string | undefined;
     razonSocial?: string | undefined;
-    observaciones?: string | undefined;
     categoriaId?: number | undefined;
+    observaciones?: string | undefined;
 }, unknown>;
 export declare const personaQuerySchema: z.ZodObject<{
-    tipo: z.ZodOptional<z.ZodNativeEnum<{
-        SOCIO: "SOCIO";
-        NO_SOCIO: "NO_SOCIO";
-        DOCENTE: "DOCENTE";
-        PROVEEDOR: "PROVEEDOR";
-    }>>;
+    tipo: z.ZodOptional<z.ZodNativeEnum<typeof TipoPersona>>;
     categoriaId: z.ZodOptional<z.ZodNumber>;
     activo: z.ZodEffects<z.ZodOptional<z.ZodBoolean>, boolean | undefined, unknown>;
     search: z.ZodOptional<z.ZodString>;
@@ -464,12 +460,12 @@ export declare const personaQuerySchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     page: number;
     limit: number;
-    tipo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
+    tipo?: TipoPersona | undefined;
     categoriaId?: number | undefined;
     activo?: boolean | undefined;
     search?: string | undefined;
 }, {
-    tipo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
+    tipo?: TipoPersona | undefined;
     categoriaId?: number | undefined;
     activo?: unknown;
     search?: string | undefined;

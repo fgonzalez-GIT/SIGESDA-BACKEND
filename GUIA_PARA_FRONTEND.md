@@ -1,4 +1,4 @@
-# 📱 GUÍA PARA EQUIPO FRONTEND - Módulo Persona v2
+# 📱 GUÍA PARA EQUIPO FRONTEND -  
 
 **Destinatario:** Equipo de Desarrollo Frontend
 **Propósito:** Implementar interfaz para módulo Persona con múltiples tipos

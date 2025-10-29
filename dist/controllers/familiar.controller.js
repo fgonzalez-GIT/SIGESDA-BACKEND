@@ -45,7 +45,7 @@ class FamiliarController {
     async getFamiliarById(req, res, next) {
         try {
             const { id } = req.params;
-            const familiar = await this.familiarService.getFamiliarById(id);
+            const familiar = await this.familiarService.getFamiliarById(parseInt(id));
             if (!familiar) {
                 const response = {
                     success: false,
@@ -69,7 +69,7 @@ class FamiliarController {
             const { socioId } = req.params;
             const { includeInactivos } = req.query;
             const includeInactivosFlag = includeInactivos === 'true';
-            const familiares = await this.familiarService.getFamiliarsBySocio(socioId, includeInactivosFlag);
+            const familiares = await this.familiarService.getFamiliarsBySocio(parseInt(socioId), includeInactivosFlag);
             const response = {
                 success: true,
                 data: familiares,
@@ -89,7 +89,7 @@ class FamiliarController {
         try {
             const { id } = req.params;
             const validatedData = familiar_dto_1.updateFamiliarSchema.parse(req.body);
-            const familiar = await this.familiarService.updateFamiliar(id, validatedData);
+            const familiar = await this.familiarService.updateFamiliar(parseInt(id), validatedData);
             const response = {
                 success: true,
                 message: 'Relación familiar actualizada exitosamente',
@@ -104,7 +104,7 @@ class FamiliarController {
     async deleteFamiliar(req, res, next) {
         try {
             const { id } = req.params;
-            const familiar = await this.familiarService.deleteFamiliar(id);
+            const familiar = await this.familiarService.deleteFamiliar(parseInt(id));
             const response = {
                 success: true,
                 message: 'Relación familiar eliminada exitosamente',
@@ -194,7 +194,7 @@ class FamiliarController {
     async getFamilyTree(req, res, next) {
         try {
             const { socioId } = req.params;
-            const familyTree = await this.familiarService.getFamilyTree(socioId);
+            const familyTree = await this.familiarService.getFamilyTree(parseInt(socioId));
             const response = {
                 success: true,
                 data: familyTree
@@ -225,10 +225,12 @@ class FamiliarController {
         try {
             const { socioId, familiarId } = req.params;
             const existing = await this.familiarService.getFamiliares({
-                socioId,
-                familiarId,
+                socioId: parseInt(socioId),
+                familiarId: parseInt(familiarId),
                 page: 1,
-                limit: 1
+                limit: 1,
+                includeInactivos: false,
+                soloActivos: true
             });
             const exists = existing.total > 0;
             const response = {
@@ -247,7 +249,7 @@ class FamiliarController {
     async getAvailableFamiliares(req, res, next) {
         try {
             const { socioId } = req.params;
-            const existingFamiliares = await this.familiarService.getFamiliarsBySocio(socioId, false);
+            const existingFamiliares = await this.familiarService.getFamiliarsBySocio(parseInt(socioId), false);
             const familiarIds = existingFamiliares.map(f => f.familiarId);
             const response = {
                 success: true,

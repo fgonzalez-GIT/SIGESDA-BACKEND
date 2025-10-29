@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.personaQuerySchema = exports.updatePersonaSchema = exports.createPersonaSchema = void 0;
 const zod_1 = require("zod");
-const client_1 = require("@prisma/client");
+const enums_1 = require("../types/enums");
 const personaBaseSchema = zod_1.z.object({
     nombre: zod_1.z.string().min(1, 'Nombre es requerido').max(50),
     apellido: zod_1.z.string().min(1, 'Apellido es requerido').max(50),
@@ -21,24 +21,24 @@ exports.createPersonaSchema = zod_1.z.preprocess((data) => {
 }, zod_1.z.discriminatedUnion('tipo', [
     zod_1.z.object({
         ...personaBaseSchema.shape,
-        tipo: zod_1.z.literal(client_1.TipoPersona.SOCIO),
+        tipo: zod_1.z.literal(enums_1.TipoPersona.SOCIO),
         categoriaId: zod_1.z.number().int().positive('ID de categoría inválido'),
         fechaIngreso: zod_1.z.string().datetime().optional(),
         numeroSocio: zod_1.z.number().int().positive().optional()
     }),
     zod_1.z.object({
         ...personaBaseSchema.shape,
-        tipo: zod_1.z.literal(client_1.TipoPersona.NO_SOCIO)
+        tipo: zod_1.z.literal(enums_1.TipoPersona.NO_SOCIO)
     }),
     zod_1.z.object({
         ...personaBaseSchema.shape,
-        tipo: zod_1.z.literal(client_1.TipoPersona.DOCENTE),
+        tipo: zod_1.z.literal(enums_1.TipoPersona.DOCENTE),
         especialidad: zod_1.z.string().min(1, 'Especialidad es requerida').max(100),
         honorariosPorHora: zod_1.z.number().positive().optional()
     }),
     zod_1.z.object({
         ...personaBaseSchema.shape,
-        tipo: zod_1.z.literal(client_1.TipoPersona.PROVEEDOR),
+        tipo: zod_1.z.literal(enums_1.TipoPersona.PROVEEDOR),
         cuit: zod_1.z.string().min(11, 'CUIT debe tener 11 caracteres').max(11),
         razonSocial: zod_1.z.string().min(1, 'Razón social es requerida').max(100)
     })
@@ -51,7 +51,7 @@ exports.updatePersonaSchema = zod_1.z.preprocess((data) => {
 }, zod_1.z.union([
     zod_1.z.discriminatedUnion('tipo', [
         zod_1.z.object({
-            tipo: zod_1.z.literal(client_1.TipoPersona.SOCIO),
+            tipo: zod_1.z.literal(enums_1.TipoPersona.SOCIO),
             ...personaBaseSchema.partial().shape,
             categoriaId: zod_1.z.number().int().positive('ID de categoría inválido').optional(),
             fechaIngreso: zod_1.z.string().datetime().optional(),
@@ -59,17 +59,17 @@ exports.updatePersonaSchema = zod_1.z.preprocess((data) => {
             motivoBaja: zod_1.z.string().max(200).optional()
         }),
         zod_1.z.object({
-            tipo: zod_1.z.literal(client_1.TipoPersona.NO_SOCIO),
+            tipo: zod_1.z.literal(enums_1.TipoPersona.NO_SOCIO),
             ...personaBaseSchema.partial().shape
         }),
         zod_1.z.object({
-            tipo: zod_1.z.literal(client_1.TipoPersona.DOCENTE),
+            tipo: zod_1.z.literal(enums_1.TipoPersona.DOCENTE),
             ...personaBaseSchema.partial().shape,
             especialidad: zod_1.z.string().max(100).optional(),
             honorariosPorHora: zod_1.z.number().positive().optional()
         }),
         zod_1.z.object({
-            tipo: zod_1.z.literal(client_1.TipoPersona.PROVEEDOR),
+            tipo: zod_1.z.literal(enums_1.TipoPersona.PROVEEDOR),
             ...personaBaseSchema.partial().shape,
             cuit: zod_1.z.string().min(11).max(11).optional(),
             razonSocial: zod_1.z.string().max(100).optional()
@@ -88,7 +88,7 @@ exports.updatePersonaSchema = zod_1.z.preprocess((data) => {
     })
 ]));
 exports.personaQuerySchema = zod_1.z.object({
-    tipo: zod_1.z.nativeEnum(client_1.TipoPersona).optional(),
+    tipo: zod_1.z.nativeEnum(enums_1.TipoPersona).optional(),
     categoriaId: zod_1.z.number().int().positive().optional(),
     activo: zod_1.z.preprocess((val) => {
         if (typeof val === 'string') {

@@ -3,81 +3,15 @@ import { CreateCategoriaActividadDto, UpdateCategoriaActividadDto, QueryTiposCat
 export declare class CategoriasActividadService {
     private repository;
     constructor(repository: CategoriasActividadRepository);
-    create(data: CreateCategoriaActividadDto): Promise<{
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    }>;
-    findAll(query: QueryTiposCatalogoDto): Promise<({
-        _count: {
-            actividades: number;
-        };
-    } & {
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    })[]>;
-    findById(id: number): Promise<{
-        _count: {
-            actividades: number;
-        };
-    } & {
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    }>;
-    update(id: number, data: UpdateCategoriaActividadDto): Promise<{
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    }>;
-    delete(id: number): Promise<{
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    }>;
+    create(data: CreateCategoriaActividadDto): Promise<any>;
+    findAll(query: QueryTiposCatalogoDto): Promise<any>;
+    findById(id: number): Promise<any>;
+    update(id: number, data: UpdateCategoriaActividadDto): Promise<any>;
+    delete(id: number): Promise<any>;
     reorder(data: ReorderCatalogoDto): Promise<{
         message: string;
         count: number;
     }>;
-    getActivas(): Promise<({
-        _count: {
-            actividades: number;
-        };
-    } & {
-        id: number;
-        nombre: string;
-        activo: boolean;
-        codigo: string;
-        descripcion: string | null;
-        orden: number;
-        created_at: Date;
-        updated_at: Date;
-    })[]>;
+    getActivas(): Promise<any>;
 }
 //# sourceMappingURL=categoriasActividad.service.d.ts.map

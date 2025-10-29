@@ -16,6 +16,10 @@ const personaBaseSchema = z.object({
 // Create persona DTOs with discriminated unions
 export const createPersonaSchema = z.preprocess(
   (data: any) => {
+    // Si no se proporciona tipo, usar NO_SOCIO como predeterminado
+    if (!data || !data.tipo) {
+      return { ...data, tipo: TipoPersona.NO_SOCIO };
+    }
     if (data && typeof data.tipo === 'string') {
       return { ...data, tipo: data.tipo.toUpperCase() };
     }

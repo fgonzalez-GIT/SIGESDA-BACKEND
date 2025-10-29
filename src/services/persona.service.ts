@@ -213,4 +213,15 @@ export class PersonaService {
 
     return reactivatedPersona;
   }
+
+  /**
+   * Obtiene todos los tipos de persona disponibles desde el catálogo
+   */
+  async getTiposPersona() {
+    const prisma = (this.personaRepository as any).prisma;
+    return prisma.tipos_persona.findMany({
+      where: { activo: true },
+      orderBy: { orden: 'asc' }
+    });
+  }
 }

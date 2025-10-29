@@ -11,9 +11,9 @@ export declare const createCategoriaSocioSchema: z.ZodObject<{
     nombre: string;
     activa: boolean;
     codigo: string;
-    montoCuota: number;
     descuento: number;
     orden: number;
+    montoCuota: number;
     descripcion?: string | undefined;
 }, {
     nombre: string;
@@ -36,19 +36,19 @@ export declare const updateCategoriaSocioSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     nombre?: string | undefined;
     activa?: boolean | undefined;
-    codigo?: string | undefined;
     descripcion?: string | undefined;
-    montoCuota?: number | undefined;
+    codigo?: string | undefined;
     descuento?: number | undefined;
     orden?: number | undefined;
+    montoCuota?: number | undefined;
 }, {
     nombre?: string | undefined;
     activa?: boolean | undefined;
-    codigo?: string | undefined;
     descripcion?: string | undefined;
-    montoCuota?: number | undefined;
+    codigo?: string | undefined;
     descuento?: number | undefined;
     orden?: number | undefined;
+    montoCuota?: number | undefined;
 }>;
 export type UpdateCategoriaSocioDto = z.infer<typeof updateCategoriaSocioSchema>;
 export declare const categoriaSocioQuerySchema: z.ZodObject<{

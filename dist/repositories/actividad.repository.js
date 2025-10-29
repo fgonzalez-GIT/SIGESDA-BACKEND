@@ -571,6 +571,20 @@ class ActividadRepository {
             ]
         });
     }
+    async findParticipacionByPersonaAndActividad(actividadId, personaId) {
+        return this.prisma.participaciones_actividades.findFirst({
+            where: {
+                actividad_id: actividadId,
+                persona_id: personaId
+            },
+            select: {
+                id: true,
+                activo: true,
+                fecha_inicio: true,
+                fecha_fin: true
+            }
+        });
+    }
     async addParticipante(actividadId, personaId, fechaInicio, observaciones) {
         return this.prisma.participaciones_actividades.create({
             data: {

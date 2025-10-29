@@ -8,15 +8,22 @@ export declare class FamiliarRepository {
         data: Familiar[];
         total: number;
     }>;
-    findById(id: string): Promise<Familiar | null>;
-    findBySocioId(socioId: string, includeInactivos?: boolean): Promise<Familiar[]>;
-    findByFamiliarId(familiarId: string, includeInactivos?: boolean): Promise<Familiar[]>;
-    findExistingRelation(socioId: string, familiarId: string): Promise<Familiar | null>;
-    update(id: string, data: {
+    findById(id: number): Promise<Familiar | null>;
+    findBySocioId(socioId: number, includeInactivos?: boolean): Promise<Familiar[]>;
+    findByFamiliarId(familiarId: number, includeInactivos?: boolean): Promise<Familiar[]>;
+    findExistingRelation(socioId: number, familiarId: number): Promise<Familiar | null>;
+    update(id: number, data: {
         parentesco?: TipoParentesco;
+        descripcion?: string | null;
+        permisoResponsableFinanciero?: boolean;
+        permisoContactoEmergencia?: boolean;
+        permisoAutorizadoRetiro?: boolean;
+        descuento?: number;
+        activo?: boolean;
+        grupoFamiliarId?: number | null;
     }): Promise<Familiar>;
-    delete(id: string): Promise<Familiar>;
-    deleteBulk(ids: string[]): Promise<{
+    delete(id: number): Promise<Familiar>;
+    deleteBulk(ids: number[]): Promise<{
         count: number;
     }>;
     createBulk(familiares: CreateFamiliarDto[]): Promise<{
@@ -27,6 +34,6 @@ export declare class FamiliarRepository {
         parentesco: TipoParentesco;
         count: number;
     }>>;
-    getFamilyTree(socioId: string): Promise<any>;
+    getFamilyTree(socioId: number): Promise<any>;
 }
 //# sourceMappingURL=familiar.repository.d.ts.map

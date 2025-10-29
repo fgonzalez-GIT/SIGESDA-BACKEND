@@ -1,4 +1,24 @@
-export { TipoPersona, CategoriaSocio, TipoActividad, TipoRecibo, MedioPagoTipo, TipoParentesco, EstadoRecibo } from '@prisma/client';
+export { TipoRecibo, MedioPagoTipo, TipoParentesco, EstadoRecibo } from '@prisma/client';
+export declare enum TipoPersona {
+    SOCIO = "SOCIO",
+    NO_SOCIO = "NO_SOCIO",
+    DOCENTE = "DOCENTE",
+    PROVEEDOR = "PROVEEDOR"
+}
+export declare enum TipoActividad {
+    CORO = "CORO",
+    CLASE_CANTO = "CLASE_CANTO",
+    CLASE_INSTRUMENTO = "CLASE_INSTRUMENTO"
+}
+export declare enum DiaSemana {
+    LUNES = "LUNES",
+    MARTES = "MARTES",
+    MIERCOLES = "MIERCOLES",
+    JUEVES = "JUEVES",
+    VIERNES = "VIERNES",
+    SABADO = "SABADO",
+    DOMINGO = "DOMINGO"
+}
 export declare enum HttpStatus {
     OK = 200,
     CREATED = 201,

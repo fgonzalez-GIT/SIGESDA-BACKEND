@@ -1,0 +1,28 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const persona_controller_new_1 = require("@/controllers/persona.controller.new");
+const persona_service_new_1 = require("@/services/persona.service.new");
+const persona_repository_new_1 = require("@/repositories/persona.repository.new");
+const persona_tipo_repository_1 = require("@/repositories/persona-tipo.repository");
+const database_1 = require("@/config/database");
+const router = (0, express_1.Router)();
+const personaRepository = new persona_repository_new_1.PersonaRepository(database_1.prisma);
+const personaTipoRepository = new persona_tipo_repository_1.PersonaTipoRepository(database_1.prisma);
+const personaService = new persona_service_new_1.PersonaService(personaRepository, personaTipoRepository);
+const personaController = new persona_controller_new_1.PersonaController(personaService);
+router.get('/search', personaController.searchPersonas.bind(personaController));
+router.get('/socios', personaController.getSocios.bind(personaController));
+router.get('/docentes', personaController.getDocentes.bind(personaController));
+router.get('/proveedores', personaController.getProveedores.bind(personaController));
+router.get('/dni/:dni/check', personaController.checkDni.bind(personaController));
+router.post('/', personaController.createPersona.bind(personaController));
+router.get('/', personaController.getPersonas.bind(personaController));
+router.get('/:id', personaController.getPersonaById.bind(personaController));
+router.put('/:id', personaController.updatePersona.bind(personaController));
+router.delete('/:id', personaController.deletePersona.bind(personaController));
+router.post('/:id/reactivate', personaController.reactivatePersona.bind(personaController));
+router.get('/:id/estado', personaController.getEstadoPersona.bind(personaController));
+router.get('/:id/tipos/:tipoCodigo/check', personaController.checkTipoActivo.bind(personaController));
+exports.default = router;
+//# sourceMappingURL=persona.routes.new.js.map

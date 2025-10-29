@@ -5,33 +5,7 @@ export declare class AsistenciaService {
     private asistenciaRepository;
     private participacionRepository;
     constructor(asistenciaRepository: AsistenciaRepository, participacionRepository: ParticipacionRepository);
-    create(data: CreateAsistenciaDto): Promise<{
-        id: number;
-        observaciones: string | null;
-        created_at: Date;
-        updated_at: Date;
-        asistio: boolean;
-        justificada: boolean;
-        participacion_id: number;
-        fecha_sesion: Date;
-    } & {
-        participacion: {
-            id: number;
-            personaId: string;
-            actividadId: number;
-            persona: {
-                id: string;
-                nombre: string;
-                apellido: string;
-                tipo: string;
-            };
-            actividad: {
-                id: number;
-                nombre: string;
-                tipo: string;
-            };
-        };
-    }>;
+    create(data: CreateAsistenciaDto): Promise<any>;
     registroMasivo(data: RegistroAsistenciaMasivaDto): Promise<{
         totalCreadas: number;
         actividadId: number;
@@ -39,200 +13,18 @@ export declare class AsistenciaService {
         mensaje: string;
     }>;
     findAll(query: AsistenciaQueryDto): Promise<{
-        data: ({
-            id: number;
-            observaciones: string | null;
-            created_at: Date;
-            updated_at: Date;
-            asistio: boolean;
-            justificada: boolean;
-            participacion_id: number;
-            fecha_sesion: Date;
-        } & {
-            participacion: {
-                id: number;
-                personaId: string;
-                actividadId: number;
-                persona: {
-                    id: string;
-                    nombre: string;
-                    apellido: string;
-                    tipo: string;
-                };
-                actividad: {
-                    id: number;
-                    nombre: string;
-                    tipo: string;
-                };
-            };
-        })[];
+        data: any[];
         total: number;
         page: number;
         limit: number;
         totalPages: number;
     }>;
-    findById(id: number): Promise<{
-        id: number;
-        observaciones: string | null;
-        created_at: Date;
-        updated_at: Date;
-        asistio: boolean;
-        justificada: boolean;
-        participacion_id: number;
-        fecha_sesion: Date;
-    } & {
-        participacion: {
-            id: number;
-            personaId: string;
-            actividadId: number;
-            persona: {
-                id: string;
-                nombre: string;
-                apellido: string;
-                tipo: string;
-            };
-            actividad: {
-                id: number;
-                nombre: string;
-                tipo: string;
-            };
-        };
-    }>;
-    findByParticipacion(participacionId: number): Promise<({
-        id: number;
-        observaciones: string | null;
-        created_at: Date;
-        updated_at: Date;
-        asistio: boolean;
-        justificada: boolean;
-        participacion_id: number;
-        fecha_sesion: Date;
-    } & {
-        participacion: {
-            id: number;
-            personaId: string;
-            actividadId: number;
-            persona: {
-                id: string;
-                nombre: string;
-                apellido: string;
-                tipo: string;
-            };
-            actividad: {
-                id: number;
-                nombre: string;
-                tipo: string;
-            };
-        };
-    })[]>;
-    findByActividad(actividadId: number, fechaDesde?: Date, fechaHasta?: Date): Promise<({
-        id: number;
-        observaciones: string | null;
-        created_at: Date;
-        updated_at: Date;
-        asistio: boolean;
-        justificada: boolean;
-        participacion_id: number;
-        fecha_sesion: Date;
-    } & {
-        participacion: {
-            id: number;
-            personaId: string;
-            actividadId: number;
-            persona: {
-                id: string;
-                nombre: string;
-                apellido: string;
-                tipo: string;
-            };
-            actividad: {
-                id: number;
-                nombre: string;
-                tipo: string;
-            };
-        };
-    })[]>;
-    findByPersona(personaId: string, fechaDesde?: Date, fechaHasta?: Date): Promise<({
-        id: number;
-        observaciones: string | null;
-        created_at: Date;
-        updated_at: Date;
-        asistio: boolean;
-        justificada: boolean;
-        participacion_id: number;
-        fecha_sesion: Date;
-    } & {
-        participacion: {
-            id: number;
-            personaId: string;
-            actividadId: number;
-            persona: {
-                id: string;
-                nombre: string;
-                apellido: string;
-                tipo: string;
-            };
-            actividad: {
-                id: number;
-                nombre: string;
-                tipo: string;
-            };
-        };
-    })[]>;
-    update(id: number, data: UpdateAsistenciaDto): Promise<{
-        id: number;
-        observaciones: string | null;
-        created_at: Date;
-        updated_at: Date;
-        asistio: boolean;
-        justificada: boolean;
-        participacion_id: number;
-        fecha_sesion: Date;
-    } & {
-        participacion: {
-            id: number;
-            personaId: string;
-            actividadId: number;
-            persona: {
-                id: string;
-                nombre: string;
-                apellido: string;
-                tipo: string;
-            };
-            actividad: {
-                id: number;
-                nombre: string;
-                tipo: string;
-            };
-        };
-    }>;
-    delete(id: number): Promise<{
-        id: number;
-        observaciones: string | null;
-        created_at: Date;
-        updated_at: Date;
-        asistio: boolean;
-        justificada: boolean;
-        participacion_id: number;
-        fecha_sesion: Date;
-    } & {
-        participacion: {
-            id: number;
-            personaId: string;
-            actividadId: number;
-            persona: {
-                id: string;
-                nombre: string;
-                apellido: string;
-                tipo: string;
-            };
-            actividad: {
-                id: number;
-                nombre: string;
-                tipo: string;
-            };
-        };
-    }>;
+    findById(id: number): Promise<any>;
+    findByParticipacion(participacionId: number): Promise<any[]>;
+    findByActividad(actividadId: number, fechaDesde?: Date, fechaHasta?: Date): Promise<any[]>;
+    findByPersona(personaId: string, fechaDesde?: Date, fechaHasta?: Date): Promise<any[]>;
+    update(id: number, data: UpdateAsistenciaDto): Promise<any>;
+    delete(id: number): Promise<any>;
     getTasaAsistencia(params: TasaAsistenciaDto): Promise<{
         participacion: {
             id: number;
@@ -267,7 +59,7 @@ export declare class AsistenciaService {
         parametros: {
             fechaDesde: string;
             fechaHasta: string;
-            agruparPor: "persona" | "dia" | "actividad" | "mes";
+            agruparPor: "persona" | "actividad" | "mes" | "dia";
             actividadId: number | undefined;
             personaId: string | undefined;
         };
@@ -338,39 +130,13 @@ export declare class AsistenciaService {
         actividadNombre?: undefined;
     } | {
         actividadId: number;
-        actividadNombre: string;
+        actividadNombre: any;
         totalSesiones: number;
         totalParticipantes: number;
         asistenciaPromedio: number;
         sesiones: any[];
     }>;
     private calcularSeveridad;
-    corregirAsistencia(participacionId: number, fechaSesion: Date, asistio: boolean, justificada?: boolean, observaciones?: string): Promise<{
-        id: number;
-        observaciones: string | null;
-        created_at: Date;
-        updated_at: Date;
-        asistio: boolean;
-        justificada: boolean;
-        participacion_id: number;
-        fecha_sesion: Date;
-    } & {
-        participacion: {
-            id: number;
-            personaId: string;
-            actividadId: number;
-            persona: {
-                id: string;
-                nombre: string;
-                apellido: string;
-                tipo: string;
-            };
-            actividad: {
-                id: number;
-                nombre: string;
-                tipo: string;
-            };
-        };
-    }>;
+    corregirAsistencia(participacionId: number, fechaSesion: Date, asistio: boolean, justificada?: boolean, observaciones?: string): Promise<any>;
 }
 //# sourceMappingURL=asistencia.service.d.ts.map

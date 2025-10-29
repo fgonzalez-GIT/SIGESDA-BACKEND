@@ -1,4 +1,4 @@
-import { PrismaClient, Persona, CategoriaSocio } from '@prisma/client';
+import { PrismaClient, Persona } from '@prisma/client';
 import { CreatePersonaDto, PersonaQueryDto } from '@/dto/persona.dto';
 export declare class PersonaRepository {
     private prisma;

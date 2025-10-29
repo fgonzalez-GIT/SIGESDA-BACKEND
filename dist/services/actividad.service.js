@@ -210,6 +210,16 @@ class ActividadService {
         if (!actividad) {
             throw new errors_1.NotFoundError(`Actividad con ID ${actividadId} no encontrada`);
         }
+        const existingParticipacion = await this.actividadRepository.findParticipacionByPersonaAndActividad(actividadId, personaId);
+        if (existingParticipacion) {
+            if (existingParticipacion.activo) {
+                throw new errors_1.ConflictError(`La persona con ID ${personaId} ya está inscrita activamente en la actividad ${actividad.nombre}`);
+            }
+            else {
+                throw new errors_1.ConflictError(`La persona con ID ${personaId} ya estuvo inscrita en la actividad ${actividad.nombre}. ` +
+                    `Debe reactivar la participación existente (ID: ${existingParticipacion.id}) en lugar de crear una nueva.`);
+            }
+        }
         const participacion = await this.actividadRepository.addParticipante(actividadId, personaId, fechaInicio, observaciones);
         logger_1.logger.info(`Participante inscrito: ${personaId} en actividad ${actividad.nombre} (ID: ${actividadId})`);
         return participacion;

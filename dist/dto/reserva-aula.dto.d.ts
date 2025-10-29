@@ -74,30 +74,30 @@ export declare const updateReservaAulaSchema: z.ZodEffects<z.ZodObject<{
     observaciones?: string | null | undefined;
     docenteId?: string | undefined;
     aulaId?: string | undefined;
+    actividadId?: string | null | undefined;
     fechaInicio?: string | undefined;
     fechaFin?: string | undefined;
-    actividadId?: string | null | undefined;
 }, {
     observaciones?: string | null | undefined;
     docenteId?: string | undefined;
     aulaId?: string | undefined;
+    actividadId?: string | null | undefined;
     fechaInicio?: string | undefined;
     fechaFin?: string | undefined;
-    actividadId?: string | null | undefined;
 }>, {
     observaciones?: string | null | undefined;
     docenteId?: string | undefined;
     aulaId?: string | undefined;
+    actividadId?: string | null | undefined;
     fechaInicio?: string | undefined;
     fechaFin?: string | undefined;
-    actividadId?: string | null | undefined;
 }, {
     observaciones?: string | null | undefined;
     docenteId?: string | undefined;
     aulaId?: string | undefined;
+    actividadId?: string | null | undefined;
     fechaInicio?: string | undefined;
     fechaFin?: string | undefined;
-    actividadId?: string | null | undefined;
 }>;
 export declare const reservaAulaQuerySchema: z.ZodObject<{
     aulaId: z.ZodOptional<z.ZodString>;
@@ -338,7 +338,7 @@ export declare const reservaSearchSchema: z.ZodObject<{
     incluirPasadas: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     search: string;
-    searchBy: "observaciones" | "aula" | "actividad" | "all" | "docente";
+    searchBy: "aula" | "observaciones" | "actividad" | "all" | "docente";
     incluirPasadas: boolean;
     fechaDesde?: string | undefined;
     fechaHasta?: string | undefined;
@@ -346,7 +346,7 @@ export declare const reservaSearchSchema: z.ZodObject<{
     search: string;
     fechaDesde?: string | undefined;
     fechaHasta?: string | undefined;
-    searchBy?: "observaciones" | "aula" | "actividad" | "all" | "docente" | undefined;
+    searchBy?: "aula" | "observaciones" | "actividad" | "all" | "docente" | undefined;
     incluirPasadas?: boolean | undefined;
 }>;
 export declare const reservaStatsSchema: z.ZodEffects<z.ZodObject<{
@@ -356,19 +356,19 @@ export declare const reservaStatsSchema: z.ZodEffects<z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     fechaDesde: string;
     fechaHasta: string;
-    agruparPor: "aula" | "dia" | "actividad" | "mes" | "docente";
+    agruparPor: "aula" | "actividad" | "mes" | "dia" | "docente";
 }, {
     fechaDesde: string;
     fechaHasta: string;
-    agruparPor?: "aula" | "dia" | "actividad" | "mes" | "docente" | undefined;
+    agruparPor?: "aula" | "actividad" | "mes" | "dia" | "docente" | undefined;
 }>, {
     fechaDesde: string;
     fechaHasta: string;
-    agruparPor: "aula" | "dia" | "actividad" | "mes" | "docente";
+    agruparPor: "aula" | "actividad" | "mes" | "dia" | "docente";
 }, {
     fechaDesde: string;
     fechaHasta: string;
-    agruparPor?: "aula" | "dia" | "actividad" | "mes" | "docente" | undefined;
+    agruparPor?: "aula" | "actividad" | "mes" | "dia" | "docente" | undefined;
 }>;
 export type CreateReservaAulaDto = z.infer<typeof createReservaAulaSchema>;
 export type UpdateReservaAulaDto = z.infer<typeof updateReservaAulaSchema>;

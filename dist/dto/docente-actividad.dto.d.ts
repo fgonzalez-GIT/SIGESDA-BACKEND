@@ -13,32 +13,32 @@ export declare const createDocenteActividadSchema: z.ZodEffects<z.ZodObject<{
     rolDocenteId: number;
     actividadId: number;
     observaciones?: string | null | undefined;
-    fechaAsignacion?: string | Date | undefined;
     fechaDesasignacion?: string | Date | null | undefined;
+    fechaAsignacion?: string | Date | undefined;
 }, {
     docenteId: string;
     rolDocenteId: number;
     actividadId: number;
-    observaciones?: string | null | undefined;
     activo?: boolean | undefined;
-    fechaAsignacion?: string | Date | undefined;
+    observaciones?: string | null | undefined;
     fechaDesasignacion?: string | Date | null | undefined;
+    fechaAsignacion?: string | Date | undefined;
 }>, {
     activo: boolean;
     docenteId: string;
     rolDocenteId: number;
     actividadId: number;
     observaciones?: string | null | undefined;
-    fechaAsignacion?: string | Date | undefined;
     fechaDesasignacion?: string | Date | null | undefined;
+    fechaAsignacion?: string | Date | undefined;
 }, {
     docenteId: string;
     rolDocenteId: number;
     actividadId: number;
-    observaciones?: string | null | undefined;
     activo?: boolean | undefined;
-    fechaAsignacion?: string | Date | undefined;
+    observaciones?: string | null | undefined;
     fechaDesasignacion?: string | Date | null | undefined;
+    fechaAsignacion?: string | Date | undefined;
 }>;
 export declare const updateDocenteActividadSchema: z.ZodObject<{
     rolDocenteId: z.ZodOptional<z.ZodNumber>;
@@ -46,13 +46,13 @@ export declare const updateDocenteActividadSchema: z.ZodObject<{
     activo: z.ZodOptional<z.ZodBoolean>;
     observaciones: z.ZodNullable<z.ZodOptional<z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
-    observaciones?: string | null | undefined;
     activo?: boolean | undefined;
+    observaciones?: string | null | undefined;
     rolDocenteId?: number | undefined;
     fechaDesasignacion?: string | Date | null | undefined;
 }, {
-    observaciones?: string | null | undefined;
     activo?: boolean | undefined;
+    observaciones?: string | null | undefined;
     rolDocenteId?: number | undefined;
     fechaDesasignacion?: string | Date | null | undefined;
 }>;

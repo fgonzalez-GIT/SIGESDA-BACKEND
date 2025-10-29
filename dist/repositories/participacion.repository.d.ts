@@ -24,8 +24,8 @@ type ParticipacionConRelaciones = {
         nombre: string;
         codigo_actividad: string;
         costo: any;
-        descripcion?: string;
-        cupo_maximo?: number;
+        descripcion?: string | null;
+        cupo_maximo?: number | null;
         tipo_actividad_id: number;
     };
 };

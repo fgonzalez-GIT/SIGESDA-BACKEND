@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PersonaService = void 0;
-const client_1 = require("@prisma/client");
+const enums_1 = require("@/types/enums");
 const logger_1 = require("@/utils/logger");
 const error_middleware_1 = require("@/middleware/error.middleware");
-const enums_1 = require("@/types/enums");
+const enums_2 = require("@/types/enums");
 class PersonaService {
     constructor(personaRepository) {
         this.personaRepository = personaRepository;
@@ -18,15 +18,15 @@ class PersonaService {
     async createPersona(data) {
         const existingDni = await this.personaRepository.findByDni(data.dni);
         if (existingDni) {
-            throw new error_middleware_1.AppError(`Ya existe una persona con DNI ${data.dni}`, enums_1.HttpStatus.CONFLICT);
+            throw new error_middleware_1.AppError(`Ya existe una persona con DNI ${data.dni}`, enums_2.HttpStatus.CONFLICT);
         }
         if (data.email) {
             const existingEmail = await this.personaRepository.findByEmail(data.email);
             if (existingEmail) {
-                throw new error_middleware_1.AppError(`Ya existe una persona con email ${data.email}`, enums_1.HttpStatus.CONFLICT);
+                throw new error_middleware_1.AppError(`Ya existe una persona con email ${data.email}`, enums_2.HttpStatus.CONFLICT);
             }
         }
-        if (data.tipo === client_1.TipoPersona.SOCIO && !data.numeroSocio) {
+        if (data.tipo === enums_1.TipoPersona.SOCIO && !data.numeroSocio) {
             const nextNumero = await this.personaRepository.getNextNumeroSocio();
             data.numeroSocio = nextNumero;
         }
@@ -50,18 +50,18 @@ class PersonaService {
     async updatePersona(id, data) {
         const existingPersona = await this.personaRepository.findById(id);
         if (!existingPersona) {
-            throw new error_middleware_1.AppError(`Persona con ID ${id} no encontrada`, enums_1.HttpStatus.NOT_FOUND);
+            throw new error_middleware_1.AppError(`Persona con ID ${id} no encontrada`, enums_2.HttpStatus.NOT_FOUND);
         }
         if (data.dni && data.dni !== existingPersona.dni) {
             const existingDni = await this.personaRepository.findByDni(data.dni);
             if (existingDni) {
-                throw new error_middleware_1.AppError(`Ya existe una persona con DNI ${data.dni}`, enums_1.HttpStatus.CONFLICT);
+                throw new error_middleware_1.AppError(`Ya existe una persona con DNI ${data.dni}`, enums_2.HttpStatus.CONFLICT);
             }
         }
         if (data.email && data.email !== existingPersona.email) {
             const existingEmail = await this.personaRepository.findByEmail(data.email);
             if (existingEmail) {
-                throw new error_middleware_1.AppError(`Ya existe una persona con email ${data.email}`, enums_1.HttpStatus.CONFLICT);
+                throw new error_middleware_1.AppError(`Ya existe una persona con email ${data.email}`, enums_2.HttpStatus.CONFLICT);
             }
         }
         const updatedPersona = await this.personaRepository.update(id, data);
@@ -71,7 +71,7 @@ class PersonaService {
     async deletePersona(id, hard = false, motivo) {
         const existingPersona = await this.personaRepository.findById(id);
         if (!existingPersona) {
-            throw new error_middleware_1.AppError(`Persona con ID ${id} no encontrada`, enums_1.HttpStatus.NOT_FOUND);
+            throw new error_middleware_1.AppError(`Persona con ID ${id} no encontrada`, enums_2.HttpStatus.NOT_FOUND);
         }
         let deletedPersona;
         if (hard) {
@@ -89,7 +89,7 @@ class PersonaService {
     }
     async getDocentes() {
         const result = await this.personaRepository.findAll({
-            tipo: client_1.TipoPersona.DOCENTE,
+            tipo: enums_1.TipoPersona.DOCENTE,
             page: 1,
             limit: 100
         });
@@ -97,7 +97,7 @@ class PersonaService {
     }
     async getProveedores() {
         const result = await this.personaRepository.findAll({
-            tipo: client_1.TipoPersona.PROVEEDOR,
+            tipo: enums_1.TipoPersona.PROVEEDOR,
             page: 1,
             limit: 100
         });
@@ -131,18 +131,18 @@ class PersonaService {
     async reactivatePersona(id, data) {
         const existingPersona = await this.personaRepository.findById(id);
         if (!existingPersona) {
-            throw new error_middleware_1.AppError(`Persona con ID ${id} no encontrada`, enums_1.HttpStatus.NOT_FOUND);
+            throw new error_middleware_1.AppError(`Persona con ID ${id} no encontrada`, enums_2.HttpStatus.NOT_FOUND);
         }
         if (existingPersona.fechaBaja === null) {
-            throw new error_middleware_1.AppError(`La persona con ID ${id} ya tiene estado activo`, enums_1.HttpStatus.BAD_REQUEST);
+            throw new error_middleware_1.AppError(`La persona con ID ${id} ya tiene estado activo`, enums_2.HttpStatus.BAD_REQUEST);
         }
         if (data.dni && data.dni !== existingPersona.dni) {
-            throw new error_middleware_1.AppError('El DNI no coincide con el registro', enums_1.HttpStatus.BAD_REQUEST);
+            throw new error_middleware_1.AppError('El DNI no coincide con el registro', enums_2.HttpStatus.BAD_REQUEST);
         }
         if (data.email && data.email !== existingPersona.email) {
             const existingEmail = await this.personaRepository.findByEmail(data.email);
             if (existingEmail && existingEmail.id !== id) {
-                throw new error_middleware_1.AppError(`Ya existe una persona con email ${data.email}`, enums_1.HttpStatus.CONFLICT);
+                throw new error_middleware_1.AppError(`Ya existe una persona con email ${data.email}`, enums_2.HttpStatus.CONFLICT);
             }
         }
         const updateData = {
@@ -150,10 +150,10 @@ class PersonaService {
             fechaBaja: null,
             motivoBaja: null
         };
-        if (data.tipo === client_1.TipoPersona.SOCIO && !existingPersona.fechaIngreso) {
+        if (data.tipo === enums_1.TipoPersona.SOCIO && !existingPersona.fechaIngreso) {
             updateData.fechaIngreso = new Date();
         }
-        if (data.tipo === client_1.TipoPersona.SOCIO && !existingPersona.numeroSocio) {
+        if (data.tipo === enums_1.TipoPersona.SOCIO && !existingPersona.numeroSocio) {
             const nextNumero = await this.personaRepository.getNextNumeroSocio();
             updateData.numeroSocio = nextNumero;
         }

@@ -25,6 +25,96 @@ model actividades {
   personas                  Persona[]                   @relation("DocenteActividad")
 }
 
+model tipos_actividades {
+  id          Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(50)
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  activo      Boolean   @default(true)
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model categorias_actividades {
+  id          Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(50)
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  activo      Boolean   @default(true)
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model estados_actividades {
+  id          Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(50)
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  activo      Boolean   @default(true)
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model dias_semana {
+  id        Int      @id @default(autoincrement())
+  codigo    String   @unique @db.VarChar(50)
+  nombre    String   @db.VarChar(100)
+  orden     Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([codigo])
+  @@index([orden])
+}
+
+model roles_docentes {
+  id          Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(50)
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  activo      Boolean   @default(true)
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model tipos_persona {
+  id                   Int       @id @default(autoincrement())
+  codigo               String    @unique @db.VarChar(50)
+  nombre               String    @db.VarChar(100)
+  descripcion          String?   @db.Text
+  activo               Boolean   @default(true)
+  orden                Int       @default(0)
+  requiresCategoria    Boolean   @default(false) @map("requires_categoria")
+  requiresEspecialidad Boolean   @default(false) @map("requires_especialidad")
+  requiresCuit         Boolean   @default(false) @map("requires_cuit")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
 model Aula {
   id                       String                     @id
   nombre                   String                     @unique

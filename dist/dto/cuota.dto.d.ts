@@ -133,8 +133,8 @@ export declare const cuotaQuerySchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     page: number;
     limit: number;
-    orden: "asc" | "desc";
     ordenarPor: "categoria" | "fecha" | "monto" | "vencimiento";
+    orden: "asc" | "desc";
     categoriaId?: string | undefined;
     fechaDesde?: string | undefined;
     fechaHasta?: string | undefined;
@@ -149,13 +149,13 @@ export declare const cuotaQuerySchema: z.ZodObject<{
     fechaHasta?: string | undefined;
     page?: number | undefined;
     limit?: number | undefined;
-    orden?: "asc" | "desc" | undefined;
     mes?: number | undefined;
     reciboId?: string | undefined;
     anio?: number | undefined;
     soloImpagas?: string | undefined;
     soloVencidas?: string | undefined;
     ordenarPor?: "categoria" | "fecha" | "monto" | "vencimiento" | undefined;
+    orden?: "asc" | "desc" | undefined;
 }>;
 export type CuotaQueryDto = z.infer<typeof cuotaQuerySchema>;
 export declare const calcularCuotaSchema: z.ZodObject<{

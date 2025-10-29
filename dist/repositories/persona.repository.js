@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PersonaRepository = void 0;
-const client_1 = require("@prisma/client");
+const enums_1 = require("@/types/enums");
 class PersonaRepository {
     constructor(prisma) {
         this.prisma = prisma;
@@ -16,9 +16,9 @@ class PersonaRepository {
                         connect: { id: categoriaId }
                     }
                 }),
-                fechaIngreso: data.tipo === client_1.TipoPersona.SOCIO && data.fechaIngreso
+                fechaIngreso: data.tipo === enums_1.TipoPersona.SOCIO && data.fechaIngreso
                     ? new Date(data.fechaIngreso)
-                    : data.tipo === client_1.TipoPersona.SOCIO
+                    : data.tipo === enums_1.TipoPersona.SOCIO
                         ? new Date()
                         : undefined,
                 fechaNacimiento: data.fechaNacimiento ? new Date(data.fechaNacimiento) : undefined
@@ -142,7 +142,7 @@ class PersonaRepository {
     async getNextNumeroSocio() {
         const lastSocio = await this.prisma.persona.findFirst({
             where: {
-                tipo: client_1.TipoPersona.SOCIO,
+                tipo: enums_1.TipoPersona.SOCIO,
                 numeroSocio: { not: null }
             },
             orderBy: {
@@ -153,7 +153,7 @@ class PersonaRepository {
     }
     async getSocios(categoria, activos = true) {
         const where = {
-            tipo: client_1.TipoPersona.SOCIO
+            tipo: enums_1.TipoPersona.SOCIO
         };
         if (categoria) {
             where.categoria = categoria;

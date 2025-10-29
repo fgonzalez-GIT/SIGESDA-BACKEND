@@ -10,49 +10,49 @@ export declare const createParticipacionSchema: z.ZodEffects<z.ZodEffects<z.ZodO
 }, "strip", z.ZodTypeAny, {
     activa: boolean;
     personaId: number;
-    fechaInicio: Date;
     actividadId: number;
+    fechaInicio: Date;
     observaciones?: string | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: number | null | undefined;
 }, {
     personaId: number;
-    fechaInicio: Date;
     actividadId: number;
-    observaciones?: string | undefined;
+    fechaInicio: Date;
     activa?: boolean | undefined;
+    observaciones?: string | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: unknown;
 }>, {
     activa: boolean;
     personaId: number;
-    fechaInicio: Date;
     actividadId: number;
+    fechaInicio: Date;
     observaciones?: string | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: number | null | undefined;
 }, {
     personaId: number;
-    fechaInicio: Date;
     actividadId: number;
-    observaciones?: string | undefined;
+    fechaInicio: Date;
     activa?: boolean | undefined;
+    observaciones?: string | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: unknown;
 }>, {
     activa: boolean;
     personaId: number;
-    fechaInicio: Date;
     actividadId: number;
+    fechaInicio: Date;
     observaciones?: string | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: number | null | undefined;
 }, {
     personaId: number;
-    fechaInicio: Date;
     actividadId: number;
-    observaciones?: string | undefined;
+    fechaInicio: Date;
     activa?: boolean | undefined;
+    observaciones?: string | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: unknown;
 }>;
@@ -63,26 +63,26 @@ export declare const updateParticipacionSchema: z.ZodEffects<z.ZodObject<{
     activa: z.ZodOptional<z.ZodBoolean>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    observaciones?: string | undefined;
     activa?: boolean | undefined;
+    observaciones?: string | undefined;
     fechaInicio?: Date | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: number | null | undefined;
 }, {
-    observaciones?: string | undefined;
     activa?: boolean | undefined;
+    observaciones?: string | undefined;
     fechaInicio?: Date | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: unknown;
 }>, {
-    observaciones?: string | undefined;
     activa?: boolean | undefined;
+    observaciones?: string | undefined;
     fechaInicio?: Date | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: number | null | undefined;
 }, {
-    observaciones?: string | undefined;
     activa?: boolean | undefined;
+    observaciones?: string | undefined;
     fechaInicio?: Date | undefined;
     fechaFin?: Date | null | undefined;
     precioEspecial?: unknown;
@@ -133,14 +133,14 @@ export declare const inscripcionMasivaSchema: z.ZodObject<{
         precioEspecial: z.ZodNullable<z.ZodOptional<z.ZodNumber>>;
         observaciones: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        fechaInicio: Date;
         actividadId: number;
+        fechaInicio: Date;
         observaciones?: string | undefined;
         fechaFin?: Date | null | undefined;
         precioEspecial?: number | null | undefined;
     }, {
-        fechaInicio: Date;
         actividadId: number;
+        fechaInicio: Date;
         observaciones?: string | undefined;
         fechaFin?: Date | null | undefined;
         precioEspecial?: number | null | undefined;
@@ -149,8 +149,8 @@ export declare const inscripcionMasivaSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     personaId: number;
     actividades: {
-        fechaInicio: Date;
         actividadId: number;
+        fechaInicio: Date;
         observaciones?: string | undefined;
         fechaFin?: Date | null | undefined;
         precioEspecial?: number | null | undefined;
@@ -159,8 +159,8 @@ export declare const inscripcionMasivaSchema: z.ZodObject<{
 }, {
     personaId: number;
     actividades: {
-        fechaInicio: Date;
         actividadId: number;
+        fechaInicio: Date;
         observaciones?: string | undefined;
         fechaFin?: Date | null | undefined;
         precioEspecial?: number | null | undefined;

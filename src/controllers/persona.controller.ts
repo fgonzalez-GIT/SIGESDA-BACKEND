@@ -230,4 +230,23 @@ export class PersonaController {
       next(error);
     }
   }
+
+  /**
+   * Obtiene el catálogo de tipos de persona
+   * GET /api/personas/catalogos/tipos-persona
+   */
+  async getTiposPersona(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const tiposPersona = await this.personaService.getTiposPersona();
+
+      const response: ApiResponse = {
+        success: true,
+        data: tiposPersona
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

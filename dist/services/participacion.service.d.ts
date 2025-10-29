@@ -35,8 +35,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }>;
@@ -67,8 +67,8 @@ export declare class ParticipacionService {
                 nombre: string;
                 codigo_actividad: string;
                 costo: any;
-                descripcion?: string;
-                cupo_maximo?: number;
+                descripcion?: string | null;
+                cupo_maximo?: number | null;
                 tipo_actividad_id: number;
             };
         }[];
@@ -102,8 +102,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }>;
@@ -133,8 +133,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }[]>;
@@ -164,8 +164,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }[]>;
@@ -195,8 +195,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }>;
@@ -224,8 +224,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }>;
@@ -254,8 +254,8 @@ export declare class ParticipacionService {
                 nombre: string;
                 codigo_actividad: string;
                 costo: any;
-                descripcion?: string;
-                cupo_maximo?: number;
+                descripcion?: string | null;
+                cupo_maximo?: number | null;
                 tipo_actividad_id: number;
             };
         }[];
@@ -289,8 +289,8 @@ export declare class ParticipacionService {
                 nombre: string;
                 codigo_actividad: string;
                 costo: any;
-                descripcion?: string;
-                cupo_maximo?: number;
+                descripcion?: string | null;
+                cupo_maximo?: number | null;
                 tipo_actividad_id: number;
             };
         }[];
@@ -326,8 +326,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }>;
@@ -355,8 +355,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }>;
@@ -384,14 +384,14 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }>;
     verificarCupos(data: VerificarCuposDto): Promise<{
         actividad: {
-            id: number;
+            id: string;
             nombre: string;
             cupoMaximo: any;
         };
@@ -430,8 +430,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }[]>;
@@ -461,8 +461,8 @@ export declare class ParticipacionService {
             nombre: string;
             codigo_actividad: string;
             costo: any;
-            descripcion?: string;
-            cupo_maximo?: number;
+            descripcion?: string | null;
+            cupo_maximo?: number | null;
             tipo_actividad_id: number;
         };
     }[]>;

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FamiliarService = void 0;
 const client_1 = require("@prisma/client");
+const enums_1 = require("@/types/enums");
 const logger_1 = require("@/utils/logger");
 class FamiliarService {
     constructor(familiarRepository, personaRepository) {
@@ -19,25 +20,23 @@ class FamiliarService {
         if (!familiar) {
             throw new Error(`Familiar con ID ${data.familiarId} no encontrado`);
         }
-        if (socio.tipo !== client_1.TipoPersona.SOCIO) {
-            throw new Error(`La persona ${socio.nombre} ${socio.apellido} no es un socio`);
-        }
-        if (familiar.tipo !== client_1.TipoPersona.SOCIO) {
-            throw new Error(`La persona ${familiar.nombre} ${familiar.apellido} no es un socio`);
-        }
+        logger_1.logger.info(`Creando relación familiar entre ${socio.nombre} ${socio.apellido} (${socio.tipo}) y ${familiar.nombre} ${familiar.apellido} (${familiar.tipo})`);
         if (socio.fechaBaja) {
-            throw new Error(`El socio ${socio.nombre} ${socio.apellido} está dado de baja`);
+            throw new Error(`La persona ${socio.nombre} ${socio.apellido} está dado de baja`);
         }
         if (familiar.fechaBaja) {
-            throw new Error(`El socio ${familiar.nombre} ${familiar.apellido} está dado de baja`);
+            throw new Error(`La persona ${familiar.nombre} ${familiar.apellido} está dado de baja`);
         }
         const existingRelation = await this.familiarRepository.findExistingRelation(data.socioId, data.familiarId);
         if (existingRelation) {
             throw new Error(`Ya existe una relación familiar entre ${socio.nombre} ${socio.apellido} y ${familiar.nombre} ${familiar.apellido}`);
         }
         this.validateParentesco(data.parentesco, socio, familiar);
+        if (data.descuento && (data.descuento < 0 || data.descuento > 100)) {
+            throw new Error('El descuento debe estar entre 0 y 100');
+        }
         const relacion = await this.familiarRepository.create(data);
-        logger_1.logger.info(`Relación familiar creada: ${socio.nombre} ${socio.apellido} - ${data.parentesco} - ${familiar.nombre} ${familiar.apellido} (ID: ${relacion.id})`);
+        logger_1.logger.info(`Relación familiar creada: ${socio.nombre} ${socio.apellido} - ${data.parentesco} - ${familiar.nombre} ${familiar.apellido} (ID: ${relacion.id}, Descuento: ${data.descuento || 0}%)`);
         return relacion;
     }
     async getFamiliares(query) {
@@ -52,12 +51,9 @@ class FamiliarService {
         return this.familiarRepository.findById(id);
     }
     async getFamiliarsBySocio(socioId, includeInactivos = false) {
-        const socio = await this.personaRepository.findById(socioId);
-        if (!socio) {
-            throw new Error(`Socio con ID ${socioId} no encontrado`);
-        }
-        if (socio.tipo !== client_1.TipoPersona.SOCIO) {
-            throw new Error(`La persona ${socio.nombre} ${socio.apellido} no es un socio`);
+        const persona = await this.personaRepository.findById(socioId);
+        if (!persona) {
+            throw new Error(`Persona con ID ${socioId} no encontrada`);
         }
         return this.familiarRepository.findBySocioId(socioId, includeInactivos);
     }
@@ -69,8 +65,11 @@ class FamiliarService {
         if (data.parentesco) {
             this.validateParentesco(data.parentesco, existingRelacion.socio, existingRelacion.familiar);
         }
+        if (data.descuento !== undefined && (data.descuento < 0 || data.descuento > 100)) {
+            throw new Error('El descuento debe estar entre 0 y 100');
+        }
         const updatedRelacion = await this.familiarRepository.update(id, data);
-        logger_1.logger.info(`Relación familiar actualizada: ID ${id} - Nuevo parentesco: ${data.parentesco || 'sin cambios'}`);
+        logger_1.logger.info(`Relación familiar actualizada: ID ${id} - Cambios: ${JSON.stringify(data)}`);
         return updatedRelacion;
     }
     async deleteFamiliar(id) {
@@ -91,12 +90,17 @@ class FamiliarService {
                     this.personaRepository.findById(familiar.socioId),
                     this.personaRepository.findById(familiar.familiarId)
                 ]);
-                if (!socio || socio.tipo !== client_1.TipoPersona.SOCIO || socio.fechaBaja) {
-                    errors.push(`Socio ${familiar.socioId} inválido o inactivo`);
+                if (!socio || socio.fechaBaja) {
+                    errors.push(`Persona ${familiar.socioId} no encontrada o inactiva`);
                     continue;
                 }
-                if (!familiarPerson || familiarPerson.tipo !== client_1.TipoPersona.SOCIO || familiarPerson.fechaBaja) {
-                    errors.push(`Familiar ${familiar.familiarId} inválido o inactivo`);
+                if (!familiarPerson || familiarPerson.fechaBaja) {
+                    errors.push(`Persona ${familiar.familiarId} no encontrada o inactiva`);
+                    continue;
+                }
+                const isSocioRelation = socio.tipo === enums_1.TipoPersona.SOCIO || familiarPerson.tipo === enums_1.TipoPersona.SOCIO;
+                if (!isSocioRelation) {
+                    errors.push(`Al menos una de las personas debe ser un socio (${familiar.socioId} y ${familiar.familiarId})`);
                     continue;
                 }
                 const existing = await this.familiarRepository.findExistingRelation(familiar.socioId, familiar.familiarId);
@@ -131,22 +135,20 @@ class FamiliarService {
         return this.familiarRepository.getParentescoStats();
     }
     async getFamilyTree(socioId) {
-        const socio = await this.personaRepository.findById(socioId);
-        if (!socio) {
-            throw new Error(`Socio con ID ${socioId} no encontrado`);
-        }
-        if (socio.tipo !== client_1.TipoPersona.SOCIO) {
-            throw new Error(`La persona ${socio.nombre} ${socio.apellido} no es un socio`);
+        const persona = await this.personaRepository.findById(socioId);
+        if (!persona) {
+            throw new Error(`Persona con ID ${socioId} no encontrada`);
         }
         const familyTree = await this.familiarRepository.getFamilyTree(socioId);
         return {
             ...familyTree,
-            socio: {
-                id: socio.id,
-                nombre: socio.nombre,
-                apellido: socio.apellido,
-                dni: socio.dni,
-                numeroSocio: socio.numeroSocio
+            persona: {
+                id: persona.id,
+                tipo: persona.tipo,
+                nombre: persona.nombre,
+                apellido: persona.apellido,
+                dni: persona.dni,
+                numeroSocio: persona.numeroSocio
             }
         };
     }
