@@ -17,7 +17,7 @@ model actividades {
   capacidadMaxima           Int?
   activa                    Boolean                     @default(true)
   createdAt                 DateTime                    @default(now())
-  updatedAt                 DateTime
+  updatedAt                 DateTime                    @updatedAt
   horarios_actividades      horarios_actividades[]
   participacion_actividades participacion_actividades[]
   reserva_aulas             reserva_aulas[]
@@ -224,7 +224,7 @@ model horarios_actividades {
   horaFin     String
   activo      Boolean     @default(true)
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime    @updatedAt
   actividades actividades @relation(fields: [actividadId], references: [id], onDelete: Cascade)
 
   @@unique([actividadId, diaSemana, horaInicio])
