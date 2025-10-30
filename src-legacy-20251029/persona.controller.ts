@@ -5,17 +5,9 @@ import { ApiResponse } from '@/types/interfaces';
 import { HttpStatus } from '@/types/enums';
 import { logger } from '@/utils/logger';
 
-/**
- * Controller para gestión de Personas (modelo refactorizado)
- * Gestiona endpoints para CRUD de personas base
- */
 export class PersonaController {
   constructor(private personaService: PersonaService) {}
 
-  /**
-   * POST /api/personas
-   * Crear nueva persona
-   */
   async createPersona(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validatedData = createPersonaSchema.parse(req.body);
@@ -33,10 +25,6 @@ export class PersonaController {
     }
   }
 
-  /**
-   * GET /api/personas
-   * Obtener lista de personas con filtros
-   */
   async getPersonas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const query = personaQuerySchema.parse(req.query);
@@ -46,7 +34,7 @@ export class PersonaController {
         success: true,
         data: result.data,
         meta: {
-          page: result.page,
+          page: query.page,
           limit: query.limit,
           total: result.total,
           totalPages: result.pages
@@ -59,19 +47,19 @@ export class PersonaController {
     }
   }
 
-  /**
-   * GET /api/personas/:id
-   * Obtener persona por ID
-   */
   async getPersonaById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const { includeRelations } = req.query;
+      const persona = await this.personaService.getPersonaById(parseInt(id));
 
-      const persona = await this.personaService.getPersonaById(
-        parseInt(id),
-        includeRelations !== 'false'
-      );
+      if (!persona) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'Persona no encontrada'
+        };
+        res.status(HttpStatus.NOT_FOUND).json(response);
+        return;
+      }
 
       const response: ApiResponse = {
         success: true,
@@ -84,10 +72,6 @@ export class PersonaController {
     }
   }
 
-  /**
-   * PUT /api/personas/:id
-   * Actualizar datos base de persona
-   */
   async updatePersona(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
@@ -106,28 +90,17 @@ export class PersonaController {
     }
   }
 
-  /**
-   * DELETE /api/personas/:id
-   * Eliminar persona (soft o hard delete)
-   * Query params: hard=true/false, motivo=string
-   */
   async deletePersona(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
       const { hard, motivo } = req.query;
       const isHardDelete = hard === 'true';
 
-      const persona = await this.personaService.deletePersona(
-        parseInt(id),
-        isHardDelete,
-        motivo as string
-      );
+      const persona = await this.personaService.deletePersona(parseInt(id), isHardDelete, motivo as string);
 
       const response: ApiResponse = {
         success: true,
-        message: isHardDelete
-          ? 'Persona eliminada permanentemente'
-          : 'Persona desactivada (todos los tipos desasignados)',
+        message: `Persona ${isHardDelete ? 'eliminada permanentemente' : 'dada de baja'}`,
         data: persona
       };
 
@@ -137,19 +110,12 @@ export class PersonaController {
     }
   }
 
-  /**
-   * GET /api/personas/socios
-   * Obtener lista de socios
-   */
   async getSocios(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { categoriaId, activos, conNumeroSocio } = req.query;
+      const { categoria, activos } = req.query;
+      const isActivos = activos !== 'false';
 
-      const socios = await this.personaService.getSocios({
-        categoriaId: categoriaId ? parseInt(categoriaId as string) : undefined,
-        activos: activos !== 'false',
-        conNumeroSocio: conNumeroSocio === 'true'
-      });
+      const socios = await this.personaService.getSocios(categoria as string, isActivos);
 
       const response: ApiResponse = {
         success: true,
@@ -162,18 +128,9 @@ export class PersonaController {
     }
   }
 
-  /**
-   * GET /api/personas/docentes
-   * Obtener lista de docentes
-   */
   async getDocentes(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { especialidadId, activos } = req.query;
-
-      const docentes = await this.personaService.getDocentes({
-        especialidadId: especialidadId ? parseInt(especialidadId as string) : undefined,
-        activos: activos !== 'false'
-      });
+      const docentes = await this.personaService.getDocentes();
 
       const response: ApiResponse = {
         success: true,
@@ -186,15 +143,9 @@ export class PersonaController {
     }
   }
 
-  /**
-   * GET /api/personas/proveedores
-   * Obtener lista de proveedores
-   */
   async getProveedores(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { activos } = req.query;
-
-      const proveedores = await this.personaService.getProveedores(activos !== 'false');
+      const proveedores = await this.personaService.getProveedores();
 
       const response: ApiResponse = {
         success: true,
@@ -207,14 +158,9 @@ export class PersonaController {
     }
   }
 
-  /**
-   * GET /api/personas/search
-   * Buscar personas por texto
-   * Query params: q (searchTerm), tipo (opcional), limit (opcional)
-   */
   async searchPersonas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { q: searchTerm, tipo, limit } = req.query;
+      const { q: searchTerm, tipo } = req.query;
 
       if (!searchTerm || typeof searchTerm !== 'string') {
         const response: ApiResponse = {
@@ -225,11 +171,7 @@ export class PersonaController {
         return;
       }
 
-      const personas = await this.personaService.searchPersonas(
-        searchTerm,
-        tipo as string,
-        limit ? parseInt(limit as string) : 20
-      );
+      const personas = await this.personaService.searchPersonas(searchTerm, tipo as any);
 
       const response: ApiResponse = {
         success: true,
@@ -242,15 +184,11 @@ export class PersonaController {
     }
   }
 
-  /**
-   * GET /api/personas/dni/:dni/check
-   * Verificar si existe persona con DNI
-   */
   async checkDni(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { dni } = req.params;
 
-      // Validar formato DNI
+      // Validate DNI format
       if (!/^\d{7,8}$/.test(dni)) {
         const response: ApiResponse = {
           success: false,
@@ -274,25 +212,16 @@ export class PersonaController {
     }
   }
 
-  /**
-   * POST /api/personas/:id/reactivate
-   * Reactivar persona inactiva
-   */
   async reactivatePersona(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const validatedData = req.body && Object.keys(req.body).length > 0
-        ? updatePersonaSchema.parse(req.body)
-        : undefined;
+      const validatedData = updatePersonaSchema.parse(req.body);
 
-      const persona = await this.personaService.reactivatePersona(
-        parseInt(id),
-        validatedData
-      );
+      const persona = await this.personaService.reactivatePersona(parseInt(id), validatedData);
 
       const response: ApiResponse = {
         success: true,
-        message: 'Persona reactivada exitosamente (tipo NO_SOCIO asignado)',
+        message: 'Persona reactivada exitosamente',
         data: persona
       };
 
@@ -303,46 +232,16 @@ export class PersonaController {
   }
 
   /**
-   * GET /api/personas/:id/estado
-   * Obtener estado de persona (activa/inactiva, tipos activos/inactivos)
+   * Obtiene el catálogo de tipos de persona
+   * GET /api/personas/catalogos/tipos-persona
    */
-  async getEstadoPersona(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getTiposPersona(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-
-      const estado = await this.personaService.getEstadoPersona(parseInt(id));
+      const tiposPersona = await this.personaService.getTiposPersona();
 
       const response: ApiResponse = {
         success: true,
-        data: estado
-      };
-
-      res.status(HttpStatus.OK).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  /**
-   * GET /api/personas/:id/tipos/:tipoCodigo/check
-   * Verificar si persona tiene tipo específico activo
-   */
-  async checkTipoActivo(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { id, tipoCodigo } = req.params;
-
-      const tieneTipo = await this.personaService.hasTipoActivo(
-        parseInt(id),
-        tipoCodigo
-      );
-
-      const response: ApiResponse = {
-        success: true,
-        data: {
-          personaId: parseInt(id),
-          tipoPersonaCodigo: tipoCodigo,
-          tieneActivo: tieneTipo
-        }
+        data: tiposPersona
       };
 
       res.status(HttpStatus.OK).json(response);

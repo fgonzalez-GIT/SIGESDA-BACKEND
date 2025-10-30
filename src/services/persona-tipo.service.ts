@@ -1,6 +1,6 @@
 import { PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente } from '@prisma/client';
 import { PersonaTipoRepository } from '@/repositories/persona-tipo.repository';
-import { PersonaRepository } from '@/repositories/persona.repository.new';
+import { PersonaRepository } from '@/repositories/persona.repository';
 import {
   CreatePersonaTipoDto,
   UpdatePersonaTipoDto,

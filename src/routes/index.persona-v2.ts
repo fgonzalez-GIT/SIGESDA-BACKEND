@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import personaRoutes from './persona.routes.new';
+import personaRoutes from './persona.routes';
 import personaTipoRoutes from './persona-tipo.routes';
 
 /**

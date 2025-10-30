@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { PersonaTipoController } from '@/controllers/persona-tipo.controller';
 import { PersonaTipoService } from '@/services/persona-tipo.service';
 import { PersonaTipoRepository } from '@/repositories/persona-tipo.repository';
-import { PersonaRepository } from '@/repositories/persona.repository.new';
+import { PersonaRepository } from '@/repositories/persona.repository';
 import { prisma } from '@/config/database';
 
 const router = Router();

@@ -1,29 +1,32 @@
 import { Persona } from '@prisma/client';
-import { TipoPersona } from '@/types/enums';
 import { PersonaRepository } from '@/repositories/persona.repository';
+import { PersonaTipoRepository } from '@/repositories/persona-tipo.repository';
 import { CreatePersonaDto, UpdatePersonaDto, PersonaQueryDto } from '@/dto/persona.dto';
 import { logger } from '@/utils/logger';
 import { AppError } from '@/middleware/error.middleware';
 import { HttpStatus } from '@/types/enums';
 
 export class PersonaService {
-  constructor(private personaRepository: PersonaRepository) {}
+  constructor(
+    private personaRepository: PersonaRepository,
+    private personaTipoRepository: PersonaTipoRepository
+  ) {}
 
-  // Helper para agregar el campo estado calculado
-  private addEstadoField(persona: Persona): Persona & { estado: 'activo' | 'inactivo' } {
-    return {
-      ...persona,
-      estado: persona.fechaBaja === null ? 'activo' : 'inactivo'
-    };
-  }
+  // ======================================================================
+  // CRUD PRINCIPAL
+  // ======================================================================
 
-  async createPersona(data: CreatePersonaDto): Promise<Persona & { estado: 'activo' | 'inactivo' }> {
-    // Validate unique constraints
+  /**
+   * Crear persona con tipos y contactos
+   */
+  async createPersona(data: CreatePersonaDto): Promise<Persona> {
+    // Validar DNI único
     const existingDni = await this.personaRepository.findByDni(data.dni);
     if (existingDni) {
       throw new AppError(`Ya existe una persona con DNI ${data.dni}`, HttpStatus.CONFLICT);
     }
 
+    // Validar email único (si se proporciona)
     if (data.email) {
       const existingEmail = await this.personaRepository.findByEmail(data.email);
       if (existingEmail) {
@@ -31,43 +34,122 @@ export class PersonaService {
       }
     }
 
-    // Auto-assign numero socio for SOCIO type
-    if (data.tipo === TipoPersona.SOCIO && !data.numeroSocio) {
-      const nextNumero = await this.personaRepository.getNextNumeroSocio();
-      (data as any).numeroSocio = nextNumero;
+    // Procesar tipos
+    const tipos = data.tipos || [];
+
+    // Si no se especifica ningún tipo, asignar NO_SOCIO por defecto
+    if (tipos.length === 0) {
+      tipos.push({
+        tipoPersonaCodigo: 'NO_SOCIO'
+      } as any);
     }
 
-    const persona = await this.personaRepository.create(data);
+    // Procesar cada tipo para agregar defaults
+    for (const tipo of tipos) {
+      // Obtener código del tipo
+      let tipoCodigo = tipo.tipoPersonaCodigo;
 
-    logger.info(`Persona created: ${persona.tipo} - ${persona.nombre} ${persona.apellido} (ID: ${persona.id})`);
+      if (!tipoCodigo && tipo.tipoPersonaId) {
+        const tiposCatalogo = await this.personaTipoRepository.getTiposPersona(false);
+        const tipoCatalogo = tiposCatalogo.find(t => t.id === tipo.tipoPersonaId);
+        if (tipoCatalogo) {
+          tipoCodigo = tipoCatalogo.codigo as any;
+        }
+      }
 
-    return this.addEstadoField(persona);
+      // Auto-asignar defaults según tipo
+      if (tipoCodigo === 'SOCIO') {
+        // Auto-asignar número de socio si no se proporciona
+        if (!tipo.numeroSocio) {
+          const nextNumero = await this.personaTipoRepository.getNextNumeroSocio();
+          tipo.numeroSocio = nextNumero;
+        }
+
+        // Auto-asignar categoría GENERAL si no se proporciona
+        if (!tipo.categoriaId) {
+          tipo.categoriaId = 1;
+        }
+
+        // Auto-asignar fecha de ingreso si no se proporciona
+        if (!tipo.fechaIngreso) {
+          tipo.fechaIngreso = new Date().toISOString();
+        }
+      }
+
+      if (tipoCodigo === 'DOCENTE') {
+        // Auto-asignar especialidad GENERAL si no se proporciona
+        if (!tipo.especialidadId) {
+          tipo.especialidadId = 1;
+        }
+      }
+
+      if (tipoCodigo === 'PROVEEDOR') {
+        // PROVEEDOR requiere CUIT y razón social (se valida en DTO)
+        if (!tipo.cuit || !tipo.razonSocial) {
+          throw new AppError(
+            'El tipo PROVEEDOR requiere CUIT y razón social',
+            HttpStatus.BAD_REQUEST
+          );
+        }
+      }
+    }
+
+    // Crear persona con tipos y contactos
+    const persona = await this.personaRepository.create({
+      ...data,
+      tipos,
+      contactos: data.contactos || []
+    });
+
+    logger.info(`Persona creada: ${persona.nombre} ${persona.apellido} (ID: ${persona.id})`);
+
+    return persona;
   }
 
-  async getPersonas(query: PersonaQueryDto): Promise<{ data: (Persona & { estado: 'activo' | 'inactivo' })[]; total: number; pages: number }> {
+  /**
+   * Obtener personas con filtros
+   */
+  async getPersonas(query: PersonaQueryDto): Promise<{
+    data: Persona[];
+    total: number;
+    pages: number;
+    page: number;
+  }> {
     const result = await this.personaRepository.findAll(query);
     const pages = Math.ceil(result.total / query.limit);
 
     return {
-      data: result.data.map(p => this.addEstadoField(p)),
+      data: result.data,
       total: result.total,
-      pages
+      pages,
+      page: query.page
     };
   }
 
-  async getPersonaById(id: number): Promise<(Persona & { estado: 'activo' | 'inactivo' }) | null> {
-    const persona = await this.personaRepository.findById(id);
-    return persona ? this.addEstadoField(persona) : null;
+  /**
+   * Obtener persona por ID
+   */
+  async getPersonaById(id: number, includeRelations = true): Promise<Persona | null> {
+    const persona = await this.personaRepository.findById(id, includeRelations);
+
+    if (!persona) {
+      throw new AppError(`Persona con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
+    }
+
+    return persona;
   }
 
-  async updatePersona(id: number, data: UpdatePersonaDto): Promise<Persona & { estado: 'activo' | 'inactivo' }> {
-    // Check if persona exists
-    const existingPersona = await this.personaRepository.findById(id);
+  /**
+   * Actualizar datos base de persona
+   */
+  async updatePersona(id: number, data: UpdatePersonaDto): Promise<Persona> {
+    // Verificar que existe
+    const existingPersona = await this.personaRepository.findById(id, false);
     if (!existingPersona) {
       throw new AppError(`Persona con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
     }
 
-    // Validate unique constraints if being updated
+    // Validar DNI único si se actualiza
     if (data.dni && data.dni !== existingPersona.dni) {
       const existingDni = await this.personaRepository.findByDni(data.dni);
       if (existingDni) {
@@ -75,6 +157,7 @@ export class PersonaService {
       }
     }
 
+    // Validar email único si se actualiza
     if (data.email && data.email !== existingPersona.email) {
       const existingEmail = await this.personaRepository.findByEmail(data.email);
       if (existingEmail) {
@@ -84,13 +167,16 @@ export class PersonaService {
 
     const updatedPersona = await this.personaRepository.update(id, data);
 
-    logger.info(`Persona updated: ${updatedPersona.nombre} ${updatedPersona.apellido} (ID: ${id})`);
+    logger.info(`Persona actualizada: ${updatedPersona.nombre} ${updatedPersona.apellido} (ID: ${id})`);
 
-    return this.addEstadoField(updatedPersona);
+    return updatedPersona;
   }
 
-  async deletePersona(id: number, hard = false, motivo?: string): Promise<Persona & { estado: 'activo' | 'inactivo' }> {
-    const existingPersona = await this.personaRepository.findById(id);
+  /**
+   * Eliminar persona
+   */
+  async deletePersona(id: number, hard = false, motivo?: string): Promise<Persona> {
+    const existingPersona = await this.personaRepository.findById(id, false);
     if (!existingPersona) {
       throw new AppError(`Persona con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
     }
@@ -98,130 +184,149 @@ export class PersonaService {
     let deletedPersona: Persona;
 
     if (hard) {
+      // Hard delete: eliminar completamente
       deletedPersona = await this.personaRepository.hardDelete(id);
-      logger.info(`Persona hard deleted: ${deletedPersona.nombre} ${deletedPersona.apellido} (ID: ${id})`);
+      logger.info(`Persona eliminada (hard): ${deletedPersona.nombre} ${deletedPersona.apellido} (ID: ${id})`);
     } else {
+      // Soft delete: desactivar todos los tipos
       deletedPersona = await this.personaRepository.softDelete(id, motivo);
-      logger.info(`Persona soft deleted: ${deletedPersona.nombre} ${deletedPersona.apellido} (ID: ${id})`);
+      logger.info(`Persona desactivada (soft): ${deletedPersona.nombre} ${deletedPersona.apellido} (ID: ${id})`);
     }
 
-    return this.addEstadoField(deletedPersona);
+    return deletedPersona;
   }
 
-  async getSocios(categoria?: string, activos = true): Promise<Persona[]> {
-    return this.personaRepository.getSocios(categoria as any, activos);
+  // ======================================================================
+  // BÚSQUEDAS ESPECÍFICAS
+  // ======================================================================
+
+  /**
+   * Buscar personas por texto
+   */
+  async searchPersonas(searchTerm: string, tipoPersonaCodigo?: string, limit = 20): Promise<Persona[]> {
+    return this.personaRepository.search(searchTerm, tipoPersonaCodigo, limit);
   }
 
-  async getDocentes(): Promise<Persona[]> {
-    const result = await this.personaRepository.findAll({
-      tipo: TipoPersona.DOCENTE,
-      page: 1,
-      limit: 100
-    });
-
-    return result.data;
+  /**
+   * Obtener socios
+   */
+  async getSocios(params?: {
+    categoriaId?: number;
+    activos?: boolean;
+    conNumeroSocio?: boolean;
+  }): Promise<Persona[]> {
+    return this.personaRepository.getSocios(params);
   }
 
-  async getProveedores(): Promise<Persona[]> {
-    const result = await this.personaRepository.findAll({
-      tipo: TipoPersona.PROVEEDOR,
-      page: 1,
-      limit: 100
-    });
-
-    return result.data;
+  /**
+   * Obtener docentes
+   */
+  async getDocentes(params?: {
+    especialidadId?: number;
+    activos?: boolean;
+  }): Promise<Persona[]> {
+    return this.personaRepository.getDocentes(params);
   }
 
-  async searchPersonas(searchTerm: string, tipo?: TipoPersona): Promise<Persona[]> {
-    const result = await this.personaRepository.findAll({
-      search: searchTerm,
-      tipo,
-      page: 1,
-      limit: 20
-    });
-
-    return result.data;
+  /**
+   * Obtener proveedores
+   */
+  async getProveedores(activos = true): Promise<Persona[]> {
+    return this.personaRepository.getProveedores(activos);
   }
 
-  async checkDniExists(dni: string): Promise<{ exists: boolean; isInactive: boolean; persona: Persona | null }> {
+  /**
+   * Obtener personas por tipo
+   */
+  async getPersonasByTipo(tipoPersonaCodigo: string, soloActivos = true): Promise<Persona[]> {
+    return this.personaRepository.findByTipo(tipoPersonaCodigo, soloActivos);
+  }
+
+  // ======================================================================
+  // UTILIDADES
+  // ======================================================================
+
+  /**
+   * Verificar si existe persona con DNI
+   */
+  async checkDniExists(dni: string): Promise<{
+    exists: boolean;
+    isActive: boolean;
+    persona: Persona | null;
+  }> {
     const persona = await this.personaRepository.findByDni(dni);
 
     if (!persona) {
       return {
         exists: false,
-        isInactive: false,
+        isActive: false,
         persona: null
       };
     }
 
-    // A person is inactive if they have a fechaBaja
-    const isInactive = persona.fechaBaja !== null;
+    const isActive = await this.personaRepository.isActiva(persona.id);
 
     return {
       exists: true,
-      isInactive,
+      isActive,
       persona
     };
   }
 
-  async reactivatePersona(id: number, data: UpdatePersonaDto): Promise<Persona> {
-    // Check if persona exists
-    const existingPersona = await this.personaRepository.findById(id);
-    if (!existingPersona) {
+  /**
+   * Reactivar persona (agregar tipo NO_SOCIO si no tiene tipos activos)
+   */
+  async reactivatePersona(id: number, data?: UpdatePersonaDto): Promise<Persona> {
+    const persona = await this.personaRepository.findById(id, true);
+    if (!persona) {
       throw new AppError(`Persona con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
     }
 
-    // Verify persona is inactive (has fechaBaja)
-    if (existingPersona.fechaBaja === null) {
-      throw new AppError(`La persona con ID ${id} ya tiene estado activo`, HttpStatus.BAD_REQUEST);
+    // Verificar si ya está activa
+    const isActive = await this.personaRepository.isActiva(id);
+    if (isActive) {
+      throw new AppError(`La persona con ID ${id} ya está activa`, HttpStatus.BAD_REQUEST);
     }
 
-    // Validate DNI matches if provided
-    if (data.dni && data.dni !== existingPersona.dni) {
-      throw new AppError('El DNI no coincide con el registro', HttpStatus.BAD_REQUEST);
+    // Actualizar datos si se proporcionan
+    if (data) {
+      await this.updatePersona(id, data);
     }
 
-    // Validate unique constraints if email is being changed
-    if (data.email && data.email !== existingPersona.email) {
-      const existingEmail = await this.personaRepository.findByEmail(data.email);
-      if (existingEmail && existingEmail.id !== id) {
-        throw new AppError(`Ya existe una persona con email ${data.email}`, HttpStatus.CONFLICT);
-      }
-    }
+    // Asignar tipo NO_SOCIO por defecto
+    await this.personaTipoRepository.asignarTipo(id, {
+      tipoPersonaCodigo: 'NO_SOCIO'
+    });
 
-    // Prepare update data with reactivation fields
-    const updateData: any = {
-      ...data,
-      fechaBaja: null,
-      motivoBaja: null
-    };
+    const reactivatedPersona = await this.personaRepository.findById(id, true);
 
-    // If changing to SOCIO and no fechaIngreso, set current date
-    if (data.tipo === TipoPersona.SOCIO && !existingPersona.fechaIngreso) {
-      updateData.fechaIngreso = new Date();
-    }
+    logger.info(`Persona reactivada: ${reactivatedPersona!.nombre} ${reactivatedPersona!.apellido} (ID: ${id})`);
 
-    // Auto-assign numero socio if changing to SOCIO and doesn't have one
-    if (data.tipo === TipoPersona.SOCIO && !existingPersona.numeroSocio) {
-      const nextNumero = await this.personaRepository.getNextNumeroSocio();
-      updateData.numeroSocio = nextNumero;
-    }
-
-    const reactivatedPersona = await this.personaRepository.update(id, updateData);
-
-    logger.info(`Persona reactivated: ${reactivatedPersona.nombre} ${reactivatedPersona.apellido} (ID: ${id})`);
-
-    return reactivatedPersona;
+    return reactivatedPersona!;
   }
 
   /**
-   * Obtiene todos los tipos de persona disponibles desde el catálogo
+   * Verificar si persona tiene tipo específico activo
    */
-  async getTiposPersona() {
-    const prisma = (this.personaRepository as any).prisma;
-    return prisma.tipos_persona.findMany({
-      where: { activo: true },
-      orderBy: { orden: 'asc' }
-    });
+  async hasTipoActivo(personaId: number, tipoPersonaCodigo: string): Promise<boolean> {
+    return this.personaRepository.hasTipoActivo(personaId, tipoPersonaCodigo);
+  }
+
+  /**
+   * Obtener estado de persona (activo/inactivo)
+   */
+  async getEstadoPersona(personaId: number): Promise<{
+    activa: boolean;
+    tiposActivos: number;
+    tiposInactivos: number;
+  }> {
+    const tiposActivos = await this.personaRepository.countTiposActivos(personaId);
+    const todosTipos = await this.personaTipoRepository.findByPersonaId(personaId, false);
+
+    return {
+      activa: tiposActivos > 0,
+      tiposActivos,
+      tiposInactivos: todosTipos.length - tiposActivos
+    };
   }
 }

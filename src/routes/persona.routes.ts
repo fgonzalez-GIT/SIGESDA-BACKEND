@@ -2,32 +2,62 @@ import { Router } from 'express';
 import { PersonaController } from '@/controllers/persona.controller';
 import { PersonaService } from '@/services/persona.service';
 import { PersonaRepository } from '@/repositories/persona.repository';
+import { PersonaTipoRepository } from '@/repositories/persona-tipo.repository';
 import { prisma } from '@/config/database';
 
 const router = Router();
 
 // Initialize dependencies
 const personaRepository = new PersonaRepository(prisma);
-const personaService = new PersonaService(personaRepository);
+const personaTipoRepository = new PersonaTipoRepository(prisma);
+const personaService = new PersonaService(personaRepository, personaTipoRepository);
 const personaController = new PersonaController(personaService);
 
-// Catálogos - ANTES de las rutas CRUD
-router.get('/catalogos/tipos-persona', personaController.getTiposPersona.bind(personaController));
+// ======================================================================
+// RUTAS DE BÚSQUEDA Y FILTROS (antes de rutas con parámetros)
+// ======================================================================
 
-// CRUD Routes
-router.post('/', personaController.createPersona.bind(personaController));
-router.get('/', personaController.getPersonas.bind(personaController));
+// Búsqueda por texto
 router.get('/search', personaController.searchPersonas.bind(personaController));
+
+// Listas por tipo específico
 router.get('/socios', personaController.getSocios.bind(personaController));
 router.get('/docentes', personaController.getDocentes.bind(personaController));
 router.get('/proveedores', personaController.getProveedores.bind(personaController));
 
-// Check DNI route (must be before /:id to avoid conflicts)
-router.get('/check-dni/:dni', personaController.checkDni.bind(personaController));
+// Verificar DNI
+router.get('/dni/:dni/check', personaController.checkDni.bind(personaController));
 
+// ======================================================================
+// CRUD BÁSICO
+// ======================================================================
+
+// Crear persona
+router.post('/', personaController.createPersona.bind(personaController));
+
+// Listar personas con filtros
+router.get('/', personaController.getPersonas.bind(personaController));
+
+// Obtener persona por ID
 router.get('/:id', personaController.getPersonaById.bind(personaController));
+
+// Actualizar datos base de persona
 router.put('/:id', personaController.updatePersona.bind(personaController));
-router.patch('/:id/reactivate', personaController.reactivatePersona.bind(personaController));
+
+// Eliminar persona (soft/hard delete)
 router.delete('/:id', personaController.deletePersona.bind(personaController));
+
+// ======================================================================
+// RUTAS ESPECIALES
+// ======================================================================
+
+// Reactivar persona inactiva
+router.post('/:id/reactivate', personaController.reactivatePersona.bind(personaController));
+
+// Obtener estado de persona
+router.get('/:id/estado', personaController.getEstadoPersona.bind(personaController));
+
+// Verificar si tiene tipo activo
+router.get('/:id/tipos/:tipoCodigo/check', personaController.checkTipoActivo.bind(personaController));
 
 export default router;

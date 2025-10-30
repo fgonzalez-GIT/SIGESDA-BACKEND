@@ -1,0 +1,152 @@
+### 1. Crear persona con un solo tipo (formato array)
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": ["NO_SOCIO"],
+  "nombre": "María",
+  "apellido": "González",
+  "dni": "11111111",
+  "email": "maria.gonzalez@example.com",
+  "telefono": "123456789",
+  "direccion": "Calle Falsa 123"
+}
+
+### 2. Crear persona con múltiples tipos (NO_SOCIO y DOCENTE)
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": ["NO_SOCIO", "DOCENTE"],
+  "nombre": "Carlos",
+  "apellido": "Ramírez",
+  "dni": "22222222",
+  "email": "carlos.ramirez@example.com",
+  "telefono": "987654321",
+  "direccion": "Avenida Libertador 456",
+  "especialidadId": 1,
+  "honorariosPorHora": 500
+}
+
+### 3. Crear persona con tipo SOCIO (con datos específicos)
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": ["SOCIO"],
+  "nombre": "Ana",
+  "apellido": "Martínez",
+  "dni": "33333333",
+  "email": "ana.martinez@example.com",
+  "telefono": "555123456",
+  "direccion": "Calle San Martín 789",
+  "categoriaId": 1,
+  "numeroSocio": 1001,
+  "fechaIngreso": "2025-01-15T10:00:00Z"
+}
+
+### 4. Crear persona con múltiples tipos (SOCIO, DOCENTE)
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": ["SOCIO", "DOCENTE"],
+  "nombre": "Jorge",
+  "apellido": "López",
+  "dni": "44444444",
+  "email": "jorge.lopez@example.com",
+  "telefono": "555987654",
+  "direccion": "Boulevard Norte 321",
+  "categoriaId": 1,
+  "especialidadId": 1,
+  "honorariosPorHora": 750
+}
+
+### 5. Crear persona con tipo PROVEEDOR
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": ["PROVEEDOR"],
+  "nombre": "Roberto",
+  "apellido": "Fernández",
+  "dni": "55555555",
+  "email": "roberto.fernandez@example.com",
+  "telefono": "555222333",
+  "direccion": "Zona Industrial 100",
+  "cuit": "20555555559",
+  "razonSocial": "Fernández SA"
+}
+
+### 6. Crear persona con tres tipos (NO_SOCIO, DOCENTE, PROVEEDOR)
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": ["NO_SOCIO", "DOCENTE", "PROVEEDOR"],
+  "nombre": "Laura",
+  "apellido": "Sánchez",
+  "dni": "66666666",
+  "email": "laura.sanchez@example.com",
+  "telefono": "555444555",
+  "direccion": "Calle Principal 999",
+  "especialidadId": 1,
+  "honorariosPorHora": 600,
+  "cuit": "27666666667",
+  "razonSocial": "Sánchez Servicios"
+}
+
+### 7. Crear persona con todos los tipos posibles
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "tipo": ["SOCIO", "NO_SOCIO", "DOCENTE", "PROVEEDOR"],
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "dni": "77777777",
+  "email": "pedro.gomez@example.com",
+  "telefono": "555666777",
+  "direccion": "Camino Real 555",
+  "categoriaId": 1,
+  "numeroSocio": 1002,
+  "fechaIngreso": "2025-01-20T10:00:00Z",
+  "especialidadId": 1,
+  "honorariosPorHora": 800,
+  "cuit": "20777777778",
+  "razonSocial": "Gómez y Asociados"
+}
+
+### 8. Crear persona sin especificar tipo (debería asignar NO_SOCIO por defecto)
+POST http://localhost:3001/api/personas
+Content-Type: application/json
+
+{
+  "nombre": "Isabel",
+  "apellido": "Torres",
+  "dni": "88888888",
+  "email": "isabel.torres@example.com",
+  "telefono": "555888999",
+  "direccion": "Plaza Central 222"
+}
+
+### 9. Verificar DNI existente
+GET http://localhost:3001/api/personas/dni/11111111/check
+
+### 10. Buscar persona por nombre
+GET http://localhost:3001/api/personas/search?q=María
+
+### 11. Obtener todas las personas con tipos incluidos
+GET http://localhost:3001/api/personas?includeTipos=true&limit=20
+
+### 12. Obtener socios activos
+GET http://localhost:3001/api/personas/socios?activos=true
+
+### 13. Obtener docentes activos
+GET http://localhost:3001/api/personas/docentes?activos=true
+
+### 14. Obtener proveedores activos
+GET http://localhost:3001/api/personas/proveedores?activos=true
+
+### 15. Filtrar personas por múltiples tipos
+GET http://localhost:3001/api/personas?tiposCodigos=SOCIO,DOCENTE&includeTipos=true
