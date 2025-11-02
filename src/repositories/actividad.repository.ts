@@ -684,6 +684,7 @@ export class ActividadRepository {
 
   /**
    * Inscribe un participante en una actividad
+   * VALIDACIÓN DE CUPO: Verifica capacidad antes de inscribir
    */
   async addParticipante(
     actividadId: number,
@@ -691,6 +692,49 @@ export class ActividadRepository {
     fechaInicio: string,
     observaciones?: string
   ) {
+    // 1. Verificar que la actividad existe y obtener su cupo máximo
+    const actividad = await this.prisma.actividades.findUnique({
+      where: { id: actividadId },
+      select: {
+        id: true,
+        nombre: true,
+        capacidadMaxima: true
+      }
+    });
+
+    if (!actividad) {
+      throw new Error(`Actividad con ID ${actividadId} no encontrada`);
+    }
+
+    // 2. Si la actividad tiene cupo máximo, validar disponibilidad
+    if (actividad.capacidadMaxima !== null && actividad.capacidadMaxima !== undefined) {
+      const participantesActivos = await this.prisma.participacion_actividades.count({
+        where: {
+          actividadId: actividadId,
+          activa: true
+        }
+      });
+
+      if (participantesActivos >= actividad.capacidadMaxima) {
+        throw new Error(
+          `No se puede inscribir: La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima de ${actividad.capacidadMaxima} participantes (actualmente: ${participantesActivos} inscriptos)`
+        );
+      }
+    }
+
+    // 3. Verificar que no existe participación activa duplicada
+    const participacionExistente = await this.findParticipacionByPersonaAndActividad(
+      actividadId,
+      personaId
+    );
+
+    if (participacionExistente && participacionExistente.activo) {
+      throw new Error(
+        `La persona ya está inscripta activamente en la actividad "${actividad.nombre}"`
+      );
+    }
+
+    // 4. Crear la participación
     return this.prisma.participaciones_actividades.create({
       data: {
         actividad_id: actividadId,
