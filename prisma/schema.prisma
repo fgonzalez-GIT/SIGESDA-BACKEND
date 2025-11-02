@@ -22,7 +22,7 @@ model actividades {
   participacion_actividades participacion_actividades[]
   reserva_aulas             reserva_aulas[]
   secciones_actividades     secciones_actividades[]
-  personas                  Persona[]                   @relation("DocenteActividad")
+  docentes_actividades      docentes_actividades[]
 }
 
 model tipos_actividades {
@@ -83,14 +83,15 @@ model dias_semana {
 }
 
 model roles_docentes {
-  id          Int      @id @default(autoincrement())
-  codigo      String   @unique @db.VarChar(50)
-  nombre      String   @db.VarChar(100)
-  descripcion String?  @db.Text
-  activo      Boolean  @default(true)
-  orden       Int      @default(0)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                   Int                    @id @default(autoincrement())
+  codigo               String                 @unique @db.VarChar(50)
+  nombre               String                 @db.VarChar(100)
+  descripcion          String?                @db.Text
+  activo               Boolean                @default(true)
+  orden                Int                    @default(0)
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
+  docentes_actividades docentes_actividades[]
 
   @@index([codigo])
   @@index([activo])
@@ -230,6 +231,28 @@ model horarios_actividades {
   @@unique([actividadId, diaSemana, horaInicio])
 }
 
+model docentes_actividades {
+  id                 Int            @id @default(autoincrement())
+  actividadId        Int            @map("actividad_id")
+  docenteId          Int            @map("docente_id")
+  rolDocenteId       Int            @map("rol_docente_id")
+  fechaAsignacion    DateTime       @default(now()) @map("fecha_asignacion")
+  fechaDesasignacion DateTime?      @map("fecha_desasignacion")
+  activo             Boolean        @default(true)
+  observaciones      String?        @db.Text
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  actividades        actividades    @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  personas           Persona        @relation(fields: [docenteId], references: [id], onDelete: Cascade)
+  roles_docentes     roles_docentes @relation(fields: [rolDocenteId], references: [id], onDelete: Restrict)
+
+  @@unique([actividadId, docenteId, rolDocenteId], name: "unique_docente_actividad_rol")
+  @@index([actividadId], name: "docentes_actividades_actividad_id_idx")
+  @@index([docenteId], name: "docentes_actividades_docente_id_idx")
+  @@index([rolDocenteId], name: "docentes_actividades_rol_docente_id_idx")
+  @@index([activo], name: "docentes_actividades_activo_idx")
+}
+
 model MedioPago {
   id            Int           @id @default(autoincrement())
   reciboId      Int
@@ -277,10 +300,10 @@ model Persona {
   recibosEmitidos           Recibo[]                    @relation("ReciboEmisor")
   recibosRecibidos          Recibo[]                    @relation("ReciboReceptor")
   reserva_aulas             reserva_aulas[]
-  actividades               actividades[]               @relation("DocenteActividad")
   secciones_actividades     secciones_actividades[]     @relation("DocenteSeccion")
   tipos                     PersonaTipo[]
   contactos                 ContactoPersona[]
+  docentes_actividades      docentes_actividades[]
 
   @@index([categoriaId])
   @@map("personas")
