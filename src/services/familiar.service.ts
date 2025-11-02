@@ -11,6 +11,12 @@ import {
   FamiliarSearchDto
 } from '@/dto/familiar.dto';
 import { logger } from '@/utils/logger';
+import {
+  getParentescoComplementario,
+  getRelacionBidireccionalDescripcion,
+  getGradoParentesco,
+  GradoParentesco
+} from '@/utils/parentesco.helper';
 
 export class FamiliarService {
   constructor(
@@ -19,54 +25,109 @@ export class FamiliarService {
   ) {}
 
   async createFamiliar(data: CreateFamiliarDto): Promise<Familiar> {
-    // Validate that both persons exist and are SOCIO type
-    const [socio, familiar] = await Promise.all([
+    // Validate that both persons exist (puede ser cualquier tipo de persona)
+    const [personaA, personaB] = await Promise.all([
       this.personaRepository.findById(data.socioId),
       this.personaRepository.findById(data.familiarId)
     ]);
 
-    if (!socio) {
-      throw new Error(`Socio con ID ${data.socioId} no encontrado`);
+    if (!personaA) {
+      throw new Error(`Persona con ID ${data.socioId} no encontrada`);
     }
 
-    if (!familiar) {
-      throw new Error(`Familiar con ID ${data.familiarId} no encontrado`);
+    if (!personaB) {
+      throw new Error(`Persona con ID ${data.familiarId} no encontrada`);
     }
 
-    // Allow family relationships between any type of persons (SOCIO, NO_SOCIO, DOCENTE, ESTUDIANTE, PROVEEDOR)
-    // This is more flexible and realistic for family relationships in a conservatory
-    // For example: A parent (NO_SOCIO) can have a child (ESTUDIANTE),
-    // or two siblings where one is SOCIO and the other is DOCENTE
-    logger.info(`Creando relación familiar entre ${socio.nombre} ${socio.apellido} (${socio.tipo}) y ${familiar.nombre} ${familiar.apellido} (${familiar.tipo})`);
+    // Prevent self-reference (una persona no puede ser familiar de sí misma)
+    if (data.socioId === data.familiarId) {
+      throw new Error('Una persona no puede tener una relación familiar consigo misma');
+    }
+
+    // Allow family relationships between ANY type of persons (SOCIO, NO_SOCIO, DOCENTE, PROVEEDOR)
+    // Esto es realista para un conservatorio: un padre (NO_SOCIO) puede tener un hijo (SOCIO estudiante),
+    // o dos hermanos donde uno es SOCIO y el otro es DOCENTE
+    logger.info(`Creando relación familiar BIDIRECCIONAL entre ${personaA.nombre} ${personaA.apellido} (${personaA.tipo}) y ${personaB.nombre} ${personaB.apellido} (${personaB.tipo})`);
 
     // Both must be active (not have fechaBaja)
-    if (socio.fechaBaja) {
-      throw new Error(`La persona ${socio.nombre} ${socio.apellido} está dado de baja`);
+    if (personaA.fechaBaja) {
+      throw new Error(`La persona ${personaA.nombre} ${personaA.apellido} está dada de baja`);
     }
 
-    if (familiar.fechaBaja) {
-      throw new Error(`La persona ${familiar.nombre} ${familiar.apellido} está dado de baja`);
+    if (personaB.fechaBaja) {
+      throw new Error(`La persona ${personaB.nombre} ${personaB.apellido} está dada de baja`);
     }
 
-    // Check for existing relationship
-    const existingRelation = await this.familiarRepository.findExistingRelation(data.socioId, data.familiarId);
-    if (existingRelation) {
-      throw new Error(`Ya existe una relación familiar entre ${socio.nombre} ${socio.apellido} y ${familiar.nombre} ${familiar.apellido}`);
+    // Check for existing relationship (bidireccional)
+    const existingRelationAB = await this.familiarRepository.findExistingRelation(data.socioId, data.familiarId);
+    const existingRelationBA = await this.familiarRepository.findExistingRelation(data.familiarId, data.socioId);
+
+    if (existingRelationAB || existingRelationBA) {
+      throw new Error(
+        `Ya existe una relación familiar entre ${personaA.nombre} ${personaA.apellido} y ${personaB.nombre} ${personaB.apellido}`
+      );
     }
 
-    // Validate parentesco logic
-    this.validateParentesco(data.parentesco, socio, familiar);
+    // Validate parentesco logic (edad, etc.)
+    this.validateParentesco(data.parentesco, personaA, personaB);
 
     // Validate descuento range
     if (data.descuento && (data.descuento < 0 || data.descuento > 100)) {
       throw new Error('El descuento debe estar entre 0 y 100');
     }
 
-    const relacion = await this.familiarRepository.create(data);
+    // =========================================================================
+    // SINCRONIZACIÓN BIDIRECCIONAL AUTOMÁTICA
+    // =========================================================================
 
-    logger.info(`Relación familiar creada: ${socio.nombre} ${socio.apellido} - ${data.parentesco} - ${familiar.nombre} ${familiar.apellido} (ID: ${relacion.id}, Descuento: ${data.descuento || 0}%)`);
+    // Obtener el parentesco complementario
+    const parentescoComplementario = getParentescoComplementario(data.parentesco);
+    const gradoParentesco = getGradoParentesco(data.parentesco);
 
-    return relacion;
+    // Crear la relación principal (A → B)
+    const relacionPrincipal = await this.familiarRepository.create(data);
+
+    // Crear automáticamente la relación inversa (B → A)
+    const relacionInversa = await this.familiarRepository.create({
+      socioId: data.familiarId,
+      familiarId: data.socioId,
+      parentesco: parentescoComplementario,
+      descuento: data.descuento || 0, // Mismo descuento en ambas direcciones
+      permisoResponsableFinanciero: data.permisoResponsableFinanciero || false,
+      permisoContactoEmergencia: data.permisoContactoEmergencia || false,
+      permisoAutorizadoRetiro: data.permisoAutorizadoRetiro || false,
+      descripcion: data.descripcion
+        ? `${data.descripcion} [Relación complementaria de ID ${relacionPrincipal.id}]`
+        : `Relación complementaria automática de ID ${relacionPrincipal.id}`,
+      grupoFamiliarId: data.grupoFamiliarId
+    });
+
+    const descripcionBidireccional = getRelacionBidireccionalDescripcion(
+      `${personaA.nombre} ${personaA.apellido}`,
+      data.parentesco,
+      `${personaB.nombre} ${personaB.apellido}`
+    );
+
+    // Log detallado con atención especial si hay socios involucrados
+    const tieneSocios = personaA.tipo === 'SOCIO' || personaB.tipo === 'SOCIO';
+    const logPrefix = tieneSocios ? '💰' : '👥';
+
+    logger.info(`${logPrefix} Relación familiar bidireccional creada: ${descripcionBidireccional}`);
+    logger.info(`   ➤ Relación A→B (ID: ${relacionPrincipal.id}): ${personaA.nombre} [${personaA.tipo}] → ${data.parentesco} → ${personaB.nombre} [${personaB.tipo}]`);
+    logger.info(`   ➤ Relación B→A (ID: ${relacionInversa.id}): ${personaB.nombre} [${personaB.tipo}] → ${parentescoComplementario} → ${personaA.nombre} [${personaA.tipo}]`);
+    logger.info(`   ➤ Grado: ${gradoParentesco}`);
+
+    if (tieneSocios) {
+      logger.info(`   💰 NOTA: Relación involucra SOCIO(S) - Aplicable para beneficios de cuota familiar`);
+      if (data.descuento && data.descuento > 0) {
+        logger.info(`   💰 Descuento familiar aplicado: ${data.descuento}%`);
+      }
+      if (data.grupoFamiliarId) {
+        logger.info(`   💰 Grupo familiar asignado: ${data.grupoFamiliarId}`);
+      }
+    }
+
+    return relacionPrincipal;
   }
 
   async getFamiliares(query: FamiliarQueryDto): Promise<{ data: Familiar[]; total: number; pages: number }> {
@@ -112,9 +173,67 @@ export class FamiliarService {
       throw new Error('El descuento debe estar entre 0 y 100');
     }
 
+    // =========================================================================
+    // SINCRONIZACIÓN BIDIRECCIONAL AUTOMÁTICA EN ACTUALIZACIÓN
+    // =========================================================================
+
+    // Buscar la relación inversa
+    const relacionInversa = await this.familiarRepository.findInverseRelation(id);
+
+    // Actualizar la relación principal
     const updatedRelacion = await this.familiarRepository.update(id, data);
 
-    logger.info(`Relación familiar actualizada: ID ${id} - Cambios: ${JSON.stringify(data)}`);
+    // Si existe relación inversa, sincronizar los cambios
+    if (relacionInversa) {
+      const updateDataInversa: any = {};
+
+      // Sincronizar descuento (mismo valor en ambas direcciones)
+      if (data.descuento !== undefined) {
+        updateDataInversa.descuento = data.descuento;
+      }
+
+      // Sincronizar permisos (mismos permisos en ambas direcciones)
+      if (data.permisoResponsableFinanciero !== undefined) {
+        updateDataInversa.permisoResponsableFinanciero = data.permisoResponsableFinanciero;
+      }
+      if (data.permisoContactoEmergencia !== undefined) {
+        updateDataInversa.permisoContactoEmergencia = data.permisoContactoEmergencia;
+      }
+      if (data.permisoAutorizadoRetiro !== undefined) {
+        updateDataInversa.permisoAutorizadoRetiro = data.permisoAutorizadoRetiro;
+      }
+
+      // Sincronizar grupo familiar (mismo grupo en ambas direcciones)
+      if (data.grupoFamiliarId !== undefined) {
+        updateDataInversa.grupoFamiliarId = data.grupoFamiliarId;
+      }
+
+      // Sincronizar estado activo (si se desactiva una relación, la inversa también)
+      if (data.activo !== undefined) {
+        updateDataInversa.activo = data.activo;
+      }
+
+      // Si se cambió el parentesco, actualizar el complementario en la relación inversa
+      if (data.parentesco) {
+        updateDataInversa.parentesco = getParentescoComplementario(data.parentesco);
+      }
+
+      // Sincronizar descripción si se modificó
+      if (data.descripcion !== undefined) {
+        updateDataInversa.descripcion = data.descripcion
+          ? `${data.descripcion} [Relación complementaria de ID ${id}]`
+          : `Relación complementaria automática de ID ${id}`;
+      }
+
+      // Actualizar la relación inversa
+      await this.familiarRepository.update(relacionInversa.id, updateDataInversa);
+
+      logger.info(`✅ Relación familiar actualizada BIDIRECCIONALMENTE: ID ${id} ↔ ID ${relacionInversa.id}`);
+      logger.info(`   Cambios sincronizados: ${JSON.stringify(data)}`);
+    } else {
+      logger.warn(`⚠️  Relación inversa no encontrada para ID ${id} - Actualización NO sincronizada`);
+      logger.info(`Relación familiar actualizada: ID ${id} - Cambios: ${JSON.stringify(data)}`);
+    }
 
     return updatedRelacion;
   }
@@ -125,9 +244,27 @@ export class FamiliarService {
       throw new Error(`Relación familiar con ID ${id} no encontrada`);
     }
 
+    // =========================================================================
+    // SINCRONIZACIÓN BIDIRECCIONAL AUTOMÁTICA EN ELIMINACIÓN
+    // =========================================================================
+
+    // Buscar la relación inversa ANTES de eliminar la principal
+    const relacionInversa = await this.familiarRepository.findInverseRelation(id);
+
+    // Eliminar la relación principal
     const deletedRelacion = await this.familiarRepository.delete(id);
 
-    logger.info(`Relación familiar eliminada: ${existingRelacion.socio.nombre} ${existingRelacion.socio.apellido} - ${existingRelacion.parentesco} - ${existingRelacion.familiar.nombre} ${existingRelacion.familiar.apellido}`);
+    // Si existe relación inversa, eliminarla también
+    if (relacionInversa) {
+      await this.familiarRepository.delete(relacionInversa.id);
+
+      logger.info(`✅ Relación familiar eliminada BIDIRECCIONALMENTE:`);
+      logger.info(`   ➤ Relación A→B (ID: ${id}): ${existingRelacion.socio.nombre} ${existingRelacion.socio.apellido} → ${existingRelacion.parentesco} → ${existingRelacion.familiar.nombre} ${existingRelacion.familiar.apellido}`);
+      logger.info(`   ➤ Relación B→A (ID: ${relacionInversa.id}): ${relacionInversa.socio.nombre} ${relacionInversa.socio.apellido} → ${relacionInversa.parentesco} → ${relacionInversa.familiar.nombre} ${relacionInversa.familiar.apellido}`);
+    } else {
+      logger.warn(`⚠️  Relación inversa no encontrada para ID ${id} - Eliminación NO sincronizada`);
+      logger.info(`Relación familiar eliminada: ${existingRelacion.socio.nombre} ${existingRelacion.socio.apellido} - ${existingRelacion.parentesco} - ${existingRelacion.familiar.nombre} ${existingRelacion.familiar.apellido}`);
+    }
 
     return deletedRelacion;
   }

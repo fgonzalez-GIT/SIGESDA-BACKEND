@@ -207,6 +207,21 @@ export class FamiliarRepository {
     });
   }
 
+  /**
+   * Encuentra la relación inversa/complementaria de una relación dada
+   * Si existe A→B, busca B→A
+   *
+   * @param relacionId - ID de la relación principal
+   * @returns La relación inversa o null si no existe
+   */
+  async findInverseRelation(relacionId: number): Promise<Familiar | null> {
+    const relacion = await this.findById(relacionId);
+    if (!relacion) return null;
+
+    // Buscar la relación inversa (swap socioId y familiarId)
+    return this.findExistingRelation(relacion.familiarId, relacion.socioId);
+  }
+
   async update(id: number, data: {
     parentesco?: TipoParentesco;
     descripcion?: string | null;
