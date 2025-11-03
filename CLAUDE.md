@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**IMPORTANT**: This file must remain a **concise summary and configuration guide**. It should NOT become an extensive detailed document. Keep entries brief, focused on rules, guidelines, and quick reference information.
+
 ## Project Overview
 
 **SIGESDA Backend** - Sistema de Gestión de Asociación Musical. Backend API REST para gestión integral de conservatorio/asociación musical, incluyendo socios, actividades, docentes, cuotas, recibos, aulas y relaciones familiares.
@@ -255,10 +257,11 @@ Required variables (see `.env.example`):
 - ✅ Validate `capacidadMaxima > 0`
 
 **Business Logic Validations**:
-- ✅ Check capacity before enrollment: `current_participants < cupo_maximo`
+- ✅ Check capacity before enrollment: `current_participants < capacidadMaxima` (FIXED)
 - ✅ Prevent duplicate active relationships before creation
 - ✅ Ensure at least one active type per person (no orphan persons)
 - ✅ Validate parentesco logic (age consistency warnings)
+- ✅ Bidirectional family relationship sync (CREATE/UPDATE/DELETE) (FIXED)
 
 **Referential Integrity Checks**:
 - ✅ Verify related entities exist before creating relationships
@@ -280,50 +283,47 @@ Required variables (see `.env.example`):
   - Cannot remove the only active type from a person
 
 ### Relaciones Familiares
-- **Table**: `familiares` (bidirectional relationships)
-- **Enum**: `TipoParentesco` (16 relationship types)
+- **Table**: `familiares`
+- **Enum**: `TipoParentesco` (18 types)
+- **Helper**: `src/utils/parentesco.helper.ts`
 - **Rules**:
-  - Unique constraint: one relationship per person pair
-  - Includes permissions: financial, emergency contact, authorized pickup
-  - Supports family discounts (0-100%)
-  - Age validation (warning only, non-blocking)
-  - Optional family group ID for bulk operations
+  - ✅ Automatic bidirectional sync (CREATE/UPDATE/DELETE)
+  - ✅ Complementary parentescos (PADRE↔HIJO, etc.)
+  - Unique constraint per person pair
+  - Family discounts (0-100%), permissions, group support
+  - Works with all person types (SOCIO, NO_SOCIO, DOCENTE, PROVEEDOR)
 
 ### Actividades
-- **Tables**: `actividades`, `horarios_actividades`
-- **Catalogs**: `tipos_actividades`, `categorias_actividades`, `estados_actividades`
+- **Tables**: `actividades`, `horarios_actividades`, `docentes_actividades`
+- **Catalogs**: `tipos_actividades`, `categorias_actividades`, `estados_actividades`, `roles_docentes`
 - **Rules**:
   - Multiple schedules per activity
-  - Unique constraint prevents duplicate time slots
-  - Capacity validation before enrollment
-  - Date range for activity validity
-  - Soft delete for schedules (activo field)
+  - ✅ Capacity validation before enrollment
+  - ✅ Teacher assignment with role support
+  - Unique time slot constraints
 
 ### Inscripciones (Participaciones)
-- **Table**: `participaciones_actividades`
+- **Table**: `participacion_actividades`
 - **Rules**:
-  - Unique constraint: one enrollment per person-activity
-  - Check capacity before allowing enrollment
-  - Soft delete (activa + fecha_fin)
-  - Optional special pricing per participant
+  - ✅ Capacity validation before enrollment
+  - Unique constraint per person-activity
+  - Soft delete (activa + fechaFin)
+  - Prevents duplicates
+
+## Recently Fixed Issues ✅
+
+### ✅ FIXED (2025-01-02): Three Critical Issues Resolved
+1. **docentes_actividades table**: Added missing table + roles_docentes catalog
+2. **Capacity validation**: Added validation in `addParticipante()`
+3. **Bidirectional family sync**: Auto-sync CREATE/UPDATE/DELETE with `src/utils/parentesco.helper.ts`
+
+**Test Scripts**: See `scripts/test-docentes-actividades.ts`, `test-validacion-cupo-simple.ts`, `test-sincronizacion-familiar-simple.ts`
 
 ## Known Issues & Limitations
 
-### 🔴 CRITICAL: Missing Table `docentes_actividades`
-- **Problem**: Code references `docentes_actividades` table that doesn't exist in schema.prisma
-- **Impact**: Teacher assignment to activities DOES NOT WORK
-- **Location**: `src/repositories/actividad.repository.ts:513-605`
-- **Status**: Requires schema fix (add explicit many-to-many table with role support)
-
-### 🟡 Missing: Bidirectional Family Sync
-- **Problem**: Creating `PADRE → HIJO` doesn't auto-create inverse `HIJO → PADRE`
-- **Impact**: Inconsistent family trees
-- **Recommendation**: Implement service-layer logic or database trigger
-
-### 🟡 Missing: Enrollment Capacity Validation
-- **Problem**: `addParticipante` doesn't check capacity before insert
-- **Impact**: Can exceed `cupo_maximo`
-- **Recommendation**: Add validation in service layer
+### 🟡 Pre-existing: Snake_case vs camelCase Naming
+- Some repository files have field name inconsistencies (non-blocking TypeScript warnings)
+- Out of scope, requires systematic refactor
 
 ## Development Notes
 
@@ -333,6 +333,7 @@ Required variables (see `.env.example`):
 - **Error Format**: Standardized JSON responses with `success`, `error`, `data` fields
 - **Pagination**: Default page size is 20, max is 100 (configurable)
 - **Security**: Helmet middleware for HTTP headers, input validation via Zod
+
 
 ## Future Enhancements (Planned)
 
