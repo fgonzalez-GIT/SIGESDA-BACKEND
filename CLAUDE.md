@@ -276,10 +276,11 @@ Required variables (see `.env.example`):
 - **Catalog**: `tipo_persona_catalogo` (SOCIO, NO_SOCIO, DOCENTE, PROVEEDOR)
 - **Rules**:
   - One person can have multiple types simultaneously
+  - ✅ **CRITICAL**: SOCIO and NO_SOCIO are mutually exclusive (cannot coexist)
   - Each type has specific fields (stored in `persona_tipo`)
   - Auto-assign `numeroSocio` if not provided (next available)
-  - Auto-assign default `categoria` for SOCIO (ID=1)
-  - Auto-assign default `especialidad` for DOCENTE (ID=1)
+  - Auto-assign default `categoria` for SOCIO
+  - Auto-assign default `especialidad` for DOCENTE
   - Cannot remove the only active type from a person
 
 ### Relaciones Familiares
@@ -312,12 +313,13 @@ Required variables (see `.env.example`):
 
 ## Recently Fixed Issues ✅
 
-### ✅ FIXED (2025-01-02): Three Critical Issues Resolved
+### ✅ FIXED (2025-01-02): Four Critical Issues Resolved
 1. **docentes_actividades table**: Added missing table + roles_docentes catalog
 2. **Capacity validation**: Added validation in `addParticipante()`
 3. **Bidirectional family sync**: Auto-sync CREATE/UPDATE/DELETE with `src/utils/parentesco.helper.ts`
+4. **Mutually exclusive types (SOCIO ↔ NO_SOCIO)**: Validation in CREATE and ASSIGN operations with `src/utils/persona.helper.ts`
 
-**Test Scripts**: See `scripts/test-docentes-actividades.ts`, `test-validacion-cupo-simple.ts`, `test-sincronizacion-familiar-simple.ts`
+**Test Scripts**: See `scripts/test-docentes-actividades.ts`, `test-validacion-cupo-simple.ts`, `test-sincronizacion-familiar-simple.ts`, `test-tipos-excluyentes.ts`
 
 ## Known Issues & Limitations
 

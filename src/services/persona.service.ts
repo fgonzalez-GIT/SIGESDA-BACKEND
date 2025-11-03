@@ -5,6 +5,7 @@ import { CreatePersonaDto, UpdatePersonaDto, PersonaQueryDto } from '@/dto/perso
 import { logger } from '@/utils/logger';
 import { AppError } from '@/middleware/error.middleware';
 import { HttpStatus } from '@/types/enums';
+import { validateTiposMutuamenteExcluyentes } from '@/utils/persona.helper';
 
 export class PersonaService {
   constructor(
@@ -42,6 +43,34 @@ export class PersonaService {
       tipos.push({
         tipoPersonaCodigo: 'NO_SOCIO'
       } as any);
+    }
+
+    // =========================================================================
+    // VALIDACIÓN: TIPOS MUTUAMENTE EXCLUYENTES (SOCIO y NO_SOCIO)
+    // =========================================================================
+    // Obtener todos los códigos de tipos que se van a asignar
+    const tiposCodigos: string[] = [];
+    for (const tipo of tipos) {
+      let tipoCodigo = tipo.tipoPersonaCodigo;
+
+      // Si no tiene código pero tiene ID, obtener el código del catálogo
+      if (!tipoCodigo && tipo.tipoPersonaId) {
+        const tiposCatalogo = await this.personaTipoRepository.getTiposPersona(false);
+        const tipoCatalogo = tiposCatalogo.find(t => t.id === tipo.tipoPersonaId);
+        if (tipoCatalogo) {
+          tipoCodigo = tipoCatalogo.codigo as any;
+        }
+      }
+
+      if (tipoCodigo) {
+        tiposCodigos.push(tipoCodigo);
+      }
+    }
+
+    // Validar que no se intenten asignar tipos mutuamente excluyentes
+    const validacion = validateTiposMutuamenteExcluyentes(tiposCodigos);
+    if (!validacion.valid) {
+      throw new AppError(validacion.error!, HttpStatus.BAD_REQUEST);
     }
 
     // Procesar cada tipo para agregar defaults

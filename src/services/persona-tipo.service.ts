@@ -11,6 +11,7 @@ import {
 import { logger } from '@/utils/logger';
 import { AppError } from '@/middleware/error.middleware';
 import { HttpStatus } from '@/types/enums';
+import { canAgregarTipo } from '@/utils/persona.helper';
 
 export class PersonaTipoService {
   constructor(
@@ -64,6 +65,19 @@ export class PersonaTipoService {
         `La persona ya tiene el tipo ${tipoPersonaCodigo} asignado`,
         HttpStatus.CONFLICT
       );
+    }
+
+    // =========================================================================
+    // VALIDACIÓN: TIPOS MUTUAMENTE EXCLUYENTES (SOCIO y NO_SOCIO)
+    // =========================================================================
+    // Obtener tipos activos actuales de la persona
+    const tiposActivos = await this.personaTipoRepository.findByPersonaId(personaId, true);
+    const tiposActivosCodigos = tiposActivos.map(t => t.tipoPersona.codigo);
+
+    // Validar que el nuevo tipo no sea excluyente con los tipos existentes
+    const validacion = canAgregarTipo(tiposActivosCodigos, tipoPersonaCodigo);
+    if (!validacion.valid) {
+      throw new AppError(validacion.error!, HttpStatus.CONFLICT);
     }
 
     // Si es SOCIO y no tiene numeroSocio, asignar el siguiente
