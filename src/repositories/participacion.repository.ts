@@ -31,7 +31,7 @@ type ParticipacionConRelaciones = {
     codigo_actividad: string;
     costo: any; // Decimal
     descripcion?: string | null;
-    cupo_maximo?: number | null;
+    capacidadMaxima?: number | null;
     tipo_actividad_id: number;
   };
 };
@@ -72,7 +72,7 @@ export class ParticipacionRepository {
             nombre: true,
             codigo_actividad: true,
             descripcion: true,
-            cupo_maximo: true,
+            capacidadMaxima: true,
             costo: true,
             tipo_actividad_id: true
           }
@@ -178,7 +178,7 @@ export class ParticipacionRepository {
               nombre: true,
               codigo_actividad: true,
               descripcion: true,
-              cupo_maximo: true,
+              capacidadMaxima: true,
               costo: true
             }
           }
@@ -745,7 +745,7 @@ export class ParticipacionRepository {
             nombre: true,
             codigo_actividad: true,
             descripcion: true,
-            cupo_maximo: true,
+            capacidadMaxima: true,
             costo: true,
             tipo_actividad_id: true
           }

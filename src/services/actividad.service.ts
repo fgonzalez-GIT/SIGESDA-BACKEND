@@ -529,7 +529,7 @@ export class ActividadService {
       descripcion: original.descripcion,
       fechaDesde: nuevaFechaDesde,
       fechaHasta: nuevaFechaHasta,
-      cupoMaximo: original.cupo_maximo,
+      cupoMaximo: original.capacidadMaxima,
       costo: original.costo,
       observaciones: `Duplicado de: ${original.nombre} (ID: ${original.id})`,
       horarios: copiarHorarios ? (original as any).horarios_actividades?.map((h: any) => ({
@@ -578,7 +578,7 @@ export class ActividadService {
             id: a.id,
             codigo: a.codigo_actividad,
             nombre: a.nombre,
-            cupoMaximo: a.cupo_maximo,
+            cupoMaximo: a.capacidadMaxima,
             costo: a.costo
           }))
         };

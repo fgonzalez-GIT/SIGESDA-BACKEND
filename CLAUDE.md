@@ -189,6 +189,12 @@ Required variables (see `.env.example`):
 
 ## Database Schema Rules
 
+### Naming Convention
+- ✅ **MANDATORY**: ALWAYS use camelCase for Prisma schema fields and TypeScript code
+- **Example**: `capacidadMaxima` (NOT `cupo_maximo`, NOT `capacidad_maxima`)
+- **Rationale**: Consistency with Prisma conventions and TypeScript best practices
+- **Note**: Use `@map("snake_case")` when PostgreSQL table uses snake_case column names
+
 ### Primary Keys
 - ✅ **MANDATORY**: All tables MUST use `Int` with `SERIAL` autoincrement for primary keys
 - **Format**: `id  Int  @id @default(autoincrement())`

@@ -24,7 +24,7 @@ export class ActividadRepository {
         descripcion: actividadData.descripcion ?? undefined,
         fecha_desde: new Date(actividadData.fechaDesde),
         fecha_hasta: actividadData.fechaHasta ? new Date(actividadData.fechaHasta) : undefined,
-        cupo_maximo: actividadData.cupoMaximo ?? undefined,
+        capacidadMaxima: actividadData.cupoMaximo ?? undefined,
         costo: actividadData.costo,
         observaciones: actividadData.observaciones ?? undefined,
 
@@ -173,7 +173,7 @@ export class ActividadRepository {
     } else if (query.orderBy === 'fechaDesde') {
       orderBy.fecha_desde = query.orderDir;
     } else if (query.orderBy === 'cupoMaximo') {
-      orderBy.cupo_maximo = query.orderDir;
+      orderBy.capacidadMaxima = query.orderDir;
     } else if (query.orderBy === 'created_at') {
       orderBy.created_at = query.orderDir;
     } else {
@@ -229,9 +229,9 @@ export class ActividadRepository {
     // Si hay filtro de cupo disponible, filtrar en memoria
     if (query.conCupo) {
       const dataConCupo = data.filter(act => {
-        if (!act.cupo_maximo) return true; // Sin límite = siempre disponible
+        if (!act.capacidadMaxima) return true; // Sin límite = siempre disponible
         const inscritos = (act as any)._count?.participaciones_actividades || 0;
-        return inscritos < act.cupo_maximo;
+        return inscritos < act.capacidadMaxima;
       });
       return {
         data: dataConCupo,
@@ -345,7 +345,7 @@ export class ActividadRepository {
     if (data.fechaHasta !== undefined) {
       updateData.fecha_hasta = data.fechaHasta ? new Date(data.fechaHasta) : null;
     }
-    if (data.cupoMaximo !== undefined) updateData.cupo_maximo = data.cupoMaximo;
+    if (data.cupoMaximo !== undefined) updateData.capacidadMaxima = data.cupoMaximo;
     if (data.costo !== undefined) updateData.costo = data.costo;
     if (data.observaciones !== undefined) updateData.observaciones = data.observaciones;
 
@@ -811,18 +811,18 @@ export class ActividadRepository {
     if (!actividad) return null;
 
     const participantesActivos = actividad._count.participaciones_actividades;
-    const porcentajeOcupacion = actividad.cupo_maximo
-      ? Math.round((participantesActivos / actividad.cupo_maximo) * 100)
+    const porcentajeOcupacion = actividad.capacidadMaxima
+      ? Math.round((participantesActivos / actividad.capacidadMaxima) * 100)
       : null;
 
     return {
       totalParticipantes: participantesActivos,
       totalHorarios: actividad._count.horarios_actividades,
       totalDocentes: actividad._count.docentes_actividades,
-      cupoMaximo: actividad.cupo_maximo,
-      cupoDisponible: actividad.cupo_maximo ? actividad.cupo_maximo - participantesActivos : null,
+      cupoMaximo: actividad.capacidadMaxima,
+      cupoDisponible: actividad.capacidadMaxima ? actividad.capacidadMaxima - participantesActivos : null,
       porcentajeOcupacion,
-      estaLlena: actividad.cupo_maximo ? participantesActivos >= actividad.cupo_maximo : false
+      estaLlena: actividad.capacidadMaxima ? participantesActivos >= actividad.capacidadMaxima : false
     };
   }
 
