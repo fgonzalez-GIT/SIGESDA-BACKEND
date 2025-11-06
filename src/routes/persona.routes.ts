@@ -19,6 +19,7 @@ const personaController = new PersonaController(personaService);
 
 // Búsqueda por texto
 router.get('/search', personaController.searchPersonas.bind(personaController));
+router.get('/buscar', personaController.searchPersonas.bind(personaController)); // Alias para compatibilidad
 
 // Listas por tipo específico
 router.get('/socios', personaController.getSocios.bind(personaController));
@@ -27,6 +28,7 @@ router.get('/proveedores', personaController.getProveedores.bind(personaControll
 
 // Verificar DNI
 router.get('/dni/:dni/check', personaController.checkDni.bind(personaController));
+router.get('/verificar-dni/:dni', personaController.checkDni.bind(personaController)); // Alias para compatibilidad
 
 // ======================================================================
 // CRUD BÁSICO

@@ -227,27 +227,12 @@ export class PersonaRepository {
     return this.prisma.persona.findUnique({
       where: { id },
       include: includeRelations ? {
-        tipos: {
-          include: {
-            tipoPersona: true,
-            categoria: true,
-            especialidad: true
-          },
-          orderBy: { fechaAsignacion: 'desc' }
-        },
-        contactos: {
-          where: { activo: true },
-          orderBy: [
-            { principal: 'desc' },
-            { tipoContacto: 'asc' }
-          ]
-        },
-        participaciones_actividades: {
+        participacion_actividades: {
           include: {
             actividades: true
           }
         },
-        familiares: {
+        parentescos: {
           include: {
             familiar: {
               select: {
@@ -259,7 +244,7 @@ export class PersonaRepository {
             }
           }
         },
-        comisionDirectiva: true
+        comision_directiva: true
       } : undefined
     });
   }

@@ -251,6 +251,19 @@ export class FamiliarService {
     // Buscar la relación inversa ANTES de eliminar la principal
     const relacionInversa = await this.familiarRepository.findInverseRelation(id);
 
+    // Guardar info de la relación inversa antes de eliminarla
+    let relacionInversaInfo = null;
+    if (relacionInversa) {
+      relacionInversaInfo = {
+        id: relacionInversa.id,
+        socioNombre: relacionInversa.socio?.nombre || 'N/A',
+        socioApellido: relacionInversa.socio?.apellido || 'N/A',
+        parentesco: relacionInversa.parentesco,
+        familiarNombre: relacionInversa.familiar?.nombre || 'N/A',
+        familiarApellido: relacionInversa.familiar?.apellido || 'N/A'
+      };
+    }
+
     // Eliminar la relación principal
     const deletedRelacion = await this.familiarRepository.delete(id);
 
@@ -259,11 +272,13 @@ export class FamiliarService {
       await this.familiarRepository.delete(relacionInversa.id);
 
       logger.info(`✅ Relación familiar eliminada BIDIRECCIONALMENTE:`);
-      logger.info(`   ➤ Relación A→B (ID: ${id}): ${existingRelacion.socio.nombre} ${existingRelacion.socio.apellido} → ${existingRelacion.parentesco} → ${existingRelacion.familiar.nombre} ${existingRelacion.familiar.apellido}`);
-      logger.info(`   ➤ Relación B→A (ID: ${relacionInversa.id}): ${relacionInversa.socio.nombre} ${relacionInversa.socio.apellido} → ${relacionInversa.parentesco} → ${relacionInversa.familiar.nombre} ${relacionInversa.familiar.apellido}`);
+      logger.info(`   ➤ Relación A→B (ID: ${id}): ${existingRelacion.socio?.nombre || 'N/A'} ${existingRelacion.socio?.apellido || 'N/A'} → ${existingRelacion.parentesco} → ${existingRelacion.familiar?.nombre || 'N/A'} ${existingRelacion.familiar?.apellido || 'N/A'}`);
+      if (relacionInversaInfo) {
+        logger.info(`   ➤ Relación B→A (ID: ${relacionInversaInfo.id}): ${relacionInversaInfo.socioNombre} ${relacionInversaInfo.socioApellido} → ${relacionInversaInfo.parentesco} → ${relacionInversaInfo.familiarNombre} ${relacionInversaInfo.familiarApellido}`);
+      }
     } else {
       logger.warn(`⚠️  Relación inversa no encontrada para ID ${id} - Eliminación NO sincronizada`);
-      logger.info(`Relación familiar eliminada: ${existingRelacion.socio.nombre} ${existingRelacion.socio.apellido} - ${existingRelacion.parentesco} - ${existingRelacion.familiar.nombre} ${existingRelacion.familiar.apellido}`);
+      logger.info(`Relación familiar eliminada: ${existingRelacion.socio?.nombre || 'N/A'} ${existingRelacion.socio?.apellido || 'N/A'} - ${existingRelacion.parentesco} - ${existingRelacion.familiar?.nombre || 'N/A'} ${existingRelacion.familiar?.apellido || 'N/A'}`);
     }
 
     return deletedRelacion;

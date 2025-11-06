@@ -294,6 +294,8 @@ model Persona {
   comision_directiva        ComisionDirectiva?
   parentescos               Familiar[]                  @relation("FamiliarParentesco")
   socios                    Familiar[]                  @relation("SocioFamiliar")
+  tipos                     PersonaTipo[]
+  contactos                 ContactoPersona[]
   participacion_actividades participacion_actividades[]
   participaciones_secciones participaciones_secciones[]
   categorias_socios         CategoriaSocio?             @relation(fields: [categoriaId], references: [id])
@@ -301,8 +303,6 @@ model Persona {
   recibosRecibidos          Recibo[]                    @relation("ReciboReceptor")
   reserva_aulas             reserva_aulas[]
   secciones_actividades     secciones_actividades[]     @relation("DocenteSeccion")
-  tipos                     PersonaTipo[]
-  contactos                 ContactoPersona[]
   docentes_actividades      docentes_actividades[]
 
   @@index([categoriaId])
@@ -357,7 +357,7 @@ model participacion_actividades {
   activa         Boolean     @default(true)
   observaciones  String?
   createdAt      DateTime    @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime    @updatedAt
   actividades    actividades @relation(fields: [actividadId], references: [id], onDelete: Cascade)
   personas       Persona     @relation(fields: [personaId], references: [id], onDelete: Cascade)
 

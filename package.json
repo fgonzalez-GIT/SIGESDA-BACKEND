@@ -39,6 +39,9 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
   },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
   "author": "pancho",
   "license": "ISC"
 }
