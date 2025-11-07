@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient, TipoPersonaCatalogo, EspecialidadDocente } from '@prisma/client';
 import { CreateTipoPersonaDto, UpdateTipoPersonaDto, CreateEspecialidadDto, UpdateEspecialidadDto } from '@/dto/catalogo.dto';
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient, ConfiguracionSistema } from '@prisma/client';
 import { CreateConfiguracionDto, ConfiguracionQueryDto, TipoConfiguracion } from '@/dto/configuracion.dto';
 

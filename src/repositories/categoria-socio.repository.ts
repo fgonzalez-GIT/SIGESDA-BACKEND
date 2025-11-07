@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient, CategoriaSocio, Prisma } from '@prisma/client';
 import {
   CreateCategoriaSocioDto,

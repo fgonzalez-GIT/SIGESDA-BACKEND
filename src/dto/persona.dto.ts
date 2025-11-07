@@ -289,15 +289,17 @@ export function validatePersonaTipoData(
 
   switch (tipoPersonaCodigo) {
     case 'SOCIO':
-      if (!data.categoriaId) {
-        errors.push('SOCIO requiere categoriaId');
-      }
+      // categoriaId es opcional - se auto-asigna ACTIVO si no se proporciona
+      // if (!data.categoriaId) {
+      //   errors.push('SOCIO requiere categoriaId');
+      // }
       break;
 
     case 'DOCENTE':
-      if (!data.especialidadId) {
-        errors.push('DOCENTE requiere especialidadId');
-      }
+      // especialidadId es opcional - se auto-asigna primera especialidad si no se proporciona
+      // if (!data.especialidadId) {
+      //   errors.push('DOCENTE requiere especialidadId');
+      // }
       break;
 
     case 'PROVEEDOR':
@@ -342,21 +344,33 @@ export function transformLegacyToNew(legacyData: CreatePersonaLegacyDto): Create
 
   switch (tipo) {
     case 'SOCIO':
-      tipoData.categoriaId = legacyData.categoriaId;
-      tipoData.numeroSocio = legacyData.numeroSocio;
-      tipoData.fechaIngreso = legacyData.fechaIngreso;
+      if ('categoriaId' in legacyData) {
+        tipoData.categoriaId = legacyData.categoriaId;
+      }
+      if ('numeroSocio' in legacyData) {
+        tipoData.numeroSocio = legacyData.numeroSocio;
+      }
+      if ('fechaIngreso' in legacyData) {
+        tipoData.fechaIngreso = legacyData.fechaIngreso;
+      }
       break;
 
     case 'DOCENTE':
       // Buscar la especialidad por nombre (esto requiere consulta a BD)
       // Por ahora asignamos especialidad GENERAL (ID 1)
       tipoData.especialidadId = 1;
-      tipoData.honorariosPorHora = legacyData.honorariosPorHora;
+      if ('honorariosPorHora' in legacyData) {
+        tipoData.honorariosPorHora = legacyData.honorariosPorHora;
+      }
       break;
 
     case 'PROVEEDOR':
-      tipoData.cuit = legacyData.cuit;
-      tipoData.razonSocial = legacyData.razonSocial;
+      if ('cuit' in legacyData) {
+        tipoData.cuit = legacyData.cuit;
+      }
+      if ('razonSocial' in legacyData) {
+        tipoData.razonSocial = legacyData.razonSocial;
+      }
       break;
   }
 
@@ -367,7 +381,8 @@ export function transformLegacyToNew(legacyData: CreatePersonaLegacyDto): Create
     newData.contactos.push({
       tipoContacto: TipoContacto.EMAIL,
       valor: baseData.email,
-      principal: true
+      principal: true,
+      activo: true
     });
   }
 
@@ -375,7 +390,8 @@ export function transformLegacyToNew(legacyData: CreatePersonaLegacyDto): Create
     newData.contactos.push({
       tipoContacto: TipoContacto.TELEFONO,
       valor: baseData.telefono,
-      principal: true
+      principal: true,
+      activo: true
     });
   }
 

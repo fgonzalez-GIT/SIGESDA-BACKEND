@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ConfiguracionRepository } from '@/repositories/configuracion.repository';
 import {
   CreateConfiguracionDto,

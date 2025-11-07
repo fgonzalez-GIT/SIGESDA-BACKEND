@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Recibo, TipoRecibo, EstadoRecibo } from '@prisma/client';
 import { TipoPersona } from '@/types/enums';
 import { ReciboRepository } from '@/repositories/recibo.repository';

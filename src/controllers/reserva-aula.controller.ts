@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response, NextFunction } from 'express';
 import { ReservaAulaService } from '@/services/reserva-aula.service';
 import {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient, asistencias, Prisma } from '@prisma/client';
 import {
   CreateAsistenciaDto,

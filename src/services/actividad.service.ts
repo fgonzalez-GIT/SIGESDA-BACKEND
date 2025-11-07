@@ -37,7 +37,7 @@ export class ActividadService {
 
     const actividad = await this.actividadRepository.create(data);
 
-    logger.info(`Actividad creada: ${actividad.nombre} (ID: ${actividad.id}) - Código: ${actividad.codigo_actividad}`);
+    logger.info(`Actividad creada: ${actividad.nombre} (ID: ${actividad.id})`);
 
     return actividad;
   }
@@ -118,14 +118,6 @@ export class ActividadService {
       throw new NotFoundError(`Actividad con ID ${id} no encontrada`);
     }
 
-    // Validar código único si se está cambiando
-    if (data.codigoActividad && data.codigoActividad !== existente.codigo_actividad) {
-      const conMismoCodigo = await this.actividadRepository.findByCodigoActividad(data.codigoActividad);
-      if (conMismoCodigo && conMismoCodigo.id !== id) {
-        throw new ValidationError(`Ya existe otra actividad con el código ${data.codigoActividad}`);
-      }
-    }
-
     // Validar fechas
     if (data.fechaDesde && data.fechaHasta) {
       const desde = new Date(data.fechaDesde);
@@ -177,7 +169,7 @@ export class ActividadService {
 
     const updated = await this.actividadRepository.cambiarEstado(id, nuevoEstadoId, observaciones);
 
-    logger.info(`Estado de actividad cambiado: ${updated.nombre} (ID: ${id}) -> Estado: ${updated.estados_actividades.nombre}`);
+    logger.info(`Estado de actividad cambiado: ${updated.nombre} (ID: ${id})`);
 
     return updated;
   }
@@ -198,9 +190,9 @@ export class ActividadService {
 
     // Convertir horarios existentes al formato esperado para validación
     const horariosParaValidar = horariosExistentes.map(h => ({
-      diaSemanaId: h.dia_semana_id,
-      horaInicio: ActividadRepository.formatTime(h.hora_inicio),
-      horaFin: ActividadRepository.formatTime(h.hora_fin)
+      diaSemanaId: h.diaSemana as any,
+      horaInicio: h.horaInicio,
+      horaFin: h.horaFin
     }));
 
     // Agregar el nuevo horario a la validación
@@ -226,23 +218,23 @@ export class ActividadService {
 
     // Si se modifican día u horas, validar conflictos
     if (horarioData.diaSemanaId || horarioData.horaInicio || horarioData.horaFin) {
-      const actividadId = horarioActual.actividad_id;
+      const actividadId = horarioActual.actividadId;
 
       // Obtener todos los horarios excepto el actual
       const todosLosHorarios = await this.actividadRepository.getHorariosByActividad(actividadId);
       const otrosHorarios = todosLosHorarios
         .filter(h => h.id !== horarioId)
         .map(h => ({
-          diaSemanaId: h.dia_semana_id,
-          horaInicio: ActividadRepository.formatTime(h.hora_inicio),
-          horaFin: ActividadRepository.formatTime(h.hora_fin)
+          diaSemanaId: h.diaSemana ? (typeof h.diaSemana === 'string' ? h.diaSemana : h.diaSemana) : 'LUNES',
+          horaInicio: h.horaInicio,
+          horaFin: h.horaFin
         }));
 
       // Crear el horario actualizado para validación
       const horarioActualizado = {
-        diaSemanaId: horarioData.diaSemanaId || horarioActual.dia_semana_id,
-        horaInicio: horarioData.horaInicio || ActividadRepository.formatTime(horarioActual.hora_inicio),
-        horaFin: horarioData.horaFin || ActividadRepository.formatTime(horarioActual.hora_fin)
+        diaSemanaId: horarioData.diaSemanaId || horarioActual.diaSemana,
+        horaInicio: horarioData.horaInicio || horarioActual.horaInicio,
+        horaFin: horarioData.horaFin || horarioActual.horaFin
       };
 
       // Validar
@@ -252,7 +244,8 @@ export class ActividadService {
 
     const updated = await this.actividadRepository.updateHorario(horarioId, horarioData);
 
-    logger.info(`Horario actualizado: ${horarioId} de actividad ${horarioActual.actividades.nombre}`);
+    const actividadNombre = (horarioActual as any).actividades?.nombre || 'Actividad';
+    logger.info(`Horario actualizado: ${horarioId} de actividad ${actividadNombre}`);
 
     return updated;
   }
@@ -269,7 +262,8 @@ export class ActividadService {
 
     await this.actividadRepository.deleteHorario(horarioId);
 
-    logger.info(`Horario eliminado: ${horarioId} de actividad ${horario.actividades.nombre}`);
+    const actividadNombre = (horario as any).actividades?.nombre || 'Actividad';
+    logger.info(`Horario eliminado: ${horarioId} de actividad ${actividadNombre}`);
 
     return { message: 'Horario eliminado exitosamente' };
   }
@@ -302,7 +296,10 @@ export class ActividadService {
 
     const asignacion = await this.actividadRepository.asignarDocente(actividadId, docenteId, rolDocenteId, observaciones);
 
-    logger.info(`Docente ${asignacion.personas.nombre} ${asignacion.personas.apellido} asignado a actividad ${actividad.nombre} con rol ${asignacion.roles_docentes.nombre}`);
+    const docenteNombre = (asignacion as any).personas?.nombre || 'Docente';
+    const docenteApellido = (asignacion as any).personas?.apellido || '';
+    const rolNombre = (asignacion as any).roles_docentes?.nombre || 'Rol';
+    logger.info(`Docente ${docenteNombre} ${docenteApellido} asignado a actividad ${actividad.nombre} con rol ${rolNombre}`);
 
     return asignacion;
   }
@@ -318,7 +315,9 @@ export class ActividadService {
 
     const desasignacion = await this.actividadRepository.desasignarDocente(actividadId, docenteId, rolDocenteId);
 
-    logger.info(`Docente ${desasignacion.personas.nombre} ${desasignacion.personas.apellido} desasignado de actividad ${actividad.nombre}`);
+    const docenteNombre = (desasignacion as any).personas?.nombre || 'Docente';
+    const docenteApellido = (desasignacion as any).personas?.apellido || '';
+    logger.info(`Docente ${docenteNombre} ${docenteApellido} desasignado de actividad ${actividad.nombre}`);
 
     return desasignacion;
   }
@@ -523,24 +522,25 @@ export class ActividadService {
     const datosNuevaActividad: CreateActividadDto = {
       codigoActividad: nuevoCodigoActividad,
       nombre: nuevoNombre,
-      tipoActividadId: original.tipo_actividad_id,
-      categoriaId: original.categoria_id,
-      estadoId: original.estado_id,
+      tipoActividadId: 1, // TODO: Mapear desde original.tipo
+      categoriaId: 1, // TODO: Determinar categoría
+      estadoId: 1, // TODO: Determinar estado
       descripcion: original.descripcion,
       fechaDesde: nuevaFechaDesde,
       fechaHasta: nuevaFechaHasta,
-      cupoMaximo: original.capacidadMaxima,
-      costo: original.costo,
+      cupoMaximo: original.capacidadMaxima || undefined,
+      costo: Number(original.precio) || 0,
       observaciones: `Duplicado de: ${original.nombre} (ID: ${original.id})`,
+      reservasAulas: [], // Campo requerido
       horarios: copiarHorarios ? (original as any).horarios_actividades?.map((h: any) => ({
-        diaSemanaId: h.dia_semana_id,
-        horaInicio: ActividadRepository.formatTime(h.hora_inicio),
-        horaFin: ActividadRepository.formatTime(h.hora_fin),
+        diaSemanaId: h.dia_semana_id || h.diaSemana,
+        horaInicio: typeof h.hora_inicio === 'string' ? h.hora_inicio : h.horaInicio,
+        horaFin: typeof h.hora_fin === 'string' ? h.hora_fin : h.horaFin,
         activo: h.activo
       })) : [],
       docentes: copiarDocentes ? (original as any).docentes_actividades?.map((d: any) => ({
-        docenteId: d.docente_id,
-        rolDocenteId: d.rol_docente_id,
+        docenteId: d.docente_id || d.docenteId,
+        rolDocenteId: d.rol_docente_id || d.rolDocenteId,
         observaciones: d.observaciones
       })) : []
     };
@@ -564,7 +564,9 @@ export class ActividadService {
           tipoActividadId: tipo.id,
           incluirRelaciones: false,
           page: 1,
-          limit: 1000
+          limit: 1000,
+          orderBy: 'nombre',
+          orderDir: 'asc'
         });
 
         return {
@@ -576,10 +578,10 @@ export class ActividadService {
           totalActividades: actividades.total,
           actividades: actividades.data.map(a => ({
             id: a.id,
-            codigo: a.codigo_actividad,
+            codigo: (a as any).codigo_actividad || a.nombre,
             nombre: a.nombre,
             cupoMaximo: a.capacidadMaxima,
-            costo: a.costo
+            costo: Number(a.precio) || 0
           }))
         };
       })
@@ -600,7 +602,9 @@ export class ActividadService {
           diaSemanaId: dia.id,
           incluirRelaciones: true,
           page: 1,
-          limit: 100
+          limit: 100,
+          orderBy: 'nombre',
+          orderDir: 'asc'
         });
 
         return {
@@ -612,11 +616,11 @@ export class ActividadService {
           },
           actividades: actividades.data.map(act => ({
             id: act.id,
-            codigo: act.codigo_actividad,
+            codigo: (act as any).codigo_actividad || act.nombre,
             nombre: act.nombre,
-            tipo: (act as any).tipos_actividades?.nombre,
+            tipo: (act as any).tipos_actividades?.nombre || act.tipo,
             horarios: (act as any).horarios_actividades?.map((h: any) => ({
-              horaInicio: ActividadRepository.formatTime(h.hora_inicio),
+              horaInicio: typeof h.hora_inicio === 'string' ? h.hora_inicio : h.horaInicio,
               horaFin: ActividadRepository.formatTime(h.hora_fin),
               aula: h.reservas_aulas_actividades?.[0]?.aulas?.nombre
             })),

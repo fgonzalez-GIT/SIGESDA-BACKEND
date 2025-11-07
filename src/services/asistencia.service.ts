@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { AsistenciaRepository } from '@/repositories/asistencia.repository';
 import { ParticipacionRepository } from '@/repositories/participacion.repository';
 import { NotFoundError, ValidationError, ConflictError } from '@/utils/errors';

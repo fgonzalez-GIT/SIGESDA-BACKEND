@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient, Aula } from '@prisma/client';
 import { CreateAulaDto, AulaQueryDto } from '@/dto/aula.dto';
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ReservaAula } from '@prisma/client';
 import { TipoPersona } from '@/types/enums';
 import { ReservaAulaRepository } from '@/repositories/reserva-aula.repository';

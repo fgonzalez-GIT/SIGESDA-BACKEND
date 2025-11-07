@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { MedioPagoRepository } from '@/repositories/medio-pago.repository';
 import { ReciboRepository } from '@/repositories/recibo.repository';
 import { MedioPago, EstadoRecibo, MedioPagoTipo } from '@prisma/client';

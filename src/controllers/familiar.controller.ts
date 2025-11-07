@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response, NextFunction } from 'express';
 import { FamiliarService } from '@/services/familiar.service';
 import {

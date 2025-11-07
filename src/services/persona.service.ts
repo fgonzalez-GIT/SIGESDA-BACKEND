@@ -324,7 +324,8 @@ export class PersonaService {
 
     // Asignar tipo NO_SOCIO por defecto
     await this.personaTipoRepository.asignarTipo(id, {
-      tipoPersonaCodigo: 'NO_SOCIO'
+      tipoPersonaCodigo: 'NO_SOCIO',
+      activo: true
     });
 
     const reactivatedPersona = await this.personaRepository.findById(id, true);

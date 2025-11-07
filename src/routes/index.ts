@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import personaRoutes from './persona.routes';
+import personaTipoRoutes from './persona-tipo.routes';
 import actividadRoutes from './actividad.routes';
 import aulaRoutes from './aula.routes';
 import configuracionRoutes from './configuracion.routes';
@@ -23,6 +24,7 @@ router.use('/actividades/categorias-actividad', categoriasActividadRoutes);
 
 // Rutas generales
 router.use('/personas', personaRoutes);
+router.use('/', personaTipoRoutes); // Rutas de persona-tipo (incluye personas/:id/tipos y catalogos)
 router.use('/actividades', actividadRoutes);
 router.use('/aulas', aulaRoutes);
 router.use('/configuracion', configuracionRoutes);

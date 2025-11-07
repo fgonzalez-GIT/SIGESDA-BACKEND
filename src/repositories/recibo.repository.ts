@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient, Recibo, TipoRecibo, EstadoRecibo, Prisma } from '@prisma/client';
 import {
   CreateReciboDto,

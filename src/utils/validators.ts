@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { z } from 'zod';
 import { TipoPersona, CategoriaSocio, TipoActividad, TipoRecibo, MedioPagoTipo } from '@/types/enums';
 

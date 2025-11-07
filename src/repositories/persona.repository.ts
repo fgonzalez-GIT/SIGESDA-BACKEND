@@ -33,9 +33,9 @@ export class PersonaRepository {
         tipos: {
           create: await Promise.all(tiposFinales.map(async (tipo) => {
             // Obtener ID del tipo si se proporcionó código
-            let tipoPersonaId = tipo.tipoPersonaId;
+            let tipoPersonaId = 'tipoPersonaId' in tipo ? tipo.tipoPersonaId : undefined;
 
-            if (!tipoPersonaId && tipo.tipoPersonaCodigo) {
+            if (!tipoPersonaId && 'tipoPersonaCodigo' in tipo && tipo.tipoPersonaCodigo) {
               const tipoCatalogo = await this.prisma.tipoPersonaCatalogo.findUnique({
                 where: { codigo: tipo.tipoPersonaCodigo }
               });
@@ -54,31 +54,31 @@ export class PersonaRepository {
             };
 
             // Agregar campos específicos según el tipo
-            if (tipo.categoriaId) {
+            if ('categoriaId' in tipo && tipo.categoriaId) {
               tipoData.categoriaId = tipo.categoriaId;
             }
 
-            if (tipo.numeroSocio) {
+            if ('numeroSocio' in tipo && tipo.numeroSocio) {
               tipoData.numeroSocio = tipo.numeroSocio;
             }
 
-            if (tipo.fechaIngreso) {
+            if ('fechaIngreso' in tipo && tipo.fechaIngreso) {
               tipoData.fechaIngreso = new Date(tipo.fechaIngreso);
             }
 
-            if (tipo.especialidadId) {
+            if ('especialidadId' in tipo && tipo.especialidadId) {
               tipoData.especialidadId = tipo.especialidadId;
             }
 
-            if (tipo.honorariosPorHora) {
+            if ('honorariosPorHora' in tipo && tipo.honorariosPorHora) {
               tipoData.honorariosPorHora = tipo.honorariosPorHora;
             }
 
-            if (tipo.cuit) {
+            if ('cuit' in tipo && tipo.cuit) {
               tipoData.cuit = tipo.cuit;
             }
 
-            if (tipo.razonSocial) {
+            if ('razonSocial' in tipo && tipo.razonSocial) {
               tipoData.razonSocial = tipo.razonSocial;
             }
 

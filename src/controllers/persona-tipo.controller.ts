@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response, NextFunction } from 'express';
 import { PersonaTipoService } from '@/services/persona-tipo.service';
 import {

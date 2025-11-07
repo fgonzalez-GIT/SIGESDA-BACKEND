@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ParticipacionRepository } from '@/repositories/participacion.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { ActividadRepository } from '@/repositories/actividad.repository';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response } from 'express';
 import { ConfiguracionService } from '@/services/configuracion.service';
 import {

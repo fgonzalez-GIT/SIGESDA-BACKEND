@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 // DTO para crear cuota individual
 export const createCuotaSchema = z.object({
-  reciboId: z.string().cuid('ID de recibo inválido'),
-  categoriaId: z.string().cuid('ID de categoría inválido'),
+  reciboId: z.number().int().positive('ID de recibo inválido'),
+  categoriaId: z.number().int().positive('ID de categoría inválido'),
   mes: z.number()
     .int('El mes debe ser un número entero')
     .min(1, 'El mes debe ser entre 1 y 12')
@@ -45,7 +45,7 @@ export type CreateCuotaDto = z.infer<typeof createCuotaSchema>;
 
 // DTO para actualizar cuota
 export const updateCuotaSchema = z.object({
-  categoriaId: z.string().cuid('ID de categoría inválido').optional(),
+  categoriaId: z.number().int().positive('ID de categoría inválido').optional(),
   mes: z.number()
     .int('El mes debe ser un número entero')
     .min(1, 'El mes debe ser entre 1 y 12')
@@ -82,7 +82,7 @@ export const generarCuotasSchema = z.object({
     .int('El año debe ser un número entero')
     .min(2020, 'El año debe ser 2020 o posterior')
     .max(2030, 'El año no puede ser mayor a 2030'),
-  categoriaIds: z.array(z.string().cuid('ID de categoría inválido'))
+  categoriaIds: z.array(z.number().int().positive('ID de categoría inválido'))
     .min(1, 'Debe especificar al menos un ID de categoría')
     .optional(),
   incluirInactivos: z.boolean()
@@ -108,14 +108,54 @@ export type GenerarCuotasDto = z.infer<typeof generarCuotasSchema>;
 
 // DTO para consultar cuotas
 export const cuotaQuerySchema = z.object({
-  page: z.number().int().positive().default(1),
-  limit: z.number().int().positive().max(100).default(10),
-  categoriaId: z.string().cuid().optional(),
-  mes: z.number().int().min(1).max(12).optional(),
-  anio: z.number().int().min(2020).max(2030).optional(),
+  page: z.preprocess(
+    (val) => {
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? 1 : parsed;
+    },
+    z.number().int().positive().default(1)
+  ),
+  limit: z.preprocess(
+    (val) => {
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? 10 : parsed;
+    },
+    z.number().int().positive().max(100).default(10)
+  ),
+  categoriaId: z.preprocess(
+    (val) => {
+      if (!val) return undefined;
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? undefined : parsed;
+    },
+    z.number().int().positive().optional()
+  ),
+  mes: z.preprocess(
+    (val) => {
+      if (!val) return undefined;
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? undefined : parsed;
+    },
+    z.number().int().min(1).max(12).optional()
+  ),
+  anio: z.preprocess(
+    (val) => {
+      if (!val) return undefined;
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? undefined : parsed;
+    },
+    z.number().int().min(2020).max(2030).optional()
+  ),
   fechaDesde: z.string().datetime().optional(),
   fechaHasta: z.string().datetime().optional(),
-  reciboId: z.string().cuid().optional(),
+  reciboId: z.preprocess(
+    (val) => {
+      if (!val) return undefined;
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? undefined : parsed;
+    },
+    z.number().int().positive().optional()
+  ),
   soloImpagas: z.string()
     .transform(val => val === 'true')
     .optional(),
@@ -131,10 +171,10 @@ export type CuotaQueryDto = z.infer<typeof cuotaQuerySchema>;
 
 // DTO para calcular cuota
 export const calcularCuotaSchema = z.object({
-  categoriaId: z.string().cuid('ID de categoría inválido'),
-  mes: z.number().int().min(1).max(12),
-  anio: z.number().int().min(2020).max(2030),
-  socioId: z.string().cuid('ID de socio inválido').optional(),
+  categoriaId: z.number().int().positive('ID de categoría inválido'),
+  mes: z.number().int().min(1).max(12).optional(),
+  anio: z.number().int().min(2020).max(2030).optional(),
+  socioId: z.number().int().positive('ID de socio inválido').optional(),
   incluirActividades: z.boolean().default(true),
   aplicarDescuentos: z.boolean().default(true)
 });
@@ -148,7 +188,7 @@ export const cuotaSearchSchema = z.object({
     .max(50, 'El término de búsqueda no puede exceder 50 caracteres'),
   searchBy: z.enum(['socio', 'numero_recibo', 'all'])
     .default('all'),
-  categoriaId: z.string().cuid().optional(),
+  categoriaId: z.number().int().positive().optional(),
   mes: z.number().int().min(1).max(12).optional(),
   anio: z.number().int().min(2020).max(2030).optional(),
   estado: z.enum(['PENDIENTE', 'PAGADO', 'VENCIDO', 'CANCELADO']).optional()
@@ -158,14 +198,18 @@ export type CuotaSearchDto = z.infer<typeof cuotaSearchSchema>;
 
 // DTO para estadísticas de cuotas
 export const cuotaStatsSchema = z.object({
-  fechaDesde: z.string().datetime(),
-  fechaHasta: z.string().datetime(),
+  fechaDesde: z.string().datetime().optional(),
+  fechaHasta: z.string().datetime().optional(),
   agruparPor: z.enum(['categoria', 'mes', 'estado', 'general'])
-    .default('categoria')
+    .default('general')
 }).refine((data) => {
-  const desde = new Date(data.fechaDesde);
-  const hasta = new Date(data.fechaHasta);
-  return desde < hasta;
+  // Si ambas fechas están presentes, validar que desde < hasta
+  if (data.fechaDesde && data.fechaHasta) {
+    const desde = new Date(data.fechaDesde);
+    const hasta = new Date(data.fechaHasta);
+    return desde < hasta;
+  }
+  return true;
 }, {
   message: 'La fecha desde debe ser anterior a la fecha hasta',
   path: ['fechaHasta']
@@ -175,7 +219,7 @@ export type CuotaStatsDto = z.infer<typeof cuotaStatsSchema>;
 
 // DTO para operaciones masivas de cuotas
 export const deleteBulkCuotasSchema = z.object({
-  ids: z.array(z.string().cuid())
+  ids: z.array(z.number().int().positive())
     .min(1, 'Debe proporcionar al menos un ID')
     .max(100, 'No se pueden eliminar más de 100 cuotas a la vez'),
   confirmarEliminacion: z.boolean()
@@ -190,7 +234,7 @@ export type DeleteBulkCuotasDto = z.infer<typeof deleteBulkCuotasSchema>;
 export const recalcularCuotasSchema = z.object({
   mes: z.number().int().min(1).max(12),
   anio: z.number().int().min(2020).max(2030),
-  categoriaId: z.string().cuid().optional(),
+  categoriaId: z.number().int().positive().optional(),
   aplicarDescuentos: z.boolean().default(true),
   actualizarRecibos: z.boolean().default(false)
 });
@@ -201,7 +245,7 @@ export type RecalcularCuotasDto = z.infer<typeof recalcularCuotasSchema>;
 export const reporteCuotasSchema = z.object({
   mes: z.number().int().min(1).max(12),
   anio: z.number().int().min(2020).max(2030),
-  categoriaId: z.string().cuid().optional(),
+  categoriaId: z.number().int().positive().optional(),
   formato: z.enum(['json', 'excel', 'pdf']).default('json'),
   incluirDetalle: z.boolean().default(true),
   incluirEstadisticas: z.boolean().default(true)

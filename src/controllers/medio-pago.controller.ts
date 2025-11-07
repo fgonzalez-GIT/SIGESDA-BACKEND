@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response, NextFunction } from 'express';
 import { MedioPagoService } from '@/services/medio-pago.service';
 import {

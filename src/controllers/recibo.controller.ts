@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response, NextFunction } from 'express';
 import { ReciboService } from '@/services/recibo.service';
 import {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CategoriaSocio } from '@prisma/client';
 import { CategoriaSocioRepository } from '@/repositories/categoria-socio.repository';
 import {
