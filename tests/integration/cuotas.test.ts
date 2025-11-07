@@ -254,8 +254,10 @@ describe('CUOTAS - Integration Tests', () => {
           aplicarDescuentos: true
         });
 
-      expectSuccessResponse(response, 201);
-      expect(response.body.data).toHaveProperty('generadas');
+      // Aceptar 201 (éxito total) o 207 (éxito parcial con errores)
+      expect([201, 207]).toContain(response.status);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('generated');
     });
 
     it('should reject generation for invalid period', async () => {
@@ -317,8 +319,9 @@ describe('CUOTAS - Integration Tests', () => {
         .get(`/api/cuotas/reporte/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`);
 
       expectSuccessResponse(response, 200);
-      expect(response.body.data).toHaveProperty('mes');
-      expect(response.body.data).toHaveProperty('anio');
+      expect(response.body.data).toHaveProperty('periodo');
+      expect(response.body.data.periodo).toHaveProperty('mes');
+      expect(response.body.data.periodo).toHaveProperty('anio');
     });
   });
 

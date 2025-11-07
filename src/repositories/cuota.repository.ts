@@ -239,7 +239,7 @@ export class CuotaRepository {
         }
       },
       orderBy: [
-        { categoria: 'asc' },
+        { categoriaId: 'asc' },
         { recibo: { receptor: { numeroSocio: 'asc' } } }
       ]
     });
@@ -412,7 +412,7 @@ export class CuotaRepository {
     switch (agruparPor) {
       case 'categoria':
         return this.prisma.cuota.groupBy({
-          by: ['categoria'],
+          by: ['categoriaId'],
           where,
           _count: {
             id: true
@@ -435,35 +435,35 @@ export class CuotaRepository {
           SELECT
             EXTRACT(YEAR FROM r.fecha) as year,
             EXTRACT(MONTH FROM r.fecha) as month,
-            c.categoria,
+            c."categoriaId",
             COUNT(c.id)::int as count,
             SUM(c."montoTotal") as total_amount,
             AVG(c."montoTotal") as avg_amount
           FROM cuotas c
           JOIN recibos r ON c."reciboId" = r.id
           WHERE r.fecha >= ${new Date(fechaDesde)} AND r.fecha <= ${new Date(fechaHasta)}
-          GROUP BY EXTRACT(YEAR FROM r.fecha), EXTRACT(MONTH FROM r.fecha), c.categoria
-          ORDER BY year DESC, month DESC, c.categoria ASC
+          GROUP BY EXTRACT(YEAR FROM r.fecha), EXTRACT(MONTH FROM r.fecha), c."categoriaId"
+          ORDER BY year DESC, month DESC, c."categoriaId" ASC
         `;
 
       case 'estado':
         return this.prisma.$queryRaw`
           SELECT
             r.estado,
-            c.categoria,
+            c."categoriaId",
             COUNT(c.id)::int as count,
             SUM(c."montoTotal") as total_amount,
             AVG(c."montoTotal") as avg_amount
           FROM cuotas c
           JOIN recibos r ON c."reciboId" = r.id
           WHERE r.fecha >= ${new Date(fechaDesde)} AND r.fecha <= ${new Date(fechaHasta)}
-          GROUP BY r.estado, c.categoria
-          ORDER BY r.estado ASC, c.categoria ASC
+          GROUP BY r.estado, c."categoriaId"
+          ORDER BY r.estado ASC, c."categoriaId" ASC
         `;
 
       default:
         // Estadísticas generales
-        return this.prisma.cuota.aggregate({
+        const aggregate = await this.prisma.cuota.aggregate({
           where,
           _count: {
             id: true
@@ -475,6 +475,13 @@ export class CuotaRepository {
             montoTotal: true
           }
         });
+
+        // Formatear el resultado para que tenga la propiedad 'total' que espera el test
+        return {
+          total: aggregate._count.id,
+          montoTotal: aggregate._sum.montoTotal ? parseFloat(aggregate._sum.montoTotal.toString()) : 0,
+          montoPromedio: aggregate._avg.montoTotal ? parseFloat(aggregate._avg.montoTotal.toString()) : 0
+        };
     }
   }
 
@@ -547,10 +554,10 @@ export class CuotaRepository {
     });
   }
 
-  async getMontoBasePorCategoria(categoria: CategoriaSocio): Promise<number> {
+  async getMontoBasePorCategoria(categoriaId: number): Promise<number> {
     // Obtener el último monto base usado para esta categoría
     const ultimaCuota = await this.prisma.cuota.findFirst({
-      where: { categoria },
+      where: { categoriaId },
       orderBy: [
         { anio: 'desc' },
         { mes: 'desc' }
@@ -564,15 +571,18 @@ export class CuotaRepository {
       return parseFloat(ultimaCuota.montoBase.toString());
     }
 
-    // Valores por defecto según categoría
-    const montosBase: Record<CategoriaSocio, number> = {
-      [CategoriaSocio.ACTIVO]: 25000,
-      [CategoriaSocio.ESTUDIANTE]: 15000,
-      [CategoriaSocio.FAMILIAR]: 12000,
-      [CategoriaSocio.JUBILADO]: 18000
-    };
+    // Si no hay cuotas previas, consultar el monto configurado en la categoría
+    const categoria = await this.prisma.categoriaSocio.findUnique({
+      where: { id: categoriaId },
+      select: { montoCuota: true }
+    });
 
-    return montosBase[categoria];
+    if (categoria) {
+      return parseFloat(categoria.montoCuota.toString());
+    }
+
+    // Valor por defecto si no se encuentra la categoría
+    return 5000;
   }
 
   async checkExistePeriodo(mes: number, anio: number, categoria: CategoriaSocio): Promise<boolean> {
@@ -642,7 +652,7 @@ export class CuotaRepository {
   async getResumenMensual(mes: number, anio: number): Promise<any> {
     return this.prisma.$queryRaw`
       SELECT
-        c.categoria,
+        c."categoriaId",
         COUNT(c.id)::int as total_cuotas,
         COUNT(CASE WHEN r.estado = 'PENDIENTE' THEN 1 END)::int as pendientes,
         COUNT(CASE WHEN r.estado = 'PAGADO' THEN 1 END)::int as pagadas,
@@ -654,8 +664,8 @@ export class CuotaRepository {
       FROM cuotas c
       JOIN recibos r ON c."reciboId" = r.id
       WHERE c.mes = ${mes} AND c.anio = ${anio}
-      GROUP BY c.categoria
-      ORDER BY c.categoria ASC
+      GROUP BY c."categoriaId"
+      ORDER BY c."categoriaId" ASC
     `;
   }
 }

@@ -243,12 +243,37 @@ export type RecalcularCuotasDto = z.infer<typeof recalcularCuotasSchema>;
 
 // DTO para reporte de cuotas
 export const reporteCuotasSchema = z.object({
-  mes: z.number().int().min(1).max(12),
-  anio: z.number().int().min(2020).max(2030),
-  categoriaId: z.number().int().positive().optional(),
+  mes: z.preprocess(
+    (val) => {
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? undefined : parsed;
+    },
+    z.number().int().min(1).max(12)
+  ),
+  anio: z.preprocess(
+    (val) => {
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? undefined : parsed;
+    },
+    z.number().int().min(2020).max(2030)
+  ),
+  categoriaId: z.preprocess(
+    (val) => {
+      if (!val) return undefined;
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? undefined : parsed;
+    },
+    z.number().int().positive().optional()
+  ),
   formato: z.enum(['json', 'excel', 'pdf']).default('json'),
-  incluirDetalle: z.boolean().default(true),
-  incluirEstadisticas: z.boolean().default(true)
+  incluirDetalle: z.string()
+    .transform(val => val === 'true')
+    .optional()
+    .default('true' as any),
+  incluirEstadisticas: z.string()
+    .transform(val => val === 'true')
+    .optional()
+    .default('true' as any)
 });
 
 export type ReporteCuotasDto = z.infer<typeof reporteCuotasSchema>;

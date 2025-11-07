@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Cuota, CategoriaSocio, TipoRecibo } from '@prisma/client';
+import { Cuota, CategoriaSocio, TipoRecibo, PrismaClient } from '@prisma/client';
 import { CuotaRepository } from '@/repositories/cuota.repository';
 import { ReciboRepository } from '@/repositories/recibo.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
@@ -17,6 +17,7 @@ import {
   ReporteCuotasDto
 } from '@/dto/cuota.dto';
 import { logger } from '@/utils/logger';
+import { prisma } from '@/config/database';
 
 export class CuotaService {
   constructor(
@@ -25,6 +26,10 @@ export class CuotaService {
     private personaRepository: PersonaRepository,
     private configuracionRepository: ConfiguracionRepository
   ) {}
+
+  private get prisma() {
+    return prisma;
+  }
 
   async createCuota(data: CreateCuotaDto): Promise<Cuota> {
     // Validar que el recibo existe y es de tipo CUOTA
@@ -237,22 +242,22 @@ export class CuotaService {
     detalleCalculo: any;
   }> {
     // Obtener monto base por categoría
-    let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(data.categoria);
+    let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(data.categoriaId);
 
     // Aplicar configuración de precios si existe
     try {
-      const configPrecio = await this.configuracionRepository.findByClave(`CUOTA_${data.categoria}`);
+      const configPrecio = await this.configuracionRepository.findByClave(`CUOTA_${data.categoriaId}`);
       if (configPrecio && configPrecio.valor) {
         montoBase = parseFloat(configPrecio.valor);
       }
     } catch (error) {
-      logger.warn(`No se pudo obtener configuración de precio para ${data.categoria}, usando valor por defecto`);
+      logger.warn(`No se pudo obtener configuración de precio para categoría ${data.categoriaId}, usando valor por defecto`);
     }
 
     let montoActividades = 0;
     let descuentos = 0;
     const detalleCalculo: any = {
-      categoria: data.categoria,
+      categoriaId: data.categoriaId,
       montoBaseCatalogo: montoBase,
       actividades: [],
       descuentosAplicados: []
@@ -277,7 +282,7 @@ export class CuotaService {
     // Aplicar descuentos si corresponde
     if (data.aplicarDescuentos) {
       const descuentosCalculados = await this.calcularDescuentos(
-        data.categoria,
+        data.categoriaId,
         montoBase,
         data.socioId
       );
@@ -433,15 +438,25 @@ export class CuotaService {
     };
   }
 
-  private async calcularDescuentos(categoria: CategoriaSocio, montoBase: number, socioId?: string): Promise<{
+  private async calcularDescuentos(categoriaId: number, montoBase: number, socioId?: number): Promise<{
     total: number;
     detalle: any[];
   }> {
     const descuentos: any[] = [];
     let total = 0;
 
+    // Obtener el código de la categoría desde la DB
+    const categoria = await this.prisma.categoriaSocio.findUnique({
+      where: { id: categoriaId },
+      select: { codigo: true }
+    });
+
+    if (!categoria) {
+      return { total: 0, detalle: [] };
+    }
+
     // Descuento por categoría estudiante
-    if (categoria === CategoriaSocio.ESTUDIANTE) {
+    if (categoria.codigo === 'ESTUDIANTE') {
       const descuento = montoBase * 0.4; // 40% descuento
       descuentos.push({
         tipo: 'Descuento estudiante',
@@ -452,7 +467,7 @@ export class CuotaService {
     }
 
     // Descuento por categoría jubilado
-    if (categoria === CategoriaSocio.JUBILADO) {
+    if (categoria.codigo === 'JUBILADO') {
       const descuento = montoBase * 0.25; // 25% descuento
       descuentos.push({
         tipo: 'Descuento jubilado',
