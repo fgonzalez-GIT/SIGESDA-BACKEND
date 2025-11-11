@@ -60,18 +60,19 @@ export function validateTiposMutuamenteExcluyentes(tiposCodigos: string[]): {
 
 /**
  * Valida si se puede agregar un tipo nuevo a los tipos existentes de una persona
+ * y retorna información sobre tipos que deben ser reemplazados automáticamente
  *
  * @param tiposExistentes - Array de códigos de tipos que ya tiene la persona
  * @param nuevoTipo - Código del tipo que se desea agregar
- * @returns Objeto con validación y mensaje de error si aplica
+ * @returns Objeto con validación, tipos a reemplazar, y mensaje de error si aplica
  *
  * @example
  * canAgregarTipo(['NO_SOCIO'], 'DOCENTE')
- * // Returns: { valid: true }
+ * // Returns: { valid: true, tiposAReemplazar: [] }
  *
  * @example
- * canAgregarTipo(['SOCIO', 'DOCENTE'], 'NO_SOCIO')
- * // Returns: { valid: false, error: 'No se puede asignar NO_SOCIO...' }
+ * canAgregarTipo(['NO_SOCIO', 'DOCENTE'], 'SOCIO')
+ * // Returns: { valid: true, tiposAReemplazar: ['NO_SOCIO'], requiresAutoReplace: true }
  */
 export function canAgregarTipo(
   tiposExistentes: string[],
@@ -79,22 +80,30 @@ export function canAgregarTipo(
 ): {
   valid: boolean;
   error?: string;
+  tiposAReemplazar?: string[];
+  requiresAutoReplace?: boolean;
 } {
   // Obtener tipos excluyentes del nuevo tipo
   const tiposExcluyentes = TIPOS_MUTUAMENTE_EXCLUYENTES[nuevoTipo] || [];
 
   // Verificar si alguno de los tipos existentes es excluyente con el nuevo
+  const tiposConflictivos: string[] = [];
   for (const tipoExistente of tiposExistentes) {
     if (tiposExcluyentes.includes(tipoExistente)) {
-      return {
-        valid: false,
-        error: `No se puede asignar el tipo ${nuevoTipo} a una persona que ya tiene el tipo ${tipoExistente}. ` +
-               `Estos tipos son mutuamente excluyentes. Primero debe desasignar el tipo ${tipoExistente}.`
-      };
+      tiposConflictivos.push(tipoExistente);
     }
   }
 
-  return { valid: true };
+  // Si hay tipos conflictivos, marcar para auto-reemplazo
+  if (tiposConflictivos.length > 0) {
+    return {
+      valid: true,
+      tiposAReemplazar: tiposConflictivos,
+      requiresAutoReplace: true
+    };
+  }
+
+  return { valid: true, tiposAReemplazar: [] };
 }
 
 /**

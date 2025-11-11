@@ -54,32 +54,38 @@ export class PersonaRepository {
             };
 
             // Agregar campos específicos según el tipo
-            if ('categoriaId' in tipo && tipo.categoriaId) {
-              tipoData.categoriaId = tipo.categoriaId;
+            // IMPORTANTE: Usar el operador ?? en lugar de && para permitir valores auto-asignados
+            // que pueden no estar en el DTO original pero fueron agregados por el service layer
+            if ('categoriaId' in tipo) {
+              tipoData.categoriaId = tipo.categoriaId ?? undefined;
             }
 
-            if ('numeroSocio' in tipo && tipo.numeroSocio) {
-              tipoData.numeroSocio = tipo.numeroSocio;
+            if ('numeroSocio' in tipo) {
+              tipoData.numeroSocio = tipo.numeroSocio ?? undefined;
             }
 
-            if ('fechaIngreso' in tipo && tipo.fechaIngreso) {
-              tipoData.fechaIngreso = new Date(tipo.fechaIngreso);
+            if ('fechaIngreso' in tipo) {
+              tipoData.fechaIngreso = tipo.fechaIngreso ? new Date(tipo.fechaIngreso) : undefined;
             }
 
-            if ('especialidadId' in tipo && tipo.especialidadId) {
-              tipoData.especialidadId = tipo.especialidadId;
+            if ('especialidadId' in tipo) {
+              tipoData.especialidadId = tipo.especialidadId ?? undefined;
             }
 
-            if ('honorariosPorHora' in tipo && tipo.honorariosPorHora) {
-              tipoData.honorariosPorHora = tipo.honorariosPorHora;
+            if ('honorariosPorHora' in tipo) {
+              tipoData.honorariosPorHora = tipo.honorariosPorHora ?? undefined;
             }
 
-            if ('cuit' in tipo && tipo.cuit) {
-              tipoData.cuit = tipo.cuit;
+            if ('cuit' in tipo) {
+              tipoData.cuit = tipo.cuit ?? undefined;
             }
 
-            if ('razonSocial' in tipo && tipo.razonSocial) {
-              tipoData.razonSocial = tipo.razonSocial;
+            if ('razonSocial' in tipo) {
+              tipoData.razonSocial = tipo.razonSocial ?? undefined;
+            }
+
+            if ('observaciones' in tipo) {
+              tipoData.observaciones = tipo.observaciones ?? undefined;
             }
 
             return tipoData;

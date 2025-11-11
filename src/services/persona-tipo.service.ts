@@ -82,7 +82,21 @@ export class PersonaTipoService {
 
     // Validar que el nuevo tipo no sea excluyente con los tipos existentes
     const validacion = canAgregarTipo(tiposActivosCodigos, tipoPersonaCodigo);
-    if (!validacion.valid) {
+
+    // Si requiere auto-reemplazo, desasignar tipos conflictivos primero
+    if (validacion.requiresAutoReplace && validacion.tiposAReemplazar && validacion.tiposAReemplazar.length > 0) {
+      logger.info(`Auto-reemplazando tipos mutuamente excluyentes para persona ${personaId}: ${validacion.tiposAReemplazar.join(', ')} → ${tipoPersonaCodigo}`);
+
+      // Desasignar cada tipo conflictivo
+      for (const tipoConflictivo of validacion.tiposAReemplazar) {
+        const tipoActivoConflictivo = tiposActivos.find(t => t.tipoPersona.codigo === tipoConflictivo);
+        if (tipoActivoConflictivo) {
+          await this.personaTipoRepository.desasignarTipo(tipoActivoConflictivo.id, new Date());
+          logger.info(`Tipo ${tipoConflictivo} auto-desasignado de persona ${personaId} debido a exclusión mutua con ${tipoPersonaCodigo}`);
+        }
+      }
+    } else if (!validacion.valid) {
+      // Solo lanzar error si la validación falló por otra razón (no debería ocurrir con la nueva lógica)
       throw new AppError(validacion.error!, HttpStatus.CONFLICT);
     }
 

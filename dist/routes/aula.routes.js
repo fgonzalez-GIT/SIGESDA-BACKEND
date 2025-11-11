@@ -1,0 +1,26 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const aula_controller_1 = require("@/controllers/aula.controller");
+const aula_service_1 = require("@/services/aula.service");
+const aula_repository_1 = require("@/repositories/aula.repository");
+const database_1 = require("@/config/database");
+const router = (0, express_1.Router)();
+const aulaRepository = new aula_repository_1.AulaRepository(database_1.prisma);
+const aulaService = new aula_service_1.AulaService(aulaRepository);
+const aulaController = new aula_controller_1.AulaController(aulaService);
+router.get('/search', aulaController.searchAulas.bind(aulaController));
+router.get('/disponibles', aulaController.getAulasDisponibles.bind(aulaController));
+router.get('/menor-uso', aulaController.getAulasConMenorUso.bind(aulaController));
+router.get('/con-equipamiento', aulaController.getAulasConEquipamiento.bind(aulaController));
+router.get('/por-capacidad', aulaController.getAulasPorCapacidad.bind(aulaController));
+router.post('/', aulaController.createAula.bind(aulaController));
+router.get('/', aulaController.getAulas.bind(aulaController));
+router.get('/:id', aulaController.getAulaById.bind(aulaController));
+router.put('/:id', aulaController.updateAula.bind(aulaController));
+router.delete('/:id', aulaController.deleteAula.bind(aulaController));
+router.post('/:id/verificar-disponibilidad', aulaController.verificarDisponibilidad.bind(aulaController));
+router.get('/:id/estadisticas', aulaController.getEstadisticas.bind(aulaController));
+router.get('/:id/reservas', aulaController.getReservasDelAula.bind(aulaController));
+exports.default = router;
+//# sourceMappingURL=aula.routes.js.map

@@ -1,4 +1,4 @@
-import { Persona } from '@prisma/client';
+import { Persona, PrismaClient } from '@prisma/client';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { PersonaTipoRepository } from '@/repositories/persona-tipo.repository';
 import { CreatePersonaDto, UpdatePersonaDto, PersonaQueryDto } from '@/dto/persona.dto';
@@ -6,12 +6,17 @@ import { logger } from '@/utils/logger';
 import { AppError } from '@/middleware/error.middleware';
 import { HttpStatus } from '@/types/enums';
 import { validateTiposMutuamenteExcluyentes } from '@/utils/persona.helper';
+import { prisma } from '@/config/database';
 
 export class PersonaService {
+  private prisma: PrismaClient;
+
   constructor(
     private personaRepository: PersonaRepository,
     private personaTipoRepository: PersonaTipoRepository
-  ) {}
+  ) {
+    this.prisma = prisma;
+  }
 
   // ======================================================================
   // CRUD PRINCIPAL
@@ -94,9 +99,17 @@ export class PersonaService {
           tipo.numeroSocio = nextNumero;
         }
 
-        // Auto-asignar categoría GENERAL si no se proporciona
+        // Auto-asignar categoría ACTIVO si no se proporciona
         if (!tipo.categoriaId) {
-          tipo.categoriaId = 1;
+          const categoriaActivo = await this.prisma.categoriaSocio.findFirst({
+            where: { codigo: 'ACTIVO', activa: true }
+          });
+          if (categoriaActivo) {
+            tipo.categoriaId = categoriaActivo.id;
+            logger.info(`Auto-asignada categoría ACTIVO (ID: ${categoriaActivo.id}) para nuevo socio`);
+          } else {
+            throw new AppError('No se encontró categoría ACTIVO para asignar', HttpStatus.INTERNAL_SERVER_ERROR);
+          }
         }
 
         // Auto-asignar fecha de ingreso si no se proporciona
@@ -106,9 +119,18 @@ export class PersonaService {
       }
 
       if (tipoCodigo === 'DOCENTE') {
-        // Auto-asignar especialidad GENERAL si no se proporciona
+        // Auto-asignar especialidad ACTIVO/primera activa si no se proporciona
         if (!tipo.especialidadId) {
-          tipo.especialidadId = 1;
+          const especialidad = await this.prisma.especialidadDocente.findFirst({
+            where: { activo: true },
+            orderBy: { orden: 'asc' }
+          });
+          if (especialidad) {
+            tipo.especialidadId = especialidad.id;
+            logger.info(`Auto-asignada especialidad ${especialidad.nombre} (ID: ${especialidad.id}) para nuevo docente`);
+          } else {
+            throw new AppError('No se encontró especialidad activa para asignar', HttpStatus.INTERNAL_SERVER_ERROR);
+          }
         }
       }
 
