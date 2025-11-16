@@ -356,6 +356,15 @@ async function main() {
   const especialidades = await Promise.all([
     prisma.especialidadDocente.create({
       data: {
+        codigo: 'GENERAL',
+        nombre: 'General',
+        descripcion: 'Especialidad general para docentes sin especialización específica',
+        activo: true,
+        orden: 0
+      }
+    }),
+    prisma.especialidadDocente.create({
+      data: {
         codigo: 'CANTO',
         nombre: 'Canto',
         descripcion: 'Técnica vocal y canto',
