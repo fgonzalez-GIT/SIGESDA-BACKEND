@@ -252,7 +252,7 @@ export const createPersonaLegacySchema = z.preprocess(
       ...personaBaseSchema.shape,
       tipo: z.literal('DOCENTE'),
       especialidad: z.string().min(1, 'Especialidad es requerida').max(100),
-      honorariosPorHora: z.number().positive().optional()
+      honorariosPorHora: z.number().nonnegative('Honorarios deben ser 0 o mayor').optional()
     }),
 
     // PROVEEDOR

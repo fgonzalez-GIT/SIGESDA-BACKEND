@@ -25,7 +25,7 @@ const socioDataSchema = z.object({
 // Esquema para datos específicos de DOCENTE
 const docenteDataSchema = z.object({
   especialidadId: z.number().int().positive('ID de especialidad inválido'),
-  honorariosPorHora: z.number().positive().optional()
+  honorariosPorHora: z.number().nonnegative('Honorarios deben ser 0 o mayor').optional()
 });
 
 // Esquema para datos específicos de PROVEEDOR
@@ -47,7 +47,7 @@ export const createPersonaTipoSchema = z.object({
   fechaIngreso: z.string().datetime().optional(),
 
   especialidadId: z.number().int().positive().optional(),
-  honorariosPorHora: z.number().positive().optional(),
+  honorariosPorHora: z.number().nonnegative().optional(),
 
   cuit: z.string().length(11).optional(),
   razonSocial: z.string().max(200).optional()
@@ -70,7 +70,7 @@ export const updatePersonaTipoSchema = z.object({
   motivoBaja: z.string().max(200).optional(),
 
   especialidadId: z.number().int().positive().optional(),
-  honorariosPorHora: z.number().positive().optional(),
+  honorariosPorHora: z.number().nonnegative().optional(),
 
   cuit: z.string().length(11).optional(),
   razonSocial: z.string().max(200).optional(),
