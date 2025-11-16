@@ -246,6 +246,17 @@ async function main() {
   const categoriasSocio = await Promise.all([
     prisma.categoriaSocio.create({
       data: {
+        codigo: 'GENERAL',
+        nombre: 'General',
+        descripcion: 'Categoría general de socio sin especificación',
+        montoCuota: 0.00,
+        descuento: 0.00,
+        activa: true,
+        orden: 0
+      }
+    }),
+    prisma.categoriaSocio.create({
+      data: {
         codigo: 'ACTIVO',
         nombre: 'Activo',
         descripcion: 'Socio activo con cuota completa',
@@ -1218,9 +1229,9 @@ async function main() {
   console.log('  ✓ dias_semana: 7');
   console.log('  ✓ roles_docentes: 3');
   console.log('  ✓ tipos_persona: 3 (legacy)');
-  console.log('  ✓ CategoriaSocio: 4');
+  console.log('  ✓ CategoriaSocio: 5');
   console.log('  ✓ TipoPersonaCatalogo: 4');
-  console.log('  ✓ EspecialidadDocente: 4');
+  console.log('  ✓ EspecialidadDocente: 5');
   console.log('  ✓ ConfiguracionSistema: 6\n');
 
   console.log('👥 PERSONAS:');
