@@ -52,7 +52,7 @@ export const createPersonaSchema = z.preprocess(
           // Si el tipo es PROVEEDOR, agregar datos de proveedor
           if (codigo === 'PROVEEDOR') {
             if (data.cuit) resultado.cuit = data.cuit;
-            if (data.razonSocial) resultado.razonSocial = data.razonSocial;
+            if (data.razonSocialId) resultado.razonSocialId = data.razonSocialId;
           }
 
           return resultado;
@@ -76,7 +76,7 @@ export const createPersonaSchema = z.preprocess(
 
         if (data.tipo === 'PROVEEDOR') {
           if (data.cuit) resultado.cuit = data.cuit;
-          if (data.razonSocial) resultado.razonSocial = data.razonSocial;
+          if (data.razonSocialId) resultado.razonSocialId = data.razonSocialId;
         }
 
         tiposArray = [resultado];
@@ -97,7 +97,7 @@ export const createPersonaSchema = z.preprocess(
       delete nuevosDatos.especialidadId;
       delete nuevosDatos.honorariosPorHora;
       delete nuevosDatos.cuit;
-      delete nuevosDatos.razonSocial;
+      delete nuevosDatos.razonSocialId;
 
       return nuevosDatos;
     }
@@ -260,7 +260,7 @@ export const createPersonaLegacySchema = z.preprocess(
       ...personaBaseSchema.shape,
       tipo: z.literal('PROVEEDOR'),
       cuit: z.string().min(11, 'CUIT debe tener 11 caracteres').max(11),
-      razonSocial: z.string().min(1, 'Razón social es requerida').max(100)
+      razonSocialId: z.number().int().positive('ID de razón social inválido')
     })
   ])
 );
@@ -306,8 +306,8 @@ export function validatePersonaTipoData(
       if (!data.cuit) {
         errors.push('PROVEEDOR requiere cuit');
       }
-      if (!data.razonSocial) {
-        errors.push('PROVEEDOR requiere razonSocial');
+      if (!data.razonSocialId) {
+        errors.push('PROVEEDOR requiere razonSocialId');
       }
       break;
 
@@ -368,8 +368,8 @@ export function transformLegacyToNew(legacyData: CreatePersonaLegacyDto): Create
       if ('cuit' in legacyData) {
         tipoData.cuit = legacyData.cuit;
       }
-      if ('razonSocial' in legacyData) {
-        tipoData.razonSocial = legacyData.razonSocial;
+      if ('razonSocialId' in legacyData) {
+        tipoData.razonSocialId = legacyData.razonSocialId;
       }
       break;
   }

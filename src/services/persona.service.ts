@@ -135,8 +135,8 @@ export class PersonaService {
       }
 
       if (tipoCodigo === 'PROVEEDOR') {
-        // PROVEEDOR requiere CUIT y razón social (se valida en DTO)
-        if (!tipo.cuit || !tipo.razonSocial) {
+        // PROVEEDOR requiere CUIT y razonSocialId (se valida en DTO)
+        if (!tipo.cuit || !tipo.razonSocialId) {
           throw new AppError(
             'El tipo PROVEEDOR requiere CUIT y razón social',
             HttpStatus.BAD_REQUEST

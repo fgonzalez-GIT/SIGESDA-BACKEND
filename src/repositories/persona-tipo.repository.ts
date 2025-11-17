@@ -48,7 +48,7 @@ export class PersonaTipoRepository {
     if (data.honorariosPorHora) createData.honorariosPorHora = data.honorariosPorHora;
 
     if (data.cuit) createData.cuit = data.cuit;
-    if (data.razonSocial) createData.razonSocial = data.razonSocial;
+    if (data.razonSocialId) createData.razonSocialId = data.razonSocialId;
 
     return this.prisma.personaTipo.create({
       data: createData,
@@ -125,7 +125,7 @@ export class PersonaTipoRepository {
 
     // Campos específicos de PROVEEDOR
     if (data.cuit !== undefined) updateData.cuit = data.cuit;
-    if (data.razonSocial !== undefined) updateData.razonSocial = data.razonSocial;
+    if (data.razonSocialId !== undefined) updateData.razonSocialId = data.razonSocialId;
 
     return this.prisma.personaTipo.update({
       where: { id },

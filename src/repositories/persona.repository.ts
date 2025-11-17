@@ -80,8 +80,8 @@ export class PersonaRepository {
               tipoData.cuit = tipo.cuit ?? undefined;
             }
 
-            if ('razonSocial' in tipo) {
-              tipoData.razonSocial = tipo.razonSocial ?? undefined;
+            if ('razonSocialId' in tipo) {
+              tipoData.razonSocialId = tipo.razonSocialId ?? undefined;
             }
 
             if ('observaciones' in tipo) {
