@@ -1,0 +1,213 @@
+// ============================================================================
+// SCHEMA ACTIVIDADES V2 - CON CATÁLOGOS
+// ============================================================================
+// Este archivo muestra el schema actualizado de actividades después de la migración
+// REEMPLAZAR en prisma/schema.prisma las secciones correspondientes
+
+// ============================================================================
+// MODELO: actividades
+// ============================================================================
+
+model actividades {
+  id                        Int                         @id @default(autoincrement())
+  codigoActividad           String                      @unique @map("codigo_actividad") @db.VarChar(50)
+  nombre                    String                      @db.VarChar(200)
+  tipoActividadId           Int                         @map("tipo_actividad_id")
+  categoriaId               Int                         @map("categoria_id")
+  estadoId                  Int                         @map("estado_id")
+  descripcion               String?                     @db.Text
+  fechaDesde                DateTime                    @map("fecha_desde")
+  fechaHasta                DateTime?                   @map("fecha_hasta")
+  capacidadMaxima           Int?                        @map("capacidad_maxima")
+  costo                     Decimal                     @default(0) @db.Decimal(8, 2)
+  activa                    Boolean                     @default(true)
+  observaciones             String?                     @db.Text
+  createdAt                 DateTime                    @default(now()) @map("created_at")
+  updatedAt                 DateTime                    @updatedAt @map("updated_at")
+
+  // ============================================================================
+  // RELACIONES A CATÁLOGOS (NUEVAS)
+  // ============================================================================
+
+  tiposActividades          tipos_actividades           @relation(fields: [tipoActividadId], references: [id], onDelete: Restrict)
+  categoriasActividades     categorias_actividades      @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  estadosActividades        estados_actividades         @relation(fields: [estadoId], references: [id], onDelete: Restrict)
+
+  // ============================================================================
+  // RELACIONES EXISTENTES (SIN CAMBIOS)
+  // ============================================================================
+
+  horarios_actividades      horarios_actividades[]
+  participacion_actividades participacion_actividades[]
+  reserva_aulas             reserva_aulas[]
+  secciones_actividades     secciones_actividades[]
+  docentes_actividades      docentes_actividades[]
+
+  // ============================================================================
+  // ÍNDICES
+  // ============================================================================
+
+  @@index([tipoActividadId], map: "actividades_tipo_actividad_id_idx")
+  @@index([categoriaId], map: "actividades_categoria_id_idx")
+  @@index([estadoId], map: "actividades_estado_id_idx")
+  @@index([activa], map: "actividades_activa_idx")
+  @@index([fechaDesde], map: "actividades_fecha_desde_idx")
+}
+
+// ============================================================================
+// CATÁLOGOS: Agregar relación inversa
+// ============================================================================
+
+model tipos_actividades {
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?       @db.Text
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // ✅ RELACIÓN INVERSA
+  actividades actividades[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model categorias_actividades {
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?       @db.Text
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // ✅ RELACIÓN INVERSA
+  actividades actividades[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model estados_actividades {
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?       @db.Text
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // ✅ RELACIÓN INVERSA
+  actividades actividades[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+// ============================================================================
+// MODELO: horarios_actividades (ACTUALIZADO)
+// ============================================================================
+
+model horarios_actividades {
+  id          Int         @id @default(autoincrement())
+  actividadId Int         @map("actividad_id")
+  diaSemanaId Int         @map("dia_semana_id")
+  horaInicio  String      @map("hora_inicio") @db.VarChar(8)
+  horaFin     String      @map("hora_fin") @db.VarChar(8)
+  activo      Boolean     @default(true)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  // ============================================================================
+  // RELACIONES
+  // ============================================================================
+
+  actividades actividades @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  diasSemana  dias_semana @relation(fields: [diaSemanaId], references: [id], onDelete: Restrict)
+
+  // ============================================================================
+  // CONSTRAINTS
+  // ============================================================================
+
+  @@unique([actividadId, diaSemanaId, horaInicio], map: "horarios_actividades_unique_actividad_dia_hora")
+  @@index([diaSemanaId], map: "horarios_actividades_dia_semana_id_idx")
+  @@index([actividadId, diaSemanaId], map: "horarios_actividades_actividad_id_dia_idx")
+}
+
+// ============================================================================
+// CATÁLOGO: dias_semana (ACTUALIZADO)
+// ============================================================================
+
+model dias_semana {
+  id                   Int                    @id @default(autoincrement())
+  codigo               String                 @unique @db.VarChar(50)
+  nombre               String                 @db.VarChar(100)
+  orden                Int
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
+
+  // ✅ RELACIÓN INVERSA
+  horariosActividades  horarios_actividades[]
+
+  @@index([codigo])
+  @@index([orden])
+}
+
+// ============================================================================
+// ENUMS A ELIMINAR (YA NO SE USAN)
+// ============================================================================
+
+// ❌ ELIMINAR:
+// enum TipoActividad {
+//   CORO
+//   CLASE_CANTO
+//   CLASE_INSTRUMENTO
+// }
+
+// ❌ ELIMINAR:
+// enum DiaSemana {
+//   LUNES
+//   MARTES
+//   MIERCOLES
+//   JUEVES
+//   VIERNES
+//   SABADO
+//   DOMINGO
+// }
+
+// ============================================================================
+// NOTAS IMPORTANTES
+// ============================================================================
+
+/**
+ * CAMBIOS PRINCIPALES:
+ *
+ * 1. actividades:
+ *    - Agrega: codigoActividad, tipoActividadId, categoriaId, estadoId
+ *    - Agrega: fechaDesde, fechaHasta, observaciones
+ *    - Elimina: tipo (enum), duracion, precio
+ *    - Renombra: precio → costo
+ *
+ * 2. horarios_actividades:
+ *    - Agrega: diaSemanaId (FK)
+ *    - Elimina: diaSemana (enum)
+ *    - Cambia tipo: horaInicio/horaFin de TIME a VARCHAR(8)
+ *
+ * 3. Catálogos:
+ *    - tipos_actividades: agrega relación inversa
+ *    - categorias_actividades: agrega relación inversa
+ *    - estados_actividades: agrega relación inversa
+ *    - dias_semana: agrega relación inversa
+ *
+ * 4. ENUMs eliminados:
+ *    - TipoActividad
+ *    - DiaSemana (el resto se mantienen: TipoPersona, TipoParentesco, etc.)
+ */

@@ -513,25 +513,91 @@ class ActividadRepository {
         });
     }
     async getDocentesDisponibles() {
-        return this.prisma.persona.findMany({
+        const docentes = await this.prisma.persona.findMany({
             where: {
-                tipo: 'DOCENTE',
-                fechaBaja: null
+                tipos: {
+                    some: {
+                        tipoPersona: {
+                            codigo: 'DOCENTE'
+                        },
+                        activo: true,
+                        fechaBaja: null
+                    }
+                }
             },
             select: {
                 id: true,
                 nombre: true,
                 apellido: true,
-                especialidad: true,
                 email: true,
                 telefono: true,
-                honorariosPorHora: true
+                tipos: {
+                    where: {
+                        tipoPersona: {
+                            codigo: 'DOCENTE'
+                        },
+                        activo: true
+                    },
+                    include: {
+                        especialidad: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                nombre: true
+                            }
+                        }
+                    }
+                }
             },
             orderBy: [
                 { apellido: 'asc' },
                 { nombre: 'asc' }
             ]
         });
+        return docentes.map(docente => ({
+            id: docente.id,
+            nombre: docente.nombre,
+            apellido: docente.apellido,
+            email: docente.email,
+            telefono: docente.telefono,
+            especialidad: docente.tipos[0]?.especialidad?.nombre || null,
+            especialidadId: docente.tipos[0]?.especialidad?.id || null,
+            especialidadCodigo: docente.tipos[0]?.especialidad?.codigo || null,
+            honorariosPorHora: docente.tipos[0]?.honorariosPorHora || null
+        }));
+    }
+    async validarDocente(docenteId) {
+        const persona = await this.prisma.persona.findUnique({
+            where: { id: docenteId },
+            select: {
+                id: true,
+                nombre: true,
+                apellido: true,
+                tipos: {
+                    where: {
+                        tipoPersona: {
+                            codigo: 'DOCENTE'
+                        },
+                        activo: true,
+                        fechaBaja: null
+                    },
+                    select: {
+                        id: true,
+                        activo: true,
+                        fechaBaja: true
+                    }
+                }
+            }
+        });
+        if (!persona) {
+            return null;
+        }
+        return {
+            id: persona.id,
+            nombre: persona.nombre,
+            apellido: persona.apellido,
+            esDocenteActivo: persona.tipos.length > 0
+        };
     }
     async getParticipantes(actividadId) {
         return this.prisma.participaciones_actividades.findMany({

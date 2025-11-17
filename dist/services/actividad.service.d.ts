@@ -183,13 +183,15 @@ export declare class ActividadService {
         rolDocenteId: number;
     }[]>;
     getDocentesDisponibles(): Promise<{
-        honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
+        id: number;
         nombre: string;
         apellido: string;
         email: string | null;
         telefono: string | null;
         especialidad: string | null;
-        id: number;
+        especialidadId: number | null;
+        especialidadCodigo: string | null;
+        honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
     }[]>;
     getParticipantes(actividadId: number): Promise<any>;
     addParticipante(actividadId: number, personaId: number, fechaInicio: string, observaciones?: string): Promise<any>;

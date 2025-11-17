@@ -171,6 +171,14 @@ class ActividadService {
         if (!actividad) {
             throw new errors_1.NotFoundError(`Actividad con ID ${actividadId} no encontrada`);
         }
+        const docente = await this.actividadRepository.validarDocente(docenteId);
+        if (!docente) {
+            throw new errors_1.NotFoundError(`Persona con ID ${docenteId} no encontrada`);
+        }
+        if (!docente.esDocenteActivo) {
+            throw new errors_1.ValidationError(`La persona ${docente.nombre} ${docente.apellido} (ID: ${docenteId}) no tiene el tipo DOCENTE activo. ` +
+                `Solo se pueden asignar personas con tipo DOCENTE activo a actividades.`);
+        }
         const asignacion = await this.actividadRepository.asignarDocente(actividadId, docenteId, rolDocenteId, observaciones);
         const docenteNombre = asignacion.personas?.nombre || 'Docente';
         const docenteApellido = asignacion.personas?.apellido || '';

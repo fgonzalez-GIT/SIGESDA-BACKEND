@@ -284,6 +284,7 @@ export class ActividadService {
 
   /**
    * Asigna un docente a una actividad
+   * ACTUALIZADO: Valida tipo DOCENTE activo en persona_tipo
    */
   async asignarDocente(actividadId: number, docenteId: number, rolDocenteId: number, observaciones?: string) {
     const actividad = await this.actividadRepository.findById(actividadId);
@@ -291,8 +292,19 @@ export class ActividadService {
       throw new NotFoundError(`Actividad con ID ${actividadId} no encontrada`);
     }
 
-    // Verificar que el docente existe y es del tipo correcto
-    // Esta validación se puede mejorar agregando un PersonaRepository
+    // Validar que el docente existe y tiene tipo DOCENTE activo
+    const docente = await this.actividadRepository.validarDocente(docenteId);
+
+    if (!docente) {
+      throw new NotFoundError(`Persona con ID ${docenteId} no encontrada`);
+    }
+
+    if (!docente.esDocenteActivo) {
+      throw new ValidationError(
+        `La persona ${docente.nombre} ${docente.apellido} (ID: ${docenteId}) no tiene el tipo DOCENTE activo. ` +
+        `Solo se pueden asignar personas con tipo DOCENTE activo a actividades.`
+      );
+    }
 
     const asignacion = await this.actividadRepository.asignarDocente(actividadId, docenteId, rolDocenteId, observaciones);
 
