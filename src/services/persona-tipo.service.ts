@@ -395,7 +395,7 @@ function validatePersonaTipoData(tipoPersonaCodigo: string, data: any): { valid:
       if (!data.cuit) {
         errors.push('PROVEEDOR requiere CUIT');
       }
-      if (!data.razonSocial) {
+      if (!data.razonSocialId) {
         errors.push('PROVEEDOR requiere razón social');
       }
       break;

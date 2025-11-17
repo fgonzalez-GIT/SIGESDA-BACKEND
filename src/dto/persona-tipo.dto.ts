@@ -31,7 +31,7 @@ const docenteDataSchema = z.object({
 // Esquema para datos específicos de PROVEEDOR
 const proveedorDataSchema = z.object({
   cuit: z.string().min(11, 'CUIT debe tener 11 caracteres').max(11, 'CUIT debe tener 11 caracteres'),
-  razonSocial: z.string().min(1, 'Razón social es requerida').max(200)
+  razonSocialId: z.number().int().positive('ID de razón social inválido')
 });
 
 // Schema para crear asignación de tipo
@@ -50,7 +50,7 @@ export const createPersonaTipoSchema = z.object({
   honorariosPorHora: z.number().nonnegative().optional(),
 
   cuit: z.string().length(11).optional(),
-  razonSocial: z.string().max(200).optional()
+  razonSocialId: z.number().int().positive().optional()
 }).refine((data) => {
   // Al menos uno de los dos identificadores debe estar presente
   return data.tipoPersonaId !== undefined || data.tipoPersonaCodigo !== undefined;
@@ -73,7 +73,7 @@ export const updatePersonaTipoSchema = z.object({
   honorariosPorHora: z.number().nonnegative().optional(),
 
   cuit: z.string().length(11).optional(),
-  razonSocial: z.string().max(200).optional(),
+  razonSocialId: z.number().int().positive().optional(),
 
   observaciones: z.string().max(500).optional()
 });
@@ -128,5 +128,5 @@ export interface DocenteData {
 
 export interface ProveedorData {
   cuit: string;
-  razonSocial: string;
+  razonSocialId: number;
 }
