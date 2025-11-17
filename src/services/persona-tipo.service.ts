@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente, PrismaClient } from '@prisma/client';
+import { PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente, RazonSocial, PrismaClient } from '@prisma/client';
 import { PersonaTipoRepository } from '@/repositories/persona-tipo.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import {
@@ -355,6 +355,24 @@ export class PersonaTipoService {
       throw new AppError(`Especialidad con código ${codigo} no encontrada`, HttpStatus.NOT_FOUND);
     }
     return especialidad;
+  }
+
+  /**
+   * Obtener todas las razones sociales
+   */
+  async getRazonesSociales(soloActivas = true): Promise<RazonSocial[]> {
+    return this.personaTipoRepository.getRazonesSociales(soloActivas);
+  }
+
+  /**
+   * Obtener razón social por código
+   */
+  async getRazonSocialByCodigo(codigo: string): Promise<RazonSocial | null> {
+    const razon = await this.personaTipoRepository.getRazonSocialByCodigo(codigo);
+    if (!razon) {
+      throw new AppError(`Razón social con código ${codigo} no encontrada`, HttpStatus.NOT_FOUND);
+    }
+    return razon;
   }
 }
 

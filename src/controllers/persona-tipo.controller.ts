@@ -347,4 +347,48 @@ export class PersonaTipoController {
       next(error);
     }
   }
+
+  /**
+   * GET /api/catalogos/razones-sociales
+   * Obtener catálogo de razones sociales para proveedores
+   */
+  async getRazonesSociales(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { soloActivas } = req.query;
+
+      const razones = await this.personaTipoService.getRazonesSociales(
+        soloActivas !== 'false'
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        data: razones
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/catalogos/razones-sociales/:codigo
+   * Obtener razón social por código
+   */
+  async getRazonSocialByCodigo(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { codigo } = req.params;
+
+      const razon = await this.personaTipoService.getRazonSocialByCodigo(codigo);
+
+      const response: ApiResponse = {
+        success: true,
+        data: razon
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

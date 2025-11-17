@@ -1,4 +1,4 @@
-import { PrismaClient, PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente } from '@prisma/client';
+import { PrismaClient, PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente, RazonSocial } from '@prisma/client';
 import { CreatePersonaTipoDto, UpdatePersonaTipoDto, CreateContactoPersonaDto, UpdateContactoPersonaDto } from '@/dto/persona-tipo.dto';
 
 export class PersonaTipoRepository {
@@ -235,6 +235,25 @@ export class PersonaTipoRepository {
    */
   async getEspecialidadByCodigo(codigo: string): Promise<EspecialidadDocente | null> {
     return this.prisma.especialidadDocente.findUnique({
+      where: { codigo }
+    });
+  }
+
+  /**
+   * Obtener todas las razones sociales
+   */
+  async getRazonesSociales(soloActivas = true): Promise<RazonSocial[]> {
+    return this.prisma.razonSocial.findMany({
+      where: soloActivas ? { activo: true } : undefined,
+      orderBy: { orden: 'asc' }
+    });
+  }
+
+  /**
+   * Obtener razón social por código
+   */
+  async getRazonSocialByCodigo(codigo: string): Promise<RazonSocial | null> {
+    return this.prisma.razonSocial.findUnique({
       where: { codigo }
     });
   }

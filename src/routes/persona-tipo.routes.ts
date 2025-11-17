@@ -101,4 +101,15 @@ router.get(
   personaTipoController.getEspecialidadByCodigo.bind(personaTipoController)
 );
 
+// Catálogo de razones sociales
+router.get(
+  '/catalogos/razones-sociales',
+  personaTipoController.getRazonesSociales.bind(personaTipoController)
+);
+
+router.get(
+  '/catalogos/razones-sociales/:codigo',
+  personaTipoController.getRazonSocialByCodigo.bind(personaTipoController)
+);
+
 export default router;
