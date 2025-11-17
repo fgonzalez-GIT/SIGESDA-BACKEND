@@ -16,5 +16,7 @@ export declare class PersonaTipoController {
     getTipoPersonaByCodigo(req: Request, res: Response, next: NextFunction): Promise<void>;
     getEspecialidadesDocentes(req: Request, res: Response, next: NextFunction): Promise<void>;
     getEspecialidadByCodigo(req: Request, res: Response, next: NextFunction): Promise<void>;
+    getRazonesSociales(req: Request, res: Response, next: NextFunction): Promise<void>;
+    getRazonSocialByCodigo(req: Request, res: Response, next: NextFunction): Promise<void>;
 }
 //# sourceMappingURL=persona-tipo.controller.d.ts.map

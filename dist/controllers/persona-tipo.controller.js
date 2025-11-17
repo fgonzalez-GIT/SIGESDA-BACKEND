@@ -203,6 +203,34 @@ class PersonaTipoController {
             next(error);
         }
     }
+    async getRazonesSociales(req, res, next) {
+        try {
+            const { soloActivas } = req.query;
+            const razones = await this.personaTipoService.getRazonesSociales(soloActivas !== 'false');
+            const response = {
+                success: true,
+                data: razones
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getRazonSocialByCodigo(req, res, next) {
+        try {
+            const { codigo } = req.params;
+            const razon = await this.personaTipoService.getRazonSocialByCodigo(codigo);
+            const response = {
+                success: true,
+                data: razon
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
 }
 exports.PersonaTipoController = PersonaTipoController;
 //# sourceMappingURL=persona-tipo.controller.js.map

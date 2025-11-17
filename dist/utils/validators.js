@@ -10,7 +10,7 @@ exports.commonValidations = {
     cuit: zod_1.z.string().regex(/^\d{2}-\d{8}-\d{1}$/, 'CUIT format: 20-12345678-9').optional(),
     decimal: zod_1.z.number().or(zod_1.z.string().transform(Number)).refine(val => val >= 0, 'Must be positive'),
     positiveInt: zod_1.z.number().int().positive('Must be a positive integer'),
-    dateString: zod_1.z.string().datetime('Invalid date format')
+    dateString: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601')
 };
 exports.personaSchemas = {
     create: zod_1.z.object({

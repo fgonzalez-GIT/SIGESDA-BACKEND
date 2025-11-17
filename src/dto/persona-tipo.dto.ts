@@ -17,8 +17,8 @@ const personaTipoBaseSchema = z.object({
 const socioDataSchema = z.object({
   categoriaId: z.number().int().positive('ID de categoría inválido'),
   numeroSocio: z.number().int().positive().optional(),
-  fechaIngreso: z.string().datetime().optional(),
-  fechaBaja: z.string().datetime().optional(),
+  fechaIngreso: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
+  fechaBaja: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
   motivoBaja: z.string().max(200).optional()
 });
 
@@ -44,7 +44,7 @@ export const createPersonaTipoSchema = z.object({
   // Datos específicos por tipo (opcionales según el tipo)
   categoriaId: z.number().int().positive().optional(),
   numeroSocio: z.number().int().positive().optional(),
-  fechaIngreso: z.string().datetime().optional(),
+  fechaIngreso: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
 
   especialidadId: z.number().int().positive().optional(),
   honorariosPorHora: z.number().nonnegative().optional(),
@@ -61,12 +61,12 @@ export const createPersonaTipoSchema = z.object({
 // Schema para actualizar asignación de tipo
 export const updatePersonaTipoSchema = z.object({
   activo: z.boolean().optional(),
-  fechaDesasignacion: z.string().datetime().optional(),
+  fechaDesasignacion: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
 
   // Datos específicos por tipo
   categoriaId: z.number().int().positive().optional(),
-  fechaIngreso: z.string().datetime().optional(),
-  fechaBaja: z.string().datetime().optional(),
+  fechaIngreso: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
+  fechaBaja: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
   motivoBaja: z.string().max(200).optional(),
 
   especialidadId: z.number().int().positive().optional(),

@@ -9,7 +9,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         especialidadId: z.ZodOptional<z.ZodNumber>;
         honorariosPorHora: z.ZodOptional<z.ZodNumber>;
         cuit: z.ZodOptional<z.ZodString>;
-        razonSocial: z.ZodOptional<z.ZodString>;
+        razonSocialId: z.ZodOptional<z.ZodNumber>;
         observaciones: z.ZodOptional<z.ZodString>;
         activo: z.ZodDefault<z.ZodBoolean>;
     }, "strip", z.ZodTypeAny, {
@@ -23,7 +23,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         especialidadId?: number | undefined;
         honorariosPorHora?: number | undefined;
         cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        razonSocialId?: number | undefined;
     }, {
         tipoPersonaId?: number | undefined;
         tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
@@ -35,7 +35,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         especialidadId?: number | undefined;
         honorariosPorHora?: number | undefined;
         cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        razonSocialId?: number | undefined;
     }>, {
         activo: boolean;
         tipoPersonaId?: number | undefined;
@@ -47,7 +47,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         especialidadId?: number | undefined;
         honorariosPorHora?: number | undefined;
         cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        razonSocialId?: number | undefined;
     }, {
         tipoPersonaId?: number | undefined;
         tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
@@ -59,7 +59,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         especialidadId?: number | undefined;
         honorariosPorHora?: number | undefined;
         cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        razonSocialId?: number | undefined;
     }>, "many">>>;
     contactos: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodObject<{
         tipoContacto: z.ZodNativeEnum<{
@@ -110,7 +110,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         especialidadId?: number | undefined;
         honorariosPorHora?: number | undefined;
         cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        razonSocialId?: number | undefined;
     }[];
     contactos: {
         activo: boolean;
@@ -144,7 +144,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         especialidadId?: number | undefined;
         honorariosPorHora?: number | undefined;
         cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        razonSocialId?: number | undefined;
     }[] | undefined;
     contactos?: {
         tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
@@ -168,7 +168,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         especialidadId?: number | undefined;
         honorariosPorHora?: number | undefined;
         cuit?: string | undefined;
-        razonSocial?: string | undefined;
+        razonSocialId?: number | undefined;
     }[];
     contactos: {
         activo: boolean;
@@ -350,7 +350,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
 }>, z.ZodObject<{
     tipo: z.ZodLiteral<"PROVEEDOR">;
     cuit: z.ZodString;
-    razonSocial: z.ZodString;
+    razonSocialId: z.ZodNumber;
     nombre: z.ZodString;
     apellido: z.ZodString;
     dni: z.ZodString;
@@ -361,7 +361,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     cuit: string;
-    razonSocial: string;
+    razonSocialId: number;
     nombre: string;
     apellido: string;
     dni: string;
@@ -373,7 +373,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     fechaNacimiento?: string | undefined;
 }, {
     cuit: string;
-    razonSocial: string;
+    razonSocialId: number;
     nombre: string;
     apellido: string;
     dni: string;
@@ -420,7 +420,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     fechaNacimiento?: string | undefined;
 } | {
     cuit: string;
-    razonSocial: string;
+    razonSocialId: number;
     nombre: string;
     apellido: string;
     dni: string;

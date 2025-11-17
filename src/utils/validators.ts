@@ -10,7 +10,7 @@ export const commonValidations = {
   cuit: z.string().regex(/^\d{2}-\d{8}-\d{1}$/, 'CUIT format: 20-12345678-9').optional(),
   decimal: z.number().or(z.string().transform(Number)).refine(val => val >= 0, 'Must be positive'),
   positiveInt: z.number().int().positive('Must be a positive integer'),
-  dateString: z.string().datetime('Invalid date format')
+  dateString: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601')
 };
 
 // Persona validation schemas

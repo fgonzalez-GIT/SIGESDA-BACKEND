@@ -1,4 +1,4 @@
-import { PrismaClient, PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente } from '@prisma/client';
+import { PrismaClient, PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente, RazonSocial } from '@prisma/client';
 import { CreatePersonaTipoDto, UpdatePersonaTipoDto, CreateContactoPersonaDto, UpdateContactoPersonaDto } from '@/dto/persona-tipo.dto';
 export declare class PersonaTipoRepository {
     private prisma;
@@ -15,6 +15,8 @@ export declare class PersonaTipoRepository {
     getTipoPersonaByCodigo(codigo: string): Promise<TipoPersonaCatalogo | null>;
     getEspecialidadesDocentes(soloActivas?: boolean): Promise<EspecialidadDocente[]>;
     getEspecialidadByCodigo(codigo: string): Promise<EspecialidadDocente | null>;
+    getRazonesSociales(soloActivas?: boolean): Promise<RazonSocial[]>;
+    getRazonSocialByCodigo(codigo: string): Promise<RazonSocial | null>;
     agregarContacto(personaId: number, data: CreateContactoPersonaDto): Promise<ContactoPersona>;
     findContactosByPersonaId(personaId: number, soloActivos?: boolean): Promise<ContactoPersona[]>;
     findContactoById(id: number): Promise<ContactoPersona | null>;

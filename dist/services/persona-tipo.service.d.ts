@@ -1,4 +1,4 @@
-import { PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente } from '@prisma/client';
+import { PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente, RazonSocial } from '@prisma/client';
 import { PersonaTipoRepository } from '@/repositories/persona-tipo.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { CreatePersonaTipoDto, UpdatePersonaTipoDto, CreateContactoPersonaDto, UpdateContactoPersonaDto } from '@/dto/persona-tipo.dto';
@@ -20,5 +20,7 @@ export declare class PersonaTipoService {
     getTipoPersonaByCodigo(codigo: string): Promise<TipoPersonaCatalogo | null>;
     getEspecialidadesDocentes(soloActivas?: boolean): Promise<EspecialidadDocente[]>;
     getEspecialidadByCodigo(codigo: string): Promise<EspecialidadDocente | null>;
+    getRazonesSociales(soloActivas?: boolean): Promise<RazonSocial[]>;
+    getRazonSocialByCodigo(codigo: string): Promise<RazonSocial | null>;
 }
 //# sourceMappingURL=persona-tipo.service.d.ts.map

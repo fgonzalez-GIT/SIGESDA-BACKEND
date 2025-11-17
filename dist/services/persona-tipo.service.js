@@ -191,6 +191,16 @@ class PersonaTipoService {
         }
         return especialidad;
     }
+    async getRazonesSociales(soloActivas = true) {
+        return this.personaTipoRepository.getRazonesSociales(soloActivas);
+    }
+    async getRazonSocialByCodigo(codigo) {
+        const razon = await this.personaTipoRepository.getRazonSocialByCodigo(codigo);
+        if (!razon) {
+            throw new error_middleware_1.AppError(`Razón social con código ${codigo} no encontrada`, enums_1.HttpStatus.NOT_FOUND);
+        }
+        return razon;
+    }
 }
 exports.PersonaTipoService = PersonaTipoService;
 function validatePersonaTipoData(tipoPersonaCodigo, data) {
@@ -204,7 +214,7 @@ function validatePersonaTipoData(tipoPersonaCodigo, data) {
             if (!data.cuit) {
                 errors.push('PROVEEDOR requiere CUIT');
             }
-            if (!data.razonSocial) {
+            if (!data.razonSocialId) {
                 errors.push('PROVEEDOR requiere razón social');
             }
             break;

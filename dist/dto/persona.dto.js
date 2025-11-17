@@ -13,7 +13,7 @@ const personaBaseSchema = zod_1.z.object({
     email: zod_1.z.string().email('Email inválido').max(150).optional(),
     telefono: zod_1.z.string().max(20).optional(),
     direccion: zod_1.z.string().max(200).optional(),
-    fechaNacimiento: zod_1.z.string().datetime().optional(),
+    fechaNacimiento: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
     observaciones: zod_1.z.string().max(500).optional()
 });
 exports.createPersonaSchema = zod_1.z.preprocess((data) => {
@@ -41,8 +41,8 @@ exports.createPersonaSchema = zod_1.z.preprocess((data) => {
                 if (codigo === 'PROVEEDOR') {
                     if (data.cuit)
                         resultado.cuit = data.cuit;
-                    if (data.razonSocial)
-                        resultado.razonSocial = data.razonSocial;
+                    if (data.razonSocialId)
+                        resultado.razonSocialId = data.razonSocialId;
                 }
                 return resultado;
             });
@@ -68,8 +68,8 @@ exports.createPersonaSchema = zod_1.z.preprocess((data) => {
             if (data.tipo === 'PROVEEDOR') {
                 if (data.cuit)
                     resultado.cuit = data.cuit;
-                if (data.razonSocial)
-                    resultado.razonSocial = data.razonSocial;
+                if (data.razonSocialId)
+                    resultado.razonSocialId = data.razonSocialId;
             }
             tiposArray = [resultado];
         }
@@ -85,7 +85,7 @@ exports.createPersonaSchema = zod_1.z.preprocess((data) => {
         delete nuevosDatos.especialidadId;
         delete nuevosDatos.honorariosPorHora;
         delete nuevosDatos.cuit;
-        delete nuevosDatos.razonSocial;
+        delete nuevosDatos.razonSocialId;
         return nuevosDatos;
     }
     return data;
@@ -101,7 +101,7 @@ exports.updatePersonaSchema = zod_1.z.object({
     email: zod_1.z.string().email().max(150).optional().nullable(),
     telefono: zod_1.z.string().max(20).optional().nullable(),
     direccion: zod_1.z.string().max(200).optional().nullable(),
-    fechaNacimiento: zod_1.z.string().datetime().optional().nullable(),
+    fechaNacimiento: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
     observaciones: zod_1.z.string().max(500).optional().nullable()
 });
 exports.personaQuerySchema = zod_1.z.object({
@@ -157,7 +157,7 @@ exports.createPersonaLegacySchema = zod_1.z.preprocess((data) => {
         ...personaBaseSchema.shape,
         tipo: zod_1.z.literal('SOCIO'),
         categoriaId: zod_1.z.number().int().positive('ID de categoría inválido'),
-        fechaIngreso: zod_1.z.string().datetime().optional(),
+        fechaIngreso: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
         numeroSocio: zod_1.z.number().int().positive().optional()
     }),
     zod_1.z.object({
@@ -168,13 +168,13 @@ exports.createPersonaLegacySchema = zod_1.z.preprocess((data) => {
         ...personaBaseSchema.shape,
         tipo: zod_1.z.literal('DOCENTE'),
         especialidad: zod_1.z.string().min(1, 'Especialidad es requerida').max(100),
-        honorariosPorHora: zod_1.z.number().positive().optional()
+        honorariosPorHora: zod_1.z.number().nonnegative('Honorarios deben ser 0 o mayor').optional()
     }),
     zod_1.z.object({
         ...personaBaseSchema.shape,
         tipo: zod_1.z.literal('PROVEEDOR'),
         cuit: zod_1.z.string().min(11, 'CUIT debe tener 11 caracteres').max(11),
-        razonSocial: zod_1.z.string().min(1, 'Razón social es requerida').max(100)
+        razonSocialId: zod_1.z.number().int().positive('ID de razón social inválido')
     })
 ]));
 function validatePersonaTipoData(tipoPersonaCodigo, data) {
@@ -188,8 +188,8 @@ function validatePersonaTipoData(tipoPersonaCodigo, data) {
             if (!data.cuit) {
                 errors.push('PROVEEDOR requiere cuit');
             }
-            if (!data.razonSocial) {
-                errors.push('PROVEEDOR requiere razonSocial');
+            if (!data.razonSocialId) {
+                errors.push('PROVEEDOR requiere razonSocialId');
             }
             break;
         case 'NO_SOCIO':
@@ -234,8 +234,8 @@ function transformLegacyToNew(legacyData) {
             if ('cuit' in legacyData) {
                 tipoData.cuit = legacyData.cuit;
             }
-            if ('razonSocial' in legacyData) {
-                tipoData.razonSocial = legacyData.razonSocial;
+            if ('razonSocialId' in legacyData) {
+                tipoData.razonSocialId = legacyData.razonSocialId;
             }
             break;
     }

@@ -14,7 +14,7 @@ const personaBaseSchema = z.object({
   email: z.string().email('Email inválido').max(150).optional(),
   telefono: z.string().max(20).optional(),
   direccion: z.string().max(200).optional(),
-  fechaNacimiento: z.string().datetime().optional(),
+  fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
   observaciones: z.string().max(500).optional()
 });
 
@@ -127,7 +127,7 @@ export const updatePersonaSchema = z.object({
   email: z.string().email().max(150).optional().nullable(),
   telefono: z.string().max(20).optional().nullable(),
   direccion: z.string().max(200).optional().nullable(),
-  fechaNacimiento: z.string().datetime().optional().nullable(),
+  fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
   observaciones: z.string().max(500).optional().nullable()
 });
 
@@ -237,7 +237,7 @@ export const createPersonaLegacySchema = z.preprocess(
       ...personaBaseSchema.shape,
       tipo: z.literal('SOCIO'),
       categoriaId: z.number().int().positive('ID de categoría inválido'),
-      fechaIngreso: z.string().datetime().optional(),
+      fechaIngreso: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
       numeroSocio: z.number().int().positive().optional()
     }),
 

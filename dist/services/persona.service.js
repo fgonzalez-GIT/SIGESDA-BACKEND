@@ -93,7 +93,7 @@ class PersonaService {
                 }
             }
             if (tipoCodigo === 'PROVEEDOR') {
-                if (!tipo.cuit || !tipo.razonSocial) {
+                if (!tipo.cuit || !tipo.razonSocialId) {
                     throw new error_middleware_1.AppError('El tipo PROVEEDOR requiere CUIT y razón social', enums_1.HttpStatus.BAD_REQUEST);
                 }
             }

@@ -24,5 +24,7 @@ router.get('/catalogos/tipos-persona', personaTipoController.getTiposPersona.bin
 router.get('/catalogos/tipos-persona/:codigo', personaTipoController.getTipoPersonaByCodigo.bind(personaTipoController));
 router.get('/catalogos/especialidades-docentes', personaTipoController.getEspecialidadesDocentes.bind(personaTipoController));
 router.get('/catalogos/especialidades-docentes/:codigo', personaTipoController.getEspecialidadByCodigo.bind(personaTipoController));
+router.get('/catalogos/razones-sociales', personaTipoController.getRazonesSociales.bind(personaTipoController));
+router.get('/catalogos/razones-sociales/:codigo', personaTipoController.getRazonSocialByCodigo.bind(personaTipoController));
 exports.default = router;
 //# sourceMappingURL=persona-tipo.routes.js.map

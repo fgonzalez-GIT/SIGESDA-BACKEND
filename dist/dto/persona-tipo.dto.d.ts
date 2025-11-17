@@ -8,7 +8,7 @@ export declare const createPersonaTipoSchema: z.ZodEffects<z.ZodObject<{
     especialidadId: z.ZodOptional<z.ZodNumber>;
     honorariosPorHora: z.ZodOptional<z.ZodNumber>;
     cuit: z.ZodOptional<z.ZodString>;
-    razonSocial: z.ZodOptional<z.ZodString>;
+    razonSocialId: z.ZodOptional<z.ZodNumber>;
     observaciones: z.ZodOptional<z.ZodString>;
     activo: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
@@ -22,7 +22,7 @@ export declare const createPersonaTipoSchema: z.ZodEffects<z.ZodObject<{
     especialidadId?: number | undefined;
     honorariosPorHora?: number | undefined;
     cuit?: string | undefined;
-    razonSocial?: string | undefined;
+    razonSocialId?: number | undefined;
 }, {
     tipoPersonaId?: number | undefined;
     tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
@@ -34,7 +34,7 @@ export declare const createPersonaTipoSchema: z.ZodEffects<z.ZodObject<{
     especialidadId?: number | undefined;
     honorariosPorHora?: number | undefined;
     cuit?: string | undefined;
-    razonSocial?: string | undefined;
+    razonSocialId?: number | undefined;
 }>, {
     activo: boolean;
     tipoPersonaId?: number | undefined;
@@ -46,7 +46,7 @@ export declare const createPersonaTipoSchema: z.ZodEffects<z.ZodObject<{
     especialidadId?: number | undefined;
     honorariosPorHora?: number | undefined;
     cuit?: string | undefined;
-    razonSocial?: string | undefined;
+    razonSocialId?: number | undefined;
 }, {
     tipoPersonaId?: number | undefined;
     tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
@@ -58,7 +58,7 @@ export declare const createPersonaTipoSchema: z.ZodEffects<z.ZodObject<{
     especialidadId?: number | undefined;
     honorariosPorHora?: number | undefined;
     cuit?: string | undefined;
-    razonSocial?: string | undefined;
+    razonSocialId?: number | undefined;
 }>;
 export declare const updatePersonaTipoSchema: z.ZodObject<{
     activo: z.ZodOptional<z.ZodBoolean>;
@@ -70,7 +70,7 @@ export declare const updatePersonaTipoSchema: z.ZodObject<{
     especialidadId: z.ZodOptional<z.ZodNumber>;
     honorariosPorHora: z.ZodOptional<z.ZodNumber>;
     cuit: z.ZodOptional<z.ZodString>;
-    razonSocial: z.ZodOptional<z.ZodString>;
+    razonSocialId: z.ZodOptional<z.ZodNumber>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     observaciones?: string | undefined;
@@ -82,7 +82,7 @@ export declare const updatePersonaTipoSchema: z.ZodObject<{
     especialidadId?: number | undefined;
     honorariosPorHora?: number | undefined;
     cuit?: string | undefined;
-    razonSocial?: string | undefined;
+    razonSocialId?: number | undefined;
     fechaDesasignacion?: string | undefined;
 }, {
     observaciones?: string | undefined;
@@ -94,7 +94,7 @@ export declare const updatePersonaTipoSchema: z.ZodObject<{
     especialidadId?: number | undefined;
     honorariosPorHora?: number | undefined;
     cuit?: string | undefined;
-    razonSocial?: string | undefined;
+    razonSocialId?: number | undefined;
     fechaDesasignacion?: string | undefined;
 }>;
 export declare const createContactoPersonaSchema: z.ZodObject<{
@@ -166,6 +166,6 @@ export interface DocenteData {
 }
 export interface ProveedorData {
     cuit: string;
-    razonSocial: string;
+    razonSocialId: number;
 }
 //# sourceMappingURL=persona-tipo.dto.d.ts.map

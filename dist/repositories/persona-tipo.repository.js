@@ -37,8 +37,8 @@ class PersonaTipoRepository {
             createData.honorariosPorHora = data.honorariosPorHora;
         if (data.cuit)
             createData.cuit = data.cuit;
-        if (data.razonSocial)
-            createData.razonSocial = data.razonSocial;
+        if (data.razonSocialId)
+            createData.razonSocialId = data.razonSocialId;
         return this.prisma.personaTipo.create({
             data: createData,
             include: {
@@ -103,8 +103,8 @@ class PersonaTipoRepository {
             updateData.honorariosPorHora = data.honorariosPorHora;
         if (data.cuit !== undefined)
             updateData.cuit = data.cuit;
-        if (data.razonSocial !== undefined)
-            updateData.razonSocial = data.razonSocial;
+        if (data.razonSocialId !== undefined)
+            updateData.razonSocialId = data.razonSocialId;
         return this.prisma.personaTipo.update({
             where: { id },
             data: updateData,
@@ -175,6 +175,17 @@ class PersonaTipoRepository {
     }
     async getEspecialidadByCodigo(codigo) {
         return this.prisma.especialidadDocente.findUnique({
+            where: { codigo }
+        });
+    }
+    async getRazonesSociales(soloActivas = true) {
+        return this.prisma.razonSocial.findMany({
+            where: soloActivas ? { activo: true } : undefined,
+            orderBy: { orden: 'asc' }
+        });
+    }
+    async getRazonSocialByCodigo(codigo) {
+        return this.prisma.razonSocial.findUnique({
             where: { codigo }
         });
     }
