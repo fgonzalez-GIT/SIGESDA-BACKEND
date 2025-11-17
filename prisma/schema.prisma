@@ -480,6 +480,23 @@ model EspecialidadDocente {
   @@map("especialidad_docente")
 }
 
+model RazonSocial {
+  id           Int           @id @default(autoincrement())
+  codigo       String        @unique @db.VarChar(50)
+  nombre       String        @db.VarChar(200)
+  descripcion  String?       @db.Text
+  activo       Boolean       @default(true)
+  orden        Int           @default(0)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  personaTipos PersonaTipo[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("razon_social_catalogo")
+}
+
 model PersonaTipo {
   id                 Int                  @id @default(autoincrement())
   personaId          Int                  @map("persona_id")
@@ -498,7 +515,7 @@ model PersonaTipo {
   honorariosPorHora  Decimal?             @map("honorarios_por_hora") @db.Decimal(10, 2)
   // Campos específicos de PROVEEDOR
   cuit               String?              @db.VarChar(11)
-  razonSocial        String?              @map("razon_social") @db.VarChar(200)
+  razonSocialId      Int?                 @map("razon_social_id")
   observaciones      String?              @db.Text
   createdAt          DateTime             @default(now()) @map("created_at")
   updatedAt          DateTime             @updatedAt @map("updated_at")
@@ -506,6 +523,7 @@ model PersonaTipo {
   tipoPersona        TipoPersonaCatalogo  @relation(fields: [tipoPersonaId], references: [id], onDelete: Restrict)
   categoria          CategoriaSocio?      @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   especialidad       EspecialidadDocente? @relation(fields: [especialidadId], references: [id], onDelete: SetNull)
+  razonSocial        RazonSocial?         @relation(fields: [razonSocialId], references: [id], onDelete: SetNull)
 
   @@unique([personaId, tipoPersonaId], map: "persona_tipo_persona_id_tipo_persona_id_key")
   @@index([personaId], map: "persona_tipo_persona_id_idx")

@@ -49,6 +49,7 @@ async function main() {
   await prisma.persona.deleteMany({});
   await prisma.aula.deleteMany({});
   await prisma.configuracionSistema.deleteMany({});
+  await prisma.razonSocial.deleteMany({});
   await prisma.especialidadDocente.deleteMany({});
   await prisma.tipoPersonaCatalogo.deleteMany({});
   await prisma.categoriaSocio.deleteMany({});
@@ -412,6 +413,155 @@ async function main() {
     })
   ]);
 
+  // ========== RazonSocial ==========
+  console.log('  → RazonSocial...');
+  const razonesSociales = await Promise.all([
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'SA',
+        nombre: 'S.A. (Sociedad Anónima)',
+        descripcion: 'Sociedad Anónima',
+        activo: true,
+        orden: 1
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'SRL',
+        nombre: 'S.R.L. (Sociedad de Responsabilidad Limitada)',
+        descripcion: 'Sociedad de Responsabilidad Limitada',
+        activo: true,
+        orden: 2
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'SAS',
+        nombre: 'S.A.S. (Sociedad por Acciones Simplificada)',
+        descripcion: 'Sociedad por Acciones Simplificada',
+        activo: true,
+        orden: 3
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'SCS',
+        nombre: 'S.C.S. (Sociedad en Comandita Simple)',
+        descripcion: 'Sociedad en Comandita Simple',
+        activo: true,
+        orden: 4
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'SCPA',
+        nombre: 'S.C.P.A. (Sociedad en Comandita por Acciones)',
+        descripcion: 'Sociedad en Comandita por Acciones',
+        activo: true,
+        orden: 5
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'SC',
+        nombre: 'S.C. (Sociedad Colectiva)',
+        descripcion: 'Sociedad Colectiva',
+        activo: true,
+        orden: 6
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'MONOTRIBUTO',
+        nombre: 'Monotributo',
+        descripcion: 'Régimen Simplificado - Monotributo',
+        activo: true,
+        orden: 7
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'AUTONOMO',
+        nombre: 'Autónomo / Responsable Inscripto',
+        descripcion: 'Trabajador autónomo o responsable inscripto en IVA',
+        activo: true,
+        orden: 8
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'COOP',
+        nombre: 'Cooperativa',
+        descripcion: 'Cooperativa de trabajo o servicios',
+        activo: true,
+        orden: 9
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'MUTUAL',
+        nombre: 'Mutual',
+        descripcion: 'Asociación Mutual',
+        activo: true,
+        orden: 10
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'FUNDACION',
+        nombre: 'Fundación',
+        descripcion: 'Fundación sin fines de lucro',
+        activo: true,
+        orden: 11
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'ASOCIACION_CIVIL',
+        nombre: 'Asociación Civil',
+        descripcion: 'Asociación Civil sin fines de lucro',
+        activo: true,
+        orden: 12
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'UTE',
+        nombre: 'U.T.E. (Unión Transitoria de Empresas)',
+        descripcion: 'Unión Transitoria de Empresas',
+        activo: true,
+        orden: 13
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'ACE',
+        nombre: 'A.C.E. (Agrupación de Colaboración Empresaria)',
+        descripcion: 'Agrupación de Colaboración Empresaria',
+        activo: true,
+        orden: 14
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'CONSORCIO',
+        nombre: 'Consorcio de Cooperación',
+        descripcion: 'Consorcio de Cooperación Empresaria',
+        activo: true,
+        orden: 15
+      }
+    }),
+    prisma.razonSocial.create({
+      data: {
+        codigo: 'OTRO',
+        nombre: 'Otro',
+        descripcion: 'Otra forma jurídica no especificada',
+        activo: true,
+        orden: 99
+      }
+    })
+  ]);
+
   // ========== ConfiguracionSistema ==========
   console.log('  → ConfiguracionSistema...');
   await prisma.configuracionSistema.createMany({
@@ -762,7 +912,7 @@ async function main() {
       tipoPersonaId: tiposPersonaCatalogo[3].id, // PROVEEDOR
       activo: true,
       cuit: '20276667773',
-      razonSocial: 'Instrumentos Musicales Méndez SRL'
+      razonSocialId: razonesSociales[1].id // S.R.L.
     }
   });
 
@@ -1232,6 +1382,7 @@ async function main() {
   console.log('  ✓ CategoriaSocio: 5');
   console.log('  ✓ TipoPersonaCatalogo: 4');
   console.log('  ✓ EspecialidadDocente: 5');
+  console.log('  ✓ RazonSocial: 16');
   console.log('  ✓ ConfiguracionSistema: 6\n');
 
   console.log('👥 PERSONAS:');
