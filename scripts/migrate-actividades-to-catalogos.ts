@@ -138,9 +138,7 @@ async function migrateActividades() {
             categoria_id = ${categoriaDefaultId},
             estado_id = ${estadoDefaultId},
             fecha_desde = ${actividad.createdAt || new Date()},
-            costo = ${actividad.precio || 0},
-            capacidad_maxima = ${actividad.capacidadMaxima},
-            updated_at = NOW()
+            costo = ${actividad.precio || 0}
           WHERE id = ${actividad.id}
         `;
 

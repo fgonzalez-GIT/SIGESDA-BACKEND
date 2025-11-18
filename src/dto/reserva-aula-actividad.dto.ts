@@ -134,7 +134,7 @@ export const queryReservasAulasActividadesSchema = z.object({
 // Schema para verificar disponibilidad de aula
 export const verificarDisponibilidadAulaSchema = z.object({
   aulaId: z.string().cuid('ID de aula inválido'),
-  diaSemanaId: z.number().int().positive().min(1).max(7),
+  diaSemanaId: z.number().int().positive(),
   horaInicio: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
   horaFin: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
   fechaVigenciaDesde: z.string().datetime().or(z.date()),

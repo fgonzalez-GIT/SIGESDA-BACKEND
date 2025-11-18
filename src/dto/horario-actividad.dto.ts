@@ -11,9 +11,7 @@ const horarioActividadBaseSchema = z.object({
     .positive('El ID de actividad debe ser positivo'),
   diaSemanaId: z.number()
     .int('El ID de día de semana debe ser un número entero')
-    .positive('El ID de día de semana debe ser positivo')
-    .min(1, 'ID de día inválido')
-    .max(7, 'ID de día inválido'),
+    .positive('El ID de día de semana debe ser positivo'),
   horaInicio: z.string()
     .regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
       message: 'Formato de hora inválido. Use HH:MM o HH:MM:SS (ej: 09:00 o 09:00:00)'

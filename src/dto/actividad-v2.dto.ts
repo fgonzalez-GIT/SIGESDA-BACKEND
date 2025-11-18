@@ -60,7 +60,7 @@ const actividadBaseSchema = z.object({
 
 // Sub-schema para horarios inline al crear actividad
 const horarioInlineSchema = z.object({
-  diaSemanaId: z.number().int().positive().min(1).max(7),
+  diaSemanaId: z.number().int().positive(),
   horaInicio: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
   horaFin: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
   activo: z.boolean().default(true)
@@ -87,7 +87,7 @@ const docenteInlineSchema = z.object({
 
 // Sub-schema para reservas de aulas inline al crear actividad
 const reservaAulaInlineSchema = z.object({
-  diaSemanaId: z.number().int().positive().min(1).max(7),
+  diaSemanaId: z.number().int().positive(),
   horaInicio: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
   horaFin: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
   aulaId: z.string().cuid('ID de aula inválido'),
@@ -272,7 +272,7 @@ export const estadisticasActividadSchema = z.object({
 });
 
 export const reporteOcupacionSchema = z.object({
-  diaSemanaId: z.number().int().positive().min(1).max(7).optional(),
+  diaSemanaId: z.number().int().positive().optional(),
   aulaId: z.string().cuid().optional(),
   docenteId: z.string().cuid().optional(),
   fechaReferencia: z.string().datetime().optional()

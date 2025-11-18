@@ -244,9 +244,9 @@ async function validarConstraints() {
 
     // 2. Verificar unique de horarios
     const horariosDuplicados = await prisma.$queryRaw<any[]>`
-      SELECT actividad_id, dia_semana_id, hora_inicio, COUNT(*) as count
+      SELECT "actividadId", dia_semana_id, "horaInicio", COUNT(*) as count
       FROM horarios_actividades
-      GROUP BY actividad_id, dia_semana_id, hora_inicio
+      GROUP BY "actividadId", dia_semana_id, "horaInicio"
       HAVING COUNT(*) > 1
     `;
 

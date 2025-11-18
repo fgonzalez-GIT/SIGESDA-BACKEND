@@ -9,31 +9,46 @@ datasource db {
 
 model actividades {
   id                        Int                         @id @default(autoincrement())
+  codigoActividad           String                      @unique @map("codigo_actividad") @db.VarChar(50)
   nombre                    String
-  tipo                      TipoActividad
+  tipoActividadId           Int                         @map("tipo_actividad_id")
+  categoriaId               Int                         @map("categoria_id")
+  estadoId                  Int                         @map("estado_id")
   descripcion               String?
-  precio                    Decimal                     @default(0) @db.Decimal(8, 2)
-  duracion                  Int?
+  fechaDesde                DateTime                    @map("fecha_desde")
+  fechaHasta                DateTime?                   @map("fecha_hasta")
   capacidadMaxima           Int?
+  costo                     Decimal                     @default(0) @db.Decimal(8, 2)
   activa                    Boolean                     @default(true)
+  observaciones             String?
   createdAt                 DateTime                    @default(now())
   updatedAt                 DateTime                    @updatedAt
+  tiposActividades          tipos_actividades           @relation(fields: [tipoActividadId], references: [id], onDelete: Restrict)
+  categoriasActividades     categorias_actividades      @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  estadosActividades        estados_actividades         @relation(fields: [estadoId], references: [id], onDelete: Restrict)
   horarios_actividades      horarios_actividades[]
   participacion_actividades participacion_actividades[]
   reserva_aulas             reserva_aulas[]
   secciones_actividades     secciones_actividades[]
   docentes_actividades      docentes_actividades[]
+
+  @@index([tipoActividadId])
+  @@index([categoriaId])
+  @@index([estadoId])
+  @@index([activa])
+  @@index([fechaDesde])
 }
 
 model tipos_actividades {
-  id          Int      @id @default(autoincrement())
-  codigo      String   @unique @db.VarChar(50)
-  nombre      String   @db.VarChar(100)
-  descripcion String?  @db.Text
-  activo      Boolean  @default(true)
-  orden       Int      @default(0)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?       @db.Text
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  actividades actividades[]
 
   @@index([codigo])
   @@index([activo])
@@ -41,14 +56,15 @@ model tipos_actividades {
 }
 
 model categorias_actividades {
-  id          Int      @id @default(autoincrement())
-  codigo      String   @unique @db.VarChar(50)
-  nombre      String   @db.VarChar(100)
-  descripcion String?  @db.Text
-  activo      Boolean  @default(true)
-  orden       Int      @default(0)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?       @db.Text
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  actividades actividades[]
 
   @@index([codigo])
   @@index([activo])
@@ -56,14 +72,15 @@ model categorias_actividades {
 }
 
 model estados_actividades {
-  id          Int      @id @default(autoincrement())
-  codigo      String   @unique @db.VarChar(50)
-  nombre      String   @db.VarChar(100)
-  descripcion String?  @db.Text
-  activo      Boolean  @default(true)
-  orden       Int      @default(0)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?       @db.Text
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  actividades actividades[]
 
   @@index([codigo])
   @@index([activo])
@@ -71,12 +88,13 @@ model estados_actividades {
 }
 
 model dias_semana {
-  id        Int      @id @default(autoincrement())
-  codigo    String   @unique @db.VarChar(50)
-  nombre    String   @db.VarChar(100)
-  orden     Int
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                  Int                      @id @default(autoincrement())
+  codigo              String                   @unique @db.VarChar(50)
+  nombre              String                   @db.VarChar(100)
+  orden               Int
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+  horariosActividades horarios_actividades[]
 
   @@index([codigo])
   @@index([orden])
@@ -219,16 +237,17 @@ model Familiar {
 
 model horarios_actividades {
   id          Int         @id @default(autoincrement())
-  actividadId Int
-  diaSemana   DiaSemana
-  horaInicio  String
-  horaFin     String
+  actividadId Int         @map("actividad_id")
+  diaSemanaId Int         @map("dia_semana_id")
+  horaInicio  String      @map("hora_inicio")
+  horaFin     String      @map("hora_fin")
   activo      Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
   actividades actividades @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  diasSemana  dias_semana @relation(fields: [diaSemanaId], references: [id], onDelete: Restrict)
 
-  @@unique([actividadId, diaSemana, horaInicio])
+  @@unique([actividadId, diaSemanaId, horaInicio])
 }
 
 model docentes_actividades {
@@ -244,13 +263,13 @@ model docentes_actividades {
   updatedAt          DateTime       @updatedAt @map("updated_at")
   actividades        actividades    @relation(fields: [actividadId], references: [id], onDelete: Cascade)
   personas           Persona        @relation(fields: [docenteId], references: [id], onDelete: Cascade)
-  roles_docentes     roles_docentes @relation(fields: [rolDocenteId], references: [id], onDelete: Restrict)
+  rolesDocentes      roles_docentes @relation(fields: [rolDocenteId], references: [id], onDelete: Restrict)
 
   @@unique([actividadId, docenteId, rolDocenteId], name: "unique_docente_actividad_rol")
-  @@index([actividadId], name: "docentes_actividades_actividad_id_idx")
-  @@index([docenteId], name: "docentes_actividades_docente_id_idx")
-  @@index([rolDocenteId], name: "docentes_actividades_rol_docente_id_idx")
-  @@index([activo], name: "docentes_actividades_activo_idx")
+  @@index([actividadId])
+  @@index([docenteId])
+  @@index([rolDocenteId])
+  @@index([activo])
 }
 
 model MedioPago {
@@ -334,7 +353,7 @@ model Recibo {
 model horarios_secciones {
   id                    Int                   @id @default(autoincrement())
   seccionId             Int
-  diaSemana             DiaSemana
+  diaSemana             String                // ⚠️ TEMPORAL: Debería ser diaSemanaId Int FK
   horaInicio            String
   horaFin               String
   activo                Boolean               @default(true)
@@ -403,7 +422,7 @@ model reservas_aulas_secciones {
   id                    Int                   @id @default(autoincrement())
   seccionId             Int
   aulaId                Int
-  diaSemana             DiaSemana
+  diaSemana             String                // ⚠️ TEMPORAL: Debería ser diaSemanaId Int FK
   horaInicio            String
   horaFin               String
   fechaVigencia         DateTime
@@ -604,21 +623,8 @@ enum CategoriaSocioLegacy {
   JUBILADO
 }
 
-enum DiaSemana {
-  LUNES
-  MARTES
-  MIERCOLES
-  JUEVES
-  VIERNES
-  SABADO
-  DOMINGO
-}
-
-enum TipoActividad {
-  CORO
-  CLASE_CANTO
-  CLASE_INSTRUMENTO
-}
+// ❌ ELIMINADO: enum DiaSemana (ahora usa tabla dias_semana)
+// ❌ ELIMINADO: enum TipoActividad (ahora usa tabla tipos_actividades)
 
 enum TipoPersona {
   SOCIO
