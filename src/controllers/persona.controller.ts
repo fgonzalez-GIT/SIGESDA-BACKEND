@@ -36,6 +36,8 @@ export class PersonaController {
   /**
    * GET /api/personas
    * Obtener lista de personas con filtros
+   * Sin parámetros page/limit: devuelve TODAS las personas con TODAS las relaciones
+   * Con parámetros page/limit: devuelve paginado
    */
   async getPersonas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -44,14 +46,23 @@ export class PersonaController {
 
       const response: ApiResponse = {
         success: true,
-        data: result.data,
-        meta: {
+        data: result.data
+      };
+
+      // Solo agregar metadata de paginación si se especificaron page/limit
+      if (result.page !== undefined && result.pages !== undefined) {
+        response.meta = {
           page: result.page,
-          limit: query.limit,
+          limit: query.limit!,
           total: result.total,
           totalPages: result.pages
-        }
-      };
+        };
+      } else {
+        // Sin paginación, solo incluir total
+        response.meta = {
+          total: result.total
+        };
+      }
 
       res.status(HttpStatus.OK).json(response);
     } catch (error) {

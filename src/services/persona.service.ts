@@ -163,17 +163,19 @@ export class PersonaService {
   async getPersonas(query: PersonaQueryDto): Promise<{
     data: Persona[];
     total: number;
-    pages: number;
-    page: number;
+    pages?: number;
+    page?: number;
   }> {
     const result = await this.personaRepository.findAll(query);
-    const pages = Math.ceil(result.total / query.limit);
+
+    // Calcular paginación solo si page y limit están definidos
+    const pages = query.limit ? Math.ceil(result.total / query.limit) : undefined;
 
     return {
       data: result.data,
       total: result.total,
-      pages,
-      page: query.page
+      ...(query.page && { page: query.page }),
+      ...(pages && { pages })
     };
   }
 
@@ -191,11 +193,11 @@ export class PersonaService {
   }
 
   /**
-   * Actualizar datos base de persona
+   * Actualizar persona (datos base, tipos y contactos)
    */
   async updatePersona(id: number, data: UpdatePersonaDto): Promise<Persona> {
     // Verificar que existe
-    const existingPersona = await this.personaRepository.findById(id, false);
+    const existingPersona = await this.personaRepository.findById(id, true);
     if (!existingPersona) {
       throw new AppError(`Persona con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
     }
@@ -216,7 +218,99 @@ export class PersonaService {
       }
     }
 
-    const updatedPersona = await this.personaRepository.update(id, data);
+    // Procesar tipos si se envían (sincronización completa)
+    let tiposProcessed: any[] | undefined;
+    if (data.tipos && data.tipos.length > 0) {
+      const tipos = data.tipos;
+
+      // Validación: TIPOS MUTUAMENTE EXCLUYENTES (SOCIO y NO_SOCIO)
+      const tiposCodigos: string[] = [];
+      for (const tipo of tipos) {
+        let tipoCodigo = tipo.tipoPersonaCodigo;
+
+        if (!tipoCodigo && tipo.tipoPersonaId) {
+          const tiposCatalogo = await this.personaTipoRepository.getTiposPersona(false);
+          const tipoCatalogo = tiposCatalogo.find(t => t.id === tipo.tipoPersonaId);
+          if (tipoCatalogo) {
+            tipoCodigo = tipoCatalogo.codigo as any;
+          }
+        }
+
+        if (tipoCodigo) {
+          tiposCodigos.push(tipoCodigo);
+        }
+      }
+
+      const validacion = validateTiposMutuamenteExcluyentes(tiposCodigos);
+      if (!validacion.valid) {
+        throw new AppError(validacion.error!, HttpStatus.BAD_REQUEST);
+      }
+
+      // Procesar cada tipo para agregar defaults
+      for (const tipo of tipos) {
+        let tipoCodigo = tipo.tipoPersonaCodigo;
+
+        if (!tipoCodigo && tipo.tipoPersonaId) {
+          const tiposCatalogo = await this.personaTipoRepository.getTiposPersona(false);
+          const tipoCatalogo = tiposCatalogo.find(t => t.id === tipo.tipoPersonaId);
+          if (tipoCatalogo) {
+            tipoCodigo = tipoCatalogo.codigo as any;
+          }
+        }
+
+        // Auto-asignar defaults según tipo
+        if (tipoCodigo === 'SOCIO') {
+          if (!tipo.numeroSocio) {
+            const nextNumero = await this.personaTipoRepository.getNextNumeroSocio();
+            tipo.numeroSocio = nextNumero;
+          }
+
+          if (!tipo.categoriaId) {
+            const categoriaActivo = await this.prisma.categoriaSocio.findFirst({
+              where: { codigo: 'ACTIVO', activa: true }
+            });
+            if (categoriaActivo) {
+              tipo.categoriaId = categoriaActivo.id;
+              logger.info(`Auto-asignada categoría ACTIVO (ID: ${categoriaActivo.id}) para socio`);
+            }
+          }
+
+          if (!tipo.fechaIngreso) {
+            tipo.fechaIngreso = new Date().toISOString();
+          }
+        }
+
+        if (tipoCodigo === 'DOCENTE') {
+          if (!tipo.especialidadId) {
+            const especialidad = await this.prisma.especialidadDocente.findFirst({
+              where: { activo: true },
+              orderBy: { orden: 'asc' }
+            });
+            if (especialidad) {
+              tipo.especialidadId = especialidad.id;
+              logger.info(`Auto-asignada especialidad ${especialidad.nombre} (ID: ${especialidad.id}) para docente`);
+            }
+          }
+        }
+
+        if (tipoCodigo === 'PROVEEDOR') {
+          if (!tipo.cuit || !tipo.razonSocialId) {
+            throw new AppError(
+              'El tipo PROVEEDOR requiere CUIT y razón social',
+              HttpStatus.BAD_REQUEST
+            );
+          }
+        }
+      }
+
+      tiposProcessed = tipos;
+    }
+
+    const updatedPersona = await this.personaRepository.update(id, {
+      ...data,
+      tipos: tiposProcessed,
+      contactos: data.contactos
+    });
 
     logger.info(`Persona actualizada: ${updatedPersona.nombre} ${updatedPersona.apellido} (ID: ${id})`);
 

@@ -128,7 +128,11 @@ export const updatePersonaSchema = z.object({
   telefono: z.string().max(20).optional().nullable(),
   direccion: z.string().max(200).optional().nullable(),
   fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
-  observaciones: z.string().max(500).optional().nullable()
+  observaciones: z.string().max(500).optional().nullable(),
+
+  // Tipos y contactos (opcional - si se envían, se sincronizan)
+  tipos: z.array(createPersonaTipoSchema).optional(),
+  contactos: z.array(createContactoPersonaSchema).optional()
 });
 
 // ======================================================================
@@ -179,32 +183,34 @@ export const personaQuerySchema = z.object({
   // Búsqueda por nombre, dni, email
   search: z.string().optional(),
 
-  // Paginación
+  // Paginación (OPCIONAL - si no se especifica, devuelve todos los registros)
   page: z.preprocess(
     (val) => {
+      if (!val) return undefined;
       const parsed = parseInt(val as string);
-      return isNaN(parsed) ? 1 : parsed;
+      return isNaN(parsed) ? undefined : parsed;
     },
-    z.number().int().positive().default(1)
+    z.number().int().positive().optional()
   ),
 
   limit: z.preprocess(
     (val) => {
+      if (!val) return undefined;
       const parsed = parseInt(val as string);
-      return isNaN(parsed) ? 10 : parsed;
+      return isNaN(parsed) ? undefined : parsed;
     },
-    z.number().int().positive().max(100).default(10)
+    z.number().int().positive().max(100).optional()
   ),
 
-  // Incluir relaciones
+  // Incluir relaciones (SIEMPRE TRUE para devolver todas las relaciones)
   includeTipos: z.preprocess(
     (val) => {
       if (typeof val === 'string') {
         return val === 'true';
       }
-      return val;
+      return val !== undefined ? val : true; // Default TRUE
     },
-    z.boolean().default(false)
+    z.boolean().default(true)
   ),
 
   includeContactos: z.preprocess(
@@ -212,9 +218,9 @@ export const personaQuerySchema = z.object({
       if (typeof val === 'string') {
         return val === 'true';
       }
-      return val;
+      return val !== undefined ? val : true; // Default TRUE
     },
-    z.boolean().default(false)
+    z.boolean().default(true)
   )
 });
 

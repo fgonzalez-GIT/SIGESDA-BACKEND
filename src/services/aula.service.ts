@@ -74,11 +74,11 @@ export class AulaService {
     }
 
     // Verificar si tiene reservas activas
-    const reservas = (existingAula as any).reservas_aulas_actividades || [];
+    const reservas = (existingAula as any).reserva_aulas || [];
     const ahora = new Date();
     const reservasActivas = reservas.filter((reserva: any) => {
-      // Una reserva está activa si no tiene fecha de fin o si la fecha de fin es futura
-      return !reserva.fecha_vigencia_hasta || new Date(reserva.fecha_vigencia_hasta) > ahora;
+      // Una reserva está activa si la fecha de fin es futura
+      return new Date(reserva.fechaFin) > ahora;
     });
 
     if (reservasActivas.length > 0) {

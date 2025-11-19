@@ -307,6 +307,7 @@ model Persona {
   honorariosPorHora         Decimal?                    @db.Decimal(10, 2)
   cuit                      String?                     @unique
   razonSocial               String?
+  observaciones             String?
   createdAt                 DateTime                    @default(now())
   updatedAt                 DateTime                    @updatedAt
   categoriaId               Int?

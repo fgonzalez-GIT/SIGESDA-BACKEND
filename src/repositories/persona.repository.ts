@@ -32,16 +32,17 @@ export class PersonaRepository {
         // Crear tipos de persona
         tipos: {
           create: await Promise.all(tiposFinales.map(async (tipo) => {
-            // Obtener ID del tipo si se proporcionó código
+            // Obtener ID y código del tipo
             let tipoPersonaId = 'tipoPersonaId' in tipo ? tipo.tipoPersonaId : undefined;
+            let tipoPersonaCodigo = 'tipoPersonaCodigo' in tipo ? tipo.tipoPersonaCodigo : undefined;
 
-            if (!tipoPersonaId && 'tipoPersonaCodigo' in tipo && tipo.tipoPersonaCodigo) {
+            if (!tipoPersonaId && tipoPersonaCodigo) {
               const tipoCatalogo = await this.prisma.tipoPersonaCatalogo.findUnique({
-                where: { codigo: tipo.tipoPersonaCodigo }
+                where: { codigo: tipoPersonaCodigo }
               });
 
               if (!tipoCatalogo) {
-                throw new Error(`Tipo de persona '${tipo.tipoPersonaCodigo}' no encontrado`);
+                throw new Error(`Tipo de persona '${tipoPersonaCodigo}' no encontrado`);
               }
 
               tipoPersonaId = tipoCatalogo.id;
@@ -53,39 +54,45 @@ export class PersonaRepository {
               activo: true
             };
 
-            // Agregar campos específicos según el tipo
-            // IMPORTANTE: Usar el operador ?? en lugar de && para permitir valores auto-asignados
-            // que pueden no estar en el DTO original pero fueron agregados por el service layer
-            if ('categoriaId' in tipo) {
-              tipoData.categoriaId = tipo.categoriaId ?? undefined;
+            // Agregar campos específicos SOLO si corresponden al tipo de persona
+            // Esto evita que campos de un tipo contaminen a otro cuando se crean múltiples tipos
+
+            // Campos de SOCIO
+            if (tipoPersonaCodigo === 'SOCIO') {
+              if ('categoriaId' in tipo && tipo.categoriaId !== undefined) {
+                tipoData.categoriaId = tipo.categoriaId;
+              }
+              if ('numeroSocio' in tipo && tipo.numeroSocio !== undefined) {
+                tipoData.numeroSocio = tipo.numeroSocio;
+              }
+              if ('fechaIngreso' in tipo && tipo.fechaIngreso !== undefined) {
+                tipoData.fechaIngreso = new Date(tipo.fechaIngreso);
+              }
             }
 
-            if ('numeroSocio' in tipo) {
-              tipoData.numeroSocio = tipo.numeroSocio ?? undefined;
+            // Campos de DOCENTE
+            if (tipoPersonaCodigo === 'DOCENTE') {
+              if ('especialidadId' in tipo && tipo.especialidadId !== undefined) {
+                tipoData.especialidadId = tipo.especialidadId;
+              }
+              if ('honorariosPorHora' in tipo && tipo.honorariosPorHora !== undefined) {
+                tipoData.honorariosPorHora = tipo.honorariosPorHora;
+              }
             }
 
-            if ('fechaIngreso' in tipo) {
-              tipoData.fechaIngreso = tipo.fechaIngreso ? new Date(tipo.fechaIngreso) : undefined;
+            // Campos de PROVEEDOR
+            if (tipoPersonaCodigo === 'PROVEEDOR') {
+              if ('cuit' in tipo && tipo.cuit !== undefined) {
+                tipoData.cuit = tipo.cuit;
+              }
+              if ('razonSocialId' in tipo && tipo.razonSocialId !== undefined) {
+                tipoData.razonSocialId = tipo.razonSocialId;
+              }
             }
 
-            if ('especialidadId' in tipo) {
-              tipoData.especialidadId = tipo.especialidadId ?? undefined;
-            }
-
-            if ('honorariosPorHora' in tipo) {
-              tipoData.honorariosPorHora = tipo.honorariosPorHora ?? undefined;
-            }
-
-            if ('cuit' in tipo) {
-              tipoData.cuit = tipo.cuit ?? undefined;
-            }
-
-            if ('razonSocialId' in tipo) {
-              tipoData.razonSocialId = tipo.razonSocialId ?? undefined;
-            }
-
-            if ('observaciones' in tipo) {
-              tipoData.observaciones = tipo.observaciones ?? undefined;
+            // Observaciones (común para todos los tipos)
+            if ('observaciones' in tipo && tipo.observaciones !== undefined) {
+              tipoData.observaciones = tipo.observaciones;
             }
 
             return tipoData;
@@ -108,7 +115,8 @@ export class PersonaRepository {
           include: {
             tipoPersona: true,
             categoria: true,
-            especialidad: true
+            especialidad: true,
+            razonSocial: true
           }
         },
         contactos: true
@@ -187,9 +195,11 @@ export class PersonaRepository {
       ];
     }
 
-    const skip = (query.page - 1) * query.limit;
+    // Paginación condicional (solo si page y limit están definidos)
+    const skip = query.page && query.limit ? (query.page - 1) * query.limit : undefined;
+    const take = query.limit || undefined;
 
-    // Preparar includes
+    // Preparar includes - SIEMPRE incluir TODAS las relaciones
     const include: any = {};
 
     if (query.includeTipos) {
@@ -198,7 +208,8 @@ export class PersonaRepository {
         include: {
           tipoPersona: true,
           categoria: true,
-          especialidad: true
+          especialidad: true,
+          razonSocial: true // ✅ AGREGADO: Razón Social para proveedores
         }
       };
     }
@@ -213,7 +224,7 @@ export class PersonaRepository {
       this.prisma.persona.findMany({
         where,
         skip,
-        take: query.limit,
+        take,
         orderBy: [
           { apellido: 'asc' },
           { nombre: 'asc' }
@@ -282,15 +293,141 @@ export class PersonaRepository {
   }
 
   /**
-   * Actualizar datos base de persona
+   * Actualizar persona (datos base, tipos y contactos)
    */
   async update(id: number, data: UpdatePersonaDto): Promise<Persona> {
-    const updateData: any = { ...data };
+    const { tipos, contactos, ...personaData } = data;
+    const updateData: any = { ...personaData };
 
     if (updateData.fechaNacimiento) {
       updateData.fechaNacimiento = new Date(updateData.fechaNacimiento);
     }
 
+    // Si se envían tipos o contactos, hacer sincronización completa en una transacción
+    if (tipos || contactos) {
+      return await this.prisma.$transaction(async (tx) => {
+        // 1. Actualizar datos base de persona
+        await tx.persona.update({
+          where: { id },
+          data: updateData
+        });
+
+        // 2. Sincronizar tipos si se envían
+        if (tipos && tipos.length > 0) {
+          // Eliminar todos los tipos actuales (reemplazo completo)
+          await tx.personaTipo.deleteMany({
+            where: { personaId: id }
+          });
+
+          // Crear nuevos tipos (reutilizar lógica de create)
+          const tiposData = await Promise.all(tipos.map(async (tipo) => {
+            let tipoPersonaId = 'tipoPersonaId' in tipo ? tipo.tipoPersonaId : undefined;
+            let tipoPersonaCodigo = 'tipoPersonaCodigo' in tipo ? tipo.tipoPersonaCodigo : undefined;
+
+            if (!tipoPersonaId && tipoPersonaCodigo) {
+              const tipoCatalogo = await tx.tipoPersonaCatalogo.findUnique({
+                where: { codigo: tipoPersonaCodigo }
+              });
+
+              if (!tipoCatalogo) {
+                throw new Error(`Tipo de persona '${tipoPersonaCodigo}' no encontrado`);
+              }
+
+              tipoPersonaId = tipoCatalogo.id;
+            }
+
+            const tipoData: any = {
+              personaId: id,
+              tipoPersonaId: tipoPersonaId!,
+              activo: true
+            };
+
+            // Agregar campos específicos SOLO si corresponden al tipo
+            if (tipoPersonaCodigo === 'SOCIO') {
+              if ('categoriaId' in tipo && tipo.categoriaId !== undefined) {
+                tipoData.categoriaId = tipo.categoriaId;
+              }
+              if ('numeroSocio' in tipo && tipo.numeroSocio !== undefined) {
+                tipoData.numeroSocio = tipo.numeroSocio;
+              }
+              if ('fechaIngreso' in tipo && tipo.fechaIngreso !== undefined) {
+                tipoData.fechaIngreso = new Date(tipo.fechaIngreso);
+              }
+            }
+
+            if (tipoPersonaCodigo === 'DOCENTE') {
+              if ('especialidadId' in tipo && tipo.especialidadId !== undefined) {
+                tipoData.especialidadId = tipo.especialidadId;
+              }
+              if ('honorariosPorHora' in tipo && tipo.honorariosPorHora !== undefined) {
+                tipoData.honorariosPorHora = tipo.honorariosPorHora;
+              }
+            }
+
+            if (tipoPersonaCodigo === 'PROVEEDOR') {
+              if ('cuit' in tipo && tipo.cuit !== undefined) {
+                tipoData.cuit = tipo.cuit;
+              }
+              if ('razonSocialId' in tipo && tipo.razonSocialId !== undefined) {
+                tipoData.razonSocialId = tipo.razonSocialId;
+              }
+            }
+
+            if ('observaciones' in tipo && tipo.observaciones !== undefined) {
+              tipoData.observaciones = tipo.observaciones;
+            }
+
+            return tipoData;
+          }));
+
+          // Crear todos los nuevos tipos
+          await tx.personaTipo.createMany({
+            data: tiposData
+          });
+        }
+
+        // 3. Sincronizar contactos si se envían
+        if (contactos && contactos.length > 0) {
+          // Eliminar todos los contactos actuales (reemplazo completo)
+          await tx.contactoPersona.deleteMany({
+            where: { personaId: id }
+          });
+
+          // Crear nuevos contactos
+          await tx.contactoPersona.createMany({
+            data: contactos.map((contacto) => ({
+              personaId: id,
+              tipoContacto: contacto.tipoContacto,
+              valor: contacto.valor,
+              principal: contacto.principal ?? false,
+              observaciones: contacto.observaciones,
+              activo: contacto.activo ?? true
+            }))
+          });
+        }
+
+        // 4. Retornar persona actualizada con todas las relaciones
+        return await tx.persona.findUnique({
+          where: { id },
+          include: {
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: true,
+                categoria: true,
+                especialidad: true,
+                razonSocial: true
+              }
+            },
+            contactos: {
+              where: { activo: true }
+            }
+          }
+        }) as Persona;
+      });
+    }
+
+    // Si NO se envían tipos ni contactos, solo actualizar datos base
     return this.prisma.persona.update({
       where: { id },
       data: updateData,
@@ -300,7 +437,8 @@ export class PersonaRepository {
           include: {
             tipoPersona: true,
             categoria: true,
-            especialidad: true
+            especialidad: true,
+            razonSocial: true
           }
         },
         contactos: {

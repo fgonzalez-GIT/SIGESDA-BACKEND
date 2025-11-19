@@ -14,11 +14,23 @@ import medioPagoRoutes from './medio-pago.routes';
 import { categoriaSocioRouter } from './categoria-socio.routes';
 import tiposActividadRoutes from './tiposActividad.routes';
 import categoriasActividadRoutes from './categoriasActividad.routes';
+import estadosActividadRoutes from './estadosActividad.routes';
+import diasSemanaRoutes from './diasSemana.routes';
+import rolesDocentesRoutes from './rolesDocentes.routes';
 
 const router = Router();
 
 // Mount routes
 // IMPORTANTE: Rutas más específicas PRIMERO (antes de /actividades)
+
+// Catálogos centralizados (nueva arquitectura - recomendado)
+router.use('/catalogos/tipos-actividades', tiposActividadRoutes);
+router.use('/catalogos/categorias-actividades', categoriasActividadRoutes);
+router.use('/catalogos/estados-actividades', estadosActividadRoutes);
+router.use('/catalogos/dias-semana', diasSemanaRoutes);
+router.use('/catalogos/roles-docentes', rolesDocentesRoutes);
+
+// Backward compatibility (rutas antiguas)
 router.use('/actividades/tipos-actividad', tiposActividadRoutes);
 router.use('/actividades/categorias-actividad', categoriasActividadRoutes);
 
