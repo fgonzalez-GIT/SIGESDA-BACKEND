@@ -434,6 +434,37 @@ export class ActividadController {
   }
 
   /**
+   * DELETE /api/actividades/docentes/:asignacionId
+   * Desasigna un docente usando el ID de la asignación
+   */
+  async desasignarDocenteById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const asignacionId = parseInt(req.params.asignacionId);
+
+      if (isNaN(asignacionId)) {
+        const response: ApiResponse = {
+          success: false,
+          error: 'ID de asignación inválido'
+        };
+        res.status(HttpStatus.BAD_REQUEST).json(response);
+        return;
+      }
+
+      const desasignacion = await this.actividadService.desasignarDocenteById(asignacionId);
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Docente desasignado exitosamente',
+        data: desasignacion
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * GET /api/actividades/:id/docentes
    * Obtiene docentes de una actividad
    */

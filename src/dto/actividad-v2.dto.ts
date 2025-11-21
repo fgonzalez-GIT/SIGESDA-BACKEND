@@ -12,9 +12,9 @@ import { z } from 'zod';
 
 const actividadBaseSchema = z.object({
   codigoActividad: z.string()
-    .min(1, 'El código de actividad es requerido')
     .max(50, 'El código no puede exceder 50 caracteres')
-    .regex(/^[A-Z0-9\-]+$/, 'El código debe estar en mayúsculas, números y guiones (ej: CORO-ADU-2025-A)'),
+    .regex(/^[A-Z0-9\-]+$/, 'El código debe estar en mayúsculas, números y guiones')
+    .optional(), // Autocalculado si no se proporciona
   nombre: z.string()
     .min(1, 'El nombre es requerido')
     .max(200, 'El nombre no puede exceder 200 caracteres'),

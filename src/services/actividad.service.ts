@@ -2,23 +2,82 @@ import { ActividadRepository } from '@/repositories/actividad.repository';
 import { CreateActividadDto, UpdateActividadDto, QueryActividadesDto } from '@/dto/actividad-v2.dto';
 import { logger } from '@/utils/logger';
 import { NotFoundError, ValidationError, ConflictError } from '@/utils/errors';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Service para manejo de lógica de negocio de Actividades V2.0
  */
 export class ActividadService {
+  private prisma: PrismaClient;
+
   constructor(
-    private actividadRepository: ActividadRepository
-  ) {}
+    private actividadRepository: ActividadRepository,
+    prisma?: PrismaClient
+  ) {
+    this.prisma = prisma || new PrismaClient();
+  }
+
+  /**
+   * Genera código de actividad automáticamente
+   * Formato: PRIMERA_PALABRA_TIPO-ABREVIATURA_NOMBRE
+   * Ejemplo: "Coro" + "Coro Adultos 2025" → "CORO-CORADU25"
+   */
+  private async generateCodigoActividad(tipoActividadId: number, nombre: string): Promise<string> {
+    // Obtener el tipo de actividad
+    const tipoActividad = await this.prisma.tipos_actividades.findUnique({
+      where: { id: tipoActividadId }
+    });
+
+    if (!tipoActividad) {
+      throw new ValidationError(`Tipo de actividad con ID ${tipoActividadId} no encontrado`);
+    }
+
+    // Primera palabra del tipo (ej: "Coro" → "CORO")
+    const primeraPalabraTipo = tipoActividad.nombre.split(' ')[0].toUpperCase();
+
+    // Abreviatura del nombre (primeras 3 letras de cada palabra + números)
+    const palabrasNombre = nombre.split(' ');
+    let abreviatura = palabrasNombre
+      .map(palabra => {
+        // Si es un número, mantenerlo completo pero solo últimos 2 dígitos si es año
+        if (/^\d+$/.test(palabra)) {
+          return palabra.length === 4 ? palabra.slice(-2) : palabra;
+        }
+        // Tomar primeras 3 letras
+        return palabra.slice(0, 3).toUpperCase();
+      })
+      .join('');
+
+    // Código base
+    let codigoBase = `${primeraPalabraTipo}-${abreviatura}`;
+
+    // Verificar unicidad y agregar sufijo si es necesario
+    let codigo = codigoBase;
+    let contador = 1;
+
+    while (await this.actividadRepository.findByCodigoActividad(codigo)) {
+      codigo = `${codigoBase}-${contador}`;
+      contador++;
+    }
+
+    return codigo;
+  }
 
   /**
    * Crea una nueva actividad con validaciones de negocio
    */
   async createActividad(data: CreateActividadDto) {
-    // Validar que el código de actividad no exista
-    const existente = await this.actividadRepository.findByCodigoActividad(data.codigoActividad);
-    if (existente) {
-      throw new ValidationError(`Ya existe una actividad con el código ${data.codigoActividad}`);
+    // Auto-generar código si no se proporciona
+    let codigoActividad = data.codigoActividad;
+    if (!codigoActividad) {
+      codigoActividad = await this.generateCodigoActividad(data.tipoActividadId, data.nombre);
+      data = { ...data, codigoActividad };
+    } else {
+      // Validar que el código proporcionado no exista
+      const existente = await this.actividadRepository.findByCodigoActividad(codigoActividad);
+      if (existente) {
+        throw new ValidationError(`Ya existe una actividad con el código ${codigoActividad}`);
+      }
     }
 
     // Validar horarios si se proporcionan
@@ -306,6 +365,15 @@ export class ActividadService {
       );
     }
 
+    // Verificar si ya existe la asignación
+    const asignacionExistente = await this.actividadRepository.findAsignacionDocente(actividadId, docenteId, rolDocenteId);
+    if (asignacionExistente) {
+      const rolNombre = (asignacionExistente as any).rolesDocentes?.nombre || `ID ${rolDocenteId}`;
+      throw new ConflictError(
+        `El docente ${docente.nombre} ${docente.apellido} ya está asignado a la actividad "${actividad.nombre}" con el rol "${rolNombre}"`
+      );
+    }
+
     const asignacion = await this.actividadRepository.asignarDocente(actividadId, docenteId, rolDocenteId, observaciones);
 
     const docenteNombre = (asignacion as any).personas?.nombre || 'Docente';
@@ -330,6 +398,19 @@ export class ActividadService {
     const docenteNombre = (desasignacion as any).personas?.nombre || 'Docente';
     const docenteApellido = (desasignacion as any).personas?.apellido || '';
     logger.info(`Docente ${docenteNombre} ${docenteApellido} desasignado de actividad ${actividad.nombre}`);
+
+    return desasignacion;
+  }
+
+  /**
+   * Desasigna un docente usando el ID de la asignación
+   */
+  async desasignarDocenteById(asignacionId: number) {
+    const desasignacion = await this.actividadRepository.desasignarDocenteById(asignacionId);
+
+    const docenteNombre = (desasignacion as any).personas?.nombre || 'Docente';
+    const docenteApellido = (desasignacion as any).personas?.apellido || '';
+    logger.info(`Docente ${docenteNombre} ${docenteApellido} desasignado (asignación ID: ${asignacionId})`);
 
     return desasignacion;
   }

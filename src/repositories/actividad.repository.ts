@@ -128,7 +128,7 @@ export class ActividadRepository {
           ...(where.horarios_actividades?.some || {}),
           reservas_aulas_actividades: {
             some: {
-              aula_id: query.aulaId
+              aulaId: query.aulaId
             }
           }
         }
@@ -158,10 +158,10 @@ export class ActividadRepository {
     // Filtro por vigencia
     if (query.vigentes) {
       const hoy = new Date();
-      where.fecha_desde = { lte: hoy };
+      where.fechaDesde = { lte: hoy };
       where.OR = [
-        { fecha_hasta: null },
-        { fecha_hasta: { gte: hoy } }
+        { fechaHasta: null },
+        { fechaHasta: { gte: hoy } }
       ];
     }
 
@@ -172,11 +172,11 @@ export class ActividadRepository {
     if (query.orderBy === 'codigo') {
       orderBy.codigoActividad = query.orderDir;
     } else if (query.orderBy === 'fechaDesde') {
-      orderBy.fecha_desde = query.orderDir;
+      orderBy.fechaDesde = query.orderDir;
     } else if (query.orderBy === 'cupoMaximo') {
       orderBy.capacidadMaxima = query.orderDir;
     } else if (query.orderBy === 'created_at') {
-      orderBy.created_at = query.orderDir;
+      orderBy.createdAt = query.orderDir;
     } else {
       orderBy.nombre = query.orderDir;
     }
@@ -208,7 +208,10 @@ export class ActividadRepository {
                   id: true,
                   nombre: true,
                   apellido: true,
-                  especialidad: true
+                  tipos: {
+                    where: { activo: true },
+                    include: { tipoPersona: true, especialidad: true }
+                  }
                 }
               },
               rolesDocentes: true
@@ -269,10 +272,15 @@ export class ActividadRepository {
                 id: true,
                 nombre: true,
                 apellido: true,
-                especialidad: true,
                 email: true,
                 telefono: true,
-                honorariosPorHora: true
+                tipos: {
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    especialidad: true
+                  }
+                }
               }
             },
             rolesDocentes: true
@@ -286,9 +294,14 @@ export class ActividadRepository {
                 id: true,
                 nombre: true,
                 apellido: true,
-                tipo: true,
                 email: true,
-                telefono: true
+                telefono: true,
+                tipos: {
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true
+                  }
+                }
               }
             }
           },
@@ -360,7 +373,10 @@ export class ActividadRepository {
                 id: true,
                 nombre: true,
                 apellido: true,
-                especialidad: true
+                tipos: {
+                  where: { activo: true },
+                  include: { tipoPersona: true, especialidad: true }
+                }
               }
             },
             rolesDocentes: true
@@ -387,7 +403,7 @@ export class ActividadRepository {
     return this.prisma.actividades.update({
       where: { id },
       data: {
-        estado_id: nuevoEstadoId,
+        estadoId: nuevoEstadoId,
         observaciones: observaciones || undefined
       },
       include: {
@@ -404,10 +420,10 @@ export class ActividadRepository {
   async agregarHorario(actividadId: number, horarioData: any) {
     return this.prisma.horarios_actividades.create({
       data: {
-        actividad_id: actividadId,
-        dia_semana_id: horarioData.diaSemanaId,
-        hora_inicio: this.parseTimeToDate(horarioData.horaInicio),
-        hora_fin: this.parseTimeToDate(horarioData.horaFin),
+        actividadId,
+        diaSemanaId: horarioData.diaSemanaId,
+        horaInicio: horarioData.horaInicio,
+        horaFin: horarioData.horaFin,
         activo: horarioData.activo !== false
       },
       include: {
@@ -429,9 +445,9 @@ export class ActividadRepository {
   async updateHorario(horarioId: number, horarioData: any) {
     const updateData: any = {};
 
-    if (horarioData.diaSemanaId) updateData.dia_semana_id = horarioData.diaSemanaId;
-    if (horarioData.horaInicio) updateData.hora_inicio = this.parseTimeToDate(horarioData.horaInicio);
-    if (horarioData.horaFin) updateData.hora_fin = this.parseTimeToDate(horarioData.horaFin);
+    if (horarioData.diaSemanaId) updateData.diaSemanaId = horarioData.diaSemanaId;
+    if (horarioData.horaInicio) updateData.horaInicio = horarioData.horaInicio;
+    if (horarioData.horaFin) updateData.horaFin = horarioData.horaFin;
     if (horarioData.activo !== undefined) updateData.activo = horarioData.activo;
 
     return this.prisma.horarios_actividades.update({
@@ -463,7 +479,7 @@ export class ActividadRepository {
    */
   async getHorariosByActividad(actividadId: number) {
     return this.prisma.horarios_actividades.findMany({
-      where: { actividad_id: actividadId },
+      where: { actividadId },
       include: {
         diasSemana: true,
         reservas_aulas_actividades: {
@@ -473,8 +489,8 @@ export class ActividadRepository {
         }
       },
       orderBy: [
-        { dia_semana_id: 'asc' },
-        { hora_inicio: 'asc' }
+        { diaSemanaId: 'asc' },
+        { horaInicio: 'asc' }
       ]
     });
   }
@@ -498,14 +514,31 @@ export class ActividadRepository {
   // ==================== DOCENTES ====================
 
   /**
+   * Busca una asignación de docente existente
+   */
+  async findAsignacionDocente(actividadId: number, docenteId: number, rolDocenteId: number) {
+    return this.prisma.docentes_actividades.findFirst({
+      where: {
+        actividadId,
+        docenteId,
+        rolDocenteId,
+        activo: true
+      },
+      include: {
+        rolesDocentes: true
+      }
+    });
+  }
+
+  /**
    * Asigna un docente a una actividad
    */
   async asignarDocente(actividadId: number, docenteId: number, rolDocenteId: number, observaciones?: string) {
     return this.prisma.docentes_actividades.create({
       data: {
-        actividad_id: actividadId,
-        docente_id: docenteId,
-        rol_docente_id: rolDocenteId,
+        actividades: { connect: { id: actividadId } },
+        personas: { connect: { id: docenteId } },
+        rolesDocentes: { connect: { id: rolDocenteId } },
         observaciones,
         activo: true
       },
@@ -515,8 +548,11 @@ export class ActividadRepository {
             id: true,
             nombre: true,
             apellido: true,
-            especialidad: true,
-            email: true
+            email: true,
+            tipos: {
+              where: { activo: true },
+              include: { tipoPersona: true, especialidad: true }
+            }
           }
         },
         rolesDocentes: true,
@@ -538,9 +574,9 @@ export class ActividadRepository {
     // Buscar la asignación activa
     const asignacion = await this.prisma.docentes_actividades.findFirst({
       where: {
-        actividad_id: actividadId,
-        docente_id: docenteId,
-        rol_docente_id: rolDocenteId,
+        actividadId,
+        docenteId,
+        rolDocenteId,
         activo: true
       }
     });
@@ -553,7 +589,7 @@ export class ActividadRepository {
       where: { id: asignacion.id },
       data: {
         activo: false,
-        fecha_desasignacion: new Date()
+        fechaDesasignacion: new Date()
       },
       include: {
         personas: {
@@ -569,12 +605,49 @@ export class ActividadRepository {
   }
 
   /**
+   * Desasigna un docente usando el ID de la asignación
+   */
+  async desasignarDocenteById(asignacionId: number) {
+    const asignacion = await this.prisma.docentes_actividades.findUnique({
+      where: { id: asignacionId }
+    });
+
+    if (!asignacion) {
+      throw new Error('Asignación de docente no encontrada');
+    }
+
+    return this.prisma.docentes_actividades.update({
+      where: { id: asignacionId },
+      data: {
+        activo: false,
+        fechaDesasignacion: new Date()
+      },
+      include: {
+        personas: {
+          select: {
+            id: true,
+            nombre: true,
+            apellido: true
+          }
+        },
+        rolesDocentes: true,
+        actividades: {
+          select: {
+            id: true,
+            nombre: true
+          }
+        }
+      }
+    });
+  }
+
+  /**
    * Obtiene docentes de una actividad
    */
   async getDocentesByActividad(actividadId: number) {
     return this.prisma.docentes_actividades.findMany({
       where: {
-        actividad_id: actividadId,
+        actividadId,
         activo: true
       },
       include: {
@@ -583,10 +656,12 @@ export class ActividadRepository {
             id: true,
             nombre: true,
             apellido: true,
-            especialidad: true,
             email: true,
             telefono: true,
-            honorariosPorHora: true
+            tipos: {
+              where: { activo: true },
+              include: { tipoPersona: true, especialidad: true }
+            }
           }
         },
         rolesDocentes: true
@@ -713,11 +788,12 @@ export class ActividadRepository {
             id: true,
             nombre: true,
             apellido: true,
-            tipo: true,
             email: true,
             telefono: true,
-            categoriaId: true,
-            categoria: true
+            tipos: {
+              where: { activo: true },
+              include: { tipoPersona: true, categoria: true }
+            }
           }
         }
       },
@@ -816,8 +892,11 @@ export class ActividadRepository {
             id: true,
             nombre: true,
             apellido: true,
-            tipo: true,
-            email: true
+            email: true,
+            tipos: {
+              where: { activo: true },
+              include: { tipoPersona: true }
+            }
           }
         },
         actividades: {
@@ -840,12 +919,11 @@ export class ActividadRepository {
   ) {
     return this.prisma.participacion_actividades.update({
       where: {
-        id: participanteId,
-        actividad_id: actividadId
+        id: participanteId
       },
       data: {
-        activo: false,
-        fecha_fin: new Date()
+        activa: false,
+        fechaFin: new Date()
       }
     });
   }

@@ -8,7 +8,7 @@ const router = Router();
 
 // Initialize dependencies
 const actividadRepository = new ActividadRepository(prisma);
-const actividadService = new ActividadService(actividadRepository);
+const actividadService = new ActividadService(actividadRepository, prisma);
 const actividadController = new ActividadController(actividadService);
 
 // ==================== CATÁLOGOS ====================
@@ -74,6 +74,7 @@ router.post('/:id/horarios', actividadController.agregarHorario.bind(actividadCo
 router.get('/:id/docentes', actividadController.getDocentesByActividad.bind(actividadController));
 router.post('/:id/docentes', actividadController.asignarDocente.bind(actividadController));
 router.delete('/:id/docentes/:docenteId/rol/:rolDocenteId', actividadController.desasignarDocente.bind(actividadController));
+router.delete('/docentes/:asignacionId', actividadController.desasignarDocenteById.bind(actividadController));
 
 // ==================== PARTICIPANTES DE ACTIVIDAD ====================
 
