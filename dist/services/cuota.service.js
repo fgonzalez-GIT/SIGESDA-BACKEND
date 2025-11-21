@@ -4,6 +4,7 @@ exports.CuotaService = void 0;
 const client_1 = require("@prisma/client");
 const logger_1 = require("@/utils/logger");
 const database_1 = require("@/config/database");
+const persona_helper_1 = require("@/utils/persona.helper");
 class CuotaService {
     constructor(cuotaRepository, reciboRepository, personaRepository, configuracionRepository) {
         this.cuotaRepository = cuotaRepository;
@@ -56,7 +57,8 @@ class CuotaService {
         if (!persona) {
             throw new Error(`Persona con ID ${socioId} no encontrada`);
         }
-        if (persona.tipo !== 'SOCIO') {
+        const esSocio = await (0, persona_helper_1.hasActiveTipo)(socioId, 'SOCIO');
+        if (!esSocio) {
             throw new Error(`La persona debe ser de tipo SOCIO`);
         }
         return this.cuotaRepository.findBySocio(socioId, limit);

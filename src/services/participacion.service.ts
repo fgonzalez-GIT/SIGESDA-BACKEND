@@ -18,6 +18,7 @@ import {
   EstadoParticipacion,
   determinarEstado
 } from '@/dto/participacion.dto';
+import { hasActiveTipo } from '@/utils/persona.helper';
 
 export class ParticipacionService {
   constructor(
@@ -81,7 +82,8 @@ export class ParticipacionService {
     let precioFinal = data.precioEspecial;
     if (!precioFinal) {
       // Si es socio y la actividad es gratis para socios, precio = 0
-      if (persona.tipo === 'SOCIO' && actividad.precio === 0) {
+      const esSocio = await hasActiveTipo(persona.id, 'SOCIO');
+      if (esSocio && actividad.precio === 0) {
         precioFinal = 0;
       } else {
         // Usar el precio de la actividad
@@ -241,7 +243,8 @@ export class ParticipacionService {
 
         // Calcular precio con descuento familiar si aplica
         let precio = inscripcion.precioEspecial ?? Number(actividad.precio);
-        if (data.aplicarDescuentoFamiliar && persona.tipo === 'SOCIO') {
+        const esSocio = await hasActiveTipo(persona.id, 'SOCIO');
+        if (data.aplicarDescuentoFamiliar && esSocio) {
           precio = precio * 0.8; // 20% de descuento familiar
         }
 

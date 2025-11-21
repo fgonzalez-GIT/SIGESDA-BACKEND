@@ -17,12 +17,13 @@ class PersonaRepository {
                 tipos: {
                     create: await Promise.all(tiposFinales.map(async (tipo) => {
                         let tipoPersonaId = 'tipoPersonaId' in tipo ? tipo.tipoPersonaId : undefined;
-                        if (!tipoPersonaId && 'tipoPersonaCodigo' in tipo && tipo.tipoPersonaCodigo) {
+                        let tipoPersonaCodigo = 'tipoPersonaCodigo' in tipo ? tipo.tipoPersonaCodigo : undefined;
+                        if (!tipoPersonaId && tipoPersonaCodigo) {
                             const tipoCatalogo = await this.prisma.tipoPersonaCatalogo.findUnique({
-                                where: { codigo: tipo.tipoPersonaCodigo }
+                                where: { codigo: tipoPersonaCodigo }
                             });
                             if (!tipoCatalogo) {
-                                throw new Error(`Tipo de persona '${tipo.tipoPersonaCodigo}' no encontrado`);
+                                throw new Error(`Tipo de persona '${tipoPersonaCodigo}' no encontrado`);
                             }
                             tipoPersonaId = tipoCatalogo.id;
                         }
@@ -30,29 +31,35 @@ class PersonaRepository {
                             tipoPersonaId: tipoPersonaId,
                             activo: true
                         };
-                        if ('categoriaId' in tipo) {
-                            tipoData.categoriaId = tipo.categoriaId ?? undefined;
+                        if (tipoPersonaCodigo === 'SOCIO') {
+                            if ('categoriaId' in tipo && tipo.categoriaId !== undefined) {
+                                tipoData.categoriaId = tipo.categoriaId;
+                            }
+                            if ('numeroSocio' in tipo && tipo.numeroSocio !== undefined) {
+                                tipoData.numeroSocio = tipo.numeroSocio;
+                            }
+                            if ('fechaIngreso' in tipo && tipo.fechaIngreso !== undefined) {
+                                tipoData.fechaIngreso = new Date(tipo.fechaIngreso);
+                            }
                         }
-                        if ('numeroSocio' in tipo) {
-                            tipoData.numeroSocio = tipo.numeroSocio ?? undefined;
+                        if (tipoPersonaCodigo === 'DOCENTE') {
+                            if ('especialidadId' in tipo && tipo.especialidadId !== undefined) {
+                                tipoData.especialidadId = tipo.especialidadId;
+                            }
+                            if ('honorariosPorHora' in tipo && tipo.honorariosPorHora !== undefined) {
+                                tipoData.honorariosPorHora = tipo.honorariosPorHora;
+                            }
                         }
-                        if ('fechaIngreso' in tipo) {
-                            tipoData.fechaIngreso = tipo.fechaIngreso ? new Date(tipo.fechaIngreso) : undefined;
+                        if (tipoPersonaCodigo === 'PROVEEDOR') {
+                            if ('cuit' in tipo && tipo.cuit !== undefined) {
+                                tipoData.cuit = tipo.cuit;
+                            }
+                            if ('razonSocialId' in tipo && tipo.razonSocialId !== undefined) {
+                                tipoData.razonSocialId = tipo.razonSocialId;
+                            }
                         }
-                        if ('especialidadId' in tipo) {
-                            tipoData.especialidadId = tipo.especialidadId ?? undefined;
-                        }
-                        if ('honorariosPorHora' in tipo) {
-                            tipoData.honorariosPorHora = tipo.honorariosPorHora ?? undefined;
-                        }
-                        if ('cuit' in tipo) {
-                            tipoData.cuit = tipo.cuit ?? undefined;
-                        }
-                        if ('razonSocialId' in tipo) {
-                            tipoData.razonSocialId = tipo.razonSocialId ?? undefined;
-                        }
-                        if ('observaciones' in tipo) {
-                            tipoData.observaciones = tipo.observaciones ?? undefined;
+                        if ('observaciones' in tipo && tipo.observaciones !== undefined) {
+                            tipoData.observaciones = tipo.observaciones;
                         }
                         return tipoData;
                     }))
@@ -72,7 +79,8 @@ class PersonaRepository {
                     include: {
                         tipoPersona: true,
                         categoria: true,
-                        especialidad: true
+                        especialidad: true,
+                        razonSocial: true
                     }
                 },
                 contactos: true
@@ -81,6 +89,12 @@ class PersonaRepository {
     }
     async findAll(query) {
         const where = {};
+        if (query.activo === false) {
+            where.activo = false;
+        }
+        else {
+            where.activo = true;
+        }
         if (query.tiposCodigos && query.tiposCodigos.length > 0) {
             where.tipos = {
                 some: {
@@ -107,26 +121,6 @@ class PersonaRepository {
                 }
             };
         }
-        if (query.activo !== undefined) {
-            if (query.activo) {
-                where.tipos = {
-                    some: {
-                        activo: true,
-                        fechaDesasignacion: null
-                    }
-                };
-            }
-            else {
-                where.tipos = {
-                    every: {
-                        OR: [
-                            { activo: false },
-                            { fechaDesasignacion: { not: null } }
-                        ]
-                    }
-                };
-            }
-        }
         if (query.search) {
             where.OR = [
                 { nombre: { contains: query.search, mode: 'insensitive' } },
@@ -135,7 +129,8 @@ class PersonaRepository {
                 { email: { contains: query.search, mode: 'insensitive' } }
             ];
         }
-        const skip = (query.page - 1) * query.limit;
+        const skip = query.page && query.limit ? (query.page - 1) * query.limit : undefined;
+        const take = query.limit || undefined;
         const include = {};
         if (query.includeTipos) {
             include.tipos = {
@@ -143,7 +138,8 @@ class PersonaRepository {
                 include: {
                     tipoPersona: true,
                     categoria: true,
-                    especialidad: true
+                    especialidad: true,
+                    razonSocial: true
                 }
             };
         }
@@ -156,7 +152,7 @@ class PersonaRepository {
             this.prisma.persona.findMany({
                 where,
                 skip,
-                take: query.limit,
+                take,
                 orderBy: [
                     { apellido: 'asc' },
                     { nombre: 'asc' }
@@ -211,9 +207,107 @@ class PersonaRepository {
         });
     }
     async update(id, data) {
-        const updateData = { ...data };
+        const { tipos, contactos, ...personaData } = data;
+        const updateData = { ...personaData };
         if (updateData.fechaNacimiento) {
             updateData.fechaNacimiento = new Date(updateData.fechaNacimiento);
+        }
+        if (tipos || contactos) {
+            return await this.prisma.$transaction(async (tx) => {
+                await tx.persona.update({
+                    where: { id },
+                    data: updateData
+                });
+                if (tipos && tipos.length > 0) {
+                    await tx.personaTipo.deleteMany({
+                        where: { personaId: id }
+                    });
+                    const tiposData = await Promise.all(tipos.map(async (tipo) => {
+                        let tipoPersonaId = 'tipoPersonaId' in tipo ? tipo.tipoPersonaId : undefined;
+                        let tipoPersonaCodigo = 'tipoPersonaCodigo' in tipo ? tipo.tipoPersonaCodigo : undefined;
+                        if (!tipoPersonaId && tipoPersonaCodigo) {
+                            const tipoCatalogo = await tx.tipoPersonaCatalogo.findUnique({
+                                where: { codigo: tipoPersonaCodigo }
+                            });
+                            if (!tipoCatalogo) {
+                                throw new Error(`Tipo de persona '${tipoPersonaCodigo}' no encontrado`);
+                            }
+                            tipoPersonaId = tipoCatalogo.id;
+                        }
+                        const tipoData = {
+                            personaId: id,
+                            tipoPersonaId: tipoPersonaId,
+                            activo: true
+                        };
+                        if (tipoPersonaCodigo === 'SOCIO') {
+                            if ('categoriaId' in tipo && tipo.categoriaId !== undefined) {
+                                tipoData.categoriaId = tipo.categoriaId;
+                            }
+                            if ('numeroSocio' in tipo && tipo.numeroSocio !== undefined) {
+                                tipoData.numeroSocio = tipo.numeroSocio;
+                            }
+                            if ('fechaIngreso' in tipo && tipo.fechaIngreso !== undefined) {
+                                tipoData.fechaIngreso = new Date(tipo.fechaIngreso);
+                            }
+                        }
+                        if (tipoPersonaCodigo === 'DOCENTE') {
+                            if ('especialidadId' in tipo && tipo.especialidadId !== undefined) {
+                                tipoData.especialidadId = tipo.especialidadId;
+                            }
+                            if ('honorariosPorHora' in tipo && tipo.honorariosPorHora !== undefined) {
+                                tipoData.honorariosPorHora = tipo.honorariosPorHora;
+                            }
+                        }
+                        if (tipoPersonaCodigo === 'PROVEEDOR') {
+                            if ('cuit' in tipo && tipo.cuit !== undefined) {
+                                tipoData.cuit = tipo.cuit;
+                            }
+                            if ('razonSocialId' in tipo && tipo.razonSocialId !== undefined) {
+                                tipoData.razonSocialId = tipo.razonSocialId;
+                            }
+                        }
+                        if ('observaciones' in tipo && tipo.observaciones !== undefined) {
+                            tipoData.observaciones = tipo.observaciones;
+                        }
+                        return tipoData;
+                    }));
+                    await tx.personaTipo.createMany({
+                        data: tiposData
+                    });
+                }
+                if (contactos && contactos.length > 0) {
+                    await tx.contactoPersona.deleteMany({
+                        where: { personaId: id }
+                    });
+                    await tx.contactoPersona.createMany({
+                        data: contactos.map((contacto) => ({
+                            personaId: id,
+                            tipoContacto: contacto.tipoContacto,
+                            valor: contacto.valor,
+                            principal: contacto.principal ?? false,
+                            observaciones: contacto.observaciones,
+                            activo: contacto.activo ?? true
+                        }))
+                    });
+                }
+                return await tx.persona.findUnique({
+                    where: { id },
+                    include: {
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: true,
+                                categoria: true,
+                                especialidad: true,
+                                razonSocial: true
+                            }
+                        },
+                        contactos: {
+                            where: { activo: true }
+                        }
+                    }
+                });
+            });
         }
         return this.prisma.persona.update({
             where: { id },
@@ -224,7 +318,8 @@ class PersonaRepository {
                     include: {
                         tipoPersona: true,
                         categoria: true,
-                        especialidad: true
+                        especialidad: true,
+                        razonSocial: true
                     }
                 },
                 contactos: {
@@ -239,18 +334,24 @@ class PersonaRepository {
         });
     }
     async softDelete(id, motivo) {
-        await this.prisma.personaTipo.updateMany({
-            where: {
-                personaId: id,
-                activo: true
-            },
+        return this.prisma.persona.update({
+            where: { id },
             data: {
                 activo: false,
-                fechaDesasignacion: new Date(),
-                motivoBaja: motivo
+                fechaBaja: new Date(),
+                motivoBaja: motivo || 'Eliminación de persona'
+            },
+            include: {
+                tipos: {
+                    include: {
+                        tipoPersona: true,
+                        categoria: true,
+                        especialidad: true
+                    }
+                },
+                contactos: true
             }
         });
-        return this.findById(id);
     }
     async findByTipo(tipoPersonaCodigo, soloActivos = true) {
         return this.prisma.persona.findMany({

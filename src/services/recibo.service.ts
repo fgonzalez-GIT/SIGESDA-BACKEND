@@ -1,6 +1,5 @@
 // @ts-nocheck
 import { Recibo, TipoRecibo, EstadoRecibo } from '@prisma/client';
-import { TipoPersona } from '@/types/enums';
 import { ReciboRepository } from '@/repositories/recibo.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import {
@@ -16,6 +15,7 @@ import {
   ProcessPaymentDto
 } from '@/dto/recibo.dto';
 import { logger } from '@/utils/logger';
+import { hasActiveTipo } from '@/utils/persona.helper';
 
 export class ReciboService {
   constructor(
@@ -44,7 +44,7 @@ export class ReciboService {
       }
 
       // Business rules for different receipt types
-      this.validateReceptorByTipo(data.tipo, receptor);
+      await this.validateReceptorByTipo(data.tipo, receptor);
     }
 
     // Generate unique receipt number
@@ -118,7 +118,7 @@ export class ReciboService {
         }
 
         const tipoRecibo = data.tipo || existingRecibo.tipo;
-        this.validateReceptorByTipo(tipoRecibo, receptor);
+        await this.validateReceptorByTipo(tipoRecibo, receptor);
       }
     }
 
@@ -195,7 +195,7 @@ export class ReciboService {
           }
 
           try {
-            this.validateReceptorByTipo(recibo.tipo, receptor);
+            await this.validateReceptorByTipo(recibo.tipo, receptor);
           } catch (error) {
             errors.push(`Receptor ${recibo.receptorId}: ${error}`);
             continue;
@@ -314,30 +314,32 @@ export class ReciboService {
   }
 
   // Helper method to validate receptor by receipt type
-  private validateReceptorByTipo(tipo: TipoRecibo, receptor: any): void {
+  private async validateReceptorByTipo(tipo: TipoRecibo, receptor: any): Promise<void> {
     switch (tipo) {
       case TipoRecibo.CUOTA:
-        if (receptor.tipo !== TipoPersona.SOCIO) {
+        const esSocio = await hasActiveTipo(receptor.id, 'SOCIO');
+        if (!esSocio) {
           throw new Error(`Las cuotas solo pueden ser emitidas a socios`);
         }
-        if (receptor.fechaBaja) {
-          throw new Error(`No se puede emitir cuota a socio dado de baja`);
+        if (!receptor.activo) {
+          throw new Error(`No se puede emitir cuota a socio inactivo`);
         }
         break;
 
       case TipoRecibo.SUELDO:
-        if (receptor.tipo !== TipoPersona.DOCENTE) {
+        const esDocente = await hasActiveTipo(receptor.id, 'DOCENTE');
+        if (!esDocente) {
           throw new Error(`Los sueldos solo pueden ser emitidos a docentes`);
         }
-        if (receptor.fechaBaja) {
-          throw new Error(`No se puede emitir sueldo a docente dado de baja`);
+        if (!receptor.activo) {
+          throw new Error(`No se puede emitir sueldo a docente inactivo`);
         }
         break;
 
       case TipoRecibo.PAGO_ACTIVIDAD:
         // Activity payments can be to any active person
-        if (receptor.fechaBaja) {
-          throw new Error(`No se puede emitir pago de actividad a persona dada de baja`);
+        if (!receptor.activo) {
+          throw new Error(`No se puede emitir pago de actividad a persona inactiva`);
         }
         break;
 

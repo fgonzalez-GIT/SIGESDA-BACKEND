@@ -126,9 +126,17 @@ export class PersonaRepository {
 
   /**
    * Buscar todas las personas con filtros
+   * Por defecto solo muestra personas activas (activo = true)
    */
   async findAll(query: PersonaQueryDto): Promise<{ data: Persona[]; total: number }> {
     const where: any = {};
+
+    // Por defecto filtrar solo personas activas, a menos que se pida explícitamente inactivas
+    if (query.activo === false) {
+      where.activo = false;
+    } else {
+      where.activo = true; // Default: solo activas
+    }
 
     // Filtro por tipos de persona
     if (query.tiposCodigos && query.tiposCodigos.length > 0) {
@@ -160,29 +168,6 @@ export class PersonaRepository {
           especialidadId: query.especialidadId
         }
       };
-    }
-
-    // Filtro por estado activo
-    if (query.activo !== undefined) {
-      if (query.activo) {
-        // Persona activa = tiene al menos un tipo activo sin fecha de desasignación
-        where.tipos = {
-          some: {
-            activo: true,
-            fechaDesasignacion: null
-          }
-        };
-      } else {
-        // Persona inactiva = todos los tipos desasignados
-        where.tipos = {
-          every: {
-            OR: [
-              { activo: false },
-              { fechaDesasignacion: { not: null } }
-            ]
-          }
-        };
-      }
     }
 
     // Búsqueda por texto
@@ -458,23 +443,28 @@ export class PersonaRepository {
   }
 
   /**
-   * Desactivar todos los tipos de una persona (soft delete)
+   * Soft delete de persona (marca activo = false)
+   * Los tipos NO se desactivan, se mantienen como registro histórico
    */
   async softDelete(id: number, motivo?: string): Promise<Persona> {
-    // Desactivar todos los tipos activos
-    await this.prisma.personaTipo.updateMany({
-      where: {
-        personaId: id,
-        activo: true
-      },
+    return this.prisma.persona.update({
+      where: { id },
       data: {
         activo: false,
-        fechaDesasignacion: new Date(),
-        motivoBaja: motivo
+        fechaBaja: new Date(),
+        motivoBaja: motivo || 'Eliminación de persona'
+      },
+      include: {
+        tipos: {
+          include: {
+            tipoPersona: true,
+            categoria: true,
+            especialidad: true
+          }
+        },
+        contactos: true
       }
     });
-
-    return this.findById(id) as Promise<Persona>;
   }
 
   // ======================================================================

@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { ReservaAula } from '@prisma/client';
-import { TipoPersona } from '@/types/enums';
+import { ReservaAula, PrismaClient } from '@prisma/client';
 import { ReservaAulaRepository } from '@/repositories/reserva-aula.repository';
 import { AulaRepository } from '@/repositories/aula.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
@@ -17,6 +16,7 @@ import {
   ReservaStatsDto
 } from '@/dto/reserva-aula.dto';
 import { logger } from '@/utils/logger';
+import { hasActiveTipo, isPersonaActiva } from '@/utils/persona.helper';
 
 export class ReservaAulaService {
   constructor(
@@ -41,11 +41,16 @@ export class ReservaAulaService {
     if (!docente) {
       throw new Error(`Docente con ID ${data.docenteId} no encontrado`);
     }
-    if (docente.tipo !== TipoPersona.DOCENTE) {
-      throw new Error(`La persona ${docente.nombre} ${docente.apellido} no es un docente`);
+
+    // Check if person is active
+    if (!docente.activo) {
+      throw new Error(`La persona ${docente.nombre} ${docente.apellido} está inactiva`);
     }
-    if (docente.fechaBaja) {
-      throw new Error(`El docente ${docente.nombre} ${docente.apellido} está dado de baja`);
+
+    // Check if person has DOCENTE type active
+    const esDocente = await hasActiveTipo(docente.id, 'DOCENTE');
+    if (!esDocente) {
+      throw new Error(`La persona ${docente.nombre} ${docente.apellido} no es un docente activo`);
     }
 
     // Validate actividad if provided
@@ -144,8 +149,15 @@ export class ReservaAulaService {
     // Validate docente if being updated
     if (data.docenteId && data.docenteId !== existingReserva.docenteId) {
       const docente = await this.personaRepository.findById(data.docenteId);
-      if (!docente || docente.tipo !== TipoPersona.DOCENTE || docente.fechaBaja) {
-        throw new Error(`Docente con ID ${data.docenteId} no válido`);
+      if (!docente) {
+        throw new Error(`Docente con ID ${data.docenteId} no encontrado`);
+      }
+      if (!docente.activo) {
+        throw new Error(`Docente con ID ${data.docenteId} está inactivo`);
+      }
+      const esDocente = await hasActiveTipo(docente.id, 'DOCENTE');
+      if (!esDocente) {
+        throw new Error(`La persona con ID ${data.docenteId} no es un docente activo`);
       }
     }
 
@@ -230,8 +242,17 @@ export class ReservaAulaService {
           continue;
         }
 
-        if (!docente || docente.tipo !== TipoPersona.DOCENTE || docente.fechaBaja) {
-          errors.push(`Docente ${reserva.docenteId} no válido`);
+        if (!docente) {
+          errors.push(`Docente ${reserva.docenteId} no encontrado`);
+          continue;
+        }
+        if (!docente.activo) {
+          errors.push(`Docente ${reserva.docenteId} está inactivo`);
+          continue;
+        }
+        const esDocente = await hasActiveTipo(docente.id, 'DOCENTE');
+        if (!esDocente) {
+          errors.push(`Persona ${reserva.docenteId} no es un docente activo`);
           continue;
         }
 

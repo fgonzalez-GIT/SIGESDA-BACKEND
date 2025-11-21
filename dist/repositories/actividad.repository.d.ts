@@ -4,22 +4,41 @@ export declare class ActividadRepository {
     private prisma;
     constructor(prisma: PrismaClient);
     create(data: CreateActividadDto): Promise<{
-        horarios_actividades: {
+        horarios_actividades: ({
+            diasSemana: {
+                nombre: string;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+                codigo: string;
+                orden: number;
+            };
+        } & {
             activo: boolean;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             actividadId: number;
+            diaSemanaId: number;
             horaInicio: string;
             horaFin: string;
-            diaSemana: import(".prisma/client").$Enums.DiaSemana;
-        }[];
+        })[];
         docentes_actividades: ({
             personas: {
                 nombre: string;
                 apellido: string;
                 email: string | null;
                 id: number;
+            };
+            rolesDocentes: {
+                activo: boolean;
+                nombre: string;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+                descripcion: string | null;
+                codigo: string;
+                orden: number;
             };
         } & {
             observaciones: string | null;
@@ -33,92 +52,267 @@ export declare class ActividadRepository {
             docenteId: number;
             rolDocenteId: number;
         })[];
+        tiposActividades: {
+            activo: boolean;
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            descripcion: string | null;
+            codigo: string;
+            orden: number;
+        };
+        categoriasActividades: {
+            activo: boolean;
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            descripcion: string | null;
+            codigo: string;
+            orden: number;
+        };
+        estadosActividades: {
+            activo: boolean;
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            descripcion: string | null;
+            codigo: string;
+            orden: number;
+        };
     } & {
+        observaciones: string | null;
+        categoriaId: number;
         nombre: string;
-        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
-        precio: import("@prisma/client/runtime/library").Decimal;
-        duracion: number | null;
+        codigoActividad: string;
+        tipoActividadId: number;
+        estadoId: number;
+        fechaDesde: Date;
+        fechaHasta: Date | null;
+        costo: import("@prisma/client/runtime/library").Decimal;
     }>;
     findAll(query: QueryActividadesDto): Promise<{
         data: {
+            observaciones: string | null;
+            categoriaId: number;
             nombre: string;
-            tipo: import(".prisma/client").$Enums.TipoActividad;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             descripcion: string | null;
             activa: boolean;
             capacidadMaxima: number | null;
-            precio: import("@prisma/client/runtime/library").Decimal;
-            duracion: number | null;
+            codigoActividad: string;
+            tipoActividadId: number;
+            estadoId: number;
+            fechaDesde: Date;
+            fechaHasta: Date | null;
+            costo: import("@prisma/client/runtime/library").Decimal;
         }[];
         total: number;
     }>;
     findById(id: number): Promise<{
+        observaciones: string | null;
+        categoriaId: number;
         nombre: string;
-        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
-        precio: import("@prisma/client/runtime/library").Decimal;
-        duracion: number | null;
+        codigoActividad: string;
+        tipoActividadId: number;
+        estadoId: number;
+        fechaDesde: Date;
+        fechaHasta: Date | null;
+        costo: import("@prisma/client/runtime/library").Decimal;
     } | null>;
-    findByCodigoActividad(codigo: string): Promise<{
+    findByCodigoActividad(codigo: string): Promise<({
+        tiposActividades: {
+            activo: boolean;
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            descripcion: string | null;
+            codigo: string;
+            orden: number;
+        };
+        categoriasActividades: {
+            activo: boolean;
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            descripcion: string | null;
+            codigo: string;
+            orden: number;
+        };
+        estadosActividades: {
+            activo: boolean;
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            descripcion: string | null;
+            codigo: string;
+            orden: number;
+        };
+    } & {
+        observaciones: string | null;
+        categoriaId: number;
         nombre: string;
-        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
-        precio: import("@prisma/client/runtime/library").Decimal;
-        duracion: number | null;
-    } | null>;
+        codigoActividad: string;
+        tipoActividadId: number;
+        estadoId: number;
+        fechaDesde: Date;
+        fechaHasta: Date | null;
+        costo: import("@prisma/client/runtime/library").Decimal;
+    }) | null>;
     update(id: number, data: UpdateActividadDto): Promise<{
+        horarios_actividades: ({
+            diasSemana: {
+                nombre: string;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+                codigo: string;
+                orden: number;
+            };
+        } & {
+            activo: boolean;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            actividadId: number;
+            diaSemanaId: number;
+            horaInicio: string;
+            horaFin: string;
+        })[];
+        docentes_actividades: ({
+            personas: {
+                nombre: string;
+                apellido: string;
+                especialidad: string | null;
+                id: number;
+            };
+            rolesDocentes: {
+                activo: boolean;
+                nombre: string;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+                descripcion: string | null;
+                codigo: string;
+                orden: number;
+            };
+        } & {
+            observaciones: string | null;
+            activo: boolean;
+            fechaDesasignacion: Date | null;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            fechaAsignacion: Date;
+            actividadId: number;
+            docenteId: number;
+            rolDocenteId: number;
+        })[];
+        tiposActividades: {
+            activo: boolean;
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            descripcion: string | null;
+            codigo: string;
+            orden: number;
+        };
+        categoriasActividades: {
+            activo: boolean;
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            descripcion: string | null;
+            codigo: string;
+            orden: number;
+        };
+        estadosActividades: {
+            activo: boolean;
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            descripcion: string | null;
+            codigo: string;
+            orden: number;
+        };
+    } & {
+        observaciones: string | null;
+        categoriaId: number;
         nombre: string;
-        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
-        precio: import("@prisma/client/runtime/library").Decimal;
-        duracion: number | null;
+        codigoActividad: string;
+        tipoActividadId: number;
+        estadoId: number;
+        fechaDesde: Date;
+        fechaHasta: Date | null;
+        costo: import("@prisma/client/runtime/library").Decimal;
     }>;
     delete(id: number): Promise<{
+        observaciones: string | null;
+        categoriaId: number;
         nombre: string;
-        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
-        precio: import("@prisma/client/runtime/library").Decimal;
-        duracion: number | null;
+        codigoActividad: string;
+        tipoActividadId: number;
+        estadoId: number;
+        fechaDesde: Date;
+        fechaHasta: Date | null;
+        costo: import("@prisma/client/runtime/library").Decimal;
     }>;
     cambiarEstado(id: number, nuevoEstadoId: number, observaciones?: string): Promise<{
+        observaciones: string | null;
+        categoriaId: number;
         nombre: string;
-        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
-        precio: import("@prisma/client/runtime/library").Decimal;
-        duracion: number | null;
+        codigoActividad: string;
+        tipoActividadId: number;
+        estadoId: number;
+        fechaDesde: Date;
+        fechaHasta: Date | null;
+        costo: import("@prisma/client/runtime/library").Decimal;
     }>;
     agregarHorario(actividadId: number, horarioData: any): Promise<{
         activo: boolean;
@@ -126,19 +320,32 @@ export declare class ActividadRepository {
         createdAt: Date;
         updatedAt: Date;
         actividadId: number;
+        diaSemanaId: number;
         horaInicio: string;
         horaFin: string;
-        diaSemana: import(".prisma/client").$Enums.DiaSemana;
     }>;
     updateHorario(horarioId: number, horarioData: any): Promise<{
+        actividades: {
+            nombre: string;
+            id: number;
+        };
+        diasSemana: {
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            codigo: string;
+            orden: number;
+        };
+    } & {
         activo: boolean;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         actividadId: number;
+        diaSemanaId: number;
         horaInicio: string;
         horaFin: string;
-        diaSemana: import(".prisma/client").$Enums.DiaSemana;
     }>;
     deleteHorario(horarioId: number): Promise<{
         activo: boolean;
@@ -146,9 +353,9 @@ export declare class ActividadRepository {
         createdAt: Date;
         updatedAt: Date;
         actividadId: number;
+        diaSemanaId: number;
         horaInicio: string;
         horaFin: string;
-        diaSemana: import(".prisma/client").$Enums.DiaSemana;
     }>;
     getHorariosByActividad(actividadId: number): Promise<{
         activo: boolean;
@@ -156,20 +363,34 @@ export declare class ActividadRepository {
         createdAt: Date;
         updatedAt: Date;
         actividadId: number;
+        diaSemanaId: number;
         horaInicio: string;
         horaFin: string;
-        diaSemana: import(".prisma/client").$Enums.DiaSemana;
     }[]>;
-    findHorarioById(horarioId: number): Promise<{
+    findHorarioById(horarioId: number): Promise<({
+        actividades: {
+            nombre: string;
+            id: number;
+            codigoActividad: string;
+        };
+        diasSemana: {
+            nombre: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            codigo: string;
+            orden: number;
+        };
+    } & {
         activo: boolean;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         actividadId: number;
+        diaSemanaId: number;
         horaInicio: string;
         horaFin: string;
-        diaSemana: import(".prisma/client").$Enums.DiaSemana;
-    } | null>;
+    }) | null>;
     asignarDocente(actividadId: number, docenteId: number, rolDocenteId: number, observaciones?: string): Promise<{
         observaciones: string | null;
         activo: boolean;
@@ -223,14 +444,52 @@ export declare class ActividadRepository {
         apellido: string;
         esDocenteActivo: boolean;
     } | null>;
-    getParticipantes(actividadId: number): Promise<any>;
-    findParticipacionByPersonaAndActividad(actividadId: number, personaId: number): Promise<any>;
-    addParticipante(actividadId: number, personaId: number, fechaInicio: string, observaciones?: string): Promise<any>;
-    deleteParticipante(actividadId: number, participanteId: number): Promise<any>;
+    getParticipantes(actividadId: number): Promise<{
+        observaciones: string | null;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        personaId: number;
+        actividadId: number;
+        fechaInicio: Date;
+        fechaFin: Date | null;
+        precioEspecial: import("@prisma/client/runtime/library").Decimal | null;
+        activa: boolean;
+    }[]>;
+    findParticipacionByPersonaAndActividad(actividadId: number, personaId: number): Promise<{
+        id: number;
+        fechaInicio: Date;
+        fechaFin: Date | null;
+        activa: boolean;
+    } | null>;
+    addParticipante(actividadId: number, personaId: number, fechaInicio: string, observaciones?: string): Promise<{
+        observaciones: string | null;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        personaId: number;
+        actividadId: number;
+        fechaInicio: Date;
+        fechaFin: Date | null;
+        precioEspecial: import("@prisma/client/runtime/library").Decimal | null;
+        activa: boolean;
+    }>;
+    deleteParticipante(actividadId: number, participanteId: number): Promise<{
+        observaciones: string | null;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        personaId: number;
+        actividadId: number;
+        fechaInicio: Date;
+        fechaFin: Date | null;
+        precioEspecial: import("@prisma/client/runtime/library").Decimal | null;
+        activa: boolean;
+    }>;
     getEstadisticas(actividadId: number): Promise<{
-        totalParticipantes: any;
-        totalHorarios: any;
-        totalDocentes: any;
+        totalParticipantes: number;
+        totalHorarios: number;
+        totalDocentes: number;
         cupoMaximo: number | null;
         cupoDisponible: number | null;
         porcentajeOcupacion: number | null;

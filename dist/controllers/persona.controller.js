@@ -28,14 +28,21 @@ class PersonaController {
             const result = await this.personaService.getPersonas(query);
             const response = {
                 success: true,
-                data: result.data,
-                meta: {
+                data: result.data
+            };
+            if (result.page !== undefined && result.pages !== undefined) {
+                response.meta = {
                     page: result.page,
                     limit: query.limit,
                     total: result.total,
                     totalPages: result.pages
-                }
-            };
+                };
+            }
+            else {
+                response.meta = {
+                    total: result.total
+                };
+            }
             res.status(enums_1.HttpStatus.OK).json(response);
         }
         catch (error) {

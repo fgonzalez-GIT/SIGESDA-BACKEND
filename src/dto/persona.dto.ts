@@ -130,6 +130,11 @@ export const updatePersonaSchema = z.object({
   fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
   observaciones: z.string().max(500).optional().nullable(),
 
+  // Campos de soft delete
+  activo: z.boolean().optional(),
+  fechaBaja: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
+  motivoBaja: z.string().max(500).optional().nullable(),
+
   // Tipos y contactos (opcional - si se envían, se sincronizan)
   tipos: z.array(createPersonaTipoSchema).optional(),
   contactos: z.array(createContactoPersonaSchema).optional()

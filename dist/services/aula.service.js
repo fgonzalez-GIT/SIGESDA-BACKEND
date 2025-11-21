@@ -53,10 +53,10 @@ class AulaService {
         if (!existingAula) {
             throw new errors_1.NotFoundError(`Aula con ID ${id} no encontrada`);
         }
-        const reservas = existingAula.reservas_aulas_actividades || [];
+        const reservas = existingAula.reserva_aulas || [];
         const ahora = new Date();
         const reservasActivas = reservas.filter((reserva) => {
-            return !reserva.fecha_vigencia_hasta || new Date(reserva.fecha_vigencia_hasta) > ahora;
+            return new Date(reserva.fechaFin) > ahora;
         });
         if (reservasActivas.length > 0) {
             if (hard) {

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReservaAulaService = void 0;
-const enums_1 = require("@/types/enums");
 const logger_1 = require("@/utils/logger");
+const persona_helper_1 = require("@/utils/persona.helper");
 class ReservaAulaService {
     constructor(reservaAulaRepository, aulaRepository, personaRepository, actividadRepository) {
         this.reservaAulaRepository = reservaAulaRepository;
@@ -22,11 +22,12 @@ class ReservaAulaService {
         if (!docente) {
             throw new Error(`Docente con ID ${data.docenteId} no encontrado`);
         }
-        if (docente.tipo !== enums_1.TipoPersona.DOCENTE) {
-            throw new Error(`La persona ${docente.nombre} ${docente.apellido} no es un docente`);
+        if (!docente.activo) {
+            throw new Error(`La persona ${docente.nombre} ${docente.apellido} está inactiva`);
         }
-        if (docente.fechaBaja) {
-            throw new Error(`El docente ${docente.nombre} ${docente.apellido} está dado de baja`);
+        const esDocente = await (0, persona_helper_1.hasActiveTipo)(docente.id, 'DOCENTE');
+        if (!esDocente) {
+            throw new Error(`La persona ${docente.nombre} ${docente.apellido} no es un docente activo`);
         }
         if (data.actividadId) {
             const actividad = await this.actividadRepository.findById(data.actividadId);
@@ -96,8 +97,15 @@ class ReservaAulaService {
         }
         if (data.docenteId && data.docenteId !== existingReserva.docenteId) {
             const docente = await this.personaRepository.findById(data.docenteId);
-            if (!docente || docente.tipo !== enums_1.TipoPersona.DOCENTE || docente.fechaBaja) {
-                throw new Error(`Docente con ID ${data.docenteId} no válido`);
+            if (!docente) {
+                throw new Error(`Docente con ID ${data.docenteId} no encontrado`);
+            }
+            if (!docente.activo) {
+                throw new Error(`Docente con ID ${data.docenteId} está inactivo`);
+            }
+            const esDocente = await (0, persona_helper_1.hasActiveTipo)(docente.id, 'DOCENTE');
+            if (!esDocente) {
+                throw new Error(`La persona con ID ${data.docenteId} no es un docente activo`);
             }
         }
         if (data.actividadId !== undefined && data.actividadId !== existingReserva.actividadId) {
@@ -158,8 +166,17 @@ class ReservaAulaService {
                     errors.push(`Aula ${reserva.aulaId} no válida`);
                     continue;
                 }
-                if (!docente || docente.tipo !== enums_1.TipoPersona.DOCENTE || docente.fechaBaja) {
-                    errors.push(`Docente ${reserva.docenteId} no válido`);
+                if (!docente) {
+                    errors.push(`Docente ${reserva.docenteId} no encontrado`);
+                    continue;
+                }
+                if (!docente.activo) {
+                    errors.push(`Docente ${reserva.docenteId} está inactivo`);
+                    continue;
+                }
+                const esDocente = await (0, persona_helper_1.hasActiveTipo)(docente.id, 'DOCENTE');
+                if (!esDocente) {
+                    errors.push(`Persona ${reserva.docenteId} no es un docente activo`);
                     continue;
                 }
                 if (reserva.actividadId && (!actividad || !actividad.activa)) {

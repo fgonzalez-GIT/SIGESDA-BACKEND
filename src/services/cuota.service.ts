@@ -18,6 +18,7 @@ import {
 } from '@/dto/cuota.dto';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
+import { hasActiveTipo } from '@/utils/persona.helper';
 
 export class CuotaService {
   constructor(
@@ -95,7 +96,9 @@ export class CuotaService {
       throw new Error(`Persona con ID ${socioId} no encontrada`);
     }
 
-    if (persona.tipo !== 'SOCIO') {
+    // Verificar que la persona tiene tipo SOCIO activo
+    const esSocio = await hasActiveTipo(socioId, 'SOCIO');
+    if (!esSocio) {
       throw new Error(`La persona debe ser de tipo SOCIO`);
     }
 

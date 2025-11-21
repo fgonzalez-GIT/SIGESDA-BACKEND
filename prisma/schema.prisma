@@ -290,7 +290,7 @@ model MedioPago {
 
 model Persona {
   id                        Int                         @id @default(autoincrement())
-  tipo                      TipoPersona?
+  activo                    Boolean                     @default(true)
   nombre                    String
   apellido                  String
   dni                       String                      @unique
@@ -326,6 +326,7 @@ model Persona {
   docentes_actividades      docentes_actividades[]
 
   @@index([categoriaId])
+  @@index([activo])
   @@map("personas")
 }
 

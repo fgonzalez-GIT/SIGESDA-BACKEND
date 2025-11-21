@@ -280,6 +280,10 @@ Required variables (see `.env.example`):
 - **Core Table**: `personas` (demographic data)
 - **Relationship Table**: `persona_tipo` (many-to-many)
 - **Catalog**: `tipo_persona_catalogo` (SOCIO, NO_SOCIO, DOCENTE, PROVEEDOR)
+- **Soft Delete**: Campo `activo: Boolean` con `fechaBaja` y `motivoBaja`
+  - ✅ Patrón estándar: `WHERE activo = true` para filtrar personas activas
+  - ✅ Helper functions: `darDeBajaPersona()`, `reactivarPersona()`, `isPersonaActiva()`
+  - ✅ Índice en campo `activo` para queries eficientes
 - **Rules**:
   - One person can have multiple types simultaneously
   - ✅ **CRITICAL**: SOCIO and NO_SOCIO are mutually exclusive (cannot coexist)
@@ -318,6 +322,47 @@ Required variables (see `.env.example`):
   - Prevents duplicates
 
 ## Recently Fixed Issues ✅
+
+### ✅ FIXED (2025-11-20): Soft Delete Implementation Completed - ENFOQUE A
+**Problem**: DELETE endpoint was only deactivating tipos in `persona_tipo` table but NOT setting `persona.activo = false`, causing personas to remain active even after "deletion".
+
+**Implementation (3 Phases):**
+
+#### FASE 1: Corrección de softDelete() ✅
+- **File**: `src/repositories/persona.repository.ts:464`
+- **Fix**: Method now uses transaction to:
+  1. Deactivate all `persona_tipo` records (set `activo = false`)
+  2. **NEW**: Set `persona.activo = false` + `fechaBaja` + `motivoBaja`
+- **Impact**: DELETE endpoint now properly deactivates the persona entity
+
+#### FASE 2: Validaciones en update() ✅
+- **File**: `src/services/persona.service.ts:205-226`
+- **Validations added**:
+  - Prevent `tipos: []` (empty array) in UPDATE requests → returns 400
+  - Ensure at least one active tipo remains after update → returns 400
+- **Impact**: Prevents creating "orphan" personas with no active types
+
+#### FASE 0: Validaciones Pre-Eliminación (PREPARADO PARA FUTURO) ⏳
+- **File**: `src/services/persona.service.ts:347-542`
+- **Status**: Method `validateCanDelete()` exists but is **commented out** with `TODO` tags
+- **Validations ready to implement**:
+  1. Deudas pendientes (recibos PENDIENTE/VENCIDO)
+  2. Participaciones activas en actividades EN_CURSO
+  3. Docente asignado a actividad activa
+  4. Participaciones activas en secciones
+  5. Docente de sección activa
+  6. Reservas de aulas futuras
+  7. Miembro activo de comisión directiva
+- **How to enable**: Uncomment lines 364-542 and 555-569
+
+**Testing**: Needs E2E tests for DELETE endpoint behavior
+
+### ✅ IMPLEMENTED (2025-11-20): Soft Delete Schema for Personas
+- **Migration**: Campo `tipo` legacy eliminado, agregado campo `activo: Boolean` + índice
+- **Helper Functions**: `hasActiveTipo()`, `getActiveTipos()`, `isPersonaActiva()`, `darDeBajaPersona()`, `reactivarPersona()`
+- **Services Updated**: reserva-aula, participacion, cuota, recibo (now use Architecture V2)
+- **Test**: `tests/test-soft-delete-persona.ts` - Validates complete soft delete workflow
+- **Rationale**: Consistency with 25+ tables using `activo: Boolean` pattern
 
 ### ✅ FIXED (2025-01-02): Four Critical Issues Resolved
 1. **docentes_actividades table**: Added missing table + roles_docentes catalog

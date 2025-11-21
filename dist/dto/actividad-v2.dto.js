@@ -46,7 +46,7 @@ const actividadBaseSchema = zod_1.z.object({
         .nullable()
 });
 const horarioInlineSchema = zod_1.z.object({
-    diaSemanaId: zod_1.z.number().int().positive().min(1).max(7),
+    diaSemanaId: zod_1.z.number().int().positive(),
     horaInicio: zod_1.z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
     horaFin: zod_1.z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
     activo: zod_1.z.boolean().default(true)
@@ -67,7 +67,7 @@ const docenteInlineSchema = zod_1.z.object({
     observaciones: zod_1.z.string().max(500).optional().nullable()
 });
 const reservaAulaInlineSchema = zod_1.z.object({
-    diaSemanaId: zod_1.z.number().int().positive().min(1).max(7),
+    diaSemanaId: zod_1.z.number().int().positive(),
     horaInicio: zod_1.z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
     horaFin: zod_1.z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
     aulaId: zod_1.z.string().cuid('ID de aula inválido'),
@@ -220,7 +220,7 @@ exports.estadisticasActividadSchema = zod_1.z.object({
     fechaHasta: zod_1.z.string().datetime().optional()
 });
 exports.reporteOcupacionSchema = zod_1.z.object({
-    diaSemanaId: zod_1.z.number().int().positive().min(1).max(7).optional(),
+    diaSemanaId: zod_1.z.number().int().positive().optional(),
     aulaId: zod_1.z.string().cuid().optional(),
     docenteId: zod_1.z.string().cuid().optional(),
     fechaReferencia: zod_1.z.string().datetime().optional()

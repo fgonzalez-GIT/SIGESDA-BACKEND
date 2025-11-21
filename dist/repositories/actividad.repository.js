@@ -9,16 +9,21 @@ class ActividadRepository {
         const { horarios, docentes, reservasAulas, ...actividadData } = data;
         return this.prisma.actividades.create({
             data: {
+                codigoActividad: actividadData.codigoActividad,
                 nombre: actividadData.nombre,
-                tipo: actividadData.tipo || 'CORO',
+                tipoActividadId: actividadData.tipoActividadId,
+                categoriaId: actividadData.categoriaId,
+                estadoId: actividadData.estadoId,
                 descripcion: actividadData.descripcion ?? undefined,
-                precio: actividadData.precio ?? 0,
-                duracion: actividadData.duracion ?? undefined,
+                fechaDesde: actividadData.fechaDesde,
+                fechaHasta: actividadData.fechaHasta ?? undefined,
                 capacidadMaxima: actividadData.cupoMaximo ?? undefined,
+                costo: actividadData.costo ?? 0,
                 activa: true,
+                observaciones: actividadData.observaciones ?? undefined,
                 horarios_actividades: horarios && horarios.length > 0 ? {
                     create: horarios.map(h => ({
-                        diaSemana: h.diaSemanaId,
+                        diaSemanaId: h.diaSemanaId,
                         horaInicio: h.horaInicio,
                         horaFin: h.horaFin,
                         activo: h.activo
@@ -27,16 +32,22 @@ class ActividadRepository {
                 docentes_actividades: docentes && docentes.length > 0 ? {
                     create: docentes.map(d => ({
                         personas: { connect: { id: d.docenteId } },
-                        roles_docentes: { connect: { id: d.rolDocenteId } },
+                        rolesDocentes: { connect: { id: d.rolDocenteId } },
                         observaciones: d.observaciones ?? undefined,
                         activo: true
                     }))
                 } : undefined
             },
             include: {
+                tiposActividades: true,
+                categoriasActividades: true,
+                estadosActividades: true,
                 horarios_actividades: {
+                    include: {
+                        diasSemana: true
+                    },
                     orderBy: [
-                        { diaSemana: 'asc' },
+                        { diaSemanaId: 'asc' },
                         { horaInicio: 'asc' }
                     ]
                 },
@@ -49,7 +60,8 @@ class ActividadRepository {
                                 apellido: true,
                                 email: true
                             }
-                        }
+                        },
+                        rolesDocentes: true
                     },
                     where: { activo: true }
                 }
@@ -59,18 +71,18 @@ class ActividadRepository {
     async findAll(query) {
         const where = {};
         if (query.tipoActividadId) {
-            where.tipo_actividad_id = query.tipoActividadId;
+            where.tipoActividadId = query.tipoActividadId;
         }
         if (query.categoriaId) {
-            where.categoria_id = query.categoriaId;
+            where.categoriaId = query.categoriaId;
         }
         if (query.estadoId) {
-            where.estado_id = query.estadoId;
+            where.estadoId = query.estadoId;
         }
         if (query.diaSemanaId) {
             where.horarios_actividades = {
                 some: {
-                    dia_semana_id: query.diaSemanaId,
+                    diaSemanaId: query.diaSemanaId,
                     activo: true
                 }
             };
@@ -78,7 +90,7 @@ class ActividadRepository {
         if (query.docenteId) {
             where.docentes_actividades = {
                 some: {
-                    docente_id: query.docenteId,
+                    docenteId: query.docenteId,
                     activo: true
                 }
             };
@@ -109,7 +121,7 @@ class ActividadRepository {
             where.OR = [
                 { nombre: { contains: query.search, mode: 'insensitive' } },
                 { descripcion: { contains: query.search, mode: 'insensitive' } },
-                { codigo_actividad: { contains: query.search, mode: 'insensitive' } }
+                { codigoActividad: { contains: query.search, mode: 'insensitive' } }
             ];
         }
         if (query.vigentes) {
@@ -123,7 +135,7 @@ class ActividadRepository {
         const skip = (query.page - 1) * query.limit;
         const orderBy = {};
         if (query.orderBy === 'codigo') {
-            orderBy.codigo_actividad = query.orderDir;
+            orderBy.codigoActividad = query.orderDir;
         }
         else if (query.orderBy === 'fechaDesde') {
             orderBy.fecha_desde = query.orderDir;
@@ -144,16 +156,16 @@ class ActividadRepository {
                 take: query.limit,
                 orderBy,
                 include: query.incluirRelaciones ? {
-                    tipos_actividades: true,
-                    categorias_actividades: true,
-                    estados_actividades: true,
+                    tiposActividades: true,
+                    categoriasActividades: true,
+                    estadosActividades: true,
                     horarios_actividades: {
                         include: {
-                            dias_semana: true
+                            diasSemana: true
                         },
                         orderBy: [
-                            { dia_semana_id: 'asc' },
-                            { hora_inicio: 'asc' }
+                            { diaSemanaId: 'asc' },
+                            { horaInicio: 'asc' }
                         ],
                         where: { activo: true }
                     },
@@ -167,14 +179,14 @@ class ActividadRepository {
                                     especialidad: true
                                 }
                             },
-                            roles_docentes: true
+                            rolesDocentes: true
                         },
                         where: { activo: true }
                     },
                     _count: {
                         select: {
-                            participaciones_actividades: {
-                                where: { activo: true }
+                            participacion_actividades: {
+                                where: { activa: true }
                             }
                         }
                     }
@@ -186,7 +198,7 @@ class ActividadRepository {
             const dataConCupo = data.filter(act => {
                 if (!act.capacidadMaxima)
                     return true;
-                const inscritos = act._count?.participaciones_actividades || 0;
+                const inscritos = act._count?.participacion_actividades || 0;
                 return inscritos < act.capacidadMaxima;
             });
             return {
@@ -200,27 +212,16 @@ class ActividadRepository {
         return this.prisma.actividades.findUnique({
             where: { id },
             include: {
-                tipos_actividades: true,
-                categorias_actividades: true,
-                estados_actividades: true,
+                tiposActividades: true,
+                categoriasActividades: true,
+                estadosActividades: true,
                 horarios_actividades: {
                     include: {
-                        dias_semana: true,
-                        reservas_aulas_actividades: {
-                            include: {
-                                aulas: {
-                                    select: {
-                                        id: true,
-                                        nombre: true,
-                                        capacidad: true
-                                    }
-                                }
-                            }
-                        }
+                        diasSemana: true
                     },
                     orderBy: [
-                        { dia_semana_id: 'asc' },
-                        { hora_inicio: 'asc' }
+                        { diaSemanaId: 'asc' },
+                        { horaInicio: 'asc' }
                     ]
                 },
                 docentes_actividades: {
@@ -236,11 +237,11 @@ class ActividadRepository {
                                 honorariosPorHora: true
                             }
                         },
-                        roles_docentes: true
+                        rolesDocentes: true
                     },
                     where: { activo: true }
                 },
-                participaciones_actividades: {
+                participacion_actividades: {
                     include: {
                         personas: {
                             select: {
@@ -253,12 +254,12 @@ class ActividadRepository {
                             }
                         }
                     },
-                    where: { activo: true }
+                    where: { activa: true }
                 },
                 _count: {
                     select: {
-                        participaciones_actividades: {
-                            where: { activo: true }
+                        participacion_actividades: {
+                            where: { activa: true }
                         }
                     }
                 }
@@ -267,32 +268,32 @@ class ActividadRepository {
     }
     async findByCodigoActividad(codigo) {
         return this.prisma.actividades.findUnique({
-            where: { codigo_actividad: codigo },
+            where: { codigoActividad: codigo },
             include: {
-                tipos_actividades: true,
-                categorias_actividades: true,
-                estados_actividades: true
+                tiposActividades: true,
+                categoriasActividades: true,
+                estadosActividades: true
             }
         });
     }
     async update(id, data) {
         const updateData = {};
         if (data.codigoActividad)
-            updateData.codigo_actividad = data.codigoActividad;
+            updateData.codigoActividad = data.codigoActividad;
         if (data.nombre)
             updateData.nombre = data.nombre;
         if (data.tipoActividadId)
-            updateData.tipo_actividad_id = data.tipoActividadId;
+            updateData.tipoActividadId = data.tipoActividadId;
         if (data.categoriaId)
-            updateData.categoria_id = data.categoriaId;
+            updateData.categoriaId = data.categoriaId;
         if (data.estadoId)
-            updateData.estado_id = data.estadoId;
+            updateData.estadoId = data.estadoId;
         if (data.descripcion !== undefined)
             updateData.descripcion = data.descripcion;
         if (data.fechaDesde)
-            updateData.fecha_desde = new Date(data.fechaDesde);
+            updateData.fechaDesde = new Date(data.fechaDesde);
         if (data.fechaHasta !== undefined) {
-            updateData.fecha_hasta = data.fechaHasta ? new Date(data.fechaHasta) : null;
+            updateData.fechaHasta = data.fechaHasta ? new Date(data.fechaHasta) : null;
         }
         if (data.cupoMaximo !== undefined)
             updateData.capacidadMaxima = data.cupoMaximo;
@@ -304,14 +305,14 @@ class ActividadRepository {
             where: { id },
             data: updateData,
             include: {
-                tipos_actividades: true,
-                categorias_actividades: true,
-                estados_actividades: true,
+                tiposActividades: true,
+                categoriasActividades: true,
+                estadosActividades: true,
                 horarios_actividades: {
-                    include: { dias_semana: true },
+                    include: { diasSemana: true },
                     orderBy: [
-                        { dia_semana_id: 'asc' },
-                        { hora_inicio: 'asc' }
+                        { diaSemanaId: 'asc' },
+                        { horaInicio: 'asc' }
                     ]
                 },
                 docentes_actividades: {
@@ -324,7 +325,7 @@ class ActividadRepository {
                                 especialidad: true
                             }
                         },
-                        roles_docentes: true
+                        rolesDocentes: true
                     },
                     where: { activo: true }
                 }
@@ -344,7 +345,7 @@ class ActividadRepository {
                 observaciones: observaciones || undefined
             },
             include: {
-                estados_actividades: true
+                estadosActividades: true
             }
         });
     }
@@ -358,12 +359,12 @@ class ActividadRepository {
                 activo: horarioData.activo !== false
             },
             include: {
-                dias_semana: true,
+                diasSemana: true,
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true
+                        codigoActividad: true
                     }
                 }
             }
@@ -383,7 +384,7 @@ class ActividadRepository {
             where: { id: horarioId },
             data: updateData,
             include: {
-                dias_semana: true,
+                diasSemana: true,
                 actividades: {
                     select: {
                         id: true,
@@ -402,7 +403,7 @@ class ActividadRepository {
         return this.prisma.horarios_actividades.findMany({
             where: { actividad_id: actividadId },
             include: {
-                dias_semana: true,
+                diasSemana: true,
                 reservas_aulas_actividades: {
                     include: {
                         aulas: true
@@ -419,12 +420,12 @@ class ActividadRepository {
         return this.prisma.horarios_actividades.findUnique({
             where: { id: horarioId },
             include: {
-                dias_semana: true,
+                diasSemana: true,
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true
+                        codigoActividad: true
                     }
                 }
             }
@@ -449,12 +450,12 @@ class ActividadRepository {
                         email: true
                     }
                 },
-                roles_docentes: true,
+                rolesDocentes: true,
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true
+                        codigoActividad: true
                     }
                 }
             }
@@ -486,7 +487,7 @@ class ActividadRepository {
                         apellido: true
                     }
                 },
-                roles_docentes: true
+                rolesDocentes: true
             }
         });
     }
@@ -508,7 +509,7 @@ class ActividadRepository {
                         honorariosPorHora: true
                     }
                 },
-                roles_docentes: true
+                rolesDocentes: true
             }
         });
     }
@@ -600,10 +601,10 @@ class ActividadRepository {
         };
     }
     async getParticipantes(actividadId) {
-        return this.prisma.participaciones_actividades.findMany({
+        return this.prisma.participacion_actividades.findMany({
             where: {
-                actividad_id: actividadId,
-                activo: true
+                actividadId: actividadId,
+                activa: true
             },
             include: {
                 personas: {
@@ -626,16 +627,16 @@ class ActividadRepository {
         });
     }
     async findParticipacionByPersonaAndActividad(actividadId, personaId) {
-        return this.prisma.participaciones_actividades.findFirst({
+        return this.prisma.participacion_actividades.findFirst({
             where: {
-                actividad_id: actividadId,
-                persona_id: personaId
+                actividadId: actividadId,
+                personaId: personaId
             },
             select: {
                 id: true,
-                activo: true,
-                fecha_inicio: true,
-                fecha_fin: true
+                activa: true,
+                fechaInicio: true,
+                fechaFin: true
             }
         });
     }
@@ -666,13 +667,13 @@ class ActividadRepository {
         if (participacionExistente && participacionExistente.activo) {
             throw new Error(`La persona ya está inscripta activamente en la actividad "${actividad.nombre}"`);
         }
-        return this.prisma.participaciones_actividades.create({
+        return this.prisma.participacion_actividades.create({
             data: {
-                actividad_id: actividadId,
-                persona_id: personaId,
-                fecha_inicio: new Date(fechaInicio),
+                actividadId: actividadId,
+                personaId: personaId,
+                fechaInicio: new Date(fechaInicio),
                 observaciones: observaciones || null,
-                activo: true
+                activa: true
             },
             include: {
                 personas: {
@@ -688,14 +689,14 @@ class ActividadRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true
+                        codigoActividad: true
                     }
                 }
             }
         });
     }
     async deleteParticipante(actividadId, participanteId) {
-        return this.prisma.participaciones_actividades.update({
+        return this.prisma.participacion_actividades.update({
             where: {
                 id: participanteId,
                 actividad_id: actividadId
@@ -712,8 +713,8 @@ class ActividadRepository {
             include: {
                 _count: {
                     select: {
-                        participaciones_actividades: {
-                            where: { activo: true }
+                        participacion_actividades: {
+                            where: { activa: true }
                         },
                         horarios_actividades: {
                             where: { activo: true }
@@ -727,7 +728,7 @@ class ActividadRepository {
         });
         if (!actividad)
             return null;
-        const participantesActivos = actividad._count.participaciones_actividades;
+        const participantesActivos = actividad._count.participacion_actividades;
         const porcentajeOcupacion = actividad.capacidadMaxima
             ? Math.round((participantesActivos / actividad.capacidadMaxima) * 100)
             : null;

@@ -192,8 +192,101 @@ export declare const updatePersonaSchema: z.ZodObject<{
     direccion: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     fechaNacimiento: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     observaciones: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    activo: z.ZodOptional<z.ZodBoolean>;
+    fechaBaja: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    motivoBaja: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    tipos: z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodObject<{
+        tipoPersonaId: z.ZodOptional<z.ZodNumber>;
+        tipoPersonaCodigo: z.ZodOptional<z.ZodEnum<["NO_SOCIO", "SOCIO", "DOCENTE", "PROVEEDOR"]>>;
+        categoriaId: z.ZodOptional<z.ZodNumber>;
+        numeroSocio: z.ZodOptional<z.ZodNumber>;
+        fechaIngreso: z.ZodOptional<z.ZodString>;
+        especialidadId: z.ZodOptional<z.ZodNumber>;
+        honorariosPorHora: z.ZodOptional<z.ZodNumber>;
+        cuit: z.ZodOptional<z.ZodString>;
+        razonSocialId: z.ZodOptional<z.ZodNumber>;
+        observaciones: z.ZodOptional<z.ZodString>;
+        activo: z.ZodDefault<z.ZodBoolean>;
+    }, "strip", z.ZodTypeAny, {
+        activo: boolean;
+        tipoPersonaId?: number | undefined;
+        tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
+        observaciones?: string | undefined;
+        categoriaId?: number | undefined;
+        numeroSocio?: number | undefined;
+        fechaIngreso?: string | undefined;
+        especialidadId?: number | undefined;
+        honorariosPorHora?: number | undefined;
+        cuit?: string | undefined;
+        razonSocialId?: number | undefined;
+    }, {
+        tipoPersonaId?: number | undefined;
+        tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
+        observaciones?: string | undefined;
+        activo?: boolean | undefined;
+        categoriaId?: number | undefined;
+        numeroSocio?: number | undefined;
+        fechaIngreso?: string | undefined;
+        especialidadId?: number | undefined;
+        honorariosPorHora?: number | undefined;
+        cuit?: string | undefined;
+        razonSocialId?: number | undefined;
+    }>, {
+        activo: boolean;
+        tipoPersonaId?: number | undefined;
+        tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
+        observaciones?: string | undefined;
+        categoriaId?: number | undefined;
+        numeroSocio?: number | undefined;
+        fechaIngreso?: string | undefined;
+        especialidadId?: number | undefined;
+        honorariosPorHora?: number | undefined;
+        cuit?: string | undefined;
+        razonSocialId?: number | undefined;
+    }, {
+        tipoPersonaId?: number | undefined;
+        tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
+        observaciones?: string | undefined;
+        activo?: boolean | undefined;
+        categoriaId?: number | undefined;
+        numeroSocio?: number | undefined;
+        fechaIngreso?: string | undefined;
+        especialidadId?: number | undefined;
+        honorariosPorHora?: number | undefined;
+        cuit?: string | undefined;
+        razonSocialId?: number | undefined;
+    }>, "many">>;
+    contactos: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        tipoContacto: z.ZodNativeEnum<{
+            EMAIL: "EMAIL";
+            TELEFONO: "TELEFONO";
+            CELULAR: "CELULAR";
+            WHATSAPP: "WHATSAPP";
+            TELEGRAM: "TELEGRAM";
+            OTRO: "OTRO";
+        }>;
+        valor: z.ZodString;
+        principal: z.ZodDefault<z.ZodBoolean>;
+        observaciones: z.ZodOptional<z.ZodString>;
+        activo: z.ZodDefault<z.ZodBoolean>;
+    }, "strip", z.ZodTypeAny, {
+        activo: boolean;
+        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        valor: string;
+        principal: boolean;
+        observaciones?: string | undefined;
+    }, {
+        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        valor: string;
+        observaciones?: string | undefined;
+        activo?: boolean | undefined;
+        principal?: boolean | undefined;
+    }>, "many">>;
 }, "strip", z.ZodTypeAny, {
     observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    fechaBaja?: string | null | undefined;
+    motivoBaja?: string | null | undefined;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -201,8 +294,31 @@ export declare const updatePersonaSchema: z.ZodObject<{
     telefono?: string | null | undefined;
     direccion?: string | null | undefined;
     fechaNacimiento?: string | null | undefined;
+    tipos?: {
+        activo: boolean;
+        tipoPersonaId?: number | undefined;
+        tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
+        observaciones?: string | undefined;
+        categoriaId?: number | undefined;
+        numeroSocio?: number | undefined;
+        fechaIngreso?: string | undefined;
+        especialidadId?: number | undefined;
+        honorariosPorHora?: number | undefined;
+        cuit?: string | undefined;
+        razonSocialId?: number | undefined;
+    }[] | undefined;
+    contactos?: {
+        activo: boolean;
+        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        valor: string;
+        principal: boolean;
+        observaciones?: string | undefined;
+    }[] | undefined;
 }, {
     observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    fechaBaja?: string | null | undefined;
+    motivoBaja?: string | null | undefined;
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
@@ -210,6 +326,26 @@ export declare const updatePersonaSchema: z.ZodObject<{
     telefono?: string | null | undefined;
     direccion?: string | null | undefined;
     fechaNacimiento?: string | null | undefined;
+    tipos?: {
+        tipoPersonaId?: number | undefined;
+        tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
+        observaciones?: string | undefined;
+        activo?: boolean | undefined;
+        categoriaId?: number | undefined;
+        numeroSocio?: number | undefined;
+        fechaIngreso?: string | undefined;
+        especialidadId?: number | undefined;
+        honorariosPorHora?: number | undefined;
+        cuit?: string | undefined;
+        razonSocialId?: number | undefined;
+    }[] | undefined;
+    contactos?: {
+        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        valor: string;
+        observaciones?: string | undefined;
+        activo?: boolean | undefined;
+        principal?: boolean | undefined;
+    }[] | undefined;
 }>;
 export declare const personaQuerySchema: z.ZodObject<{
     tiposCodigos: z.ZodEffects<z.ZodOptional<z.ZodArray<z.ZodEnum<["NO_SOCIO", "SOCIO", "DOCENTE", "PROVEEDOR"]>, "many">>, ("SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR")[] | undefined, unknown>;
@@ -217,13 +353,11 @@ export declare const personaQuerySchema: z.ZodObject<{
     especialidadId: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;
     activo: z.ZodEffects<z.ZodOptional<z.ZodBoolean>, boolean | undefined, unknown>;
     search: z.ZodOptional<z.ZodString>;
-    page: z.ZodEffects<z.ZodDefault<z.ZodNumber>, number, unknown>;
-    limit: z.ZodEffects<z.ZodDefault<z.ZodNumber>, number, unknown>;
+    page: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;
+    limit: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;
     includeTipos: z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown>;
     includeContactos: z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown>;
 }, "strip", z.ZodTypeAny, {
-    page: number;
-    limit: number;
     includeTipos: boolean;
     includeContactos: boolean;
     search?: string | undefined;
@@ -231,6 +365,8 @@ export declare const personaQuerySchema: z.ZodObject<{
     categoriaId?: number | undefined;
     especialidadId?: number | undefined;
     tiposCodigos?: ("SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR")[] | undefined;
+    page?: number | undefined;
+    limit?: number | undefined;
 }, {
     search?: string | undefined;
     activo?: unknown;

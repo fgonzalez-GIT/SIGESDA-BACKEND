@@ -7,7 +7,7 @@ class DatabaseService {
         if (!DatabaseService.instance) {
             DatabaseService.instance = new client_1.PrismaClient({
                 log: process.env.NODE_ENV === 'development'
-                    ? ['query', 'info', 'warn', 'error']
+                    ? ['warn', 'error']
                     : ['error'],
             });
             process.on('beforeExit', async () => {

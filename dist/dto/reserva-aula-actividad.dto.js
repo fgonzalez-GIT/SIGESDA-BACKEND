@@ -119,7 +119,7 @@ exports.queryReservasAulasActividadesSchema = zod_1.z.object({
 });
 exports.verificarDisponibilidadAulaSchema = zod_1.z.object({
     aulaId: zod_1.z.string().cuid('ID de aula inválido'),
-    diaSemanaId: zod_1.z.number().int().positive().min(1).max(7),
+    diaSemanaId: zod_1.z.number().int().positive(),
     horaInicio: zod_1.z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
     horaFin: zod_1.z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/),
     fechaVigenciaDesde: zod_1.z.string().datetime().or(zod_1.z.date()),

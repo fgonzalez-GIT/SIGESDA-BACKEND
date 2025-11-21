@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ParticipacionService = void 0;
 const participacion_dto_1 = require("@/dto/participacion.dto");
+const persona_helper_1 = require("@/utils/persona.helper");
 class ParticipacionService {
     constructor(participacionRepository, personaRepository, actividadRepository, asistenciaRepository) {
         this.participacionRepository = participacionRepository;
@@ -39,7 +40,8 @@ class ParticipacionService {
         }
         let precioFinal = data.precioEspecial;
         if (!precioFinal) {
-            if (persona.tipo === 'SOCIO' && actividad.precio === 0) {
+            const esSocio = await (0, persona_helper_1.hasActiveTipo)(persona.id, 'SOCIO');
+            if (esSocio && actividad.precio === 0) {
                 precioFinal = 0;
             }
             else {
@@ -159,7 +161,8 @@ class ParticipacionService {
                     continue;
                 }
                 let precio = inscripcion.precioEspecial ?? Number(actividad.precio);
-                if (data.aplicarDescuentoFamiliar && persona.tipo === 'SOCIO') {
+                const esSocio = await (0, persona_helper_1.hasActiveTipo)(persona.id, 'SOCIO');
+                if (data.aplicarDescuentoFamiliar && esSocio) {
                     precio = precio * 0.8;
                 }
                 const participacion = await this.participacionRepository.create({

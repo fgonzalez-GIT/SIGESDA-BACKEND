@@ -11,8 +11,8 @@ export declare class PersonaService {
     getPersonas(query: PersonaQueryDto): Promise<{
         data: Persona[];
         total: number;
-        pages: number;
-        page: number;
+        pages?: number;
+        page?: number;
     }>;
     getPersonaById(id: number, includeRelations?: boolean): Promise<Persona | null>;
     updatePersona(id: number, data: UpdatePersonaDto): Promise<Persona>;

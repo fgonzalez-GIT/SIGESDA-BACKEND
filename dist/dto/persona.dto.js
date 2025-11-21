@@ -102,7 +102,12 @@ exports.updatePersonaSchema = zod_1.z.object({
     telefono: zod_1.z.string().max(20).optional().nullable(),
     direccion: zod_1.z.string().max(200).optional().nullable(),
     fechaNacimiento: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
-    observaciones: zod_1.z.string().max(500).optional().nullable()
+    observaciones: zod_1.z.string().max(500).optional().nullable(),
+    activo: zod_1.z.boolean().optional(),
+    fechaBaja: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
+    motivoBaja: zod_1.z.string().max(500).optional().nullable(),
+    tipos: zod_1.z.array(persona_tipo_dto_1.createPersonaTipoSchema).optional(),
+    contactos: zod_1.z.array(persona_tipo_dto_1.createContactoPersonaSchema).optional()
 });
 exports.personaQuerySchema = zod_1.z.object({
     tiposCodigos: zod_1.z.preprocess((val) => {
@@ -127,25 +132,29 @@ exports.personaQuerySchema = zod_1.z.object({
     }, zod_1.z.boolean().optional()),
     search: zod_1.z.string().optional(),
     page: zod_1.z.preprocess((val) => {
+        if (!val)
+            return undefined;
         const parsed = parseInt(val);
-        return isNaN(parsed) ? 1 : parsed;
-    }, zod_1.z.number().int().positive().default(1)),
+        return isNaN(parsed) ? undefined : parsed;
+    }, zod_1.z.number().int().positive().optional()),
     limit: zod_1.z.preprocess((val) => {
+        if (!val)
+            return undefined;
         const parsed = parseInt(val);
-        return isNaN(parsed) ? 10 : parsed;
-    }, zod_1.z.number().int().positive().max(100).default(10)),
+        return isNaN(parsed) ? undefined : parsed;
+    }, zod_1.z.number().int().positive().max(100).optional()),
     includeTipos: zod_1.z.preprocess((val) => {
         if (typeof val === 'string') {
             return val === 'true';
         }
-        return val;
-    }, zod_1.z.boolean().default(false)),
+        return val !== undefined ? val : true;
+    }, zod_1.z.boolean().default(true)),
     includeContactos: zod_1.z.preprocess((val) => {
         if (typeof val === 'string') {
             return val === 'true';
         }
-        return val;
-    }, zod_1.z.boolean().default(false))
+        return val !== undefined ? val : true;
+    }, zod_1.z.boolean().default(true))
 });
 exports.createPersonaLegacySchema = zod_1.z.preprocess((data) => {
     if (data && typeof data.tipo === 'string') {

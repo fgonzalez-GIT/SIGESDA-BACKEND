@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReciboService = void 0;
 const client_1 = require("@prisma/client");
-const enums_1 = require("@/types/enums");
 const logger_1 = require("@/utils/logger");
+const persona_helper_1 = require("@/utils/persona.helper");
 class ReciboService {
     constructor(reciboRepository, personaRepository) {
         this.reciboRepository = reciboRepository;
@@ -24,7 +24,7 @@ class ReciboService {
             if (!receptor) {
                 throw new Error(`Receptor con ID ${data.receptorId} no encontrado`);
             }
-            this.validateReceptorByTipo(data.tipo, receptor);
+            await this.validateReceptorByTipo(data.tipo, receptor);
         }
         const numero = await this.reciboRepository.getNextNumero();
         await this.validateBusinessRules(data);
@@ -76,7 +76,7 @@ class ReciboService {
                     throw new Error(`Receptor con ID ${data.receptorId} no encontrado`);
                 }
                 const tipoRecibo = data.tipo || existingRecibo.tipo;
-                this.validateReceptorByTipo(tipoRecibo, receptor);
+                await this.validateReceptorByTipo(tipoRecibo, receptor);
             }
         }
         const updatedRecibo = await this.reciboRepository.update(id, data);
@@ -128,7 +128,7 @@ class ReciboService {
                         continue;
                     }
                     try {
-                        this.validateReceptorByTipo(recibo.tipo, receptor);
+                        await this.validateReceptorByTipo(recibo.tipo, receptor);
                     }
                     catch (error) {
                         errors.push(`Receptor ${recibo.receptorId}: ${error}`);
@@ -219,27 +219,29 @@ class ReciboService {
         logger_1.logger.info(`Procesamiento automático de vencidos: ${result.count} recibos marcados como vencidos`);
         return result;
     }
-    validateReceptorByTipo(tipo, receptor) {
+    async validateReceptorByTipo(tipo, receptor) {
         switch (tipo) {
             case client_1.TipoRecibo.CUOTA:
-                if (receptor.tipo !== enums_1.TipoPersona.SOCIO) {
+                const esSocio = await (0, persona_helper_1.hasActiveTipo)(receptor.id, 'SOCIO');
+                if (!esSocio) {
                     throw new Error(`Las cuotas solo pueden ser emitidas a socios`);
                 }
-                if (receptor.fechaBaja) {
-                    throw new Error(`No se puede emitir cuota a socio dado de baja`);
+                if (!receptor.activo) {
+                    throw new Error(`No se puede emitir cuota a socio inactivo`);
                 }
                 break;
             case client_1.TipoRecibo.SUELDO:
-                if (receptor.tipo !== enums_1.TipoPersona.DOCENTE) {
+                const esDocente = await (0, persona_helper_1.hasActiveTipo)(receptor.id, 'DOCENTE');
+                if (!esDocente) {
                     throw new Error(`Los sueldos solo pueden ser emitidos a docentes`);
                 }
-                if (receptor.fechaBaja) {
-                    throw new Error(`No se puede emitir sueldo a docente dado de baja`);
+                if (!receptor.activo) {
+                    throw new Error(`No se puede emitir sueldo a docente inactivo`);
                 }
                 break;
             case client_1.TipoRecibo.PAGO_ACTIVIDAD:
-                if (receptor.fechaBaja) {
-                    throw new Error(`No se puede emitir pago de actividad a persona dada de baja`);
+                if (!receptor.activo) {
+                    throw new Error(`No se puede emitir pago de actividad a persona inactiva`);
                 }
                 break;
             case client_1.TipoRecibo.DEUDA:

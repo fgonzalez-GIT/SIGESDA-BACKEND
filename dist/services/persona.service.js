@@ -108,12 +108,12 @@ class PersonaService {
     }
     async getPersonas(query) {
         const result = await this.personaRepository.findAll(query);
-        const pages = Math.ceil(result.total / query.limit);
+        const pages = query.limit ? Math.ceil(result.total / query.limit) : undefined;
         return {
             data: result.data,
             total: result.total,
-            pages,
-            page: query.page
+            ...(query.page && { page: query.page }),
+            ...(pages && { pages })
         };
     }
     async getPersonaById(id, includeRelations = true) {
@@ -124,9 +124,18 @@ class PersonaService {
         return persona;
     }
     async updatePersona(id, data) {
-        const existingPersona = await this.personaRepository.findById(id, false);
+        const existingPersona = await this.personaRepository.findById(id, true);
         if (!existingPersona) {
             throw new error_middleware_1.AppError(`Persona con ID ${id} no encontrada`, enums_1.HttpStatus.NOT_FOUND);
+        }
+        if (data.tipos !== undefined && data.tipos.length === 0) {
+            throw new error_middleware_1.AppError('No se puede eliminar todos los tipos de una persona. Use el endpoint DELETE para dar de baja.', enums_1.HttpStatus.BAD_REQUEST);
+        }
+        if (data.tipos && data.tipos.length > 0) {
+            const tiposActivos = data.tipos.filter(t => t.activo !== false);
+            if (tiposActivos.length === 0) {
+                throw new error_middleware_1.AppError('Debe haber al menos un tipo activo para la persona', enums_1.HttpStatus.BAD_REQUEST);
+            }
         }
         if (data.dni && data.dni !== existingPersona.dni) {
             const existingDni = await this.personaRepository.findByDni(data.dni);
@@ -140,7 +149,79 @@ class PersonaService {
                 throw new error_middleware_1.AppError(`Ya existe una persona con email ${data.email}`, enums_1.HttpStatus.CONFLICT);
             }
         }
-        const updatedPersona = await this.personaRepository.update(id, data);
+        let tiposProcessed;
+        if (data.tipos && data.tipos.length > 0) {
+            const tipos = data.tipos;
+            const tiposCodigos = [];
+            for (const tipo of tipos) {
+                let tipoCodigo = tipo.tipoPersonaCodigo;
+                if (!tipoCodigo && tipo.tipoPersonaId) {
+                    const tiposCatalogo = await this.personaTipoRepository.getTiposPersona(false);
+                    const tipoCatalogo = tiposCatalogo.find(t => t.id === tipo.tipoPersonaId);
+                    if (tipoCatalogo) {
+                        tipoCodigo = tipoCatalogo.codigo;
+                    }
+                }
+                if (tipoCodigo) {
+                    tiposCodigos.push(tipoCodigo);
+                }
+            }
+            const validacion = (0, persona_helper_1.validateTiposMutuamenteExcluyentes)(tiposCodigos);
+            if (!validacion.valid) {
+                throw new error_middleware_1.AppError(validacion.error, enums_1.HttpStatus.BAD_REQUEST);
+            }
+            for (const tipo of tipos) {
+                let tipoCodigo = tipo.tipoPersonaCodigo;
+                if (!tipoCodigo && tipo.tipoPersonaId) {
+                    const tiposCatalogo = await this.personaTipoRepository.getTiposPersona(false);
+                    const tipoCatalogo = tiposCatalogo.find(t => t.id === tipo.tipoPersonaId);
+                    if (tipoCatalogo) {
+                        tipoCodigo = tipoCatalogo.codigo;
+                    }
+                }
+                if (tipoCodigo === 'SOCIO') {
+                    if (!tipo.numeroSocio) {
+                        const nextNumero = await this.personaTipoRepository.getNextNumeroSocio();
+                        tipo.numeroSocio = nextNumero;
+                    }
+                    if (!tipo.categoriaId) {
+                        const categoriaActivo = await this.prisma.categoriaSocio.findFirst({
+                            where: { codigo: 'ACTIVO', activa: true }
+                        });
+                        if (categoriaActivo) {
+                            tipo.categoriaId = categoriaActivo.id;
+                            logger_1.logger.info(`Auto-asignada categoría ACTIVO (ID: ${categoriaActivo.id}) para socio`);
+                        }
+                    }
+                    if (!tipo.fechaIngreso) {
+                        tipo.fechaIngreso = new Date().toISOString();
+                    }
+                }
+                if (tipoCodigo === 'DOCENTE') {
+                    if (!tipo.especialidadId) {
+                        const especialidad = await this.prisma.especialidadDocente.findFirst({
+                            where: { activo: true },
+                            orderBy: { orden: 'asc' }
+                        });
+                        if (especialidad) {
+                            tipo.especialidadId = especialidad.id;
+                            logger_1.logger.info(`Auto-asignada especialidad ${especialidad.nombre} (ID: ${especialidad.id}) para docente`);
+                        }
+                    }
+                }
+                if (tipoCodigo === 'PROVEEDOR') {
+                    if (!tipo.cuit || !tipo.razonSocialId) {
+                        throw new error_middleware_1.AppError('El tipo PROVEEDOR requiere CUIT y razón social', enums_1.HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+            tiposProcessed = tipos;
+        }
+        const updatedPersona = await this.personaRepository.update(id, {
+            ...data,
+            tipos: tiposProcessed,
+            contactos: data.contactos
+        });
         logger_1.logger.info(`Persona actualizada: ${updatedPersona.nombre} ${updatedPersona.apellido} (ID: ${id})`);
         return updatedPersona;
     }
