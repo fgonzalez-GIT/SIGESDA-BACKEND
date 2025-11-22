@@ -475,6 +475,15 @@ export class ActividadRepository {
   }
 
   /**
+   * Elimina todos los horarios de una actividad
+   */
+  async deleteHorariosByActividad(actividadId: number) {
+    return this.prisma.horarios_actividades.deleteMany({
+      where: { actividadId }
+    });
+  }
+
+  /**
    * Obtiene todos los horarios de una actividad
    */
   async getHorariosByActividad(actividadId: number) {

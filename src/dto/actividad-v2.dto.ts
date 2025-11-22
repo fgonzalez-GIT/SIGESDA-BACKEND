@@ -125,7 +125,10 @@ export const createActividadSchema = actividadBaseSchema.extend({
 // ACTUALIZAR ACTIVIDAD
 // ============================================================================
 
-export const updateActividadSchema = actividadBaseSchema.partial().refine((data) => {
+export const updateActividadSchema = actividadBaseSchema.partial().extend({
+  // Permitir actualización de horarios inline (opcional)
+  horarios: z.array(horarioInlineSchema).optional()
+}).refine((data) => {
   // Validar que fechaHasta >= fechaDesde (si ambas existen)
   if (!data.fechaDesde || !data.fechaHasta) return true;
 

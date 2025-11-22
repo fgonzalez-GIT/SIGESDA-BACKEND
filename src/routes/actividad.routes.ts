@@ -50,8 +50,9 @@ router.get('/', actividadController.getActividades.bind(actividadController));
 // Obtener actividad por ID
 router.get('/:id', actividadController.getActividadById.bind(actividadController));
 
-// Actualizar actividad
+// Actualizar actividad (soporta PATCH y PUT)
 router.patch('/:id', actividadController.updateActividad.bind(actividadController));
+router.put('/:id', actividadController.updateActividad.bind(actividadController));
 
 // Eliminar actividad
 router.delete('/:id', actividadController.deleteActividad.bind(actividadController));

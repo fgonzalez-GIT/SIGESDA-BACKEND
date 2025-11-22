@@ -186,11 +186,31 @@ export class ActividadService {
       }
     }
 
-    const updated = await this.actividadRepository.update(id, data);
+    // Extraer horarios del payload (si existen)
+    const { horarios, ...actividadData } = data as any;
 
-    logger.info(`Actividad actualizada: ${updated.nombre} (ID: ${id})`);
+    // Actualizar datos base de la actividad
+    const updated = await this.actividadRepository.update(id, actividadData);
 
-    return updated;
+    // Si se proporcionaron horarios, reemplazarlos completamente
+    if (horarios && Array.isArray(horarios)) {
+      // 1. Eliminar todos los horarios existentes
+      await this.actividadRepository.deleteHorariosByActividad(id);
+
+      // 2. Agregar los nuevos horarios
+      if (horarios.length > 0) {
+        for (const horario of horarios) {
+          await this.actividadRepository.agregarHorario(id, horario);
+        }
+      }
+    }
+
+    // Retornar actividad actualizada con horarios
+    const actividadCompleta = await this.actividadRepository.findById(id);
+
+    logger.info(`Actividad actualizada: ${updated.nombre} (ID: ${id})${horarios ? ` - horarios reemplazados (${horarios.length})` : ''}`);
+
+    return actividadCompleta;
   }
 
   /**
