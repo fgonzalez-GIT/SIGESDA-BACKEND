@@ -62,8 +62,8 @@ export class ParticipacionService {
 
     // Validar capacidad de la actividad
     const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
-    if (actividad.cupoMaximo && participantesActuales.activos >= actividad.cupoMaximo) {
-      throw new Error(`La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima de ${actividad.cupoMaximo} participantes`);
+    if (actividad.capacidadMaxima && participantesActuales.activos >= actividad.capacidadMaxima) {
+      throw new Error(`La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima de ${actividad.capacidadMaxima} participantes`);
     }
 
     // Verificar conflictos de horarios para la misma persona
@@ -98,8 +98,8 @@ export class ParticipacionService {
 
     return {
       ...participacion,
-      estado: determinarEstado({ activa: participacion.activo, fechaFin: participacion.fecha_fin }),
-      diasTranscurridos: Math.floor((new Date().getTime() - participacion.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+      estado: determinarEstado({ activa: participacion.activa, fechaFin: participacion.fechaFin }),
+      diasTranscurridos: Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
     };
   }
 
@@ -109,8 +109,8 @@ export class ParticipacionService {
 
     const participacionesConEstado = result.data.map(p => ({
       ...p,
-      estado: determinarEstado({ activa: p.activo, fechaFin: p.fecha_fin }),
-      diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+      estado: determinarEstado({ activa: p.activa, fechaFin: p.fechaFin }),
+      diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
     }));
 
     return {
@@ -129,8 +129,8 @@ export class ParticipacionService {
 
     return {
       ...participacion,
-      estado: determinarEstado({ activa: participacion.activo, fechaFin: participacion.fecha_fin }),
-      diasTranscurridos: Math.floor((new Date().getTime() - participacion.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+      estado: determinarEstado({ activa: participacion.activa, fechaFin: participacion.fechaFin }),
+      diasTranscurridos: Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
     };
   }
 
@@ -143,8 +143,8 @@ export class ParticipacionService {
     const participaciones = await this.participacionRepository.findByPersonaId(personaId);
     return participaciones.map(p => ({
       ...p,
-      estado: determinarEstado({ activa: p.activo, fechaFin: p.fecha_fin }),
-      diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+      estado: determinarEstado({ activa: p.activa, fechaFin: p.fechaFin }),
+      diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
     }));
   }
 
@@ -157,8 +157,8 @@ export class ParticipacionService {
     const participaciones = await this.participacionRepository.findByActividadId(actividadId);
     return participaciones.map(p => ({
       ...p,
-      estado: determinarEstado({ activa: p.activo, fechaFin: p.fecha_fin }),
-      diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+      estado: determinarEstado({ activa: p.activa, fechaFin: p.fechaFin }),
+      diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
     }));
   }
 
@@ -170,11 +170,11 @@ export class ParticipacionService {
 
     // Si se actualizan las fechas, verificar conflictos
     if (data.fechaInicio || data.fechaFin) {
-      const fechaInicio = data.fechaInicio || existing.fecha_inicio;
-      const fechaFin = data.fechaFin !== undefined ? data.fechaFin : existing.fecha_fin;
+      const fechaInicio = data.fechaInicio || existing.fechaInicio;
+      const fechaFin = data.fechaFin !== undefined ? data.fechaFin : existing.fechaFin;
 
       const conflictos = await this.participacionRepository.verificarConflictosHorarios(
-        existing.persona_id,
+        existing.personaId,
         fechaInicio,
         fechaFin || undefined,
         id // Excluir la participación actual
@@ -189,8 +189,8 @@ export class ParticipacionService {
     const participacion = await this.participacionRepository.update(id, data);
     return {
       ...participacion,
-      estado: determinarEstado({ activa: participacion.activo, fechaFin: participacion.fecha_fin }),
-      diasTranscurridos: Math.floor((new Date().getTime() - participacion.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+      estado: determinarEstado({ activa: participacion.activa, fechaFin: participacion.fechaFin }),
+      diasTranscurridos: Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
     };
   }
 
@@ -224,7 +224,7 @@ export class ParticipacionService {
 
         // Validar capacidad
         const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(inscripcion.actividadId);
-        if (actividad.cupoMaximo && participantesActuales.activos >= actividad.cupoMaximo) {
+        if (actividad.capacidadMaxima && participantesActuales.activos >= actividad.capacidadMaxima) {
           errores.push(`La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima`);
           continue;
         }
@@ -287,7 +287,7 @@ export class ParticipacionService {
 
     // Verificar cupo disponible
     const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
-    const cupoDisponible = actividad.cupoMaximo ? actividad.cupoMaximo - participantesActuales.activos : null;
+    const cupoDisponible = actividad.capacidadMaxima ? actividad.capacidadMaxima - participantesActuales.activos : null;
 
     if (cupoDisponible !== null && data.personas.length > cupoDisponible) {
       throw new Error(`No hay suficientes cupos disponibles. Cupos disponibles: ${cupoDisponible}, Personas a inscribir: ${data.personas.length}`);
@@ -387,15 +387,15 @@ export class ParticipacionService {
       throw new Error(`Participación con ID ${id} no encontrada`);
     }
 
-    if (participacion.activo) {
+    if (participacion.activa) {
       throw new Error('La participación ya está activa');
     }
 
     // Verificar si la actividad aún tiene cupos disponibles
-    const actividad = await this.actividadRepository.findById(participacion.actividad_id);
-    if (actividad?.cupoMaximo) {
-      const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(participacion.actividad_id);
-      if (participantesActuales.activos >= actividad.cupoMaximo) {
+    const actividad = await this.actividadRepository.findById(participacion.actividadId);
+    if (actividad?.capacidadMaxima) {
+      const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(participacion.actividadId);
+      if (participantesActuales.activos >= actividad.capacidadMaxima) {
         throw new Error(`La actividad "${actividad.nombre}" ya no tiene cupos disponibles`);
       }
     }
@@ -417,7 +417,7 @@ export class ParticipacionService {
 
     // Verificar capacidad de la nueva actividad
     const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.nuevaActividadId);
-    if (nuevaActividad.cupoMaximo && participantesActuales.activos >= nuevaActividad.cupoMaximo) {
+    if (nuevaActividad.capacidadMaxima && participantesActuales.activos >= nuevaActividad.capacidadMaxima) {
       throw new Error(`La actividad destino "${nuevaActividad.nombre}" ha alcanzado su capacidad máxima`);
     }
 
@@ -437,15 +437,15 @@ export class ParticipacionService {
 
     const participantes = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
 
-    const cuposDisponibles = actividad.cupoMaximo ?
-      actividad.cupoMaximo - participantes.activos :
+    const cuposDisponibles = actividad.capacidadMaxima ?
+      actividad.capacidadMaxima - participantes.activos :
       null; // Sin límite
 
     return {
       actividad: {
         id: actividad.id,
         nombre: actividad.nombre,
-        cupoMaximo: actividad.cupoMaximo
+        cupoMaximo: actividad.capacidadMaxima
       },
       participantes,
       cuposDisponibles,
@@ -462,7 +462,7 @@ export class ParticipacionService {
     return participaciones.map(p => ({
       ...p,
       estado: EstadoParticipacion.ACTIVA,
-      diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+      diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
     }));
   }
 
@@ -471,8 +471,8 @@ export class ParticipacionService {
     return participaciones.map(p => ({
       ...p,
       estado: EstadoParticipacion.ACTIVA,
-      diasRestantes: p.fecha_fin ?
-        Math.ceil((p.fecha_fin.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) :
+      diasRestantes: p.fechaFin ?
+        Math.ceil((p.fechaFin.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) :
         null
     }));
   }

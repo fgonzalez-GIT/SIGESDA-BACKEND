@@ -7,7 +7,7 @@ const actividad_repository_1 = require("@/repositories/actividad.repository");
 const database_1 = require("@/config/database");
 const router = (0, express_1.Router)();
 const actividadRepository = new actividad_repository_1.ActividadRepository(database_1.prisma);
-const actividadService = new actividad_service_1.ActividadService(actividadRepository);
+const actividadService = new actividad_service_1.ActividadService(actividadRepository, database_1.prisma);
 const actividadController = new actividad_controller_1.ActividadController(actividadService);
 router.get('/catalogos/todos', actividadController.getCatalogos.bind(actividadController));
 router.get('/catalogos/tipos', actividadController.getTiposActividades.bind(actividadController));
@@ -33,6 +33,7 @@ router.post('/:id/horarios', actividadController.agregarHorario.bind(actividadCo
 router.get('/:id/docentes', actividadController.getDocentesByActividad.bind(actividadController));
 router.post('/:id/docentes', actividadController.asignarDocente.bind(actividadController));
 router.delete('/:id/docentes/:docenteId/rol/:rolDocenteId', actividadController.desasignarDocente.bind(actividadController));
+router.delete('/docentes/:asignacionId', actividadController.desasignarDocenteById.bind(actividadController));
 router.get('/:id/participantes', actividadController.getParticipantes.bind(actividadController));
 router.post('/:id/participantes', actividadController.addParticipante.bind(actividadController));
 router.delete('/:id/participantes/:participanteId', actividadController.deleteParticipante.bind(actividadController));

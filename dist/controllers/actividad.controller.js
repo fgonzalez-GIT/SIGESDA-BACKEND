@@ -305,6 +305,29 @@ class ActividadController {
             next(error);
         }
     }
+    async desasignarDocenteById(req, res, next) {
+        try {
+            const asignacionId = parseInt(req.params.asignacionId);
+            if (isNaN(asignacionId)) {
+                const response = {
+                    success: false,
+                    error: 'ID de asignación inválido'
+                };
+                res.status(enums_1.HttpStatus.BAD_REQUEST).json(response);
+                return;
+            }
+            const desasignacion = await this.actividadService.desasignarDocenteById(asignacionId);
+            const response = {
+                success: true,
+                message: 'Docente desasignado exitosamente',
+                data: desasignacion
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
     async getDocentesByActividad(req, res, next) {
         try {
             const actividadId = parseInt(req.params.id);

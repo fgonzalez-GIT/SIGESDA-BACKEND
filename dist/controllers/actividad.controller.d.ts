@@ -16,6 +16,7 @@ export declare class ActividadController {
     eliminarHorario(req: Request, res: Response, next: NextFunction): Promise<void>;
     asignarDocente(req: Request, res: Response, next: NextFunction): Promise<void>;
     desasignarDocente(req: Request, res: Response, next: NextFunction): Promise<void>;
+    desasignarDocenteById(req: Request, res: Response, next: NextFunction): Promise<void>;
     getDocentesByActividad(req: Request, res: Response, next: NextFunction): Promise<void>;
     getDocentesDisponibles(req: Request, res: Response, next: NextFunction): Promise<void>;
     getParticipantes(req: Request, res: Response, next: NextFunction): Promise<void>;

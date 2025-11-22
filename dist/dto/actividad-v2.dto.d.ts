@@ -61,7 +61,7 @@ declare const reservaAulaInlineSchema: z.ZodObject<{
     fechaVigenciaHasta?: string | Date | null | undefined;
 }>;
 export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
-    codigoActividad: z.ZodString;
+    codigoActividad: z.ZodOptional<z.ZodString>;
     nombre: z.ZodString;
     tipoActividadId: z.ZodNumber;
     categoriaId: z.ZodNumber;
@@ -137,7 +137,6 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     categoriaId: number;
     nombre: string;
-    codigoActividad: string;
     tipoActividadId: number;
     estadoId: number;
     fechaDesde: string | Date;
@@ -163,16 +162,17 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
     }[];
     observaciones?: string | null | undefined;
     descripcion?: string | null | undefined;
+    codigoActividad?: string | undefined;
     fechaHasta?: string | Date | null | undefined;
     cupoMaximo?: number | null | undefined;
 }, {
     categoriaId: number;
     nombre: string;
-    codigoActividad: string;
     tipoActividadId: number;
     fechaDesde: string | Date;
     observaciones?: string | null | undefined;
     descripcion?: string | null | undefined;
+    codigoActividad?: string | undefined;
     estadoId?: number | undefined;
     fechaHasta?: string | Date | null | undefined;
     cupoMaximo?: number | null | undefined;
@@ -199,7 +199,6 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
 }>, {
     categoriaId: number;
     nombre: string;
-    codigoActividad: string;
     tipoActividadId: number;
     estadoId: number;
     fechaDesde: string | Date;
@@ -225,16 +224,17 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
     }[];
     observaciones?: string | null | undefined;
     descripcion?: string | null | undefined;
+    codigoActividad?: string | undefined;
     fechaHasta?: string | Date | null | undefined;
     cupoMaximo?: number | null | undefined;
 }, {
     categoriaId: number;
     nombre: string;
-    codigoActividad: string;
     tipoActividadId: number;
     fechaDesde: string | Date;
     observaciones?: string | null | undefined;
     descripcion?: string | null | undefined;
+    codigoActividad?: string | undefined;
     estadoId?: number | undefined;
     fechaHasta?: string | Date | null | undefined;
     cupoMaximo?: number | null | undefined;
@@ -260,7 +260,7 @@ export declare const createActividadSchema: z.ZodEffects<z.ZodObject<{
     }[] | undefined;
 }>;
 export declare const updateActividadSchema: z.ZodEffects<z.ZodObject<{
-    codigoActividad: z.ZodOptional<z.ZodString>;
+    codigoActividad: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     nombre: z.ZodOptional<z.ZodString>;
     tipoActividadId: z.ZodOptional<z.ZodNumber>;
     categoriaId: z.ZodOptional<z.ZodNumber>;

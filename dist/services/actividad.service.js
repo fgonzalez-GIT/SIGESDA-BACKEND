@@ -4,14 +4,49 @@ exports.ActividadService = void 0;
 const actividad_repository_1 = require("@/repositories/actividad.repository");
 const logger_1 = require("@/utils/logger");
 const errors_1 = require("@/utils/errors");
+const client_1 = require("@prisma/client");
 class ActividadService {
-    constructor(actividadRepository) {
+    constructor(actividadRepository, prisma) {
         this.actividadRepository = actividadRepository;
+        this.prisma = prisma || new client_1.PrismaClient();
+    }
+    async generateCodigoActividad(tipoActividadId, nombre) {
+        const tipoActividad = await this.prisma.tipos_actividades.findUnique({
+            where: { id: tipoActividadId }
+        });
+        if (!tipoActividad) {
+            throw new errors_1.ValidationError(`Tipo de actividad con ID ${tipoActividadId} no encontrado`);
+        }
+        const primeraPalabraTipo = tipoActividad.nombre.split(' ')[0].toUpperCase();
+        const palabrasNombre = nombre.split(' ');
+        let abreviatura = palabrasNombre
+            .map(palabra => {
+            if (/^\d+$/.test(palabra)) {
+                return palabra.length === 4 ? palabra.slice(-2) : palabra;
+            }
+            return palabra.slice(0, 3).toUpperCase();
+        })
+            .join('');
+        let codigoBase = `${primeraPalabraTipo}-${abreviatura}`;
+        let codigo = codigoBase;
+        let contador = 1;
+        while (await this.actividadRepository.findByCodigoActividad(codigo)) {
+            codigo = `${codigoBase}-${contador}`;
+            contador++;
+        }
+        return codigo;
     }
     async createActividad(data) {
-        const existente = await this.actividadRepository.findByCodigoActividad(data.codigoActividad);
-        if (existente) {
-            throw new errors_1.ValidationError(`Ya existe una actividad con el código ${data.codigoActividad}`);
+        let codigoActividad = data.codigoActividad;
+        if (!codigoActividad) {
+            codigoActividad = await this.generateCodigoActividad(data.tipoActividadId, data.nombre);
+            data = { ...data, codigoActividad };
+        }
+        else {
+            const existente = await this.actividadRepository.findByCodigoActividad(codigoActividad);
+            if (existente) {
+                throw new errors_1.ValidationError(`Ya existe una actividad con el código ${codigoActividad}`);
+            }
         }
         if (data.horarios && data.horarios.length > 0) {
             this.validateHorarios(data.horarios);
@@ -179,6 +214,11 @@ class ActividadService {
             throw new errors_1.ValidationError(`La persona ${docente.nombre} ${docente.apellido} (ID: ${docenteId}) no tiene el tipo DOCENTE activo. ` +
                 `Solo se pueden asignar personas con tipo DOCENTE activo a actividades.`);
         }
+        const asignacionExistente = await this.actividadRepository.findAsignacionDocente(actividadId, docenteId, rolDocenteId);
+        if (asignacionExistente) {
+            const rolNombre = asignacionExistente.rolesDocentes?.nombre || `ID ${rolDocenteId}`;
+            throw new errors_1.ConflictError(`El docente ${docente.nombre} ${docente.apellido} ya está asignado a la actividad "${actividad.nombre}" con el rol "${rolNombre}"`);
+        }
         const asignacion = await this.actividadRepository.asignarDocente(actividadId, docenteId, rolDocenteId, observaciones);
         const docenteNombre = asignacion.personas?.nombre || 'Docente';
         const docenteApellido = asignacion.personas?.apellido || '';
@@ -195,6 +235,13 @@ class ActividadService {
         const docenteNombre = desasignacion.personas?.nombre || 'Docente';
         const docenteApellido = desasignacion.personas?.apellido || '';
         logger_1.logger.info(`Docente ${docenteNombre} ${docenteApellido} desasignado de actividad ${actividad.nombre}`);
+        return desasignacion;
+    }
+    async desasignarDocenteById(asignacionId) {
+        const desasignacion = await this.actividadRepository.desasignarDocenteById(asignacionId);
+        const docenteNombre = desasignacion.personas?.nombre || 'Docente';
+        const docenteApellido = desasignacion.personas?.apellido || '';
+        logger_1.logger.info(`Docente ${docenteNombre} ${docenteApellido} desasignado (asignación ID: ${asignacionId})`);
         return desasignacion;
     }
     async getDocentesByActividad(actividadId) {

@@ -30,8 +30,8 @@ class ParticipacionService {
             }
         }
         const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
-        if (actividad.cupoMaximo && participantesActuales.activos >= actividad.cupoMaximo) {
-            throw new Error(`La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima de ${actividad.cupoMaximo} participantes`);
+        if (actividad.capacidadMaxima && participantesActuales.activos >= actividad.capacidadMaxima) {
+            throw new Error(`La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima de ${actividad.capacidadMaxima} participantes`);
         }
         const conflictos = await this.participacionRepository.verificarConflictosHorarios(data.personaId, data.fechaInicio, data.fechaFin || undefined);
         if (conflictos.length > 0) {
@@ -151,7 +151,7 @@ class ParticipacionService {
                     continue;
                 }
                 const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(inscripcion.actividadId);
-                if (actividad.cupoMaximo && participantesActuales.activos >= actividad.cupoMaximo) {
+                if (actividad.capacidadMaxima && participantesActuales.activos >= actividad.capacidadMaxima) {
                     errores.push(`La actividad "${actividad.nombre}" ha alcanzado su capacidad máxima`);
                     continue;
                 }
@@ -194,7 +194,7 @@ class ParticipacionService {
         const participacionesCreadas = [];
         const errores = [];
         const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
-        const cupoDisponible = actividad.cupoMaximo ? actividad.cupoMaximo - participantesActuales.activos : null;
+        const cupoDisponible = actividad.capacidadMaxima ? actividad.capacidadMaxima - participantesActuales.activos : null;
         if (cupoDisponible !== null && data.personas.length > cupoDisponible) {
             throw new Error(`No hay suficientes cupos disponibles. Cupos disponibles: ${cupoDisponible}, Personas a inscribir: ${data.personas.length}`);
         }
@@ -274,9 +274,9 @@ class ParticipacionService {
             throw new Error('La participación ya está activa');
         }
         const actividad = await this.actividadRepository.findById(participacion.actividad_id);
-        if (actividad?.cupoMaximo) {
+        if (actividad?.capacidadMaxima) {
             const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(participacion.actividad_id);
-            if (participantesActuales.activos >= actividad.cupoMaximo) {
+            if (participantesActuales.activos >= actividad.capacidadMaxima) {
                 throw new Error(`La actividad "${actividad.nombre}" ya no tiene cupos disponibles`);
             }
         }
@@ -292,7 +292,7 @@ class ParticipacionService {
             throw new Error(`Actividad destino con ID ${data.nuevaActividadId} no encontrada`);
         }
         const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(data.nuevaActividadId);
-        if (nuevaActividad.cupoMaximo && participantesActuales.activos >= nuevaActividad.cupoMaximo) {
+        if (nuevaActividad.capacidadMaxima && participantesActuales.activos >= nuevaActividad.capacidadMaxima) {
             throw new Error(`La actividad destino "${nuevaActividad.nombre}" ha alcanzado su capacidad máxima`);
         }
         return this.participacionRepository.transferirParticipacion(id, data.nuevaActividadId, data.fechaTransferencia, data.conservarFechaInicio);
@@ -303,14 +303,14 @@ class ParticipacionService {
             throw new Error(`Actividad con ID ${data.actividadId} no encontrada`);
         }
         const participantes = await this.participacionRepository.contarParticipantesPorActividad(data.actividadId);
-        const cuposDisponibles = actividad.cupoMaximo ?
-            actividad.cupoMaximo - participantes.activos :
+        const cuposDisponibles = actividad.capacidadMaxima ?
+            actividad.capacidadMaxima - participantes.activos :
             null;
         return {
             actividad: {
                 id: actividad.id,
                 nombre: actividad.nombre,
-                cupoMaximo: actividad.cupoMaximo
+                cupoMaximo: actividad.capacidadMaxima
             },
             participantes,
             cuposDisponibles,

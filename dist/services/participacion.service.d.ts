@@ -393,7 +393,7 @@ export declare class ParticipacionService {
         actividad: {
             id: number;
             nombre: string;
-            cupoMaximo: any;
+            cupoMaximo: number | null;
         };
         participantes: {
             total: number;

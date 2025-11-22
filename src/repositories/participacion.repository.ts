@@ -9,60 +9,53 @@ import {
 
 type ParticipacionConRelaciones = {
   id: number;
-  persona_id: number;
-  actividad_id: number;
-  fecha_inicio: Date;
-  fecha_fin: Date | null;
-  precio_especial: any; // Decimal
-  activo: boolean;
+  personaId: number;
+  actividadId: number;
+  fechaInicio: Date;
+  fechaFin: Date | null;
+  precioEspecial: any; // Decimal
+  activa: boolean;
   observaciones: string | null;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
   personas: {
     id: number;
     nombre: string;
     apellido: string;
-    tipo: string;
     dni?: string;
     email?: string | null;
   };
   actividades: {
     id: number;
     nombre: string;
-    codigo_actividad: string;
+    codigoActividad: string;
     costo: any; // Decimal
     descripcion?: string | null;
     capacidadMaxima?: number | null;
-    tipo_actividad_id: number;
+    tipoActividadId: number;
   };
 };
 
 export class ParticipacionRepository {
   constructor(private prisma: PrismaClient) {}
 
-  // Helper para convertir de DTO (camelCase) a Prisma (snake_case)
-  private mapDtoToPrisma(data: CreateParticipacionDto): any {
-    return {
-      persona_id: data.personaId,
-      actividad_id: data.actividadId,
-      fecha_inicio: data.fechaInicio,
-      fecha_fin: data.fechaFin || null,
-      precio_especial: data.precioEspecial ? Number(data.precioEspecial) : null,
-      activo: data.activa !== undefined ? data.activa : true,
-      observaciones: data.observaciones || null
-    };
-  }
-
   async create(data: CreateParticipacionDto): Promise<ParticipacionConRelaciones> {
-    return this.prisma.participaciones_actividades.create({
-      data: this.mapDtoToPrisma(data),
+    return this.prisma.participacion_actividades.create({
+      data: {
+        personaId: data.personaId,
+        actividadId: data.actividadId,
+        fechaInicio: data.fechaInicio,
+        fechaFin: data.fechaFin || null,
+        precioEspecial: data.precioEspecial ? Number(data.precioEspecial) : null,
+        activa: data.activa !== undefined ? data.activa : true,
+        observaciones: data.observaciones || null
+      },
       include: {
         personas: {
           select: {
             id: true,
             nombre: true,
             apellido: true,
-            tipo: true,
             dni: true,
             email: true
           }
@@ -71,11 +64,11 @@ export class ParticipacionRepository {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             descripcion: true,
             capacidadMaxima: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       }
@@ -88,36 +81,36 @@ export class ParticipacionRepository {
   }> {
     const where: any = {};
 
-    // Filtros básicos (Mapear a snake_case)
+    // Filtros básicos
     if (query.personaId) {
-      where.persona_id = query.personaId;
+      where.personaId = query.personaId;
     }
 
     if (query.actividadId) {
-      where.actividad_id = query.actividadId;
+      where.actividadId = query.actividadId;
     }
 
     if (query.activa !== undefined) {
-      where.activo = query.activa;
+      where.activa = query.activa;
     }
 
     // Filtros de fecha
     if (query.fechaDesde || query.fechaHasta) {
-      where.fecha_inicio = {};
+      where.fechaInicio = {};
       if (query.fechaDesde) {
-        where.fecha_inicio.gte = query.fechaDesde;
+        where.fechaInicio.gte = query.fechaDesde;
       }
       if (query.fechaHasta) {
-        where.fecha_inicio.lte = query.fechaHasta;
+        where.fechaInicio.lte = query.fechaHasta;
       }
     }
 
     // Filtro de precio especial
     if (query.conPrecioEspecial !== undefined) {
       if (query.conPrecioEspecial) {
-        where.precio_especial = { not: null };
+        where.precioEspecial = { not: null };
       } else {
-        where.precio_especial = null;
+        where.precioEspecial = null;
       }
     }
 
@@ -157,7 +150,7 @@ export class ParticipacionRepository {
     const skip = (query.page - 1) * query.limit;
 
     const [data, total] = await Promise.all([
-      this.prisma.participaciones_actividades.findMany({
+      this.prisma.participacion_actividades.findMany({
         where,
         skip,
         take: query.limit,
@@ -185,14 +178,14 @@ export class ParticipacionRepository {
           }
         }
       }),
-      this.prisma.participaciones_actividades.count({ where })
+      this.prisma.participacion_actividades.count({ where })
     ]);
 
     return { data, total };
   }
 
   async findById(id: number): Promise<ParticipacionConRelaciones | null> {
-    return this.prisma.participaciones_actividades.findUnique({
+    return this.prisma.participacion_actividades.findUnique({
       where: { id },
       include: {
         personas: {
@@ -200,7 +193,6 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             apellido: true,
-            tipo: true,
             dni: true,
             email: true
           }
@@ -220,79 +212,76 @@ export class ParticipacionRepository {
   }
 
   async findByPersonaId(personaId: number): Promise<ParticipacionConRelaciones[]> {
-    return this.prisma.participaciones_actividades.findMany({
-      where: { persona_id: personaId },
+    return this.prisma.participacion_actividades.findMany({
+      where: { personaId: personaId },
       include: {
         personas: {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       },
-      orderBy: { fecha_inicio: 'desc' }
+      orderBy: { fechaInicio: 'desc' }
     });
   }
 
   async findByActividadId(actividadId: number): Promise<ParticipacionConRelaciones[]> {
-    return this.prisma.participaciones_actividades.findMany({
-      where: { actividad_id: actividadId },
+    return this.prisma.participacion_actividades.findMany({
+      where: { actividadId: actividadId },
       include: {
         personas: {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       },
-      orderBy: { fecha_inicio: 'desc' }
+      orderBy: { fechaInicio: 'desc' }
     });
   }
 
   async findByPersonaAndActividad(personaId: number, actividadId: number): Promise<ParticipacionConRelaciones | null> {
-    return this.prisma.participaciones_actividades.findFirst({
+    return this.prisma.participacion_actividades.findFirst({
       where: {
-        persona_id: personaId,
-        actividad_id: actividadId
+        personaId: personaId,
+        actividadId: actividadId
       },
       include: {
         personas: {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       }
@@ -301,54 +290,53 @@ export class ParticipacionRepository {
 
   async findParticipacionesActivas(personaId?: number): Promise<ParticipacionConRelaciones[]> {
     const where: any = {
-      activo: true,
+      activa: true,
       OR: [
-        { fecha_fin: null }, // Sin fecha de fin
-        { fecha_fin: { gt: new Date() } } // Fecha de fin en el futuro
+        { fechaFin: null }, // Sin fecha de fin
+        { fechaFin: { gt: new Date() } } // Fecha de fin en el futuro
       ]
     };
 
     if (personaId) {
-      where.persona_id = personaId;
+      where.personaId = personaId;
     }
 
-    return this.prisma.participaciones_actividades.findMany({
+    return this.prisma.participacion_actividades.findMany({
       where,
       include: {
         personas: {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       },
-      orderBy: { fecha_inicio: 'desc' }
+      orderBy: { fechaInicio: 'desc' }
     });
   }
 
   async update(id: number, data: Partial<CreateParticipacionDto>): Promise<ParticipacionConRelaciones> {
     const updateData: any = {};
 
-    if (data.personaId !== undefined) updateData.persona_id = data.personaId;
-    if (data.actividadId !== undefined) updateData.actividad_id = data.actividadId;
-    if (data.fechaInicio !== undefined) updateData.fecha_inicio = data.fechaInicio;
-    if (data.fechaFin !== undefined) updateData.fecha_fin = data.fechaFin || null;
-    if (data.precioEspecial !== undefined) updateData.precio_especial = data.precioEspecial ? Number(data.precioEspecial) : null;
-    if (data.activa !== undefined) updateData.activo = data.activa;
+    if (data.personaId !== undefined) updateData.personaId = data.personaId;
+    if (data.actividadId !== undefined) updateData.actividadId = data.actividadId;
+    if (data.fechaInicio !== undefined) updateData.fechaInicio = data.fechaInicio;
+    if (data.fechaFin !== undefined) updateData.fechaFin = data.fechaFin || null;
+    if (data.precioEspecial !== undefined) updateData.precioEspecial = data.precioEspecial ? Number(data.precioEspecial) : null;
+    if (data.activa !== undefined) updateData.activa = data.activa;
     if (data.observaciones !== undefined) updateData.observaciones = data.observaciones || null;
 
-    return this.prisma.participaciones_actividades.update({
+    return this.prisma.participacion_actividades.update({
       where: { id },
       data: updateData,
       include: {
@@ -356,17 +344,16 @@ export class ParticipacionRepository {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       }
@@ -374,24 +361,23 @@ export class ParticipacionRepository {
   }
 
   async delete(id: number): Promise<ParticipacionConRelaciones> {
-    return this.prisma.participaciones_actividades.delete({
+    return this.prisma.participacion_actividades.delete({
       where: { id },
       include: {
         personas: {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       }
@@ -400,15 +386,15 @@ export class ParticipacionRepository {
 
   async finalizarParticipacion(id: number, fechaFin?: Date, motivo?: string): Promise<ParticipacionConRelaciones> {
     const updateData: any = {
-      activo: false,
-      fecha_fin: fechaFin || new Date()
+      activa: false,
+      fechaFin: fechaFin || new Date()
     };
 
     if (motivo) {
       updateData.observaciones = motivo;
     }
 
-    return this.prisma.participaciones_actividades.update({
+    return this.prisma.participacion_actividades.update({
       where: { id },
       data: updateData,
       include: {
@@ -416,17 +402,16 @@ export class ParticipacionRepository {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       }
@@ -434,28 +419,27 @@ export class ParticipacionRepository {
   }
 
   async reactivarParticipacion(id: number): Promise<ParticipacionConRelaciones> {
-    return this.prisma.participaciones_actividades.update({
+    return this.prisma.participacion_actividades.update({
       where: { id },
       data: {
-        activo: true,
-        fecha_fin: null
+        activa: true,
+        fechaFin: null
       },
       include: {
         personas: {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       }
@@ -469,16 +453,16 @@ export class ParticipacionRepository {
     excluirId?: number
   ): Promise<ParticipacionConRelaciones[]> {
     const where: any = {
-      persona_id: personaId,
-      activo: true,
+      personaId: personaId,
+      activa: true,
       OR: [
         {
           AND: [
-            { fecha_inicio: { lte: fechaInicio } },
+            { fechaInicio: { lte: fechaInicio } },
             {
               OR: [
-                { fecha_fin: null },
-                { fecha_fin: { gte: fechaInicio } }
+                { fechaFin: null },
+                { fechaFin: { gte: fechaInicio } }
               ]
             }
           ]
@@ -489,11 +473,11 @@ export class ParticipacionRepository {
     if (fechaFin) {
       where.OR.push({
         AND: [
-          { fecha_inicio: { lte: fechaFin } },
+          { fechaInicio: { lte: fechaFin } },
           {
             OR: [
-              { fecha_fin: null },
-              { fecha_fin: { gte: fechaInicio } }
+              { fechaFin: null },
+              { fechaFin: { gte: fechaInicio } }
             ]
           }
         ]
@@ -504,24 +488,23 @@ export class ParticipacionRepository {
       where.id = { not: excluirId };
     }
 
-    return this.prisma.participaciones_actividades.findMany({
+    return this.prisma.participacion_actividades.findMany({
       where,
       include: {
         personas: {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       }
@@ -534,11 +517,11 @@ export class ParticipacionRepository {
     inactivos: number;
   }> {
     const [total, activos] = await Promise.all([
-      this.prisma.participaciones_actividades.count({
-        where: { actividad_id: actividadId }
+      this.prisma.participacion_actividades.count({
+        where: { actividadId: actividadId }
       }),
-      this.prisma.participaciones_actividades.count({
-        where: { actividad_id: actividadId, activo: true }
+      this.prisma.participacion_actividades.count({
+        where: { actividadId: actividadId, activa: true }
       })
     ]);
 
@@ -564,7 +547,7 @@ export class ParticipacionRepository {
 
     switch (params.agruparPor) {
       case 'actividad':
-        return this.prisma.participaciones_actividades.groupBy({
+        return this.prisma.participacion_actividades.groupBy({
           by: ['actividadId'],
           where,
           _count: {
@@ -578,7 +561,7 @@ export class ParticipacionRepository {
         });
 
       case 'persona':
-        return this.prisma.participaciones_actividades.groupBy({
+        return this.prisma.participacion_actividades.groupBy({
           by: ['personaId'],
           where,
           _count: {
@@ -624,10 +607,10 @@ export class ParticipacionRepository {
     const fechaLimite = new Date();
     fechaLimite.setDate(fechaLimite.getDate() + diasAnticipacion);
 
-    return this.prisma.participaciones_actividades.findMany({
+    return this.prisma.participacion_actividades.findMany({
       where: {
-        activo: true,
-        fecha_fin: {
+        activa: true,
+        fechaFin: {
           not: null,
           lte: fechaLimite
         }
@@ -638,7 +621,6 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             apellido: true,
-            tipo: true,
             dni: true,
             email: true
           }
@@ -647,13 +629,13 @@ export class ParticipacionRepository {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       },
-      orderBy: { fecha_fin: 'asc' }
+      orderBy: { fechaFin: 'asc' }
     });
   }
 
@@ -661,7 +643,7 @@ export class ParticipacionRepository {
     // Usar transacción para operación bulk
     const result = await this.prisma.$transaction(
       participaciones.map(participacion =>
-        this.prisma.participaciones_actividades.create({
+        this.prisma.participacion_actividades.create({
           data: {
             ...participacion,
             precioEspecial: participacion.precioEspecial ? Number(participacion.precioEspecial) : null
@@ -680,14 +662,14 @@ export class ParticipacionRepository {
     conservarFechaInicio: boolean = false
   ): Promise<ParticipacionConRelaciones> {
     const updateData: any = {
-      actividad_id: nuevaActividadId
+      actividadId: nuevaActividadId
     };
 
     if (!conservarFechaInicio) {
-      updateData.fecha_inicio = fechaTransferencia;
+      updateData.fechaInicio = fechaTransferencia;
     }
 
-    return this.prisma.participaciones_actividades.update({
+    return this.prisma.participacion_actividades.update({
       where: { id },
       data: updateData,
       include: {
@@ -695,17 +677,16 @@ export class ParticipacionRepository {
           select: {
             id: true,
             nombre: true,
-            apellido: true,
-            tipo: true
+            apellido: true
           }
         },
         actividades: {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       }
@@ -727,7 +708,7 @@ export class ParticipacionRepository {
       where.actividadId = params.actividadId;
     }
 
-    return this.prisma.participacionActividad.findMany({
+    return this.prisma.participacion_actividades.findMany({
       where,
       include: {
         personas: {
@@ -735,7 +716,6 @@ export class ParticipacionRepository {
             id: true,
             nombre: true,
             apellido: true,
-            tipo: true,
             dni: true,
             email: true
           }
@@ -744,11 +724,11 @@ export class ParticipacionRepository {
           select: {
             id: true,
             nombre: true,
-            codigo_actividad: true,
+            codigoActividad: true,
             descripcion: true,
             capacidadMaxima: true,
             costo: true,
-            tipo_actividad_id: true
+            tipoActividadId: true
           }
         }
       }

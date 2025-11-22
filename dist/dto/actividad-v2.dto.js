@@ -4,9 +4,9 @@ exports.reporteOcupacionSchema = exports.estadisticasActividadSchema = exports.c
 const zod_1 = require("zod");
 const actividadBaseSchema = zod_1.z.object({
     codigoActividad: zod_1.z.string()
-        .min(1, 'El código de actividad es requerido')
         .max(50, 'El código no puede exceder 50 caracteres')
-        .regex(/^[A-Z0-9\-]+$/, 'El código debe estar en mayúsculas, números y guiones (ej: CORO-ADU-2025-A)'),
+        .regex(/^[A-Z0-9\-]+$/, 'El código debe estar en mayúsculas, números y guiones')
+        .optional(),
     nombre: zod_1.z.string()
         .min(1, 'El nombre es requerido')
         .max(200, 'El nombre no puede exceder 200 caracteres'),

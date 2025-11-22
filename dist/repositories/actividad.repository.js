@@ -102,7 +102,7 @@ class ActividadRepository {
                     ...(where.horarios_actividades?.some || {}),
                     reservas_aulas_actividades: {
                         some: {
-                            aula_id: query.aulaId
+                            aulaId: query.aulaId
                         }
                     }
                 }
@@ -126,10 +126,10 @@ class ActividadRepository {
         }
         if (query.vigentes) {
             const hoy = new Date();
-            where.fecha_desde = { lte: hoy };
+            where.fechaDesde = { lte: hoy };
             where.OR = [
-                { fecha_hasta: null },
-                { fecha_hasta: { gte: hoy } }
+                { fechaHasta: null },
+                { fechaHasta: { gte: hoy } }
             ];
         }
         const skip = (query.page - 1) * query.limit;
@@ -138,13 +138,13 @@ class ActividadRepository {
             orderBy.codigoActividad = query.orderDir;
         }
         else if (query.orderBy === 'fechaDesde') {
-            orderBy.fecha_desde = query.orderDir;
+            orderBy.fechaDesde = query.orderDir;
         }
         else if (query.orderBy === 'cupoMaximo') {
             orderBy.capacidadMaxima = query.orderDir;
         }
         else if (query.orderBy === 'created_at') {
-            orderBy.created_at = query.orderDir;
+            orderBy.createdAt = query.orderDir;
         }
         else {
             orderBy.nombre = query.orderDir;
@@ -176,7 +176,10 @@ class ActividadRepository {
                                     id: true,
                                     nombre: true,
                                     apellido: true,
-                                    especialidad: true
+                                    tipos: {
+                                        where: { activo: true },
+                                        include: { tipoPersona: true, especialidad: true }
+                                    }
                                 }
                             },
                             rolesDocentes: true
@@ -231,10 +234,15 @@ class ActividadRepository {
                                 id: true,
                                 nombre: true,
                                 apellido: true,
-                                especialidad: true,
                                 email: true,
                                 telefono: true,
-                                honorariosPorHora: true
+                                tipos: {
+                                    where: { activo: true },
+                                    include: {
+                                        tipoPersona: true,
+                                        especialidad: true
+                                    }
+                                }
                             }
                         },
                         rolesDocentes: true
@@ -248,9 +256,14 @@ class ActividadRepository {
                                 id: true,
                                 nombre: true,
                                 apellido: true,
-                                tipo: true,
                                 email: true,
-                                telefono: true
+                                telefono: true,
+                                tipos: {
+                                    where: { activo: true },
+                                    include: {
+                                        tipoPersona: true
+                                    }
+                                }
                             }
                         }
                     },
@@ -322,7 +335,10 @@ class ActividadRepository {
                                 id: true,
                                 nombre: true,
                                 apellido: true,
-                                especialidad: true
+                                tipos: {
+                                    where: { activo: true },
+                                    include: { tipoPersona: true, especialidad: true }
+                                }
                             }
                         },
                         rolesDocentes: true
@@ -341,7 +357,7 @@ class ActividadRepository {
         return this.prisma.actividades.update({
             where: { id },
             data: {
-                estado_id: nuevoEstadoId,
+                estadoId: nuevoEstadoId,
                 observaciones: observaciones || undefined
             },
             include: {
@@ -352,10 +368,10 @@ class ActividadRepository {
     async agregarHorario(actividadId, horarioData) {
         return this.prisma.horarios_actividades.create({
             data: {
-                actividad_id: actividadId,
-                dia_semana_id: horarioData.diaSemanaId,
-                hora_inicio: this.parseTimeToDate(horarioData.horaInicio),
-                hora_fin: this.parseTimeToDate(horarioData.horaFin),
+                actividadId,
+                diaSemanaId: horarioData.diaSemanaId,
+                horaInicio: horarioData.horaInicio,
+                horaFin: horarioData.horaFin,
                 activo: horarioData.activo !== false
             },
             include: {
@@ -373,11 +389,11 @@ class ActividadRepository {
     async updateHorario(horarioId, horarioData) {
         const updateData = {};
         if (horarioData.diaSemanaId)
-            updateData.dia_semana_id = horarioData.diaSemanaId;
+            updateData.diaSemanaId = horarioData.diaSemanaId;
         if (horarioData.horaInicio)
-            updateData.hora_inicio = this.parseTimeToDate(horarioData.horaInicio);
+            updateData.horaInicio = horarioData.horaInicio;
         if (horarioData.horaFin)
-            updateData.hora_fin = this.parseTimeToDate(horarioData.horaFin);
+            updateData.horaFin = horarioData.horaFin;
         if (horarioData.activo !== undefined)
             updateData.activo = horarioData.activo;
         return this.prisma.horarios_actividades.update({
@@ -401,7 +417,7 @@ class ActividadRepository {
     }
     async getHorariosByActividad(actividadId) {
         return this.prisma.horarios_actividades.findMany({
-            where: { actividad_id: actividadId },
+            where: { actividadId },
             include: {
                 diasSemana: true,
                 reservas_aulas_actividades: {
@@ -411,8 +427,8 @@ class ActividadRepository {
                 }
             },
             orderBy: [
-                { dia_semana_id: 'asc' },
-                { hora_inicio: 'asc' }
+                { diaSemanaId: 'asc' },
+                { horaInicio: 'asc' }
             ]
         });
     }
@@ -431,12 +447,25 @@ class ActividadRepository {
             }
         });
     }
+    async findAsignacionDocente(actividadId, docenteId, rolDocenteId) {
+        return this.prisma.docentes_actividades.findFirst({
+            where: {
+                actividadId,
+                docenteId,
+                rolDocenteId,
+                activo: true
+            },
+            include: {
+                rolesDocentes: true
+            }
+        });
+    }
     async asignarDocente(actividadId, docenteId, rolDocenteId, observaciones) {
         return this.prisma.docentes_actividades.create({
             data: {
-                actividad_id: actividadId,
-                docente_id: docenteId,
-                rol_docente_id: rolDocenteId,
+                actividades: { connect: { id: actividadId } },
+                personas: { connect: { id: docenteId } },
+                rolesDocentes: { connect: { id: rolDocenteId } },
                 observaciones,
                 activo: true
             },
@@ -446,8 +475,11 @@ class ActividadRepository {
                         id: true,
                         nombre: true,
                         apellido: true,
-                        especialidad: true,
-                        email: true
+                        email: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: { tipoPersona: true, especialidad: true }
+                        }
                     }
                 },
                 rolesDocentes: true,
@@ -464,9 +496,9 @@ class ActividadRepository {
     async desasignarDocente(actividadId, docenteId, rolDocenteId) {
         const asignacion = await this.prisma.docentes_actividades.findFirst({
             where: {
-                actividad_id: actividadId,
-                docente_id: docenteId,
-                rol_docente_id: rolDocenteId,
+                actividadId,
+                docenteId,
+                rolDocenteId,
                 activo: true
             }
         });
@@ -477,7 +509,7 @@ class ActividadRepository {
             where: { id: asignacion.id },
             data: {
                 activo: false,
-                fecha_desasignacion: new Date()
+                fechaDesasignacion: new Date()
             },
             include: {
                 personas: {
@@ -491,10 +523,41 @@ class ActividadRepository {
             }
         });
     }
+    async desasignarDocenteById(asignacionId) {
+        const asignacion = await this.prisma.docentes_actividades.findUnique({
+            where: { id: asignacionId }
+        });
+        if (!asignacion) {
+            throw new Error('Asignación de docente no encontrada');
+        }
+        return this.prisma.docentes_actividades.update({
+            where: { id: asignacionId },
+            data: {
+                activo: false,
+                fechaDesasignacion: new Date()
+            },
+            include: {
+                personas: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        apellido: true
+                    }
+                },
+                rolesDocentes: true,
+                actividades: {
+                    select: {
+                        id: true,
+                        nombre: true
+                    }
+                }
+            }
+        });
+    }
     async getDocentesByActividad(actividadId) {
         return this.prisma.docentes_actividades.findMany({
             where: {
-                actividad_id: actividadId,
+                actividadId,
                 activo: true
             },
             include: {
@@ -503,10 +566,12 @@ class ActividadRepository {
                         id: true,
                         nombre: true,
                         apellido: true,
-                        especialidad: true,
                         email: true,
                         telefono: true,
-                        honorariosPorHora: true
+                        tipos: {
+                            where: { activo: true },
+                            include: { tipoPersona: true, especialidad: true }
+                        }
                     }
                 },
                 rolesDocentes: true
@@ -612,11 +677,12 @@ class ActividadRepository {
                         id: true,
                         nombre: true,
                         apellido: true,
-                        tipo: true,
                         email: true,
                         telefono: true,
-                        categoriaId: true,
-                        categoria: true
+                        tipos: {
+                            where: { activo: true },
+                            include: { tipoPersona: true, categoria: true }
+                        }
                     }
                 }
             },
@@ -681,8 +747,11 @@ class ActividadRepository {
                         id: true,
                         nombre: true,
                         apellido: true,
-                        tipo: true,
-                        email: true
+                        email: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: { tipoPersona: true }
+                        }
                     }
                 },
                 actividades: {
@@ -698,12 +767,11 @@ class ActividadRepository {
     async deleteParticipante(actividadId, participanteId) {
         return this.prisma.participacion_actividades.update({
             where: {
-                id: participanteId,
-                actividad_id: actividadId
+                id: participanteId
             },
             data: {
-                activo: false,
-                fecha_fin: new Date()
+                activa: false,
+                fechaFin: new Date()
             }
         });
     }

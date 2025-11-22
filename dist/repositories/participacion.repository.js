@@ -17,7 +17,7 @@ class ParticipacionRepository {
         };
     }
     async create(data) {
-        return this.prisma.participaciones_actividades.create({
+        return this.prisma.participacion_actividades.create({
             data: this.mapDtoToPrisma(data),
             include: {
                 personas: {
@@ -103,7 +103,7 @@ class ParticipacionRepository {
         }
         const skip = (query.page - 1) * query.limit;
         const [data, total] = await Promise.all([
-            this.prisma.participaciones_actividades.findMany({
+            this.prisma.participacion_actividades.findMany({
                 where,
                 skip,
                 take: query.limit,
@@ -131,12 +131,12 @@ class ParticipacionRepository {
                     }
                 }
             }),
-            this.prisma.participaciones_actividades.count({ where })
+            this.prisma.participacion_actividades.count({ where })
         ]);
         return { data, total };
     }
     async findById(id) {
-        return this.prisma.participaciones_actividades.findUnique({
+        return this.prisma.participacion_actividades.findUnique({
             where: { id },
             include: {
                 personas: {
@@ -163,7 +163,7 @@ class ParticipacionRepository {
         });
     }
     async findByPersonaId(personaId) {
-        return this.prisma.participaciones_actividades.findMany({
+        return this.prisma.participacion_actividades.findMany({
             where: { persona_id: personaId },
             include: {
                 personas: {
@@ -188,7 +188,7 @@ class ParticipacionRepository {
         });
     }
     async findByActividadId(actividadId) {
-        return this.prisma.participaciones_actividades.findMany({
+        return this.prisma.participacion_actividades.findMany({
             where: { actividad_id: actividadId },
             include: {
                 personas: {
@@ -213,7 +213,7 @@ class ParticipacionRepository {
         });
     }
     async findByPersonaAndActividad(personaId, actividadId) {
-        return this.prisma.participaciones_actividades.findFirst({
+        return this.prisma.participacion_actividades.findFirst({
             where: {
                 persona_id: personaId,
                 actividad_id: actividadId
@@ -250,7 +250,7 @@ class ParticipacionRepository {
         if (personaId) {
             where.persona_id = personaId;
         }
-        return this.prisma.participaciones_actividades.findMany({
+        return this.prisma.participacion_actividades.findMany({
             where,
             include: {
                 personas: {
@@ -290,7 +290,7 @@ class ParticipacionRepository {
             updateData.activo = data.activa;
         if (data.observaciones !== undefined)
             updateData.observaciones = data.observaciones || null;
-        return this.prisma.participaciones_actividades.update({
+        return this.prisma.participacion_actividades.update({
             where: { id },
             data: updateData,
             include: {
@@ -315,7 +315,7 @@ class ParticipacionRepository {
         });
     }
     async delete(id) {
-        return this.prisma.participaciones_actividades.delete({
+        return this.prisma.participacion_actividades.delete({
             where: { id },
             include: {
                 personas: {
@@ -346,7 +346,7 @@ class ParticipacionRepository {
         if (motivo) {
             updateData.observaciones = motivo;
         }
-        return this.prisma.participaciones_actividades.update({
+        return this.prisma.participacion_actividades.update({
             where: { id },
             data: updateData,
             include: {
@@ -371,7 +371,7 @@ class ParticipacionRepository {
         });
     }
     async reactivarParticipacion(id) {
-        return this.prisma.participaciones_actividades.update({
+        return this.prisma.participacion_actividades.update({
             where: { id },
             data: {
                 activo: true,
@@ -432,7 +432,7 @@ class ParticipacionRepository {
         if (excluirId) {
             where.id = { not: excluirId };
         }
-        return this.prisma.participaciones_actividades.findMany({
+        return this.prisma.participacion_actividades.findMany({
             where,
             include: {
                 personas: {
@@ -457,10 +457,10 @@ class ParticipacionRepository {
     }
     async contarParticipantesPorActividad(actividadId) {
         const [total, activos] = await Promise.all([
-            this.prisma.participaciones_actividades.count({
+            this.prisma.participacion_actividades.count({
                 where: { actividad_id: actividadId }
             }),
-            this.prisma.participaciones_actividades.count({
+            this.prisma.participacion_actividades.count({
                 where: { actividad_id: actividadId, activo: true }
             })
         ]);
@@ -484,7 +484,7 @@ class ParticipacionRepository {
         }
         switch (params.agruparPor) {
             case 'actividad':
-                return this.prisma.participaciones_actividades.groupBy({
+                return this.prisma.participacion_actividades.groupBy({
                     by: ['actividadId'],
                     where,
                     _count: {
@@ -497,7 +497,7 @@ class ParticipacionRepository {
                     }
                 });
             case 'persona':
-                return this.prisma.participaciones_actividades.groupBy({
+                return this.prisma.participacion_actividades.groupBy({
                     by: ['personaId'],
                     where,
                     _count: {
@@ -538,7 +538,7 @@ class ParticipacionRepository {
     async getParticipacionesPorVencer(diasAnticipacion = 30) {
         const fechaLimite = new Date();
         fechaLimite.setDate(fechaLimite.getDate() + diasAnticipacion);
-        return this.prisma.participaciones_actividades.findMany({
+        return this.prisma.participacion_actividades.findMany({
             where: {
                 activo: true,
                 fecha_fin: {
@@ -571,7 +571,7 @@ class ParticipacionRepository {
         });
     }
     async bulkCreate(participaciones) {
-        const result = await this.prisma.$transaction(participaciones.map(participacion => this.prisma.participaciones_actividades.create({
+        const result = await this.prisma.$transaction(participaciones.map(participacion => this.prisma.participacion_actividades.create({
             data: {
                 ...participacion,
                 precioEspecial: participacion.precioEspecial ? Number(participacion.precioEspecial) : null
@@ -586,7 +586,7 @@ class ParticipacionRepository {
         if (!conservarFechaInicio) {
             updateData.fecha_inicio = fechaTransferencia;
         }
-        return this.prisma.participaciones_actividades.update({
+        return this.prisma.participacion_actividades.update({
             where: { id },
             data: updateData,
             include: {
@@ -621,7 +621,7 @@ class ParticipacionRepository {
         if (params.actividadId) {
             where.actividadId = params.actividadId;
         }
-        return this.prisma.participacionActividad.findMany({
+        return this.prisma.participacion_actividades.findMany({
             where,
             include: {
                 personas: {
@@ -638,11 +638,11 @@ class ParticipacionRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         descripcion: true,
                         capacidadMaxima: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             }
