@@ -41,8 +41,8 @@ export class AulaService {
   }
 
   async updateAula(id: string, data: UpdateAulaDto): Promise<Aula> {
-    // Verificar que el aula existe
-    const existingAula = await this.aulaRepository.findById(id);
+    // Verificar que el aula existe (sin cargar relaciones para evitar errores de tipo)
+    const existingAula = await this.aulaRepository.findByIdSimple(id);
     if (!existingAula) {
       throw new NotFoundError(`Aula con ID ${id} no encontrada`);
     }

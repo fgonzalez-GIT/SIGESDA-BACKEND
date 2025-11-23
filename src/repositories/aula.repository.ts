@@ -6,8 +6,17 @@ export class AulaRepository {
   constructor(private prisma: PrismaClient) {}
 
   async create(data: CreateAulaDto): Promise<Aula> {
+    // Filtrar solo los campos que existen en el modelo Prisma
+    const { nombre, capacidad, ubicacion, equipamiento, activa } = data;
+
     return this.prisma.aula.create({
-      data
+      data: {
+        nombre,
+        capacidad,
+        ubicacion,
+        equipamiento,
+        activa: activa ?? true
+      }
     });
   }
 
@@ -74,7 +83,7 @@ export class AulaRepository {
 
   async findById(id: string): Promise<Aula | null> {
     return this.prisma.aula.findUnique({
-      where: { id },
+      where: { id: parseInt(id) },
       include: {
         reserva_aulas: {
           include: {
@@ -90,18 +99,28 @@ export class AulaRepository {
             fechaInicio: 'asc'
           }
         },
-        reservas_aulas_secciones: {
-          include: {
-            secciones_actividades: {
-              select: {
-                id: true,
-                nombre: true,
-                codigo: true
-              }
-            }
-          }
-        }
+        // NOTA: reservas_aulas_secciones excluido temporalmente por problema de tipo en diaSemana
+        // reservas_aulas_secciones: {
+        //   include: {
+        //     secciones_actividades: {
+        //       select: {
+        //         id: true,
+        //         nombre: true,
+        //         codigo: true
+        //       }
+        //     }
+        //   }
+        // }
       }
+    });
+  }
+
+  /**
+   * Encuentra un aula por ID sin incluir relaciones (más rápido para validaciones)
+   */
+  async findByIdSimple(id: string): Promise<Aula | null> {
+    return this.prisma.aula.findUnique({
+      where: { id: parseInt(id) }
     });
   }
 
@@ -112,21 +131,30 @@ export class AulaRepository {
   }
 
   async update(id: string, data: Partial<CreateAulaDto>): Promise<Aula> {
+    // Filtrar solo los campos que existen en el modelo Prisma
+    const updateData: any = {};
+
+    if (data.nombre !== undefined) updateData.nombre = data.nombre;
+    if (data.capacidad !== undefined) updateData.capacidad = data.capacidad;
+    if (data.ubicacion !== undefined) updateData.ubicacion = data.ubicacion;
+    if (data.equipamiento !== undefined) updateData.equipamiento = data.equipamiento;
+    if (data.activa !== undefined) updateData.activa = data.activa;
+
     return this.prisma.aula.update({
-      where: { id },
-      data
+      where: { id: parseInt(id) },
+      data: updateData
     });
   }
 
   async delete(id: string): Promise<Aula> {
     return this.prisma.aula.delete({
-      where: { id }
+      where: { id: parseInt(id) }
     });
   }
 
   async softDelete(id: string): Promise<Aula> {
     return this.prisma.aula.update({
-      where: { id },
+      where: { id: parseInt(id) },
       data: { activa: false }
     });
   }
@@ -259,7 +287,7 @@ export class AulaRepository {
 
   async getEstadisticas(aulaId: string): Promise<any> {
     const aula = await this.prisma.aula.findUnique({
-      where: { id: aulaId },
+      where: { id: parseInt(aulaId) },
       include: {
         _count: {
           select: {
