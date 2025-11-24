@@ -12,13 +12,22 @@ const aulaBaseSchema = z.object({
     return val;
   }, z.number().int().positive('La capacidad debe ser positiva')),
   ubicacion: z.string().max(200).optional(),
-  equipamiento: z.preprocess((val) => {
-    // Convert array to string if needed (frontend may send array)
-    if (Array.isArray(val)) {
-      return val.join(', ');
+  tipoAulaId: z.preprocess((val) => {
+    if (typeof val === 'string') {
+      const parsed = parseInt(val);
+      return isNaN(parsed) ? undefined : parsed;
     }
     return val;
-  }, z.string().max(500).optional()),
+  }, z.number().int().positive('ID de tipo de aula inválido').optional()),
+  estadoAulaId: z.preprocess((val) => {
+    if (typeof val === 'string') {
+      const parsed = parseInt(val);
+      return isNaN(parsed) ? undefined : parsed;
+    }
+    return val;
+  }, z.number().int().positive('ID de estado de aula inválido').optional()),
+  descripcion: z.string().max(1000).optional(),
+  observaciones: z.string().max(1000).optional(),
   activa: z.preprocess((val) => {
     // Convert string to boolean if needed
     if (typeof val === 'string') {
@@ -29,11 +38,12 @@ const aulaBaseSchema = z.object({
     if (val === 'no_disponible') return false;
     return val;
   }, z.boolean().default(true)),
-  // Campos adicionales del frontend que ignoramos o transformamos
-  tipo: z.string().optional(),
-  estado: z.string().optional(),
-  observaciones: z.string().max(500).optional(),
-  descripcion: z.string().max(500).optional()
+  // Array de equipamientos para asignar al crear/actualizar (opcional)
+  equipamientos: z.array(z.object({
+    equipamientoId: z.number().int().positive('ID de equipamiento inválido'),
+    cantidad: z.number().int().positive('La cantidad debe ser positiva').default(1),
+    observaciones: z.string().max(500).optional()
+  })).optional()
 });
 
 // DTO para crear aula
@@ -54,6 +64,14 @@ export const aulaQuerySchema = z.object({
     }
     return val;
   }, z.boolean().optional()),
+  tipoAulaId: z.preprocess((val) => {
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? undefined : parsed;
+  }, z.number().int().positive().optional()),
+  estadoAulaId: z.preprocess((val) => {
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? undefined : parsed;
+  }, z.number().int().positive().optional()),
   capacidadMinima: z.preprocess((val) => {
     const parsed = parseInt(val as string);
     return isNaN(parsed) ? undefined : parsed;
@@ -67,8 +85,8 @@ export const aulaQuerySchema = z.object({
       return val === 'true';
     }
     return val;
-  }, z.boolean().optional()),
-  search: z.string().optional(), // Búsqueda por nombre, ubicación o equipamiento
+  }, z.boolean().optional()), // Filtra aulas que tienen equipamiento asignado
+  search: z.string().optional(), // Búsqueda por nombre, ubicación, descripción
   page: z.preprocess((val) => {
     const parsed = parseInt(val as string);
     return isNaN(parsed) ? 1 : parsed;

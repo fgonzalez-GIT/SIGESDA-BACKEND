@@ -139,14 +139,88 @@ model Aula {
   nombre                   String                     @unique
   capacidad                Int
   ubicacion                String?
-  equipamiento             String?
+  tipoAulaId               Int?                       @map("tipo_aula_id")
+  estadoAulaId             Int?                       @map("estado_aula_id")
+  descripcion              String?                    @db.Text
+  observaciones            String?                    @db.Text
   activa                   Boolean                    @default(true)
   createdAt                DateTime                   @default(now())
   updatedAt                DateTime                   @updatedAt
+  tipoAula                 TipoAula?                  @relation(fields: [tipoAulaId], references: [id], onDelete: SetNull)
+  estadoAula               EstadoAula?                @relation(fields: [estadoAulaId], references: [id], onDelete: SetNull)
+  aulas_equipamientos      AulaEquipamiento[]
   reserva_aulas            reserva_aulas[]
   reservas_aulas_secciones reservas_aulas_secciones[]
 
+  @@index([tipoAulaId])
+  @@index([estadoAulaId])
+  @@index([activa])
   @@map("aulas")
+}
+
+model TipoAula {
+  id          Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(50)
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  activo      Boolean   @default(true)
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  aulas       Aula[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("tipos_aulas")
+}
+
+model EstadoAula {
+  id          Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(50)
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  activo      Boolean   @default(true)
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  aulas       Aula[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("estados_aulas")
+}
+
+model Equipamiento {
+  id                  Int                 @id @default(autoincrement())
+  nombre              String              @unique @db.VarChar(200)
+  descripcion         String?             @db.Text
+  observaciones       String?             @db.Text
+  activo              Boolean             @default(true)
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  aulas_equipamientos AulaEquipamiento[]
+
+  @@index([activo])
+  @@map("equipamientos")
+}
+
+model AulaEquipamiento {
+  id             Int          @id @default(autoincrement())
+  aulaId         Int          @map("aula_id")
+  equipamientoId Int          @map("equipamiento_id")
+  cantidad       Int          @default(1)
+  observaciones  String?      @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  aula           Aula         @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  equipamiento   Equipamiento @relation(fields: [equipamientoId], references: [id], onDelete: Restrict)
+
+  @@unique([aulaId, equipamientoId])
+  @@index([aulaId])
+  @@index([equipamientoId])
+  @@map("aulas_equipamientos")
 }
 
 model CategoriaSocio {

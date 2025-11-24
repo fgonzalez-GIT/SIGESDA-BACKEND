@@ -6,16 +6,38 @@ export class AulaRepository {
   constructor(private prisma: PrismaClient) {}
 
   async create(data: CreateAulaDto): Promise<Aula> {
-    // Filtrar solo los campos que existen en el modelo Prisma
-    const { nombre, capacidad, ubicacion, equipamiento, activa } = data;
+    const { nombre, capacidad, ubicacion, tipoAulaId, estadoAulaId, descripcion, observaciones, activa, equipamientos } = data;
 
+    // Crear aula con sus equipamientos en una transacción
     return this.prisma.aula.create({
       data: {
         nombre,
         capacidad,
         ubicacion,
-        equipamiento,
-        activa: activa ?? true
+        tipoAulaId,
+        estadoAulaId,
+        descripcion,
+        observaciones,
+        activa: activa ?? true,
+        // Crear relaciones con equipamientos si se proporcionan
+        ...(equipamientos && equipamientos.length > 0 && {
+          aulas_equipamientos: {
+            create: equipamientos.map(eq => ({
+              equipamientoId: eq.equipamientoId,
+              cantidad: eq.cantidad || 1,
+              observaciones: eq.observaciones
+            }))
+          }
+        })
+      },
+      include: {
+        tipoAula: true,
+        estadoAula: true,
+        aulas_equipamientos: {
+          include: {
+            equipamiento: true
+          }
+        }
       }
     });
   }
@@ -25,6 +47,14 @@ export class AulaRepository {
 
     if (query.activa !== undefined) {
       where.activa = query.activa;
+    }
+
+    if (query.tipoAulaId !== undefined) {
+      where.tipoAulaId = query.tipoAulaId;
+    }
+
+    if (query.estadoAulaId !== undefined) {
+      where.estadoAulaId = query.estadoAulaId;
     }
 
     if (query.capacidadMinima !== undefined || query.capacidadMaxima !== undefined) {
@@ -39,11 +69,13 @@ export class AulaRepository {
 
     if (query.conEquipamiento !== undefined) {
       if (query.conEquipamiento) {
-        where.equipamiento = {
-          not: null
+        where.aulas_equipamientos = {
+          some: {} // Tiene al menos un equipamiento asignado
         };
       } else {
-        where.equipamiento = null;
+        where.aulas_equipamientos = {
+          none: {} // No tiene equipamientos asignados
+        };
       }
     }
 
@@ -51,7 +83,8 @@ export class AulaRepository {
       where.OR = [
         { nombre: { contains: query.search, mode: 'insensitive' } },
         { ubicacion: { contains: query.search, mode: 'insensitive' } },
-        { equipamiento: { contains: query.search, mode: 'insensitive' } }
+        { descripcion: { contains: query.search, mode: 'insensitive' } },
+        { observaciones: { contains: query.search, mode: 'insensitive' } }
       ];
     }
 
@@ -67,10 +100,18 @@ export class AulaRepository {
           { nombre: 'asc' }
         ],
         include: {
+          tipoAula: true,
+          estadoAula: true,
+          aulas_equipamientos: {
+            include: {
+              equipamiento: true
+            }
+          },
           _count: {
             select: {
               reserva_aulas: true,
-              reservas_aulas_secciones: true
+              reservas_aulas_secciones: true,
+              aulas_equipamientos: true
             }
           }
         }
@@ -85,6 +126,18 @@ export class AulaRepository {
     return this.prisma.aula.findUnique({
       where: { id: parseInt(id) },
       include: {
+        tipoAula: true,
+        estadoAula: true,
+        aulas_equipamientos: {
+          include: {
+            equipamiento: true
+          },
+          orderBy: {
+            equipamiento: {
+              nombre: 'asc'
+            }
+          }
+        },
         reserva_aulas: {
           include: {
             actividades: {
@@ -99,18 +152,13 @@ export class AulaRepository {
             fechaInicio: 'asc'
           }
         },
-        // NOTA: reservas_aulas_secciones excluido temporalmente por problema de tipo en diaSemana
-        // reservas_aulas_secciones: {
-        //   include: {
-        //     secciones_actividades: {
-        //       select: {
-        //         id: true,
-        //         nombre: true,
-        //         codigo: true
-        //       }
-        //     }
-        //   }
-        // }
+        _count: {
+          select: {
+            reserva_aulas: true,
+            reservas_aulas_secciones: true,
+            aulas_equipamientos: true
+          }
+        }
       }
     });
   }
@@ -131,18 +179,29 @@ export class AulaRepository {
   }
 
   async update(id: string, data: Partial<CreateAulaDto>): Promise<Aula> {
-    // Filtrar solo los campos que existen en el modelo Prisma
     const updateData: any = {};
 
     if (data.nombre !== undefined) updateData.nombre = data.nombre;
     if (data.capacidad !== undefined) updateData.capacidad = data.capacidad;
     if (data.ubicacion !== undefined) updateData.ubicacion = data.ubicacion;
-    if (data.equipamiento !== undefined) updateData.equipamiento = data.equipamiento;
+    if (data.tipoAulaId !== undefined) updateData.tipoAulaId = data.tipoAulaId;
+    if (data.estadoAulaId !== undefined) updateData.estadoAulaId = data.estadoAulaId;
+    if (data.descripcion !== undefined) updateData.descripcion = data.descripcion;
+    if (data.observaciones !== undefined) updateData.observaciones = data.observaciones;
     if (data.activa !== undefined) updateData.activa = data.activa;
 
     return this.prisma.aula.update({
       where: { id: parseInt(id) },
-      data: updateData
+      data: updateData,
+      include: {
+        tipoAula: true,
+        estadoAula: true,
+        aulas_equipamientos: {
+          include: {
+            equipamiento: true
+          }
+        }
+      }
     });
   }
 
@@ -390,5 +449,94 @@ export class AulaRepository {
       ubicacion: aula.ubicacion,
       totalReservas: aula._count.reserva_aulas
     }));
+  }
+
+  // ============================================================================
+  // MÉTODOS PARA GESTIÓN DE EQUIPAMIENTOS
+  // ============================================================================
+
+  async addEquipamiento(
+    aulaId: number,
+    equipamientoId: number,
+    cantidad: number,
+    observaciones?: string
+  ): Promise<any> {
+    return this.prisma.aulaEquipamiento.create({
+      data: {
+        aulaId,
+        equipamientoId,
+        cantidad,
+        observaciones
+      },
+      include: {
+        equipamiento: true,
+        aula: {
+          select: {
+            id: true,
+            nombre: true
+          }
+        }
+      }
+    });
+  }
+
+  async removeEquipamiento(aulaId: number, equipamientoId: number): Promise<any> {
+    return this.prisma.aulaEquipamiento.delete({
+      where: {
+        aulaId_equipamientoId: {
+          aulaId,
+          equipamientoId
+        }
+      }
+    });
+  }
+
+  async updateEquipamientoCantidad(
+    aulaId: number,
+    equipamientoId: number,
+    cantidad: number,
+    observaciones?: string
+  ): Promise<any> {
+    return this.prisma.aulaEquipamiento.update({
+      where: {
+        aulaId_equipamientoId: {
+          aulaId,
+          equipamientoId
+        }
+      },
+      data: {
+        cantidad,
+        ...(observaciones !== undefined && { observaciones })
+      },
+      include: {
+        equipamiento: true
+      }
+    });
+  }
+
+  async getEquipamientos(aulaId: number): Promise<any[]> {
+    return this.prisma.aulaEquipamiento.findMany({
+      where: { aulaId },
+      include: {
+        equipamiento: true
+      },
+      orderBy: {
+        equipamiento: {
+          nombre: 'asc'
+        }
+      }
+    });
+  }
+
+  async checkEquipamientoExists(aulaId: number, equipamientoId: number): Promise<boolean> {
+    const exists = await this.prisma.aulaEquipamiento.findUnique({
+      where: {
+        aulaId_equipamientoId: {
+          aulaId,
+          equipamientoId
+        }
+      }
+    });
+    return exists !== null;
   }
 }

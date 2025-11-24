@@ -1,0 +1,281 @@
+### SIGESDA API - Pruebas de Endpoints Equipamientos
+### Base URL: http://localhost:3001
+
+### 1. Health Check
+GET http://localhost:3001/health
+
+###################################################################
+### CRUD EQUIPAMIENTOS - Casos de Prueba
+###################################################################
+
+### 2. Crear Equipamiento - Piano de Cola
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "Piano de Cola Yamaha C7",
+  "descripcion": "Piano de cola profesional marca Yamaha modelo C7, 227 cm de longitud",
+  "observaciones": "Requiere afinación semestral. Ubicar en sala principal.",
+  "activo": true
+}
+
+### 3. Crear Equipamiento - Proyector
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "Proyector Multimedia",
+  "descripcion": "Proyector Full HD para presentaciones y clases teóricas",
+  "activo": true
+}
+
+### 4. Crear Equipamiento - Sillas
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "Sillas Escolares",
+  "descripcion": "Sillas estándar con respaldo y paleta",
+  "observaciones": "Revisar estado mensualmente"
+}
+
+### 5. Crear Equipamiento - Atril
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "Atriles Metálicos",
+  "descripcion": "Atriles metálicos ajustables en altura para partituras"
+}
+
+### 6. Crear Equipamiento - Sistema de Sonido
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "Sistema de Sonido Profesional",
+  "descripcion": "Amplificador + parlantes + mesa de mezclas",
+  "observaciones": "Solo personal autorizado puede manipular",
+  "activo": true
+}
+
+###################################################################
+### LISTAR Y CONSULTAR EQUIPAMIENTOS
+###################################################################
+
+### 7. Obtener Todos los Equipamientos (sin paginación)
+GET http://localhost:3001/api/equipamientos
+
+### 8. Obtener Equipamientos - Página 1 (limit 3)
+GET http://localhost:3001/api/equipamientos?page=1&limit=3
+
+### 9. Obtener Equipamientos - Página 2 (limit 3)
+GET http://localhost:3001/api/equipamientos?page=2&limit=3
+
+### 10. Filtrar Solo Equipamientos Activos
+GET http://localhost:3001/api/equipamientos?activo=true
+
+### 11. Filtrar Equipamientos Inactivos
+GET http://localhost:3001/api/equipamientos?activo=false
+
+### 12. Ordenar Equipamientos por Nombre Ascendente
+GET http://localhost:3001/api/equipamientos?sort=nombre&order=asc
+
+### 13. Ordenar Equipamientos por Nombre Descendente
+GET http://localhost:3001/api/equipamientos?sort=nombre&order=desc
+
+### 14. Búsqueda por Nombre (Piano)
+GET http://localhost:3001/api/equipamientos?nombre=Piano
+
+### 15. Obtener Equipamiento por ID (reemplazar :id con ID real)
+GET http://localhost:3001/api/equipamientos/1
+
+### 16. Obtener Equipamiento por ID (no existe)
+GET http://localhost:3001/api/equipamientos/9999
+
+###################################################################
+### ACTUALIZAR EQUIPAMIENTOS
+###################################################################
+
+### 17. Actualizar Equipamiento - Cambiar Descripción (usar ID real)
+PUT http://localhost:3001/api/equipamientos/1
+Content-Type: application/json
+
+{
+  "descripcion": "Piano de cola profesional Yamaha C7 - ACTUALIZADO",
+  "observaciones": "Mantenimiento completo realizado en Nov 2025"
+}
+
+### 18. Actualizar Equipamiento - Desactivar (usar ID real)
+PUT http://localhost:3001/api/equipamientos/3
+Content-Type: application/json
+
+{
+  "activo": false,
+  "observaciones": "Sillas en mantenimiento - NO USAR"
+}
+
+### 19. Actualizar Equipamiento - Cambiar Nombre (usar ID real)
+PUT http://localhost:3001/api/equipamientos/2
+Content-Type: application/json
+
+{
+  "nombre": "Proyector HD - Sala Principal"
+}
+
+###################################################################
+### VALIDACIONES Y CASOS DE ERROR
+###################################################################
+
+### 20. Error: Crear Equipamiento Sin Nombre
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "descripcion": "Equipamiento sin nombre",
+  "activo": true
+}
+
+### 21. Error: Crear Equipamiento con Nombre Vacío
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "descripcion": "Nombre vacío"
+}
+
+### 22. Error: Crear Equipamiento con Nombre Muy Largo (>200 caracteres)
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "Este es un nombre extremadamente largo que supera el límite de 200 caracteres establecido en la base de datos y debería generar un error de validación porque es demasiado largo para almacenarse correctamente en el campo de nombre definido con un límite de 200 caracteres",
+  "descripcion": "Test de validación"
+}
+
+### 23. Error: Crear Equipamiento Duplicado (nombre ya existe)
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "Piano de Cola Yamaha C7",
+  "descripcion": "Intentando duplicar nombre"
+}
+
+### 24. Error: Actualizar con Nombre Duplicado
+PUT http://localhost:3001/api/equipamientos/2
+Content-Type: application/json
+
+{
+  "nombre": "Piano de Cola Yamaha C7"
+}
+
+###################################################################
+### ELIMINACIÓN (SOFT DELETE Y HARD DELETE)
+###################################################################
+
+### 25. Soft Delete - Desactivar Equipamiento (usar ID de prueba)
+DELETE http://localhost:3001/api/equipamientos/4
+
+### 26. Hard Delete - Eliminar Permanentemente (usar ID de prueba)
+DELETE http://localhost:3001/api/equipamientos/4?hard=true
+
+### 27. Error: Eliminar Equipamiento que No Existe
+DELETE http://localhost:3001/api/equipamientos/9999
+
+### 28. Error: Hard Delete Equipamiento Asignado a Aulas
+# Primero asignar equipamiento a un aula, luego intentar eliminar
+DELETE http://localhost:3001/api/equipamientos/1?hard=true
+
+###################################################################
+### REACTIVAR EQUIPAMIENTO
+###################################################################
+
+### 29. Reactivar Equipamiento Desactivado (usar ID desactivado)
+POST http://localhost:3001/api/equipamientos/3/reactivar
+
+### 30. Error: Reactivar Equipamiento que No Existe
+POST http://localhost:3001/api/equipamientos/9999/reactivar
+
+### 31. Error: Reactivar Equipamiento ya Activo
+POST http://localhost:3001/api/equipamientos/1/reactivar
+
+###################################################################
+### ESTADÍSTICAS DE EQUIPAMIENTO
+###################################################################
+
+### 32. Obtener Estadísticas de Equipamiento (usar ID real)
+GET http://localhost:3001/api/equipamientos/1/estadisticas
+
+### 33. Obtener Estadísticas de Equipamiento No Asignado
+GET http://localhost:3001/api/equipamientos/5/estadisticas
+
+### 34. Error: Estadísticas de Equipamiento que No Existe
+GET http://localhost:3001/api/equipamientos/9999/estadisticas
+
+###################################################################
+### CASOS DE PRUEBA EDGE CASES
+###################################################################
+
+### 35. Crear Equipamiento Solo con Nombre (campos opcionales vacíos)
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "Equipamiento Minimalista"
+}
+
+### 36. Crear Equipamiento con Observaciones Muy Largas
+POST http://localhost:3001/api/equipamientos
+Content-Type: application/json
+
+{
+  "nombre": "Equipamiento Test Observaciones",
+  "descripcion": "Test",
+  "observaciones": "Observación larga: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt."
+}
+
+### 37. Actualización Parcial (solo un campo)
+PUT http://localhost:3001/api/equipamientos/5
+Content-Type: application/json
+
+{
+  "observaciones": "Campo actualizado parcialmente"
+}
+
+### 38. Paginación con Límite Máximo
+GET http://localhost:3001/api/equipamientos?page=1&limit=100
+
+### 39. Paginación Más Allá del Total de Registros
+GET http://localhost:3001/api/equipamientos?page=100&limit=10
+
+###################################################################
+### NOTAS DE TESTING
+###################################################################
+
+# IMPORTANTE: Reemplazar los IDs (:id, /1, /2, etc.) con IDs reales después de crear equipamientos
+#
+# Secuencia de pruebas recomendada:
+# 1. Ejecutar tests 2-6 para crear equipamientos de prueba
+# 2. Anotar los IDs devueltos en las respuestas
+# 3. Reemplazar IDs en los tests subsiguientes
+# 4. Ejecutar tests de consulta (7-16)
+# 5. Ejecutar tests de actualización (17-19)
+# 6. Ejecutar tests de validación (20-24)
+# 7. Ejecutar tests de eliminación (25-28)
+# 8. Ejecutar tests de reactivación (29-31)
+# 9. Ejecutar tests de estadísticas (32-34)
+# 10. Ejecutar edge cases (35-39)
+#
+# Expected Results:
+# - Tests 2-6: Status 201 Created
+# - Tests 7-15: Status 200 OK con datos
+# - Test 16: Status 404 Not Found
+# - Tests 17-19: Status 200 OK con datos actualizados
+# - Tests 20-24: Status 400 Bad Request o 409 Conflict
+# - Tests 25-27: Status depende de si equipamiento está asignado
+# - Test 28: Status 400 Bad Request (equipamiento asignado)
+# - Tests 29-31: Status 200 OK o 400 Bad Request según el caso
+# - Tests 32-34: Status 200 OK o 404 Not Found
+# - Tests 35-39: Varios status según caso

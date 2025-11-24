@@ -1,7 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 import {
-  TipoActividad,
-  DiaSemana,
   TipoParentesco,
   TipoRecibo,
   EstadoRecibo,
@@ -47,6 +45,7 @@ async function main() {
   await prisma.contactoPersona.deleteMany({});
   await prisma.personaTipo.deleteMany({});
   await prisma.persona.deleteMany({});
+  await prisma.aulaEquipamiento.deleteMany({});
   await prisma.aula.deleteMany({});
   await prisma.configuracionSistema.deleteMany({});
   await prisma.razonSocial.deleteMany({});
@@ -54,6 +53,9 @@ async function main() {
   await prisma.tipoPersonaCatalogo.deleteMany({});
   await prisma.categoriaSocio.deleteMany({});
   await prisma.tipos_persona.deleteMany({});
+  await prisma.equipamiento.deleteMany({});
+  await prisma.estadoAula.deleteMany({});
+  await prisma.tipoAula.deleteMany({});
   await prisma.roles_docentes.deleteMany({});
   await prisma.dias_semana.deleteMany({});
   await prisma.estados_actividades.deleteMany({});
@@ -298,6 +300,188 @@ async function main() {
         descuento: 50.00,
         activa: true,
         orden: 4
+      }
+    })
+  ]);
+
+  // ========== TipoAula ==========
+  console.log('  → tipos_aulas...');
+  const tiposAulas = await Promise.all([
+    prisma.tipoAula.create({
+      data: {
+        codigo: 'TEORIA',
+        nombre: 'Aula de Teoría',
+        descripcion: 'Aula destinada a clases teóricas de música',
+        activo: true,
+        orden: 1
+      }
+    }),
+    prisma.tipoAula.create({
+      data: {
+        codigo: 'PRACTICA',
+        nombre: 'Aula de Práctica',
+        descripcion: 'Aula destinada a práctica individual o grupal',
+        activo: true,
+        orden: 2
+      }
+    }),
+    prisma.tipoAula.create({
+      data: {
+        codigo: 'ESTUDIO',
+        nombre: 'Estudio de Grabación',
+        descripcion: 'Estudio profesional de grabación y producción',
+        activo: true,
+        orden: 3
+      }
+    }),
+    prisma.tipoAula.create({
+      data: {
+        codigo: 'ENSAYO',
+        nombre: 'Sala de Ensayo',
+        descripcion: 'Sala amplia para ensayos grupales y orquestales',
+        activo: true,
+        orden: 4
+      }
+    }),
+    prisma.tipoAula.create({
+      data: {
+        codigo: 'AUDITORIO',
+        nombre: 'Auditorio',
+        descripcion: 'Auditorio para conciertos y presentaciones',
+        activo: true,
+        orden: 5
+      }
+    })
+  ]);
+
+  // ========== EstadoAula ==========
+  console.log('  → estados_aulas...');
+  const estadosAulas = await Promise.all([
+    prisma.estadoAula.create({
+      data: {
+        codigo: 'DISPONIBLE',
+        nombre: 'Disponible',
+        descripcion: 'Aula disponible para uso',
+        activo: true,
+        orden: 1
+      }
+    }),
+    prisma.estadoAula.create({
+      data: {
+        codigo: 'EN_MANTENIMIENTO',
+        nombre: 'En Mantenimiento',
+        descripcion: 'Aula temporalmente fuera de servicio por mantenimiento',
+        activo: true,
+        orden: 2
+      }
+    }),
+    prisma.estadoAula.create({
+      data: {
+        codigo: 'CERRADA',
+        nombre: 'Cerrada',
+        descripcion: 'Aula cerrada permanentemente',
+        activo: true,
+        orden: 3
+      }
+    }),
+    prisma.estadoAula.create({
+      data: {
+        codigo: 'RESERVADA',
+        nombre: 'Reservada',
+        descripcion: 'Aula con reserva permanente',
+        activo: true,
+        orden: 4
+      }
+    })
+  ]);
+
+  // ========== Equipamiento ==========
+  console.log('  → equipamientos...');
+  const equipamientos = await Promise.all([
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Piano de Cola',
+        descripcion: 'Piano de cola acústico profesional',
+        observaciones: 'Requiere afinación periódica',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Piano Vertical',
+        descripcion: 'Piano vertical acústico',
+        observaciones: 'Requiere afinación periódica',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Sillas',
+        descripcion: 'Sillas estándar para alumnos',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Atriles',
+        descripcion: 'Atriles de partituras',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Pizarra Musical',
+        descripcion: 'Pizarra con pentagramas',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Sistema de Sonido',
+        descripcion: 'Equipo de audio profesional con amplificadores y altavoces',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Proyector',
+        descripcion: 'Proyector multimedia',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Consola de Grabación',
+        descripcion: 'Consola digital de grabación multipista',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Micrófonos',
+        descripcion: 'Set de micrófonos profesionales',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Cabina Acústica',
+        descripcion: 'Cabina insonorizada para grabación',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Escritorio',
+        descripcion: 'Escritorio para docente',
+        activo: true
+      }
+    }),
+    prisma.equipamiento.create({
+      data: {
+        nombre: 'Armario',
+        descripcion: 'Armario para almacenamiento de materiales',
+        activo: true
       }
     })
   ]);
@@ -621,7 +805,10 @@ async function main() {
         nombre: 'Sala Principal',
         capacidad: 50,
         ubicacion: 'Planta Baja',
-        equipamiento: 'Piano de cola, sistema de sonido, proyector',
+        tipoAulaId: tiposAulas[3].id, // ENSAYO
+        estadoAulaId: estadosAulas[0].id, // DISPONIBLE
+        descripcion: 'Sala principal para ensayos orquestales y presentaciones',
+        observaciones: 'Espacio amplio con buena acústica',
         activa: true
       }
     }),
@@ -630,7 +817,10 @@ async function main() {
         nombre: 'Aula 101',
         capacidad: 20,
         ubicacion: 'Primer Piso',
-        equipamiento: 'Pizarra, sillas, atril',
+        tipoAulaId: tiposAulas[1].id, // PRACTICA
+        estadoAulaId: estadosAulas[0].id, // DISPONIBLE
+        descripcion: 'Aula de práctica para clases grupales',
+        observaciones: 'Incluye piano vertical',
         activa: true
       }
     }),
@@ -639,11 +829,50 @@ async function main() {
         nombre: 'Estudio de Grabación',
         capacidad: 10,
         ubicacion: 'Sótano',
-        equipamiento: 'Cabina acústica, consola de grabación, micrófonos',
+        tipoAulaId: tiposAulas[2].id, // ESTUDIO
+        estadoAulaId: estadosAulas[0].id, // DISPONIBLE
+        descripcion: 'Estudio profesional de grabación y producción musical',
+        observaciones: 'Equipamiento de alta calidad para grabaciones profesionales',
         activa: true
       }
     })
   ]);
+
+  // ========== AulaEquipamiento (relación many-to-many) ==========
+  console.log('  → AulaEquipamiento (asignación de equipamiento a aulas)...');
+
+  // Sala Principal: Piano de Cola (1), Sistema de Sonido (1), Proyector (1), Sillas (50), Atriles (40)
+  await prisma.aulaEquipamiento.createMany({
+    data: [
+      { aulaId: aulas[0].id, equipamientoId: equipamientos[0].id, cantidad: 1, observaciones: 'Piano de cola Yamaha' }, // Piano de Cola
+      { aulaId: aulas[0].id, equipamientoId: equipamientos[5].id, cantidad: 1, observaciones: 'Sistema profesional' }, // Sistema de Sonido
+      { aulaId: aulas[0].id, equipamientoId: equipamientos[6].id, cantidad: 1 }, // Proyector
+      { aulaId: aulas[0].id, equipamientoId: equipamientos[2].id, cantidad: 50 }, // Sillas
+      { aulaId: aulas[0].id, equipamientoId: equipamientos[3].id, cantidad: 40 } // Atriles
+    ]
+  });
+
+  // Aula 101: Piano Vertical (1), Pizarra Musical (1), Sillas (20), Atriles (15), Escritorio (1)
+  await prisma.aulaEquipamiento.createMany({
+    data: [
+      { aulaId: aulas[1].id, equipamientoId: equipamientos[1].id, cantidad: 1 }, // Piano Vertical
+      { aulaId: aulas[1].id, equipamientoId: equipamientos[4].id, cantidad: 1 }, // Pizarra Musical
+      { aulaId: aulas[1].id, equipamientoId: equipamientos[2].id, cantidad: 20 }, // Sillas
+      { aulaId: aulas[1].id, equipamientoId: equipamientos[3].id, cantidad: 15 }, // Atriles
+      { aulaId: aulas[1].id, equipamientoId: equipamientos[10].id, cantidad: 1 } // Escritorio
+    ]
+  });
+
+  // Estudio de Grabación: Cabina Acústica (1), Consola (1), Micrófonos (8), Sillas (10)
+  await prisma.aulaEquipamiento.createMany({
+    data: [
+      { aulaId: aulas[2].id, equipamientoId: equipamientos[9].id, cantidad: 1 }, // Cabina Acústica
+      { aulaId: aulas[2].id, equipamientoId: equipamientos[7].id, cantidad: 1 }, // Consola de Grabación
+      { aulaId: aulas[2].id, equipamientoId: equipamientos[8].id, cantidad: 8, observaciones: 'Incluye condensadores y dinámicos' }, // Micrófonos
+      { aulaId: aulas[2].id, equipamientoId: equipamientos[2].id, cantidad: 10 }, // Sillas
+      { aulaId: aulas[2].id, equipamientoId: equipamientos[11].id, cantidad: 2 } // Armarios
+    ]
+  });
 
   // ========== Persona ==========
   console.log('  → Persona...');
@@ -1035,13 +1264,27 @@ async function main() {
   // ========== actividades ==========
   console.log('  → actividades...');
 
+  // Obtener tipos, categorías y estados de actividades
+  const tiposCatalogoActividades = await prisma.tipos_actividades.findMany();
+  const categoriasCatalogoActividades = await prisma.categorias_actividades.findMany();
+  const estadosCatalogoActividades = await prisma.estados_actividades.findMany();
+
+  const tipoCoro = tiposCatalogoActividades.find(t => t.codigo === 'CORO')!;
+  const tipoClaseIndividual = tiposCatalogoActividades.find(t => t.codigo === 'CLASE_INDIVIDUAL')!;
+  const categoriaMusica = categoriasCatalogoActividades.find(c => c.codigo === 'MUSICA')!;
+  const estadoActiva = estadosCatalogoActividades.find(e => e.codigo === 'ACTIVA')!;
+
   const actividadCoro = await prisma.actividades.create({
     data: {
+      codigoActividad: 'CORO-2025-01',
       nombre: 'Coro Municipal',
-      tipo: TipoActividad.CORO,
+      tipoActividadId: tipoCoro.id,
+      categoriaId: categoriaMusica.id,
+      estadoId: estadoActiva.id,
       descripcion: 'Coro de voces mixtas para adultos',
-      precio: 2000.00,
-      duracion: 120, // minutos
+      fechaDesde: new Date('2025-01-01'),
+      fechaHasta: new Date('2025-12-31'),
+      costo: 2000.00,
       capacidadMaxima: 30,
       activa: true
     }
@@ -1049,11 +1292,15 @@ async function main() {
 
   const actividadPiano = await prisma.actividades.create({
     data: {
+      codigoActividad: 'PIANO-IND-2025-01',
       nombre: 'Clase de Piano Individual',
-      tipo: TipoActividad.CLASE_INSTRUMENTO,
+      tipoActividadId: tipoClaseIndividual.id,
+      categoriaId: categoriaMusica.id,
+      estadoId: estadoActiva.id,
       descripcion: 'Clases personalizadas de piano nivel inicial a avanzado',
-      precio: 3500.00,
-      duracion: 60, // minutos
+      fechaDesde: new Date('2025-01-01'),
+      fechaHasta: new Date('2025-12-31'),
+      costo: 3500.00,
       capacidadMaxima: 1,
       activa: true
     }
@@ -1102,7 +1349,7 @@ async function main() {
     data: [
       {
         seccionId: seccionCoro.id,
-        diaSemana: DiaSemana.LUNES,
+        diaSemana: 'LUNES',
         horaInicio: '18:00',
         horaFin: '20:00',
         activo: true,
@@ -1110,7 +1357,7 @@ async function main() {
       },
       {
         seccionId: seccionCoro.id,
-        diaSemana: DiaSemana.MIERCOLES,
+        diaSemana: 'MIERCOLES',
         horaInicio: '18:00',
         horaFin: '20:00',
         activo: true,
@@ -1123,7 +1370,7 @@ async function main() {
   await prisma.horarios_secciones.create({
     data: {
       seccionId: seccionPiano.id,
-      diaSemana: DiaSemana.MARTES,
+      diaSemana: 'MARTES',
       horaInicio: '15:00',
       horaFin: '16:00',
       activo: true,
@@ -1140,7 +1387,7 @@ async function main() {
       {
         seccionId: seccionCoro.id,
         aulaId: aulas[0].id, // Sala Principal
-        diaSemana: DiaSemana.LUNES,
+        diaSemana: 'LUNES',
         horaInicio: '18:00',
         horaFin: '20:00',
         fechaVigencia: new Date('2025-01-01'),
@@ -1150,7 +1397,7 @@ async function main() {
       {
         seccionId: seccionCoro.id,
         aulaId: aulas[0].id, // Sala Principal
-        diaSemana: DiaSemana.MIERCOLES,
+        diaSemana: 'MIERCOLES',
         horaInicio: '18:00',
         horaFin: '20:00',
         fechaVigencia: new Date('2025-01-01'),
@@ -1165,7 +1412,7 @@ async function main() {
     data: {
       seccionId: seccionPiano.id,
       aulaId: aulas[1].id, // Aula 101
-      diaSemana: DiaSemana.MARTES,
+      diaSemana: 'MARTES',
       horaInicio: '15:00',
       horaFin: '16:00',
       fechaVigencia: new Date('2025-01-01'),

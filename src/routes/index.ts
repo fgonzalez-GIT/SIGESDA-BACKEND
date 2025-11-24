@@ -3,6 +3,7 @@ import personaRoutes from './persona.routes';
 import personaTipoRoutes from './persona-tipo.routes';
 import actividadRoutes from './actividad.routes';
 import aulaRoutes from './aula.routes';
+import equipamientoRoutes from './equipamiento.routes';
 import configuracionRoutes from './configuracion.routes';
 import participacionRoutes from './participacion.routes';
 import asistenciaRoutes from './asistencia.routes';
@@ -39,6 +40,7 @@ router.use('/personas', personaRoutes);
 router.use('/', personaTipoRoutes); // Rutas de persona-tipo (incluye personas/:id/tipos y catalogos)
 router.use('/actividades', actividadRoutes);
 router.use('/aulas', aulaRoutes);
+router.use('/equipamientos', equipamientoRoutes);
 router.use('/configuracion', configuracionRoutes);
 router.use('/participacion', participacionRoutes);
 router.use('/asistencias', asistenciaRoutes);

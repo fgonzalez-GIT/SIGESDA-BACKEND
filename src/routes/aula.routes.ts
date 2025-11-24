@@ -30,4 +30,10 @@ router.post('/:id/verificar-disponibilidad', aulaController.verificarDisponibili
 router.get('/:id/estadisticas', aulaController.getEstadisticas.bind(aulaController));
 router.get('/:id/reservas', aulaController.getReservasDelAula.bind(aulaController));
 
+// Rutas de equipamientos
+router.post('/:id/equipamientos', aulaController.addEquipamientoToAula.bind(aulaController));
+router.get('/:id/equipamientos', aulaController.getEquipamientosDeAula.bind(aulaController));
+router.put('/:id/equipamientos/:equipamientoId', aulaController.updateEquipamientoCantidad.bind(aulaController));
+router.delete('/:id/equipamientos/:equipamientoId', aulaController.removeEquipamientoFromAula.bind(aulaController));
+
 export default router;

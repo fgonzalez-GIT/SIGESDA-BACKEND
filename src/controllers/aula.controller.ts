@@ -7,6 +7,7 @@ import {
   disponibilidadAulaSchema,
   estadisticasAulaSchema
 } from '@/dto/aula.dto';
+import { asignarEquipamientoAulaSchema, actualizarCantidadEquipamientoSchema } from '@/dto/equipamiento.dto';
 import { ApiResponse } from '@/types/interfaces';
 import { HttpStatus } from '@/types/enums';
 
@@ -290,6 +291,91 @@ export class AulaController {
       const response: ApiResponse = {
         success: true,
         data: reservas
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ============================================================================
+  // MÉTODOS PARA GESTIÓN DE EQUIPAMIENTOS
+  // ============================================================================
+
+  async addEquipamientoToAula(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { id } = req.params;
+      const validatedData = asignarEquipamientoAulaSchema.parse(req.body);
+
+      const aulaEquipamiento = await this.aulaService.addEquipamientoToAula(
+        parseInt(id),
+        validatedData.equipamientoId,
+        validatedData.cantidad,
+        validatedData.observaciones
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Equipamiento asignado al aula exitosamente',
+        data: aulaEquipamiento
+      };
+
+      res.status(HttpStatus.CREATED).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async removeEquipamientoFromAula(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { id, equipamientoId } = req.params;
+
+      await this.aulaService.removeEquipamientoFromAula(parseInt(id), parseInt(equipamientoId));
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Equipamiento removido del aula exitosamente'
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateEquipamientoCantidad(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { id, equipamientoId } = req.params;
+      const validatedData = actualizarCantidadEquipamientoSchema.parse(req.body);
+
+      const updated = await this.aulaService.updateEquipamientoCantidad(
+        parseInt(id),
+        parseInt(equipamientoId),
+        validatedData.cantidad,
+        validatedData.observaciones
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Cantidad de equipamiento actualizada exitosamente',
+        data: updated
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getEquipamientosDeAula(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { id } = req.params;
+      const equipamientos = await this.aulaService.getEquipamientosDeAula(parseInt(id));
+
+      const response: ApiResponse = {
+        success: true,
+        data: equipamientos
       };
 
       res.status(HttpStatus.OK).json(response);

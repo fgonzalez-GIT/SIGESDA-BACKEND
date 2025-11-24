@@ -8,7 +8,7 @@ GET http://localhost:3001/health
 ### CRUD AULAS - Casos de Prueba
 ###################################################################
 
-### 2. Crear Aula Principal
+### 2. Crear Aula Principal (con nuevos campos)
 POST http://localhost:3001/api/aulas
 Content-Type: application/json
 
@@ -16,11 +16,14 @@ Content-Type: application/json
   "nombre": "Aula Principal",
   "capacidad": 50,
   "ubicacion": "Planta Baja - Frente",
-  "equipamiento": "Piano de cola Yamaha, sistema de sonido, 50 sillas, pizarra musical",
+  "tipoAulaId": 1,
+  "estadoAulaId": 1,
+  "descripcion": "Aula principal para clases teóricas y prácticas",
+  "observaciones": "Requiere reserva con 48h de anticipación",
   "activa": true
 }
 
-### 3. Crear Aula de Ensayos
+### 3. Crear Aula de Ensayos (sin campos opcionales)
 POST http://localhost:3001/api/aulas
 Content-Type: application/json
 
@@ -28,7 +31,6 @@ Content-Type: application/json
   "nombre": "Sala de Ensayos",
   "capacidad": 15,
   "ubicacion": "Primer Piso - Izquierda",
-  "equipamiento": "Piano vertical, amplificador, micrófono, 15 sillas",
   "activa": true
 }
 
@@ -43,7 +45,7 @@ Content-Type: application/json
   "activa": true
 }
 
-### 5. Crear Aula Grande Para Coro
+### 5. Crear Aula Grande Para Coro (con Equipamientos Array)
 POST http://localhost:3001/api/aulas
 Content-Type: application/json
 
@@ -51,8 +53,27 @@ Content-Type: application/json
   "nombre": "Sala de Coro",
   "capacidad": 60,
   "ubicacion": "Segundo Piso",
-  "equipamiento": "Piano de cola, escalones para coro, sistema de grabación, 60 atriles",
-  "activa": true
+  "tipoAulaId": 4,
+  "estadoAulaId": 1,
+  "descripcion": "Sala especial para ensayos de coro con acústica optimizada",
+  "observaciones": "Capacidad máxima 60 personas en formación coral",
+  "activa": true,
+  "equipamientos": [
+    {
+      "equipamientoId": 1,
+      "cantidad": 1,
+      "observaciones": "Piano de cola en excelente estado"
+    },
+    {
+      "equipamientoId": 4,
+      "cantidad": 60,
+      "observaciones": "Atriles para partituras"
+    },
+    {
+      "equipamientoId": 3,
+      "cantidad": 30
+    }
+  ]
 }
 
 ###################################################################
@@ -204,13 +225,15 @@ GET http://localhost:3001/api/aulas/{id}/reservas?fechaDesde=2025-09-26T00:00:00
 ### ACTUALIZACIÓN
 ###################################################################
 
-### 31. Actualizar Información de Aula
+### 31. Actualizar Información de Aula (nuevos campos)
 PUT http://localhost:3001/api/aulas/{id}
 Content-Type: application/json
 
 {
-  "equipamiento": "Piano de cola Yamaha (afinado), sistema de sonido actualizado, 50 sillas nuevas, pizarra musical digital",
-  "ubicacion": "Planta Baja - Frente (renovado)"
+  "ubicacion": "Planta Baja - Frente (renovado)",
+  "descripcion": "Aula principal renovada con nuevos equipamientos",
+  "observaciones": "Mantenimiento realizado en Nov 2025. Capacidad aumentada.",
+  "estadoAulaId": 1
 }
 
 ### 32. Aumentar Capacidad
@@ -259,7 +282,10 @@ Content-Type: application/json
   "nombre": "Auditorio Principal",
   "capacidad": 200,
   "ubicacion": "Planta Baja - Auditorio",
-  "equipamiento": "Escenario, sistema de sonido profesional, 200 butacas, iluminación escénica, piano de concierto Steinway",
+  "tipoAulaId": 5,
+  "estadoAulaId": 1,
+  "descripcion": "Auditorio principal para conciertos y eventos",
+  "observaciones": "Requiere autorización del director para uso",
   "activa": true
 }
 
@@ -271,7 +297,9 @@ Content-Type: application/json
   "nombre": "Cabina de Práctica Individual",
   "capacidad": 1,
   "ubicacion": "Sótano - Cabina 1",
-  "equipamiento": "Piano digital con auriculares, asiento ajustable",
+  "tipoAulaId": 3,
+  "estadoAulaId": 1,
+  "descripcion": "Cabina insonorizada para práctica individual",
   "activa": true
 }
 
@@ -291,18 +319,191 @@ Content-Type: application/json
   "excluirReservaId": "id-de-reserva-existente"
 }
 
-### 42. Buscar Aulas por Equipamiento Específico
-GET http://localhost:3001/api/aulas/search?q=Yamaha
+### 42. Buscar Aulas por Nombre/Ubicación/Descripción
+GET http://localhost:3001/api/aulas/search?q=Principal
 
 ### 43. Aulas Ordenadas por Capacidad
 GET http://localhost:3001/api/aulas?limit=100
 
 ###################################################################
+### GESTIÓN DE EQUIPAMIENTOS EN AULAS
+###################################################################
+
+### 44. Asignar Equipamiento a Aula
+POST http://localhost:3001/api/aulas/{id}/equipamientos
+Content-Type: application/json
+
+{
+  "equipamientoId": 1,
+  "cantidad": 1,
+  "observaciones": "Piano de cola Yamaha en excelente estado"
+}
+
+### 45. Asignar Múltiples Equipamientos (ejecutar varias veces con diferentes IDs)
+POST http://localhost:3001/api/aulas/{id}/equipamientos
+Content-Type: application/json
+
+{
+  "equipamientoId": 3,
+  "cantidad": 50,
+  "observaciones": "Sillas para capacidad completa"
+}
+
+### 46. Asignar Equipamiento Sin Observaciones
+POST http://localhost:3001/api/aulas/{id}/equipamientos
+Content-Type: application/json
+
+{
+  "equipamientoId": 4,
+  "cantidad": 30
+}
+
+### 47. Error: Asignar Equipamiento Ya Existente (duplicado)
+POST http://localhost:3001/api/aulas/{id}/equipamientos
+Content-Type: application/json
+
+{
+  "equipamientoId": 1,
+  "cantidad": 1
+}
+
+### 48. Error: Asignar Equipamiento con Cantidad Inválida
+POST http://localhost:3001/api/aulas/{id}/equipamientos
+Content-Type: application/json
+
+{
+  "equipamientoId": 5,
+  "cantidad": -5
+}
+
+### 49. Error: Asignar Equipamiento con ID Inexistente
+POST http://localhost:3001/api/aulas/{id}/equipamientos
+Content-Type: application/json
+
+{
+  "equipamientoId": 9999,
+  "cantidad": 1
+}
+
+### 50. Error: Asignar Equipamiento a Aula Inexistente
+POST http://localhost:3001/api/aulas/9999/equipamientos
+Content-Type: application/json
+
+{
+  "equipamientoId": 1,
+  "cantidad": 1
+}
+
+### 51. Obtener Equipamientos de Aula
+GET http://localhost:3001/api/aulas/{id}/equipamientos
+
+### 52. Obtener Equipamientos de Aula Sin Equipamientos
+GET http://localhost:3001/api/aulas/{id}/equipamientos
+
+### 53. Error: Obtener Equipamientos de Aula Inexistente
+GET http://localhost:3001/api/aulas/9999/equipamientos
+
+### 54. Actualizar Cantidad de Equipamiento en Aula
+PUT http://localhost:3001/api/aulas/{id}/equipamientos/{equipamientoId}
+Content-Type: application/json
+
+{
+  "cantidad": 60,
+  "observaciones": "Cantidad actualizada por renovación de mobiliario"
+}
+
+### 55. Actualizar Solo Cantidad (sin observaciones)
+PUT http://localhost:3001/api/aulas/{id}/equipamientos/{equipamientoId}
+Content-Type: application/json
+
+{
+  "cantidad": 45
+}
+
+### 56. Actualizar Solo Observaciones (cantidad igual)
+PUT http://localhost:3001/api/aulas/{id}/equipamientos/{equipamientoId}
+Content-Type: application/json
+
+{
+  "cantidad": 45,
+  "observaciones": "Estado: Bueno. Revisado en Nov 2025."
+}
+
+### 57. Error: Actualizar con Cantidad Inválida (negativa)
+PUT http://localhost:3001/api/aulas/{id}/equipamientos/{equipamientoId}
+Content-Type: application/json
+
+{
+  "cantidad": -10
+}
+
+### 58. Error: Actualizar con Cantidad Cero
+PUT http://localhost:3001/api/aulas/{id}/equipamientos/{equipamientoId}
+Content-Type: application/json
+
+{
+  "cantidad": 0
+}
+
+### 59. Error: Actualizar Equipamiento No Asignado
+PUT http://localhost:3001/api/aulas/{id}/equipamientos/999
+Content-Type: application/json
+
+{
+  "cantidad": 5
+}
+
+### 60. Remover Equipamiento de Aula
+DELETE http://localhost:3001/api/aulas/{id}/equipamientos/{equipamientoId}
+
+### 61. Error: Remover Equipamiento No Asignado
+DELETE http://localhost:3001/api/aulas/{id}/equipamientos/999
+
+### 62. Error: Remover Equipamiento de Aula Inexistente
+DELETE http://localhost:3001/api/aulas/9999/equipamientos/{equipamientoId}
+
+### 63. Filtrar Aulas por Tipo de Aula
+GET http://localhost:3001/api/aulas?tipoAulaId=1
+
+### 64. Filtrar Aulas por Estado de Aula
+GET http://localhost:3001/api/aulas?estadoAulaId=1
+
+### 65. Filtrar Aulas por Tipo Y Estado
+GET http://localhost:3001/api/aulas?tipoAulaId=1&estadoAulaId=1
+
+###################################################################
 ### NOTAS PARA LAS PRUEBAS:
-### 1. Ejecutar casos de creación primero para tener datos
-### 2. Reemplazar {id} con IDs reales obtenidos de las respuestas
-### 3. Usar fechas futuras para verificación de disponibilidad
-### 4. Las fechas deben estar en formato ISO 8601
-### 5. Probar casos de error para validar manejo de errores
-### 6. Las estadísticas y reservas requerirán datos de reservas existentes
+###################################################################
+#
+# 1. IMPORTANTE: Ejecutar primero tests/equipamientos.http para crear equipamientos
+# 2. Ejecutar casos de creación de aulas primero (tests 2-5, 37-38)
+# 3. Anotar los IDs de aulas y equipamientos creados
+# 4. Reemplazar {id} y {equipamientoId} con IDs reales en los tests subsiguientes
+# 5. Usar fechas futuras para verificación de disponibilidad
+# 6. Las fechas deben estar en formato ISO 8601
+# 7. Probar casos de error para validar manejo de errores
+# 8. Las estadísticas y reservas requerirán datos de reservas existentes
+#
+# NUEVOS CAMPOS:
+# - tipoAulaId: ID del tipo de aula (tipos_aulas: TEORIA=1, PRACTICA=2, ESTUDIO=3, ENSAYO=4, AUDITORIO=5)
+# - estadoAulaId: ID del estado (estados_aulas: DISPONIBLE=1, EN_MANTENIMIENTO=2, CERRADA=3, RESERVADA=4)
+# - descripcion: Descripción detallada del aula (opcional)
+# - observaciones: Observaciones adicionales (opcional)
+# - equipamientos: Array de equipamientos al crear (opcional)
+#
+# GESTIÓN DE EQUIPAMIENTOS:
+# - POST /aulas/{id}/equipamientos - Asignar equipamiento a aula
+# - GET /aulas/{id}/equipamientos - Listar equipamientos del aula
+# - PUT /aulas/{id}/equipamientos/{equipamientoId} - Actualizar cantidad
+# - DELETE /aulas/{id}/equipamientos/{equipamientoId} - Remover equipamiento
+#
+# SECUENCIA RECOMENDADA:
+# 1. Crear equipamientos (tests/equipamientos.http tests 2-6)
+# 2. Crear aulas con nuevos campos (tests 2-5)
+# 3. Asignar equipamientos a aulas (tests 44-46)
+# 4. Consultar equipamientos (test 51)
+# 5. Actualizar cantidades (tests 54-56)
+# 6. Remover equipamientos (test 60)
+# 7. Probar casos de error (tests 47-50, 57-59, 61-62)
+#
 ###################################################################

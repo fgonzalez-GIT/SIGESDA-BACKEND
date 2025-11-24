@@ -227,4 +227,88 @@ export class AulaService {
 
     return this.aulaRepository.getReservasEnPeriodo(aulaId, ahora, enUnMes);
   }
+
+  // ============================================================================
+  // MÉTODOS PARA GESTIÓN DE EQUIPAMIENTOS
+  // ============================================================================
+
+  async addEquipamientoToAula(aulaId: number, equipamientoId: number, cantidad: number, observaciones?: string): Promise<any> {
+    // Verificar que el aula existe
+    const aula = await this.aulaRepository.findByIdSimple(aulaId.toString());
+    if (!aula) {
+      throw new NotFoundError(`Aula con ID ${aulaId} no encontrada`);
+    }
+
+    // Verificar que el equipamiento no esté ya asignado a esta aula
+    const exists = await this.aulaRepository.checkEquipamientoExists(aulaId, equipamientoId);
+    if (exists) {
+      throw new ConflictError(`El equipamiento con ID ${equipamientoId} ya está asignado a esta aula`);
+    }
+
+    // Validar cantidad
+    if (cantidad < 1) {
+      throw new ValidationError('La cantidad debe ser al menos 1');
+    }
+
+    const aulaEquipamiento = await this.aulaRepository.addEquipamiento(aulaId, equipamientoId, cantidad, observaciones);
+
+    logger.info(`Equipamiento ${equipamientoId} agregado al aula ${aulaId} (cantidad: ${cantidad})`);
+
+    return aulaEquipamiento;
+  }
+
+  async removeEquipamientoFromAula(aulaId: number, equipamientoId: number): Promise<any> {
+    // Verificar que el aula existe
+    const aula = await this.aulaRepository.findByIdSimple(aulaId.toString());
+    if (!aula) {
+      throw new NotFoundError(`Aula con ID ${aulaId} no encontrada`);
+    }
+
+    // Verificar que el equipamiento esté asignado a esta aula
+    const exists = await this.aulaRepository.checkEquipamientoExists(aulaId, equipamientoId);
+    if (!exists) {
+      throw new NotFoundError(`El equipamiento con ID ${equipamientoId} no está asignado a esta aula`);
+    }
+
+    const removed = await this.aulaRepository.removeEquipamiento(aulaId, equipamientoId);
+
+    logger.info(`Equipamiento ${equipamientoId} removido del aula ${aulaId}`);
+
+    return removed;
+  }
+
+  async updateEquipamientoCantidad(aulaId: number, equipamientoId: number, cantidad: number, observaciones?: string): Promise<any> {
+    // Verificar que el aula existe
+    const aula = await this.aulaRepository.findByIdSimple(aulaId.toString());
+    if (!aula) {
+      throw new NotFoundError(`Aula con ID ${aulaId} no encontrada`);
+    }
+
+    // Verificar que el equipamiento esté asignado a esta aula
+    const exists = await this.aulaRepository.checkEquipamientoExists(aulaId, equipamientoId);
+    if (!exists) {
+      throw new NotFoundError(`El equipamiento con ID ${equipamientoId} no está asignado a esta aula`);
+    }
+
+    // Validar cantidad
+    if (cantidad < 1) {
+      throw new ValidationError('La cantidad debe ser al menos 1');
+    }
+
+    const updated = await this.aulaRepository.updateEquipamientoCantidad(aulaId, equipamientoId, cantidad, observaciones);
+
+    logger.info(`Cantidad de equipamiento ${equipamientoId} actualizada en aula ${aulaId} (nueva cantidad: ${cantidad})`);
+
+    return updated;
+  }
+
+  async getEquipamientosDeAula(aulaId: number): Promise<any[]> {
+    // Verificar que el aula existe
+    const aula = await this.aulaRepository.findByIdSimple(aulaId.toString());
+    if (!aula) {
+      throw new NotFoundError(`Aula con ID ${aulaId} no encontrada`);
+    }
+
+    return this.aulaRepository.getEquipamientos(aulaId);
+  }
 }
