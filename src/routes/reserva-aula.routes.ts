@@ -18,7 +18,8 @@ const reservaAulaService = new ReservaAulaService(
   reservaAulaRepository,
   aulaRepository,
   personaRepository,
-  actividadRepository
+  actividadRepository,
+  prisma
 );
 const reservaAulaController = new ReservaAulaController(reservaAulaService);
 
@@ -39,6 +40,7 @@ router.get('/availability/check', reservaAulaController.checkAvailability.bind(r
 
 // Conflict detection
 router.post('/conflicts/detect', reservaAulaController.detectConflicts.bind(reservaAulaController));
+router.post('/conflicts/detect-all', reservaAulaController.detectAllConflicts.bind(reservaAulaController));
 
 // Bulk operations
 router.post('/bulk/create', reservaAulaController.createBulkReservas.bind(reservaAulaController));
@@ -46,6 +48,12 @@ router.delete('/bulk/delete', reservaAulaController.deleteBulkReservas.bind(rese
 
 // Recurring reservations
 router.post('/recurring/create', reservaAulaController.createRecurringReserva.bind(reservaAulaController));
+
+// Workflow endpoints - Estados de Reserva
+router.post('/:id/aprobar', reservaAulaController.aprobarReserva.bind(reservaAulaController));
+router.post('/:id/rechazar', reservaAulaController.rechazarReserva.bind(reservaAulaController));
+router.post('/:id/cancelar', reservaAulaController.cancelarReserva.bind(reservaAulaController));
+router.post('/:id/completar', reservaAulaController.completarReserva.bind(reservaAulaController));
 
 // Entity-specific routes
 router.get('/aula/:aulaId', reservaAulaController.getReservasByAula.bind(reservaAulaController));

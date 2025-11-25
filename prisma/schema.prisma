@@ -395,7 +395,9 @@ model Persona {
   categorias_socios         CategoriaSocio?             @relation(fields: [categoriaId], references: [id])
   recibosEmitidos           Recibo[]                    @relation("ReciboEmisor")
   recibosRecibidos          Recibo[]                    @relation("ReciboReceptor")
-  reserva_aulas             reserva_aulas[]
+  reserva_aulas             reserva_aulas[]             @relation("ReservaDocente")
+  reservasCanceladas        reserva_aulas[]             @relation("ReservaCanceladaPor")
+  reservasAprobadas         reserva_aulas[]             @relation("ReservaAprobadaPor")
   secciones_actividades     secciones_actividades[]     @relation("DocenteSeccion")
   docentes_actividades      docentes_actividades[]
 
@@ -479,19 +481,54 @@ model participaciones_secciones {
   @@index([seccionId])
 }
 
+model EstadoReserva {
+  id                Int              @id @default(autoincrement())
+  codigo            String           @unique @db.VarChar(50)
+  nombre            String           @db.VarChar(100)
+  descripcion       String?          @db.Text
+  activo            Boolean          @default(true)
+  orden             Int              @default(0)
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  reservas          reserva_aulas[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("estados_reservas")
+}
+
 model reserva_aulas {
-  id            Int          @id @default(autoincrement())
-  aulaId        Int
-  actividadId   Int?
-  docenteId     Int
-  fechaInicio   DateTime
-  fechaFin      DateTime
-  observaciones String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime
-  actividades   actividades? @relation(fields: [actividadId], references: [id])
-  aulas         Aula         @relation(fields: [aulaId], references: [id], onDelete: Cascade)
-  personas      Persona      @relation(fields: [docenteId], references: [id], onDelete: Cascade)
+  id                 Int             @id @default(autoincrement())
+  aulaId             Int
+  actividadId        Int?
+  docenteId          Int
+  estadoReservaId    Int?            @map("estado_reserva_id")
+  fechaInicio        DateTime
+  fechaFin           DateTime
+  observaciones      String?
+  activa             Boolean         @default(true)
+  motivoCancelacion  String?         @db.Text @map("motivo_cancelacion")
+  canceladoPorId     Int?            @map("cancelado_por_id")
+  aprobadoPorId      Int?            @map("aprobado_por_id")
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  // Relaciones
+  actividades        actividades?    @relation(fields: [actividadId], references: [id])
+  aulas              Aula            @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  personas           Persona         @relation("ReservaDocente", fields: [docenteId], references: [id], onDelete: Cascade)
+  estadoReserva      EstadoReserva?  @relation(fields: [estadoReservaId], references: [id])
+  canceladoPor       Persona?        @relation("ReservaCanceladaPor", fields: [canceladoPorId], references: [id])
+  aprobadoPor        Persona?        @relation("ReservaAprobadaPor", fields: [aprobadoPorId], references: [id])
+
+  // Índices de performance
+  @@index([aulaId, fechaInicio, fechaFin])
+  @@index([docenteId, fechaInicio])
+  @@index([actividadId])
+  @@index([estadoReservaId])
+  @@index([fechaInicio, fechaFin])
+  @@index([activa])
 }
 
 model reservas_aulas_secciones {
@@ -505,7 +542,7 @@ model reservas_aulas_secciones {
   fechaFin              DateTime?
   observaciones         String?
   createdAt             DateTime              @default(now())
-  updatedAt             DateTime
+  updatedAt             DateTime              @updatedAt
   aulas                 Aula                  @relation(fields: [aulaId], references: [id], onDelete: Cascade)
   secciones_actividades secciones_actividades @relation(fields: [seccionId], references: [id], onDelete: Cascade)
 

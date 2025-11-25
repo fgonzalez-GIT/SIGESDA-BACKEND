@@ -1,0 +1,159 @@
+### ============================================================================
+### TESTS - ESTADOS DE RESERVAS (Catálogo)
+### ============================================================================
+### Base URL
+@baseUrl = http://localhost:8000/api
+@catalogoUrl = {{baseUrl}}/catalogos/estados-reservas
+
+### Variables
+@contentType = application/json
+
+### ============================================================================
+### 1. LISTAR ESTADOS DE RESERVA (GET)
+### ============================================================================
+
+### 1.1. Listar todos los estados activos (default)
+GET {{catalogoUrl}}
+Content-Type: {{contentType}}
+
+### 1.2. Listar incluyendo inactivos
+GET {{catalogoUrl}}?includeInactive=true
+Content-Type: {{contentType}}
+
+### 1.3. Listar con búsqueda por texto
+GET {{catalogoUrl}}?search=PENDIENTE
+Content-Type: {{contentType}}
+
+### 1.4. Listar ordenados por nombre
+GET {{catalogoUrl}}?orderBy=nombre&orderDir=desc
+Content-Type: {{contentType}}
+
+### ============================================================================
+### 2. OBTENER ESTADO POR ID (GET)
+### ============================================================================
+
+### 2.1. Obtener estado por ID válido (PENDIENTE = 1)
+GET {{catalogoUrl}}/1
+Content-Type: {{contentType}}
+
+### 2.2. Obtener estado por código
+GET {{catalogoUrl}}/codigo/PENDIENTE
+Content-Type: {{contentType}}
+
+### ============================================================================
+### 3. CREAR NUEVO ESTADO (POST)
+### ============================================================================
+
+### 3.1. Crear estado válido
+POST {{catalogoUrl}}
+Content-Type: {{contentType}}
+
+{
+  "codigo": "EN_PROCESO",
+  "nombre": "En Proceso",
+  "descripcion": "Reserva en proceso de verificación",
+  "activo": true,
+  "orden": 10
+}
+
+### 3.2. Crear estado sin orden (auto-calculado)
+POST {{catalogoUrl}}
+Content-Type: {{contentType}}
+
+{
+  "codigo": "REVISION",
+  "nombre": "En Revisión",
+  "descripcion": "Reserva en revisión administrativa"
+}
+
+### 3.3. Intentar crear con código duplicado (ERROR esperado)
+POST {{catalogoUrl}}
+Content-Type: {{contentType}}
+
+{
+  "codigo": "PENDIENTE",
+  "nombre": "Pendiente Duplicado",
+  "descripcion": "Esto debería fallar"
+}
+
+### ============================================================================
+### 4. ACTUALIZAR ESTADO (PUT)
+### ============================================================================
+
+### 4.1. Actualizar descripción de estado
+PUT {{catalogoUrl}}/1
+Content-Type: {{contentType}}
+
+{
+  "descripcion": "Reserva pendiente de aprobación por coordinación"
+}
+
+### 4.2. Actualizar nombre y descripción
+PUT {{catalogoUrl}}/2
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Confirmada - Aprobada",
+  "descripcion": "Reserva confirmada y aprobada por el responsable"
+}
+
+### ============================================================================
+### 5. REORDENAR ESTADOS (PATCH)
+### ============================================================================
+
+### 5.1. Reordenar estados por IDs
+PATCH {{catalogoUrl}}/reorder
+Content-Type: {{contentType}}
+
+{
+  "ids": [1, 2, 3, 4, 5]
+}
+
+### ============================================================================
+### 6. ESTADÍSTICAS DE USO (GET)
+### ============================================================================
+
+### 6.1. Obtener estadísticas de uso de estados
+GET {{catalogoUrl}}/estadisticas/uso
+Content-Type: {{contentType}}
+
+### ============================================================================
+### 7. DESACTIVAR ESTADO (DELETE)
+### ============================================================================
+
+### 7.1. Desactivar estado sin reservas activas
+DELETE {{catalogoUrl}}/6
+Content-Type: {{contentType}}
+
+### 7.2. Intentar desactivar estado con reservas activas (ERROR esperado)
+DELETE {{catalogoUrl}}/1
+Content-Type: {{contentType}}
+
+### ============================================================================
+### 8. CASOS DE ERROR
+### ============================================================================
+
+### 8.1. ID inválido (ERROR 400)
+GET {{catalogoUrl}}/invalid-id
+Content-Type: {{contentType}}
+
+### 8.2. ID no existente (ERROR 404)
+GET {{catalogoUrl}}/999
+Content-Type: {{contentType}}
+
+### 8.3. Código inválido (sin mayúsculas)
+POST {{catalogoUrl}}
+Content-Type: {{contentType}}
+
+{
+  "codigo": "en_proceso",
+  "nombre": "En Proceso"
+}
+
+### 8.4. Crear sin campos requeridos (ERROR 400)
+POST {{catalogoUrl}}
+Content-Type: {{contentType}}
+
+{
+  "descripcion": "Sin código ni nombre"
+}

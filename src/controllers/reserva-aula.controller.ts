@@ -10,7 +10,10 @@ import {
   deleteBulkReservasSchema,
   createRecurringReservaSchema,
   reservaSearchSchema,
-  reservaStatsSchema
+  reservaStatsSchema,
+  aprobarReservaSchema,
+  rechazarReservaSchema,
+  cancelarReservaSchema
 } from '@/dto/reserva-aula.dto';
 import { ApiResponse } from '@/types/interfaces';
 import { HttpStatus } from '@/types/enums';
@@ -60,7 +63,7 @@ export class ReservaAulaController {
 
   async getReservaById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id, 10);
       const reserva = await this.reservaAulaService.getReservaById(id);
 
       if (!reserva) {
@@ -157,7 +160,7 @@ export class ReservaAulaController {
 
   async updateReserva(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id, 10);
       const validatedData = updateReservaAulaSchema.parse(req.body);
       const reserva = await this.reservaAulaService.updateReserva(id, validatedData);
 
@@ -175,7 +178,7 @@ export class ReservaAulaController {
 
   async deleteReserva(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id, 10);
       const reserva = await this.reservaAulaService.deleteReserva(id);
 
       const response: ApiResponse = {
@@ -433,6 +436,136 @@ export class ReservaAulaController {
           aulaId,
           period: `${fechaInicio} - ${fechaFin}`,
           conflictCount: conflicts.length
+        }
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ============================================================================
+  // WORKFLOW ENDPOINTS - ESTADOS DE RESERVA
+  // ============================================================================
+
+  /**
+   * POST /api/reservas-aulas/:id/aprobar
+   * Aprobar una reserva (PENDIENTE -> CONFIRMADA)
+   */
+  async aprobarReserva(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const validatedData = aprobarReservaSchema.parse(req.body);
+      const reserva = await this.reservaAulaService.aprobarReserva(id, validatedData);
+
+      logger.info(`Reserva ${id} aprobada por persona ${validatedData.aprobadoPorId}`);
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Reserva aprobada exitosamente',
+        data: reserva
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/reservas-aulas/:id/rechazar
+   * Rechazar una reserva (PENDIENTE -> RECHAZADA)
+   */
+  async rechazarReserva(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const validatedData = rechazarReservaSchema.parse(req.body);
+      const reserva = await this.reservaAulaService.rechazarReserva(id, validatedData);
+
+      logger.info(`Reserva ${id} rechazada por persona ${validatedData.rechazadoPorId}`);
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Reserva rechazada exitosamente',
+        data: reserva
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/reservas-aulas/:id/cancelar
+   * Cancelar una reserva (PENDIENTE/CONFIRMADA -> CANCELADA)
+   */
+  async cancelarReserva(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const validatedData = cancelarReservaSchema.parse(req.body);
+      const reserva = await this.reservaAulaService.cancelarReserva(id, validatedData);
+
+      logger.info(`Reserva ${id} cancelada por persona ${validatedData.canceladoPorId}`);
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Reserva cancelada exitosamente',
+        data: reserva
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/reservas-aulas/:id/completar
+   * Completar una reserva (CONFIRMADA -> COMPLETADA)
+   */
+  async completarReserva(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const reserva = await this.reservaAulaService.completarReserva(id);
+
+      logger.info(`Reserva ${id} marcada como completada`);
+
+      const response: ApiResponse = {
+        success: true,
+        message: 'Reserva completada exitosamente',
+        data: reserva
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/reservas-aulas/detect-all-conflicts
+   * Detectar TODOS los conflictos (puntuales + recurrentes)
+   */
+  async detectAllConflicts(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validatedData = conflictDetectionSchema.parse(req.body);
+      const result = await this.reservaAulaService.detectAllConflicts(validatedData);
+
+      const response: ApiResponse = {
+        success: true,
+        data: {
+          hasConflicts: result.total > 0,
+          puntuales: result.puntuales,
+          recurrentes: result.recurrentes,
+          totalConflicts: result.total
+        },
+        meta: {
+          aulaId: validatedData.aulaId,
+          period: `${validatedData.fechaInicio} - ${validatedData.fechaFin}`,
+          puntualCount: result.puntuales.length,
+          recurrentCount: result.recurrentes.length
         }
       };
 

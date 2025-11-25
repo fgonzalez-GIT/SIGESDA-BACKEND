@@ -4,6 +4,7 @@ import { ReservaAulaRepository } from '@/repositories/reserva-aula.repository';
 import { AulaRepository } from '@/repositories/aula.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { ActividadRepository } from '@/repositories/actividad.repository';
+import { EstadoReservaService } from '@/services/estado-reserva.service';
 import {
   CreateReservaAulaDto,
   UpdateReservaAulaDto,
@@ -13,18 +14,26 @@ import {
   DeleteBulkReservasDto,
   CreateRecurringReservaDto,
   ReservaSearchDto,
-  ReservaStatsDto
+  ReservaStatsDto,
+  AprobarReservaDto,
+  RechazarReservaDto,
+  CancelarReservaDto
 } from '@/dto/reserva-aula.dto';
 import { logger } from '@/utils/logger';
 import { hasActiveTipo, isPersonaActiva } from '@/utils/persona.helper';
 
 export class ReservaAulaService {
+  private estadoReservaService: EstadoReservaService;
+
   constructor(
     private reservaAulaRepository: ReservaAulaRepository,
     private aulaRepository: AulaRepository,
     private personaRepository: PersonaRepository,
-    private actividadRepository: ActividadRepository
-  ) {}
+    private actividadRepository: ActividadRepository,
+    private prisma: PrismaClient
+  ) {
+    this.estadoReservaService = new EstadoReservaService(prisma);
+  }
 
   async createReserva(data: CreateReservaAulaDto): Promise<ReservaAula> {
     // Validate that aula exists and is active
@@ -73,13 +82,19 @@ export class ReservaAulaService {
 
     if (conflicts.length > 0) {
       const conflictDetails = conflicts.map(c =>
-        `${c.aula.nombre} - ${new Date(c.fechaInicio).toLocaleString()} a ${new Date(c.fechaFin).toLocaleString()}`
+        `${c.aulas.nombre} - ${new Date(c.fechaInicio).toLocaleString()} a ${new Date(c.fechaFin).toLocaleString()}`
       ).join(', ');
       throw new Error(`Conflicto de horarios detectado con las siguientes reservas: ${conflictDetails}`);
     }
 
     // Validate docente availability (check if docente has other reservations at the same time)
     await this.validateDocenteAvailability(data.docenteId, data.fechaInicio, data.fechaFin);
+
+    // Assign default estado if not provided
+    if (!data.estadoReservaId) {
+      const estadoInicial = await this.estadoReservaService.getEstadoInicial();
+      data.estadoReservaId = estadoInicial.id;
+    }
 
     const reserva = await this.reservaAulaRepository.create(data);
 
@@ -98,7 +113,7 @@ export class ReservaAulaService {
     };
   }
 
-  async getReservaById(id: string): Promise<ReservaAula | null> {
+  async getReservaById(id: number): Promise<ReservaAula | null> {
     return this.reservaAulaRepository.findById(id);
   }
 
@@ -132,7 +147,7 @@ export class ReservaAulaService {
     return this.reservaAulaRepository.findByActividadId(actividadId, incluirPasadas);
   }
 
-  async updateReserva(id: string, data: UpdateReservaAulaDto): Promise<ReservaAula> {
+  async updateReserva(id: number, data: UpdateReservaAulaDto): Promise<ReservaAula> {
     const existingReserva = await this.reservaAulaRepository.findById(id);
     if (!existingReserva) {
       throw new Error(`Reserva con ID ${id} no encontrada`);
@@ -200,7 +215,7 @@ export class ReservaAulaService {
     return updatedReserva;
   }
 
-  async deleteReserva(id: string): Promise<ReservaAula> {
+  async deleteReserva(id: number): Promise<ReservaAula> {
     const existingReserva = await this.reservaAulaRepository.findById(id);
     if (!existingReserva) {
       throw new Error(`Reserva con ID ${id} no encontrada`);
@@ -415,9 +430,310 @@ export class ReservaAulaService {
 
     if (conflicts.length > 0) {
       const conflictDetails = conflicts.map(c =>
-        `${c.aula.nombre} - ${new Date(c.fechaInicio).toLocaleString()}`
+        `${c.aulas.nombre} - ${new Date(c.fechaInicio).toLocaleString()}`
       ).join(', ');
       throw new Error(`El docente ya tiene reservas en horarios conflictivos: ${conflictDetails}`);
     }
+  }
+
+  // ============================================================================
+  // WORKFLOW METHODS - ESTADOS DE RESERVA
+  // ============================================================================
+
+  /**
+   * Aprobar una reserva
+   * Transición: PENDIENTE -> CONFIRMADA
+   */
+  async aprobarReserva(id: number, data: AprobarReservaDto): Promise<ReservaAula> {
+    const reserva = await this.reservaAulaRepository.findById(id);
+    if (!reserva) {
+      throw new Error(`Reserva con ID ${id} no encontrada`);
+    }
+
+    // Validate current state
+    if (!reserva.estadoReserva) {
+      throw new Error('La reserva no tiene un estado asignado');
+    }
+
+    // Validate transition
+    const transicionValida = await this.estadoReservaService.validateTransicion(
+      reserva.estadoReserva.codigo,
+      'CONFIRMADA'
+    );
+
+    if (!transicionValida) {
+      throw new Error(
+        `No se puede aprobar una reserva en estado ${reserva.estadoReserva.nombre}. ` +
+        `Solo se pueden aprobar reservas en estado PENDIENTE`
+      );
+    }
+
+    // Validate persona que aprueba existe
+    const aprobador = await this.personaRepository.findById(data.aprobadoPorId);
+    if (!aprobador || !aprobador.activo) {
+      throw new Error('La persona que intenta aprobar no existe o está inactiva');
+    }
+
+    // Get CONFIRMADA estado
+    const estadoConfirmada = await this.estadoReservaService.findByCodigo('CONFIRMADA');
+
+    // Update reserva
+    const updatedReserva = await this.reservaAulaRepository.update(id, {
+      estadoReservaId: estadoConfirmada.data.id,
+      aprobadoPorId: data.aprobadoPorId,
+      observaciones: data.observaciones || reserva.observaciones
+    });
+
+    logger.info(`Reserva ${id} aprobada por persona ${data.aprobadoPorId}`);
+
+    return updatedReserva;
+  }
+
+  /**
+   * Rechazar una reserva
+   * Transición: PENDIENTE -> RECHAZADA
+   */
+  async rechazarReserva(id: number, data: RechazarReservaDto): Promise<ReservaAula> {
+    const reserva = await this.reservaAulaRepository.findById(id);
+    if (!reserva) {
+      throw new Error(`Reserva con ID ${id} no encontrada`);
+    }
+
+    // Validate current state
+    if (!reserva.estadoReserva) {
+      throw new Error('La reserva no tiene un estado asignado');
+    }
+
+    // Validate transition
+    const transicionValida = await this.estadoReservaService.validateTransicion(
+      reserva.estadoReserva.codigo,
+      'RECHAZADA'
+    );
+
+    if (!transicionValida) {
+      throw new Error(
+        `No se puede rechazar una reserva en estado ${reserva.estadoReserva.nombre}. ` +
+        `Solo se pueden rechazar reservas en estado PENDIENTE`
+      );
+    }
+
+    // Validate persona que rechaza existe
+    const rechazador = await this.personaRepository.findById(data.rechazadoPorId);
+    if (!rechazador || !rechazador.activo) {
+      throw new Error('La persona que intenta rechazar no existe o está inactiva');
+    }
+
+    // Get RECHAZADA estado
+    const estadoRechazada = await this.estadoReservaService.findByCodigo('RECHAZADA');
+
+    // Update reserva (set activa = false and add motivo)
+    const updatedReserva = await this.reservaAulaRepository.update(id, {
+      estadoReservaId: estadoRechazada.data.id,
+      canceladoPorId: data.rechazadoPorId, // Reuse canceladoPor for rechazadoPor
+      motivoCancelacion: data.motivo,
+      activa: false
+    } as any);
+
+    logger.info(`Reserva ${id} rechazada por persona ${data.rechazadoPorId}. Motivo: ${data.motivo}`);
+
+    return updatedReserva;
+  }
+
+  /**
+   * Cancelar una reserva
+   * Transición: PENDIENTE | CONFIRMADA -> CANCELADA
+   */
+  async cancelarReserva(id: number, data: CancelarReservaDto): Promise<ReservaAula> {
+    const reserva = await this.reservaAulaRepository.findById(id);
+    if (!reserva) {
+      throw new Error(`Reserva con ID ${id} no encontrada`);
+    }
+
+    // Validate current state
+    if (!reserva.estadoReserva) {
+      throw new Error('La reserva no tiene un estado asignado');
+    }
+
+    // Validate transition
+    const transicionValida = await this.estadoReservaService.validateTransicion(
+      reserva.estadoReserva.codigo,
+      'CANCELADA'
+    );
+
+    if (!transicionValida) {
+      throw new Error(
+        `No se puede cancelar una reserva en estado ${reserva.estadoReserva.nombre}. ` +
+        `Solo se pueden cancelar reservas en estado PENDIENTE o CONFIRMADA`
+      );
+    }
+
+    // Validate persona que cancela existe
+    const cancelador = await this.personaRepository.findById(data.canceladoPorId);
+    if (!cancelador || !cancelador.activo) {
+      throw new Error('La persona que intenta cancelar no existe o está inactiva');
+    }
+
+    // Get CANCELADA estado
+    const estadoCancelada = await this.estadoReservaService.findByCodigo('CANCELADA');
+
+    // Update reserva (set activa = false)
+    const updatedReserva = await this.reservaAulaRepository.update(id, {
+      estadoReservaId: estadoCancelada.data.id,
+      canceladoPorId: data.canceladoPorId,
+      motivoCancelacion: data.motivoCancelacion,
+      activa: false
+    } as any);
+
+    logger.info(`Reserva ${id} cancelada por persona ${data.canceladoPorId}. Motivo: ${data.motivoCancelacion}`);
+
+    return updatedReserva;
+  }
+
+  /**
+   * Completar una reserva (finalizada exitosamente)
+   * Transición: CONFIRMADA -> COMPLETADA
+   */
+  async completarReserva(id: number): Promise<ReservaAula> {
+    const reserva = await this.reservaAulaRepository.findById(id);
+    if (!reserva) {
+      throw new Error(`Reserva con ID ${id} no encontrada`);
+    }
+
+    // Validate current state
+    if (!reserva.estadoReserva) {
+      throw new Error('La reserva no tiene un estado asignado');
+    }
+
+    // Validate transition
+    const transicionValida = await this.estadoReservaService.validateTransicion(
+      reserva.estadoReserva.codigo,
+      'COMPLETADA'
+    );
+
+    if (!transicionValida) {
+      throw new Error(
+        `No se puede completar una reserva en estado ${reserva.estadoReserva.nombre}. ` +
+        `Solo se pueden completar reservas en estado CONFIRMADA`
+      );
+    }
+
+    // Validate reservation has ended
+    const now = new Date();
+    if (reserva.fechaFin > now) {
+      throw new Error('No se puede completar una reserva que aún no ha finalizado');
+    }
+
+    // Get COMPLETADA estado
+    const estadoCompletada = await this.estadoReservaService.findByCodigo('COMPLETADA');
+
+    // Update reserva
+    const updatedReserva = await this.reservaAulaRepository.update(id, {
+      estadoReservaId: estadoCompletada.data.id
+    });
+
+    logger.info(`Reserva ${id} marcada como completada`);
+
+    return updatedReserva;
+  }
+
+  // ============================================================================
+  // ADVANCED CONFLICT DETECTION
+  // ============================================================================
+
+  /**
+   * Detecta TODOS los conflictos (puntuales + recurrentes)
+   * Combina conflictos de reserva_aulas y reservas_aulas_secciones
+   */
+  async detectAllConflicts(conflictData: ConflictDetectionDto): Promise<{
+    puntuales: ReservaAula[];
+    recurrentes: any[];
+    total: number;
+  }> {
+    const [puntuales, recurrentes] = await Promise.all([
+      this.reservaAulaRepository.detectConflicts(conflictData),
+      this.reservaAulaRepository.detectRecurrentConflicts(conflictData)
+    ]);
+
+    return {
+      puntuales,
+      recurrentes,
+      total: puntuales.length + recurrentes.length
+    };
+  }
+
+  // ============================================================================
+  // BUSINESS VALIDATIONS
+  // ============================================================================
+
+  /**
+   * Valida que el aula tenga capacidad suficiente para la actividad
+   */
+  async validateCapacidadAula(aulaId: number, actividadId?: number): Promise<boolean> {
+    const aula = await this.aulaRepository.findById(aulaId);
+    if (!aula) {
+      throw new Error(`Aula con ID ${aulaId} no encontrada`);
+    }
+
+    if (actividadId) {
+      const actividad = await this.actividadRepository.findById(actividadId);
+      if (!actividad) {
+        throw new Error(`Actividad con ID ${actividadId} no encontrada`);
+      }
+
+      // Validate capacity (assuming actividad has a capacidadRequerida field)
+      // This would require adding this field to the actividad model
+      // For now, just return true as capacity is not enforced
+    }
+
+    return true;
+  }
+
+  /**
+   * Valida que el aula tenga el equipamiento requerido para la actividad
+   */
+  async validateEquipamientoRequerido(aulaId: number, actividadId?: number): Promise<boolean> {
+    const aula = await this.aulaRepository.findById(aulaId);
+    if (!aula) {
+      throw new Error(`Aula con ID ${aulaId} no encontrada`);
+    }
+
+    if (actividadId) {
+      const actividad = await this.actividadRepository.findById(actividadId);
+      if (!actividad) {
+        throw new Error(`Actividad con ID ${actividadId} no encontrada`);
+      }
+
+      // Validate equipment (assuming actividad has an equipamientoRequerido field)
+      // This would require implementing equipment requirements in the actividad model
+      // For now, just return true as equipment validation is not enforced
+    }
+
+    return true;
+  }
+
+  /**
+   * Valida que la reserva esté dentro del horario de operación del aula
+   */
+  async validateHorarioOperacion(aulaId: number, fechaInicio: string, fechaFin: string): Promise<boolean> {
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+
+    // Get hour and minutes
+    const horaInicio = inicio.getHours();
+    const minutoInicio = inicio.getMinutes();
+    const horaFin = fin.getHours();
+    const minutoFin = fin.getMinutes();
+
+    // Default operating hours: 8:00 - 22:00 (could be made configurable per aula)
+    const HORA_APERTURA = 8;
+    const HORA_CIERRE = 22;
+
+    if (horaInicio < HORA_APERTURA || (horaFin > HORA_CIERRE || (horaFin === HORA_CIERRE && minutoFin > 0))) {
+      throw new Error(
+        `La reserva debe estar dentro del horario de operación (${HORA_APERTURA}:00 - ${HORA_CIERRE}:00)`
+      );
+    }
+
+    return true;
   }
 }

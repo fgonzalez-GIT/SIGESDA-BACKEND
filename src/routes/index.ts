@@ -9,6 +9,7 @@ import participacionRoutes from './participacion.routes';
 import asistenciaRoutes from './asistencia.routes';
 import familiarRoutes from './familiar.routes';
 import reservaAulaRoutes from './reserva-aula.routes';
+import estadoReservaRoutes from './estado-reserva.routes';
 import reciboRoutes from './recibo.routes';
 import cuotaRoutes from './cuota.routes';
 import medioPagoRoutes from './medio-pago.routes';
@@ -28,6 +29,7 @@ const router = Router();
 router.use('/catalogos/tipos-actividades', tiposActividadRoutes);
 router.use('/catalogos/categorias-actividades', categoriasActividadRoutes);
 router.use('/catalogos/estados-actividades', estadosActividadRoutes);
+router.use('/catalogos/estados-reservas', estadoReservaRoutes);
 router.use('/catalogos/dias-semana', diasSemanaRoutes);
 router.use('/catalogos/roles-docentes', rolesDocentesRoutes);
 

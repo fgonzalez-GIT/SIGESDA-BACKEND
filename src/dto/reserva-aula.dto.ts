@@ -1,10 +1,17 @@
 import { z } from 'zod';
 
+// Helper para convertir string a int
+const stringToInt = z.preprocess(
+  (val) => (typeof val === 'string' ? parseInt(val) : val),
+  z.number().int().positive('ID debe ser un número positivo')
+);
+
 // Create reserva schema
 export const createReservaAulaSchema = z.object({
-  aulaId: z.string().cuid('ID de aula inválido'),
-  actividadId: z.string().cuid('ID de actividad inválido').optional(),
-  docenteId: z.string().cuid('ID de docente inválido'),
+  aulaId: stringToInt,
+  actividadId: stringToInt.optional(),
+  docenteId: stringToInt,
+  estadoReservaId: stringToInt.optional(), // Opcional: si no se proporciona, se asigna PENDIENTE por defecto
   fechaInicio: z.string().datetime('Fecha de inicio inválida'),
   fechaFin: z.string().datetime('Fecha de fin inválida'),
   observaciones: z.string().max(500, 'Las observaciones no pueden exceder 500 caracteres').optional()
@@ -45,9 +52,10 @@ export const createReservaAulaSchema = z.object({
 
 // Update reserva schema
 export const updateReservaAulaSchema = z.object({
-  aulaId: z.string().cuid('ID de aula inválido').optional(),
-  actividadId: z.string().cuid('ID de actividad inválido').optional().nullable(),
-  docenteId: z.string().cuid('ID de docente inválido').optional(),
+  aulaId: stringToInt.optional(),
+  actividadId: stringToInt.optional().nullable(),
+  docenteId: stringToInt.optional(),
+  estadoReservaId: stringToInt.optional(),
   fechaInicio: z.string().datetime('Fecha de inicio inválida').optional(),
   fechaFin: z.string().datetime('Fecha de fin inválida').optional(),
   observaciones: z.string().max(500, 'Las observaciones no pueden exceder 500 caracteres').optional().nullable()
@@ -68,9 +76,10 @@ export const updateReservaAulaSchema = z.object({
 
 // Query filters
 export const reservaAulaQuerySchema = z.object({
-  aulaId: z.string().cuid().optional(),
-  actividadId: z.string().cuid().optional(),
-  docenteId: z.string().cuid().optional(),
+  aulaId: stringToInt.optional(),
+  actividadId: stringToInt.optional(),
+  docenteId: stringToInt.optional(),
+  estadoReservaId: stringToInt.optional(),
   fechaDesde: z.string().datetime().optional(),
   fechaHasta: z.string().datetime().optional(),
   soloActivas: z.preprocess((val) => {
@@ -97,10 +106,10 @@ export const reservaAulaQuerySchema = z.object({
 
 // Conflict detection schema
 export const conflictDetectionSchema = z.object({
-  aulaId: z.string().cuid('ID de aula inválido'),
+  aulaId: stringToInt,
   fechaInicio: z.string().datetime('Fecha de inicio inválida'),
   fechaFin: z.string().datetime('Fecha de fin inválida'),
-  excludeReservaId: z.string().cuid().optional() // For updates
+  excludeReservaId: stringToInt.optional() // For updates
 }).refine(
   (data) => {
     const inicio = new Date(data.fechaInicio);
@@ -119,14 +128,14 @@ export const createBulkReservasSchema = z.object({
 });
 
 export const deleteBulkReservasSchema = z.object({
-  ids: z.array(z.string().cuid()).min(1, 'Debe proporcionar al menos un ID')
+  ids: z.array(stringToInt).min(1, 'Debe proporcionar al menos un ID')
 });
 
 // Schedule schema for recurring reservations
 export const createRecurringReservaSchema = z.object({
-  aulaId: z.string().cuid('ID de aula inválido'),
-  actividadId: z.string().cuid('ID de actividad inválido').optional(),
-  docenteId: z.string().cuid('ID de docente inválido'),
+  aulaId: stringToInt,
+  actividadId: stringToInt.optional(),
+  docenteId: stringToInt,
   fechaInicio: z.string().datetime('Fecha de inicio inválida'),
   fechaFin: z.string().datetime('Fecha de fin inválida'),
   observaciones: z.string().max(500).optional(),
@@ -176,6 +185,32 @@ export const reservaStatsSchema = z.object({
   }
 );
 
+// ============================================================================
+// WORKFLOW DE ESTADOS - SCHEMAS
+// ============================================================================
+
+// Aprobar reserva
+export const aprobarReservaSchema = z.object({
+  aprobadoPorId: stringToInt,
+  observaciones: z.string().max(500).optional()
+});
+
+// Rechazar reserva
+export const rechazarReservaSchema = z.object({
+  rechazadoPorId: stringToInt,
+  motivo: z.string()
+    .min(10, 'El motivo debe tener al menos 10 caracteres')
+    .max(500, 'El motivo no puede exceder 500 caracteres')
+});
+
+// Cancelar reserva
+export const cancelarReservaSchema = z.object({
+  canceladoPorId: stringToInt,
+  motivoCancelacion: z.string()
+    .min(10, 'El motivo debe tener al menos 10 caracteres')
+    .max(500, 'El motivo no puede exceder 500 caracteres')
+});
+
 export type CreateReservaAulaDto = z.infer<typeof createReservaAulaSchema>;
 export type UpdateReservaAulaDto = z.infer<typeof updateReservaAulaSchema>;
 export type ReservaAulaQueryDto = z.infer<typeof reservaAulaQuerySchema>;
@@ -185,3 +220,6 @@ export type DeleteBulkReservasDto = z.infer<typeof deleteBulkReservasSchema>;
 export type CreateRecurringReservaDto = z.infer<typeof createRecurringReservaSchema>;
 export type ReservaSearchDto = z.infer<typeof reservaSearchSchema>;
 export type ReservaStatsDto = z.infer<typeof reservaStatsSchema>;
+export type AprobarReservaDto = z.infer<typeof aprobarReservaSchema>;
+export type RechazarReservaDto = z.infer<typeof rechazarReservaSchema>;
+export type CancelarReservaDto = z.infer<typeof cancelarReservaSchema>;

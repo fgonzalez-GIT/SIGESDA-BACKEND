@@ -36,6 +36,7 @@ async function main() {
   await prisma.docentes_actividades.deleteMany({});
   await prisma.reservas_aulas_secciones.deleteMany({});
   await prisma.reserva_aulas.deleteMany({});
+  await prisma.estadoReserva.deleteMany({});
   await prisma.horarios_secciones.deleteMany({});
   await prisma.horarios_actividades.deleteMany({});
   await prisma.secciones_actividades.deleteMany({});
@@ -391,6 +392,56 @@ async function main() {
         descripcion: 'Aula con reserva permanente',
         activo: true,
         orden: 4
+      }
+    })
+  ]);
+
+  // ========== EstadoReserva ==========
+  console.log('  → estados_reservas...');
+  const estadosReservas = await Promise.all([
+    prisma.estadoReserva.create({
+      data: {
+        codigo: 'PENDIENTE',
+        nombre: 'Pendiente',
+        descripcion: 'Reserva creada, esperando aprobación',
+        activo: true,
+        orden: 1
+      }
+    }),
+    prisma.estadoReserva.create({
+      data: {
+        codigo: 'CONFIRMADA',
+        nombre: 'Confirmada',
+        descripcion: 'Reserva aprobada y activa',
+        activo: true,
+        orden: 2
+      }
+    }),
+    prisma.estadoReserva.create({
+      data: {
+        codigo: 'COMPLETADA',
+        nombre: 'Completada',
+        descripcion: 'Reserva finalizada (fecha fin pasada)',
+        activo: true,
+        orden: 3
+      }
+    }),
+    prisma.estadoReserva.create({
+      data: {
+        codigo: 'CANCELADA',
+        nombre: 'Cancelada',
+        descripcion: 'Reserva cancelada por usuario o administrador',
+        activo: true,
+        orden: 4
+      }
+    }),
+    prisma.estadoReserva.create({
+      data: {
+        codigo: 'RECHAZADA',
+        nombre: 'Rechazada',
+        descripcion: 'Reserva no aprobada por administrador',
+        activo: true,
+        orden: 5
       }
     })
   ]);
