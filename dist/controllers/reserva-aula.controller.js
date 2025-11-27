@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReservaAulaController = void 0;
 const reserva_aula_dto_1 = require("@/dto/reserva-aula.dto");
 const enums_1 = require("@/types/enums");
+const logger_1 = require("@/utils/logger");
 class ReservaAulaController {
     constructor(reservaAulaService) {
         this.reservaAulaService = reservaAulaService;
@@ -44,7 +45,7 @@ class ReservaAulaController {
     }
     async getReservaById(req, res, next) {
         try {
-            const { id } = req.params;
+            const id = parseInt(req.params.id, 10);
             const reserva = await this.reservaAulaService.getReservaById(id);
             if (!reserva) {
                 const response = {
@@ -129,7 +130,7 @@ class ReservaAulaController {
     }
     async updateReserva(req, res, next) {
         try {
-            const { id } = req.params;
+            const id = parseInt(req.params.id, 10);
             const validatedData = reserva_aula_dto_1.updateReservaAulaSchema.parse(req.body);
             const reserva = await this.reservaAulaService.updateReserva(id, validatedData);
             const response = {
@@ -145,7 +146,7 @@ class ReservaAulaController {
     }
     async deleteReserva(req, res, next) {
         try {
-            const { id } = req.params;
+            const id = parseInt(req.params.id, 10);
             const reserva = await this.reservaAulaService.deleteReserva(id);
             const response = {
                 success: true,
@@ -374,6 +375,98 @@ class ReservaAulaController {
                     aulaId,
                     period: `${fechaInicio} - ${fechaFin}`,
                     conflictCount: conflicts.length
+                }
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async aprobarReserva(req, res, next) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const validatedData = reserva_aula_dto_1.aprobarReservaSchema.parse(req.body);
+            const reserva = await this.reservaAulaService.aprobarReserva(id, validatedData);
+            logger_1.logger.info(`Reserva ${id} aprobada por persona ${validatedData.aprobadoPorId}`);
+            const response = {
+                success: true,
+                message: 'Reserva aprobada exitosamente',
+                data: reserva
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async rechazarReserva(req, res, next) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const validatedData = reserva_aula_dto_1.rechazarReservaSchema.parse(req.body);
+            const reserva = await this.reservaAulaService.rechazarReserva(id, validatedData);
+            logger_1.logger.info(`Reserva ${id} rechazada por persona ${validatedData.rechazadoPorId}`);
+            const response = {
+                success: true,
+                message: 'Reserva rechazada exitosamente',
+                data: reserva
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async cancelarReserva(req, res, next) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const validatedData = reserva_aula_dto_1.cancelarReservaSchema.parse(req.body);
+            const reserva = await this.reservaAulaService.cancelarReserva(id, validatedData);
+            logger_1.logger.info(`Reserva ${id} cancelada por persona ${validatedData.canceladoPorId}`);
+            const response = {
+                success: true,
+                message: 'Reserva cancelada exitosamente',
+                data: reserva
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async completarReserva(req, res, next) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const reserva = await this.reservaAulaService.completarReserva(id);
+            logger_1.logger.info(`Reserva ${id} marcada como completada`);
+            const response = {
+                success: true,
+                message: 'Reserva completada exitosamente',
+                data: reserva
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async detectAllConflicts(req, res, next) {
+        try {
+            const validatedData = reserva_aula_dto_1.conflictDetectionSchema.parse(req.body);
+            const result = await this.reservaAulaService.detectAllConflicts(validatedData);
+            const response = {
+                success: true,
+                data: {
+                    hasConflicts: result.total > 0,
+                    puntuales: result.puntuales,
+                    recurrentes: result.recurrentes,
+                    totalConflicts: result.total
+                },
+                meta: {
+                    aulaId: validatedData.aulaId,
+                    period: `${validatedData.fechaInicio} - ${validatedData.fechaFin}`,
+                    puntualCount: result.puntuales.length,
+                    recurrentCount: result.recurrentes.length
                 }
             };
             res.status(enums_1.HttpStatus.OK).json(response);

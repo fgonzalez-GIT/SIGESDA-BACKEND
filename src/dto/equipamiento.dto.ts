@@ -3,6 +3,10 @@ import { z } from 'zod';
 // Schema base para equipamientos
 const equipamientoBaseSchema = z.object({
   nombre: z.string().min(1, 'Nombre es requerido').max(200),
+  categoriaEquipamientoId: z.preprocess((val) => {
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? val : parsed;
+  }, z.number().int().positive('ID de categoría inválido')),
   descripcion: z.string().max(1000).optional(),
   observaciones: z.string().max(1000).optional(),
   activo: z.preprocess((val) => {
@@ -16,13 +20,25 @@ const equipamientoBaseSchema = z.object({
 
 // DTO para crear equipamiento
 export const createEquipamientoSchema = z.object({
-  ...equipamientoBaseSchema.shape
+  ...equipamientoBaseSchema.shape,
+  // Codigo es opcional, se autogenera si no se proporciona
+  codigo: z.string()
+    .max(50, 'El código no puede exceder 50 caracteres')
+    .regex(/^[A-Z0-9-_]+$/, 'El código debe contener solo mayúsculas, números, guiones y guiones bajos')
+    .optional()
 });
 
 // DTO para actualizar equipamiento
+// IMPORTANTE: NO permite modificar 'codigo' (debe ser rechazado en el service)
 export const updateEquipamientoSchema = z.object({
   ...equipamientoBaseSchema.partial().shape
-});
+}).refine(
+  (data) => !('codigo' in data),
+  {
+    message: 'El código no se puede modificar',
+    path: ['codigo']
+  }
+);
 
 // Query filters para listar equipamientos
 export const equipamientoQuerySchema = z.object({

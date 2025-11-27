@@ -381,13 +381,13 @@ export declare const aulaSchemas: {
     }, "strip", z.ZodTypeAny, {
         nombre: string;
         capacidad: number;
-        ubicacion?: string | undefined;
         equipamiento?: string | undefined;
+        ubicacion?: string | undefined;
     }, {
         nombre: string;
         capacidad: number;
-        ubicacion?: string | undefined;
         equipamiento?: string | undefined;
+        ubicacion?: string | undefined;
     }>;
     update: z.ZodObject<{
         nombre: z.ZodOptional<z.ZodString>;
@@ -396,17 +396,17 @@ export declare const aulaSchemas: {
         equipamiento: z.ZodOptional<z.ZodString>;
         activa: z.ZodOptional<z.ZodBoolean>;
     }, "strip", z.ZodTypeAny, {
+        equipamiento?: string | undefined;
         nombre?: string | undefined;
         activa?: boolean | undefined;
         capacidad?: number | undefined;
         ubicacion?: string | undefined;
-        equipamiento?: string | undefined;
     }, {
+        equipamiento?: string | undefined;
         nombre?: string | undefined;
         activa?: boolean | undefined;
         capacidad?: number | undefined;
         ubicacion?: string | undefined;
-        equipamiento?: string | undefined;
     }>;
 };
 export declare const reservaSchemas: {

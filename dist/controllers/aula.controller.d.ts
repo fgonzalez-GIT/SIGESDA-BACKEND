@@ -16,5 +16,9 @@ export declare class AulaController {
     getAulasPorCapacidad(req: Request, res: Response, next: NextFunction): Promise<void>;
     getAulasConEquipamiento(req: Request, res: Response, next: NextFunction): Promise<void>;
     getReservasDelAula(req: Request, res: Response, next: NextFunction): Promise<void>;
+    addEquipamientoToAula(req: Request, res: Response, next: NextFunction): Promise<void>;
+    removeEquipamientoFromAula(req: Request, res: Response, next: NextFunction): Promise<void>;
+    updateEquipamientoCantidad(req: Request, res: Response, next: NextFunction): Promise<void>;
+    getEquipamientosDeAula(req: Request, res: Response, next: NextFunction): Promise<void>;
 }
 //# sourceMappingURL=aula.controller.d.ts.map

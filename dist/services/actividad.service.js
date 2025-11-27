@@ -113,9 +113,19 @@ class ActividadService {
                 throw new errors_1.ValidationError('La fecha hasta debe ser posterior a la fecha desde');
             }
         }
-        const updated = await this.actividadRepository.update(id, data);
-        logger_1.logger.info(`Actividad actualizada: ${updated.nombre} (ID: ${id})`);
-        return updated;
+        const { horarios, ...actividadData } = data;
+        const updated = await this.actividadRepository.update(id, actividadData);
+        if (horarios && Array.isArray(horarios)) {
+            await this.actividadRepository.deleteHorariosByActividad(id);
+            if (horarios.length > 0) {
+                for (const horario of horarios) {
+                    await this.actividadRepository.agregarHorario(id, horario);
+                }
+            }
+        }
+        const actividadCompleta = await this.actividadRepository.findById(id);
+        logger_1.logger.info(`Actividad actualizada: ${updated.nombre} (ID: ${id})${horarios ? ` - horarios reemplazados (${horarios.length})` : ''}`);
+        return actividadCompleta;
     }
     async deleteActividad(id) {
         const existente = await this.actividadRepository.findById(id);

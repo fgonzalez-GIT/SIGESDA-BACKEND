@@ -192,17 +192,39 @@ model EstadoAula {
   @@map("estados_aulas")
 }
 
-model Equipamiento {
-  id                  Int                 @id @default(autoincrement())
-  nombre              String              @unique @db.VarChar(200)
-  descripcion         String?             @db.Text
-  observaciones       String?             @db.Text
-  activo              Boolean             @default(true)
-  createdAt           DateTime            @default(now()) @map("created_at")
-  updatedAt           DateTime            @updatedAt @map("updated_at")
-  aulas_equipamientos AulaEquipamiento[]
+model CategoriasEquipamiento {
+  id            Int             @id @default(autoincrement())
+  codigo        String          @unique @db.VarChar(50)
+  nombre        String          @db.VarChar(100)
+  descripcion   String?         @db.Text
+  activo        Boolean         @default(true)
+  orden         Int             @default(0)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  equipamientos Equipamiento[]
 
+  @@index([codigo])
   @@index([activo])
+  @@index([orden])
+  @@map("categorias_equipamiento")
+}
+
+model Equipamiento {
+  id                       Int                       @id @default(autoincrement())
+  codigo                   String                    @unique @db.VarChar(50)
+  nombre                   String                    @unique @db.VarChar(200)
+  categoriaEquipamientoId  Int                       @map("categoria_equipamiento_id")
+  descripcion              String?                   @db.Text
+  observaciones            String?                   @db.Text
+  activo                   Boolean                   @default(true)
+  createdAt                DateTime                  @default(now()) @map("created_at")
+  updatedAt                DateTime                  @updatedAt @map("updated_at")
+  categoriaEquipamiento    CategoriasEquipamiento    @relation(fields: [categoriaEquipamientoId], references: [id], onDelete: Restrict)
+  aulas_equipamientos      AulaEquipamiento[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([categoriaEquipamientoId])
   @@map("equipamientos")
 }
 

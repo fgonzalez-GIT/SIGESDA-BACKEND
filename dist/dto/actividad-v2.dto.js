@@ -97,7 +97,9 @@ exports.createActividadSchema = actividadBaseSchema.extend({
 }, {
     message: 'La fecha hasta debe ser posterior o igual a la fecha desde'
 });
-exports.updateActividadSchema = actividadBaseSchema.partial().refine((data) => {
+exports.updateActividadSchema = actividadBaseSchema.partial().extend({
+    horarios: zod_1.z.array(horarioInlineSchema).optional()
+}).refine((data) => {
     if (!data.fechaDesde || !data.fechaHasta)
         return true;
     const desde = typeof data.fechaDesde === 'string'

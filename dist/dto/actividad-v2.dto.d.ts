@@ -271,6 +271,33 @@ export declare const updateActividadSchema: z.ZodEffects<z.ZodObject<{
     cupoMaximo: z.ZodOptional<z.ZodNullable<z.ZodOptional<z.ZodNumber>>>;
     costo: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
     observaciones: z.ZodOptional<z.ZodNullable<z.ZodOptional<z.ZodString>>>;
+} & {
+    horarios: z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodObject<{
+        diaSemanaId: z.ZodNumber;
+        horaInicio: z.ZodString;
+        horaFin: z.ZodString;
+        activo: z.ZodDefault<z.ZodBoolean>;
+    }, "strip", z.ZodTypeAny, {
+        activo: boolean;
+        diaSemanaId: number;
+        horaInicio: string;
+        horaFin: string;
+    }, {
+        diaSemanaId: number;
+        horaInicio: string;
+        horaFin: string;
+        activo?: boolean | undefined;
+    }>, {
+        activo: boolean;
+        diaSemanaId: number;
+        horaInicio: string;
+        horaFin: string;
+    }, {
+        diaSemanaId: number;
+        horaInicio: string;
+        horaFin: string;
+        activo?: boolean | undefined;
+    }>, "many">>;
 }, "strip", z.ZodTypeAny, {
     observaciones?: string | null | undefined;
     categoriaId?: number | undefined;
@@ -283,6 +310,12 @@ export declare const updateActividadSchema: z.ZodEffects<z.ZodObject<{
     fechaHasta?: string | Date | null | undefined;
     cupoMaximo?: number | null | undefined;
     costo?: number | undefined;
+    horarios?: {
+        activo: boolean;
+        diaSemanaId: number;
+        horaInicio: string;
+        horaFin: string;
+    }[] | undefined;
 }, {
     observaciones?: string | null | undefined;
     categoriaId?: number | undefined;
@@ -295,6 +328,12 @@ export declare const updateActividadSchema: z.ZodEffects<z.ZodObject<{
     fechaHasta?: string | Date | null | undefined;
     cupoMaximo?: number | null | undefined;
     costo?: number | undefined;
+    horarios?: {
+        diaSemanaId: number;
+        horaInicio: string;
+        horaFin: string;
+        activo?: boolean | undefined;
+    }[] | undefined;
 }>, {
     observaciones?: string | null | undefined;
     categoriaId?: number | undefined;
@@ -307,6 +346,12 @@ export declare const updateActividadSchema: z.ZodEffects<z.ZodObject<{
     fechaHasta?: string | Date | null | undefined;
     cupoMaximo?: number | null | undefined;
     costo?: number | undefined;
+    horarios?: {
+        activo: boolean;
+        diaSemanaId: number;
+        horaInicio: string;
+        horaFin: string;
+    }[] | undefined;
 }, {
     observaciones?: string | null | undefined;
     categoriaId?: number | undefined;
@@ -319,6 +364,12 @@ export declare const updateActividadSchema: z.ZodEffects<z.ZodObject<{
     fechaHasta?: string | Date | null | undefined;
     cupoMaximo?: number | null | undefined;
     costo?: number | undefined;
+    horarios?: {
+        diaSemanaId: number;
+        horaInicio: string;
+        horaFin: string;
+        activo?: boolean | undefined;
+    }[] | undefined;
 }>;
 export declare const queryActividadesSchema: z.ZodObject<{
     tipoActividadId: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;

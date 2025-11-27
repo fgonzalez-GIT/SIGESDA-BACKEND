@@ -21,5 +21,10 @@ export declare class ReservaAulaController {
     getCurrentReservations(req: Request, res: Response, next: NextFunction): Promise<void>;
     getDashboard(req: Request, res: Response, next: NextFunction): Promise<void>;
     checkAvailability(req: Request, res: Response, next: NextFunction): Promise<void>;
+    aprobarReserva(req: Request, res: Response, next: NextFunction): Promise<void>;
+    rechazarReserva(req: Request, res: Response, next: NextFunction): Promise<void>;
+    cancelarReserva(req: Request, res: Response, next: NextFunction): Promise<void>;
+    completarReserva(req: Request, res: Response, next: NextFunction): Promise<void>;
+    detectAllConflicts(req: Request, res: Response, next: NextFunction): Promise<void>;
 }
 //# sourceMappingURL=reserva-aula.controller.d.ts.map

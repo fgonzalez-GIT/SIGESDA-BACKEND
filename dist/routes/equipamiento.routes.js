@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const equipamiento_controller_1 = require("@/controllers/equipamiento.controller");
+const equipamiento_service_1 = require("@/services/equipamiento.service");
+const equipamiento_repository_1 = require("@/repositories/equipamiento.repository");
+const database_1 = require("@/config/database");
+const router = (0, express_1.Router)();
+const equipamientoRepository = new equipamiento_repository_1.EquipamientoRepository(database_1.prisma);
+const equipamientoService = new equipamiento_service_1.EquipamientoService(equipamientoRepository);
+const equipamientoController = new equipamiento_controller_1.EquipamientoController(equipamientoService);
+router.post('/', equipamientoController.createEquipamiento.bind(equipamientoController));
+router.get('/', equipamientoController.getEquipamientos.bind(equipamientoController));
+router.get('/:id', equipamientoController.getEquipamientoById.bind(equipamientoController));
+router.put('/:id', equipamientoController.updateEquipamiento.bind(equipamientoController));
+router.delete('/:id', equipamientoController.deleteEquipamiento.bind(equipamientoController));
+router.post('/:id/reactivar', equipamientoController.reactivateEquipamiento.bind(equipamientoController));
+router.get('/:id/estadisticas', equipamientoController.getEquipamientoStats.bind(equipamientoController));
+exports.default = router;
+//# sourceMappingURL=equipamiento.routes.js.map

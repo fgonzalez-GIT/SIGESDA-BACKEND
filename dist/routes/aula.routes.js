@@ -22,5 +22,9 @@ router.delete('/:id', aulaController.deleteAula.bind(aulaController));
 router.post('/:id/verificar-disponibilidad', aulaController.verificarDisponibilidad.bind(aulaController));
 router.get('/:id/estadisticas', aulaController.getEstadisticas.bind(aulaController));
 router.get('/:id/reservas', aulaController.getReservasDelAula.bind(aulaController));
+router.post('/:id/equipamientos', aulaController.addEquipamientoToAula.bind(aulaController));
+router.get('/:id/equipamientos', aulaController.getEquipamientosDeAula.bind(aulaController));
+router.put('/:id/equipamientos/:equipamientoId', aulaController.updateEquipamientoCantidad.bind(aulaController));
+router.delete('/:id/equipamientos/:equipamientoId', aulaController.removeEquipamientoFromAula.bind(aulaController));
 exports.default = router;
 //# sourceMappingURL=aula.routes.js.map

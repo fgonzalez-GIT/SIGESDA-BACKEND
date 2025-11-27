@@ -446,12 +446,64 @@ async function main() {
     })
   ]);
 
+  // ========== Categorías de Equipamiento ==========
+  console.log('  → categorias_equipamiento...');
+  const categoriasEquipamiento = await Promise.all([
+    prisma.categoriasEquipamiento.create({
+      data: {
+        codigo: 'INST_MUS',
+        nombre: 'Instrumentos Musicales',
+        descripcion: 'Pianos, guitarras, violines y otros instrumentos musicales',
+        activo: true,
+        orden: 1
+      }
+    }),
+    prisma.categoriasEquipamiento.create({
+      data: {
+        codigo: 'MOB',
+        nombre: 'Mobiliario',
+        descripcion: 'Sillas, escritorios, atriles, armarios y otros muebles',
+        activo: true,
+        orden: 2
+      }
+    }),
+    prisma.categoriasEquipamiento.create({
+      data: {
+        codigo: 'TEC_AUDIO',
+        nombre: 'Tecnología y Audio',
+        descripcion: 'Sistemas de sonido, micrófonos, consolas, proyectores',
+        activo: true,
+        orden: 3
+      }
+    }),
+    prisma.categoriasEquipamiento.create({
+      data: {
+        codigo: 'INFRAEST',
+        nombre: 'Infraestructura',
+        descripcion: 'Cabinas acústicas, tratamiento acústico, instalaciones fijas',
+        activo: true,
+        orden: 4
+      }
+    }),
+    prisma.categoriasEquipamiento.create({
+      data: {
+        codigo: 'DIDACT',
+        nombre: 'Material Didáctico',
+        descripcion: 'Pizarras musicales, material educativo, recursos pedagógicos',
+        activo: true,
+        orden: 5
+      }
+    })
+  ]);
+
   // ========== Equipamiento ==========
   console.log('  → equipamientos...');
   const equipamientos = await Promise.all([
     prisma.equipamiento.create({
       data: {
+        codigo: 'INST-001',
         nombre: 'Piano de Cola',
+        categoriaEquipamientoId: categoriasEquipamiento[0].id, // INST_MUS
         descripcion: 'Piano de cola acústico profesional',
         observaciones: 'Requiere afinación periódica',
         activo: true
@@ -459,7 +511,9 @@ async function main() {
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'INST-002',
         nombre: 'Piano Vertical',
+        categoriaEquipamientoId: categoriasEquipamiento[0].id, // INST_MUS
         descripcion: 'Piano vertical acústico',
         observaciones: 'Requiere afinación periódica',
         activo: true
@@ -467,70 +521,90 @@ async function main() {
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'MOB-001',
         nombre: 'Sillas',
+        categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
         descripcion: 'Sillas estándar para alumnos',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'MOB-002',
         nombre: 'Atriles',
+        categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
         descripcion: 'Atriles de partituras',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'DIDA-001',
         nombre: 'Pizarra Musical',
+        categoriaEquipamientoId: categoriasEquipamiento[4].id, // DIDACT
         descripcion: 'Pizarra con pentagramas',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'TEC_-001',
         nombre: 'Sistema de Sonido',
+        categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
         descripcion: 'Equipo de audio profesional con amplificadores y altavoces',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'TEC_-002',
         nombre: 'Proyector',
+        categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
         descripcion: 'Proyector multimedia',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'TEC_-003',
         nombre: 'Consola de Grabación',
+        categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
         descripcion: 'Consola digital de grabación multipista',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'TEC_-004',
         nombre: 'Micrófonos',
+        categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
         descripcion: 'Set de micrófonos profesionales',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'INFR-001',
         nombre: 'Cabina Acústica',
+        categoriaEquipamientoId: categoriasEquipamiento[3].id, // INFRAEST
         descripcion: 'Cabina insonorizada para grabación',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'MOB-003',
         nombre: 'Escritorio',
+        categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
         descripcion: 'Escritorio para docente',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
+        codigo: 'MOB-004',
         nombre: 'Armario',
+        categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
         descripcion: 'Armario para almacenamiento de materiales',
         activo: true
       }

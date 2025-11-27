@@ -2,37 +2,35 @@ import { PrismaClient } from '@prisma/client';
 import { CreateParticipacionDto, ParticipacionQueryDto, EstadisticasParticipacionDto, ReporteInasistenciasDto } from '@/dto/participacion.dto';
 type ParticipacionConRelaciones = {
     id: number;
-    persona_id: number;
-    actividad_id: number;
-    fecha_inicio: Date;
-    fecha_fin: Date | null;
-    precio_especial: any;
-    activo: boolean;
+    personaId: number;
+    actividadId: number;
+    fechaInicio: Date;
+    fechaFin: Date | null;
+    precioEspecial: any;
+    activa: boolean;
     observaciones: string | null;
-    created_at: Date;
-    updated_at: Date;
+    createdAt: Date;
+    updatedAt: Date;
     personas: {
         id: number;
         nombre: string;
         apellido: string;
-        tipo: string;
         dni?: string;
         email?: string | null;
     };
     actividades: {
         id: number;
         nombre: string;
-        codigo_actividad: string;
+        codigoActividad: string;
         costo: any;
         descripcion?: string | null;
         capacidadMaxima?: number | null;
-        tipo_actividad_id: number;
+        tipoActividadId: number;
     };
 };
 export declare class ParticipacionRepository {
     private prisma;
     constructor(prisma: PrismaClient);
-    private mapDtoToPrisma;
     create(data: CreateParticipacionDto): Promise<ParticipacionConRelaciones>;
     findAll(query: ParticipacionQueryDto): Promise<{
         data: ParticipacionConRelaciones[];

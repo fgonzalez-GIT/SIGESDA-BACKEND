@@ -6,37 +6,57 @@ class ReservaAulaRepository {
         this.prisma = prisma;
     }
     async create(data) {
-        return this.prisma.reservaAula.create({
+        return this.prisma.reserva_aulas.create({
             data: {
                 ...data,
                 fechaInicio: new Date(data.fechaInicio),
                 fechaFin: new Date(data.fechaFin)
             },
             include: {
-                aula: {
+                aulas: {
                     select: {
                         id: true,
                         nombre: true,
                         capacidad: true,
                         ubicacion: true,
-                        equipamiento: true
+                        activa: true
                     }
                 },
-                actividad: {
+                actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        tipo: true,
                         descripcion: true
                     }
                 },
-                docente: {
+                personas: {
                     select: {
                         id: true,
                         nombre: true,
                         apellido: true,
                         dni: true,
                         especialidad: true
+                    }
+                },
+                estadoReserva: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        nombre: true
+                    }
+                },
+                canceladoPor: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        apellido: true
+                    }
+                },
+                aprobadoPor: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        apellido: true
                     }
                 }
             }
@@ -52,6 +72,12 @@ class ReservaAulaRepository {
         }
         if (query.docenteId) {
             where.docenteId = query.docenteId;
+        }
+        if (query.estadoReservaId) {
+            where.estadoReservaId = query.estadoReservaId;
+        }
+        if (query.soloActivas) {
+            where.activa = true;
         }
         if (query.fechaDesde || query.fechaHasta) {
             where.fechaInicio = {};
@@ -71,7 +97,7 @@ class ReservaAulaRepository {
         }
         const skip = (query.page - 1) * query.limit;
         const [data, total] = await Promise.all([
-            this.prisma.reservaAula.findMany({
+            this.prisma.reserva_aulas.findMany({
                 where,
                 skip,
                 take: query.limit,
@@ -82,7 +108,6 @@ class ReservaAulaRepository {
                             nombre: true,
                             capacidad: true,
                             ubicacion: true,
-                            equipamiento: true,
                             activa: true
                         }
                     },
@@ -90,7 +115,6 @@ class ReservaAulaRepository {
                         select: {
                             id: true,
                             nombre: true,
-                            tipo: true,
                             descripcion: true,
                             activa: true
                         }
@@ -104,22 +128,43 @@ class ReservaAulaRepository {
                             especialidad: true,
                             fechaBaja: true
                         }
+                    },
+                    estadoReserva: {
+                        select: {
+                            id: true,
+                            codigo: true,
+                            nombre: true
+                        }
+                    },
+                    canceladoPor: {
+                        select: {
+                            id: true,
+                            nombre: true,
+                            apellido: true
+                        }
+                    },
+                    aprobadoPor: {
+                        select: {
+                            id: true,
+                            nombre: true,
+                            apellido: true
+                        }
                     }
                 },
                 orderBy: [
                     { fechaInicio: 'asc' },
-                    { aula: { nombre: 'asc' } }
+                    { aulas: { nombre: 'asc' } }
                 ]
             }),
-            this.prisma.reservaAula.count({ where })
+            this.prisma.reserva_aulas.count({ where })
         ]);
         return { data, total };
     }
     async findById(id) {
-        return this.prisma.reservaAula.findUnique({
+        return this.prisma.reserva_aulas.findUnique({
             where: { id },
             include: {
-                aula: {
+                aulas: {
                     select: {
                         id: true,
                         nombre: true,
@@ -129,16 +174,15 @@ class ReservaAulaRepository {
                         activa: true
                     }
                 },
-                actividad: {
+                actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        tipo: true,
                         descripcion: true,
                         activa: true
                     }
                 },
-                docente: {
+                personas: {
                     select: {
                         id: true,
                         nombre: true,
@@ -148,6 +192,27 @@ class ReservaAulaRepository {
                         fechaBaja: true,
                         email: true,
                         telefono: true
+                    }
+                },
+                estadoReserva: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        nombre: true
+                    }
+                },
+                canceladoPor: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        apellido: true
+                    }
+                },
+                aprobadoPor: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        apellido: true
                     }
                 }
             }
@@ -159,22 +224,28 @@ class ReservaAulaRepository {
             const now = new Date();
             where.fechaFin = { gte: now };
         }
-        return this.prisma.reservaAula.findMany({
+        return this.prisma.reserva_aulas.findMany({
             where,
             include: {
-                actividad: {
+                actividades: {
                     select: {
                         id: true,
-                        nombre: true,
-                        tipo: true
+                        nombre: true
                     }
                 },
-                docente: {
+                personas: {
                     select: {
                         id: true,
                         nombre: true,
                         apellido: true,
                         especialidad: true
+                    }
+                },
+                estadoReserva: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        nombre: true
                     }
                 }
             },
@@ -187,21 +258,27 @@ class ReservaAulaRepository {
             const now = new Date();
             where.fechaFin = { gte: now };
         }
-        return this.prisma.reservaAula.findMany({
+        return this.prisma.reserva_aulas.findMany({
             where,
             include: {
-                aula: {
+                aulas: {
                     select: {
                         id: true,
                         nombre: true,
                         ubicacion: true
                     }
                 },
-                actividad: {
+                actividades: {
                     select: {
                         id: true,
-                        nombre: true,
-                        tipo: true
+                        nombre: true
+                    }
+                },
+                estadoReserva: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        nombre: true
                     }
                 }
             },
@@ -214,21 +291,28 @@ class ReservaAulaRepository {
             const now = new Date();
             where.fechaFin = { gte: now };
         }
-        return this.prisma.reservaAula.findMany({
+        return this.prisma.reserva_aulas.findMany({
             where,
             include: {
-                aula: {
+                aulas: {
                     select: {
                         id: true,
                         nombre: true,
                         ubicacion: true
                     }
                 },
-                docente: {
+                personas: {
                     select: {
                         id: true,
                         nombre: true,
                         apellido: true
+                    }
+                },
+                estadoReserva: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        nombre: true
                     }
                 }
             },
@@ -253,22 +337,22 @@ class ReservaAulaRepository {
         if (excludeReservaId) {
             where.id = { not: excludeReservaId };
         }
-        return this.prisma.reservaAula.findMany({
+        return this.prisma.reserva_aulas.findMany({
             where,
             include: {
-                aula: {
+                aulas: {
                     select: {
                         id: true,
                         nombre: true
                     }
                 },
-                actividad: {
+                actividades: {
                     select: {
                         id: true,
                         nombre: true
                     }
                 },
-                docente: {
+                personas: {
                     select: {
                         id: true,
                         nombre: true,
@@ -287,11 +371,11 @@ class ReservaAulaRepository {
         if (updateData.fechaFin) {
             updateData.fechaFin = new Date(updateData.fechaFin);
         }
-        return this.prisma.reservaAula.update({
+        return this.prisma.reserva_aulas.update({
             where: { id },
             data: updateData,
             include: {
-                aula: {
+                aulas: {
                     select: {
                         id: true,
                         nombre: true,
@@ -299,31 +383,51 @@ class ReservaAulaRepository {
                         ubicacion: true
                     }
                 },
-                actividad: {
+                actividades: {
                     select: {
                         id: true,
-                        nombre: true,
-                        tipo: true
+                        nombre: true
                     }
                 },
-                docente: {
+                personas: {
                     select: {
                         id: true,
                         nombre: true,
                         apellido: true,
                         especialidad: true
                     }
+                },
+                estadoReserva: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        nombre: true
+                    }
+                },
+                canceladoPor: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        apellido: true
+                    }
+                },
+                aprobadoPor: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        apellido: true
+                    }
                 }
             }
         });
     }
     async delete(id) {
-        return this.prisma.reservaAula.delete({
+        return this.prisma.reserva_aulas.delete({
             where: { id }
         });
     }
     async deleteBulk(ids) {
-        return this.prisma.reservaAula.deleteMany({
+        return this.prisma.reserva_aulas.deleteMany({
             where: {
                 id: {
                     in: ids
@@ -337,7 +441,7 @@ class ReservaAulaRepository {
             fechaInicio: new Date(reserva.fechaInicio),
             fechaFin: new Date(reserva.fechaFin)
         }));
-        return this.prisma.reservaAula.createMany({
+        return this.prisma.reserva_aulas.createMany({
             data,
             skipDuplicates: false
         });
@@ -347,14 +451,14 @@ class ReservaAulaRepository {
         let searchConditions = [];
         if (searchBy === 'all' || searchBy === 'aula') {
             searchConditions.push({
-                aula: {
+                aulas: {
                     nombre: { contains: search, mode: 'insensitive' }
                 }
             });
         }
         if (searchBy === 'all' || searchBy === 'docente') {
             searchConditions.push({
-                docente: {
+                personas: {
                     OR: [
                         { nombre: { contains: search, mode: 'insensitive' } },
                         { apellido: { contains: search, mode: 'insensitive' } }
@@ -364,7 +468,7 @@ class ReservaAulaRepository {
         }
         if (searchBy === 'all' || searchBy === 'actividad') {
             searchConditions.push({
-                actividad: {
+                actividades: {
                     nombre: { contains: search, mode: 'insensitive' }
                 }
             });
@@ -393,29 +497,35 @@ class ReservaAulaRepository {
             }
             where.fechaFin.gte = now;
         }
-        return this.prisma.reservaAula.findMany({
+        return this.prisma.reserva_aulas.findMany({
             where,
             include: {
-                aula: {
+                aulas: {
                     select: {
                         id: true,
                         nombre: true,
                         ubicacion: true
                     }
                 },
-                actividad: {
+                actividades: {
                     select: {
                         id: true,
-                        nombre: true,
-                        tipo: true
+                        nombre: true
                     }
                 },
-                docente: {
+                personas: {
                     select: {
                         id: true,
                         nombre: true,
                         apellido: true,
                         especialidad: true
+                    }
+                },
+                estadoReserva: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        nombre: true
                     }
                 }
             },
@@ -432,7 +542,7 @@ class ReservaAulaRepository {
         };
         switch (agruparPor) {
             case 'aula':
-                return this.prisma.reservaAula.groupBy({
+                return this.prisma.reserva_aulas.groupBy({
                     by: ['aulaId'],
                     where,
                     _count: {
@@ -445,7 +555,7 @@ class ReservaAulaRepository {
                     }
                 });
             case 'docente':
-                return this.prisma.reservaAula.groupBy({
+                return this.prisma.reserva_aulas.groupBy({
                     by: ['docenteId'],
                     where,
                     _count: {
@@ -458,7 +568,7 @@ class ReservaAulaRepository {
                     }
                 });
             case 'actividad':
-                return this.prisma.reservaAula.groupBy({
+                return this.prisma.reserva_aulas.groupBy({
                     by: ['actividadId'],
                     where,
                     _count: {
@@ -471,7 +581,7 @@ class ReservaAulaRepository {
                     }
                 });
             default:
-                return this.prisma.reservaAula.aggregate({
+                return this.prisma.reserva_aulas.aggregate({
                     where,
                     _count: {
                         id: true
@@ -481,32 +591,38 @@ class ReservaAulaRepository {
     }
     async getUpcomingReservations(limit = 10) {
         const now = new Date();
-        return this.prisma.reservaAula.findMany({
+        return this.prisma.reserva_aulas.findMany({
             where: {
                 fechaInicio: {
                     gte: now
                 }
             },
             include: {
-                aula: {
+                aulas: {
                     select: {
                         id: true,
                         nombre: true,
                         ubicacion: true
                     }
                 },
-                actividad: {
+                actividades: {
                     select: {
                         id: true,
-                        nombre: true,
-                        tipo: true
+                        nombre: true
                     }
                 },
-                docente: {
+                personas: {
                     select: {
                         id: true,
                         nombre: true,
                         apellido: true
+                    }
+                },
+                estadoReserva: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        nombre: true
                     }
                 }
             },
@@ -516,7 +632,7 @@ class ReservaAulaRepository {
     }
     async getCurrentReservations() {
         const now = new Date();
-        return this.prisma.reservaAula.findMany({
+        return this.prisma.reserva_aulas.findMany({
             where: {
                 fechaInicio: {
                     lte: now
@@ -526,30 +642,97 @@ class ReservaAulaRepository {
                 }
             },
             include: {
-                aula: {
+                aulas: {
                     select: {
                         id: true,
                         nombre: true,
                         ubicacion: true
                     }
                 },
-                actividad: {
+                actividades: {
                     select: {
                         id: true,
-                        nombre: true,
-                        tipo: true
+                        nombre: true
                     }
                 },
-                docente: {
+                personas: {
                     select: {
                         id: true,
                         nombre: true,
                         apellido: true
                     }
+                },
+                estadoReserva: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        nombre: true
+                    }
                 }
             },
             orderBy: { fechaInicio: 'asc' }
         });
+    }
+    async detectRecurrentConflicts(conflictData) {
+        const { aulaId, fechaInicio, fechaFin } = conflictData;
+        const inicio = new Date(fechaInicio);
+        const fin = new Date(fechaFin);
+        const diaSemana = inicio.getDay();
+        const DIAS_MAP = ['DOMINGO', 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+        const diaEnum = DIAS_MAP[diaSemana];
+        const recurrentReservations = await this.prisma.reservas_aulas_secciones.findMany({
+            where: {
+                aulaId,
+                diaSemana: diaEnum,
+                fechaVigencia: { lte: inicio },
+                OR: [
+                    { fechaFin: null },
+                    { fechaFin: { gte: inicio } }
+                ]
+            },
+            include: {
+                secciones_actividades: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        actividades: {
+                            select: {
+                                id: true,
+                                nombre: true
+                            }
+                        }
+                    }
+                },
+                aulas: {
+                    select: {
+                        id: true,
+                        nombre: true
+                    }
+                }
+            }
+        });
+        const conflicts = [];
+        const horaInicio = inicio.getHours() * 60 + inicio.getMinutes();
+        const horaFin = fin.getHours() * 60 + fin.getMinutes();
+        for (const reserva of recurrentReservations) {
+            const [reservaHoraInicioH, reservaHoraInicioM] = reserva.horaInicio.split(':').map(Number);
+            const [reservaHoraFinH, reservaHoraFinM] = reserva.horaFin.split(':').map(Number);
+            const reservaHoraInicioMinutos = reservaHoraInicioH * 60 + reservaHoraInicioM;
+            const reservaHoraFinMinutos = reservaHoraFinH * 60 + reservaHoraFinM;
+            if (horaInicio < reservaHoraFinMinutos && horaFin > reservaHoraInicioMinutos) {
+                conflicts.push({
+                    tipo: 'RECURRENTE',
+                    seccionId: reserva.seccionId,
+                    aulaId: reserva.aulaId,
+                    diaSemana: reserva.diaSemana,
+                    horaInicio: reserva.horaInicio,
+                    horaFin: reserva.horaFin,
+                    seccion: reserva.secciones_actividades,
+                    aula: reserva.aulas
+                });
+            }
+        }
+        return conflicts;
     }
 }
 exports.ReservaAulaRepository = ReservaAulaRepository;

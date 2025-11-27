@@ -1,11 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reservaStatsSchema = exports.reservaSearchSchema = exports.createRecurringReservaSchema = exports.deleteBulkReservasSchema = exports.createBulkReservasSchema = exports.conflictDetectionSchema = exports.reservaAulaQuerySchema = exports.updateReservaAulaSchema = exports.createReservaAulaSchema = void 0;
+exports.cancelarReservaSchema = exports.rechazarReservaSchema = exports.aprobarReservaSchema = exports.reservaStatsSchema = exports.reservaSearchSchema = exports.createRecurringReservaSchema = exports.deleteBulkReservasSchema = exports.createBulkReservasSchema = exports.conflictDetectionSchema = exports.reservaAulaQuerySchema = exports.updateReservaAulaSchema = exports.createReservaAulaSchema = void 0;
 const zod_1 = require("zod");
+const stringToInt = zod_1.z.preprocess((val) => (typeof val === 'string' ? parseInt(val) : val), zod_1.z.number().int().positive('ID debe ser un número positivo'));
 exports.createReservaAulaSchema = zod_1.z.object({
-    aulaId: zod_1.z.string().cuid('ID de aula inválido'),
-    actividadId: zod_1.z.string().cuid('ID de actividad inválido').optional(),
-    docenteId: zod_1.z.string().cuid('ID de docente inválido'),
+    aulaId: stringToInt,
+    actividadId: stringToInt.optional(),
+    docenteId: stringToInt,
+    estadoReservaId: stringToInt.optional(),
     fechaInicio: zod_1.z.string().datetime('Fecha de inicio inválida'),
     fechaFin: zod_1.z.string().datetime('Fecha de fin inválida'),
     observaciones: zod_1.z.string().max(500, 'Las observaciones no pueden exceder 500 caracteres').optional()
@@ -34,9 +36,10 @@ exports.createReservaAulaSchema = zod_1.z.object({
     path: ['fechaFin']
 });
 exports.updateReservaAulaSchema = zod_1.z.object({
-    aulaId: zod_1.z.string().cuid('ID de aula inválido').optional(),
-    actividadId: zod_1.z.string().cuid('ID de actividad inválido').optional().nullable(),
-    docenteId: zod_1.z.string().cuid('ID de docente inválido').optional(),
+    aulaId: stringToInt.optional(),
+    actividadId: stringToInt.optional().nullable(),
+    docenteId: stringToInt.optional(),
+    estadoReservaId: stringToInt.optional(),
     fechaInicio: zod_1.z.string().datetime('Fecha de inicio inválida').optional(),
     fechaFin: zod_1.z.string().datetime('Fecha de fin inválida').optional(),
     observaciones: zod_1.z.string().max(500, 'Las observaciones no pueden exceder 500 caracteres').optional().nullable()
@@ -52,9 +55,10 @@ exports.updateReservaAulaSchema = zod_1.z.object({
     path: ['fechaFin']
 });
 exports.reservaAulaQuerySchema = zod_1.z.object({
-    aulaId: zod_1.z.string().cuid().optional(),
-    actividadId: zod_1.z.string().cuid().optional(),
-    docenteId: zod_1.z.string().cuid().optional(),
+    aulaId: stringToInt.optional(),
+    actividadId: stringToInt.optional(),
+    docenteId: stringToInt.optional(),
+    estadoReservaId: stringToInt.optional(),
     fechaDesde: zod_1.z.string().datetime().optional(),
     fechaHasta: zod_1.z.string().datetime().optional(),
     soloActivas: zod_1.z.preprocess((val) => {
@@ -79,10 +83,10 @@ exports.reservaAulaQuerySchema = zod_1.z.object({
     }, zod_1.z.number().int().positive().max(100).default(10))
 });
 exports.conflictDetectionSchema = zod_1.z.object({
-    aulaId: zod_1.z.string().cuid('ID de aula inválido'),
+    aulaId: stringToInt,
     fechaInicio: zod_1.z.string().datetime('Fecha de inicio inválida'),
     fechaFin: zod_1.z.string().datetime('Fecha de fin inválida'),
-    excludeReservaId: zod_1.z.string().cuid().optional()
+    excludeReservaId: stringToInt.optional()
 }).refine((data) => {
     const inicio = new Date(data.fechaInicio);
     const fin = new Date(data.fechaFin);
@@ -95,12 +99,12 @@ exports.createBulkReservasSchema = zod_1.z.object({
     reservas: zod_1.z.array(exports.createReservaAulaSchema).min(1, 'Debe proporcionar al menos una reserva')
 });
 exports.deleteBulkReservasSchema = zod_1.z.object({
-    ids: zod_1.z.array(zod_1.z.string().cuid()).min(1, 'Debe proporcionar al menos un ID')
+    ids: zod_1.z.array(stringToInt).min(1, 'Debe proporcionar al menos un ID')
 });
 exports.createRecurringReservaSchema = zod_1.z.object({
-    aulaId: zod_1.z.string().cuid('ID de aula inválido'),
-    actividadId: zod_1.z.string().cuid('ID de actividad inválido').optional(),
-    docenteId: zod_1.z.string().cuid('ID de docente inválido'),
+    aulaId: stringToInt,
+    actividadId: stringToInt.optional(),
+    docenteId: stringToInt,
     fechaInicio: zod_1.z.string().datetime('Fecha de inicio inválida'),
     fechaFin: zod_1.z.string().datetime('Fecha de fin inválida'),
     observaciones: zod_1.z.string().max(500).optional(),
@@ -138,5 +142,21 @@ exports.reservaStatsSchema = zod_1.z.object({
 }, {
     message: 'La fecha desde debe ser anterior o igual a la fecha hasta',
     path: ['fechaHasta']
+});
+exports.aprobarReservaSchema = zod_1.z.object({
+    aprobadoPorId: stringToInt,
+    observaciones: zod_1.z.string().max(500).optional()
+});
+exports.rechazarReservaSchema = zod_1.z.object({
+    rechazadoPorId: stringToInt,
+    motivo: zod_1.z.string()
+        .min(10, 'El motivo debe tener al menos 10 caracteres')
+        .max(500, 'El motivo no puede exceder 500 caracteres')
+});
+exports.cancelarReservaSchema = zod_1.z.object({
+    canceladoPorId: stringToInt,
+    motivoCancelacion: zod_1.z.string()
+        .min(10, 'El motivo debe tener al menos 10 caracteres')
+        .max(500, 'El motivo no puede exceder 500 caracteres')
 });
 //# sourceMappingURL=reserva-aula.dto.js.map

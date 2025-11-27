@@ -88,9 +88,9 @@ export declare const generarCuotasSchema: z.ZodEffects<z.ZodObject<{
     aplicarDescuentos: z.ZodDefault<z.ZodBoolean>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
+    incluirInactivos: boolean;
     mes: number;
     anio: number;
-    incluirInactivos: boolean;
     aplicarDescuentos: boolean;
     observaciones?: string | undefined;
     categoriaIds?: number[] | undefined;
@@ -98,13 +98,13 @@ export declare const generarCuotasSchema: z.ZodEffects<z.ZodObject<{
     mes: number;
     anio: number;
     observaciones?: string | undefined;
-    categoriaIds?: number[] | undefined;
     incluirInactivos?: boolean | undefined;
+    categoriaIds?: number[] | undefined;
     aplicarDescuentos?: boolean | undefined;
 }>, {
+    incluirInactivos: boolean;
     mes: number;
     anio: number;
-    incluirInactivos: boolean;
     aplicarDescuentos: boolean;
     observaciones?: string | undefined;
     categoriaIds?: number[] | undefined;
@@ -112,8 +112,8 @@ export declare const generarCuotasSchema: z.ZodEffects<z.ZodObject<{
     mes: number;
     anio: number;
     observaciones?: string | undefined;
-    categoriaIds?: number[] | undefined;
     incluirInactivos?: boolean | undefined;
+    categoriaIds?: number[] | undefined;
     aplicarDescuentos?: boolean | undefined;
 }>;
 export type GenerarCuotasDto = z.infer<typeof generarCuotasSchema>;

@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const estado_reserva_controller_1 = require("@/controllers/estado-reserva.controller");
+const estado_reserva_service_1 = require("@/services/estado-reserva.service");
+const estado_reserva_repository_1 = require("@/repositories/estado-reserva.repository");
+const database_1 = require("@/config/database");
+const router = (0, express_1.Router)();
+const repository = new estado_reserva_repository_1.EstadoReservaRepository(database_1.prisma);
+const service = new estado_reserva_service_1.EstadoReservaService(database_1.prisma);
+const controller = new estado_reserva_controller_1.EstadoReservaController(service);
+router.patch('/reorder', controller.reorder.bind(controller));
+router.get('/estadisticas/uso', controller.getEstadisticas.bind(controller));
+router.post('/', controller.create.bind(controller));
+router.get('/', controller.getAll.bind(controller));
+router.get('/codigo/:codigo', controller.getByCodigo.bind(controller));
+router.get('/:id', controller.getById.bind(controller));
+router.put('/:id', controller.update.bind(controller));
+router.delete('/:id', controller.delete.bind(controller));
+exports.default = router;
+//# sourceMappingURL=estado-reserva.routes.js.map

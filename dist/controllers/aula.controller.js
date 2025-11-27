@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AulaController = void 0;
 const aula_dto_1 = require("@/dto/aula.dto");
+const equipamiento_dto_1 = require("@/dto/equipamiento.dto");
 const enums_1 = require("@/types/enums");
 class AulaController {
     constructor(aulaService) {
@@ -249,6 +250,66 @@ class AulaController {
             const response = {
                 success: true,
                 data: reservas
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async addEquipamientoToAula(req, res, next) {
+        try {
+            const { id } = req.params;
+            const validatedData = equipamiento_dto_1.asignarEquipamientoAulaSchema.parse(req.body);
+            const aulaEquipamiento = await this.aulaService.addEquipamientoToAula(parseInt(id), validatedData.equipamientoId, validatedData.cantidad, validatedData.observaciones);
+            const response = {
+                success: true,
+                message: 'Equipamiento asignado al aula exitosamente',
+                data: aulaEquipamiento
+            };
+            res.status(enums_1.HttpStatus.CREATED).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async removeEquipamientoFromAula(req, res, next) {
+        try {
+            const { id, equipamientoId } = req.params;
+            await this.aulaService.removeEquipamientoFromAula(parseInt(id), parseInt(equipamientoId));
+            const response = {
+                success: true,
+                message: 'Equipamiento removido del aula exitosamente'
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async updateEquipamientoCantidad(req, res, next) {
+        try {
+            const { id, equipamientoId } = req.params;
+            const validatedData = equipamiento_dto_1.actualizarCantidadEquipamientoSchema.parse(req.body);
+            const updated = await this.aulaService.updateEquipamientoCantidad(parseInt(id), parseInt(equipamientoId), validatedData.cantidad, validatedData.observaciones);
+            const response = {
+                success: true,
+                message: 'Cantidad de equipamiento actualizada exitosamente',
+                data: updated
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getEquipamientosDeAula(req, res, next) {
+        try {
+            const { id } = req.params;
+            const equipamientos = await this.aulaService.getEquipamientosDeAula(parseInt(id));
+            const response = {
+                success: true,
+                data: equipamientos
             };
             res.status(enums_1.HttpStatus.OK).json(response);
         }

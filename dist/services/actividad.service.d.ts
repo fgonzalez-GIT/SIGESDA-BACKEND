@@ -291,7 +291,7 @@ export declare class ActividadService {
         fechaHasta: Date | null;
         costo: import("@prisma/client/runtime/library").Decimal;
     }>;
-    updateActividad(id: number, data: UpdateActividadDto): Promise<{
+    updateActividad(id: number, data: UpdateActividadDto): Promise<({
         horarios_actividades: ({
             diasSemana: {
                 nombre: string;
@@ -315,6 +315,8 @@ export declare class ActividadService {
             personas: {
                 nombre: string;
                 apellido: string;
+                email: string | null;
+                telefono: string | null;
                 tipos: ({
                     especialidad: {
                         activo: boolean;
@@ -383,6 +385,63 @@ export declare class ActividadService {
             docenteId: number;
             rolDocenteId: number;
         })[];
+        participacion_actividades: ({
+            personas: {
+                nombre: string;
+                apellido: string;
+                email: string | null;
+                telefono: string | null;
+                tipos: ({
+                    tipoPersona: {
+                        activo: boolean;
+                        nombre: string;
+                        id: number;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        descripcion: string | null;
+                        codigo: string;
+                        orden: number;
+                        requiresCategoria: boolean;
+                        requiresEspecialidad: boolean;
+                        requiresCuit: boolean;
+                    };
+                } & {
+                    tipoPersonaId: number;
+                    observaciones: string | null;
+                    activo: boolean;
+                    categoriaId: number | null;
+                    numeroSocio: number | null;
+                    fechaIngreso: Date | null;
+                    fechaBaja: Date | null;
+                    motivoBaja: string | null;
+                    especialidadId: number | null;
+                    honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
+                    cuit: string | null;
+                    razonSocialId: number | null;
+                    fechaDesasignacion: Date | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    fechaAsignacion: Date;
+                    personaId: number;
+                })[];
+                id: number;
+            };
+        } & {
+            observaciones: string | null;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            personaId: number;
+            actividadId: number;
+            fechaInicio: Date;
+            fechaFin: Date | null;
+            precioEspecial: import("@prisma/client/runtime/library").Decimal | null;
+            activa: boolean;
+        })[];
+        _count: {
+            participacion_actividades: number;
+        };
         tiposActividades: {
             activo: boolean;
             nombre: string;
@@ -429,7 +488,7 @@ export declare class ActividadService {
         fechaDesde: Date;
         fechaHasta: Date | null;
         costo: import("@prisma/client/runtime/library").Decimal;
-    }>;
+    }) | null>;
     deleteActividad(id: number): Promise<{
         message: string;
     }>;

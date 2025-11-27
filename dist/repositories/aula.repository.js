@@ -6,14 +6,48 @@ class AulaRepository {
         this.prisma = prisma;
     }
     async create(data) {
+        const { nombre, capacidad, ubicacion, tipoAulaId, estadoAulaId, descripcion, observaciones, activa, equipamientos } = data;
         return this.prisma.aula.create({
-            data
+            data: {
+                nombre,
+                capacidad,
+                ubicacion,
+                tipoAulaId,
+                estadoAulaId,
+                descripcion,
+                observaciones,
+                activa: activa ?? true,
+                ...(equipamientos && equipamientos.length > 0 && {
+                    aulas_equipamientos: {
+                        create: equipamientos.map(eq => ({
+                            equipamientoId: eq.equipamientoId,
+                            cantidad: eq.cantidad || 1,
+                            observaciones: eq.observaciones
+                        }))
+                    }
+                })
+            },
+            include: {
+                tipoAula: true,
+                estadoAula: true,
+                aulas_equipamientos: {
+                    include: {
+                        equipamiento: true
+                    }
+                }
+            }
         });
     }
     async findAll(query) {
         const where = {};
         if (query.activa !== undefined) {
             where.activa = query.activa;
+        }
+        if (query.tipoAulaId !== undefined) {
+            where.tipoAulaId = query.tipoAulaId;
+        }
+        if (query.estadoAulaId !== undefined) {
+            where.estadoAulaId = query.estadoAulaId;
         }
         if (query.capacidadMinima !== undefined || query.capacidadMaxima !== undefined) {
             where.capacidad = {};
@@ -26,19 +60,22 @@ class AulaRepository {
         }
         if (query.conEquipamiento !== undefined) {
             if (query.conEquipamiento) {
-                where.equipamiento = {
-                    not: null
+                where.aulas_equipamientos = {
+                    some: {}
                 };
             }
             else {
-                where.equipamiento = null;
+                where.aulas_equipamientos = {
+                    none: {}
+                };
             }
         }
         if (query.search) {
             where.OR = [
                 { nombre: { contains: query.search, mode: 'insensitive' } },
                 { ubicacion: { contains: query.search, mode: 'insensitive' } },
-                { equipamiento: { contains: query.search, mode: 'insensitive' } }
+                { descripcion: { contains: query.search, mode: 'insensitive' } },
+                { observaciones: { contains: query.search, mode: 'insensitive' } }
             ];
         }
         const skip = (query.page - 1) * query.limit;
@@ -52,10 +89,18 @@ class AulaRepository {
                     { nombre: 'asc' }
                 ],
                 include: {
+                    tipoAula: true,
+                    estadoAula: true,
+                    aulas_equipamientos: {
+                        include: {
+                            equipamiento: true
+                        }
+                    },
                     _count: {
                         select: {
                             reserva_aulas: true,
-                            reservas_aulas_secciones: true
+                            reservas_aulas_secciones: true,
+                            aulas_equipamientos: true
                         }
                     }
                 }
@@ -66,8 +111,20 @@ class AulaRepository {
     }
     async findById(id) {
         return this.prisma.aula.findUnique({
-            where: { id },
+            where: { id: parseInt(id) },
             include: {
+                tipoAula: true,
+                estadoAula: true,
+                aulas_equipamientos: {
+                    include: {
+                        equipamiento: true
+                    },
+                    orderBy: {
+                        equipamiento: {
+                            nombre: 'asc'
+                        }
+                    }
+                },
                 reserva_aulas: {
                     include: {
                         actividades: {
@@ -82,18 +139,19 @@ class AulaRepository {
                         fechaInicio: 'asc'
                     }
                 },
-                reservas_aulas_secciones: {
-                    include: {
-                        secciones_actividades: {
-                            select: {
-                                id: true,
-                                nombre: true,
-                                codigo: true
-                            }
-                        }
+                _count: {
+                    select: {
+                        reserva_aulas: true,
+                        reservas_aulas_secciones: true,
+                        aulas_equipamientos: true
                     }
                 }
             }
+        });
+    }
+    async findByIdSimple(id) {
+        return this.prisma.aula.findUnique({
+            where: { id: parseInt(id) }
         });
     }
     async findByNombre(nombre) {
@@ -102,19 +160,45 @@ class AulaRepository {
         });
     }
     async update(id, data) {
+        const updateData = {};
+        if (data.nombre !== undefined)
+            updateData.nombre = data.nombre;
+        if (data.capacidad !== undefined)
+            updateData.capacidad = data.capacidad;
+        if (data.ubicacion !== undefined)
+            updateData.ubicacion = data.ubicacion;
+        if (data.tipoAulaId !== undefined)
+            updateData.tipoAulaId = data.tipoAulaId;
+        if (data.estadoAulaId !== undefined)
+            updateData.estadoAulaId = data.estadoAulaId;
+        if (data.descripcion !== undefined)
+            updateData.descripcion = data.descripcion;
+        if (data.observaciones !== undefined)
+            updateData.observaciones = data.observaciones;
+        if (data.activa !== undefined)
+            updateData.activa = data.activa;
         return this.prisma.aula.update({
-            where: { id },
-            data
+            where: { id: parseInt(id) },
+            data: updateData,
+            include: {
+                tipoAula: true,
+                estadoAula: true,
+                aulas_equipamientos: {
+                    include: {
+                        equipamiento: true
+                    }
+                }
+            }
         });
     }
     async delete(id) {
         return this.prisma.aula.delete({
-            where: { id }
+            where: { id: parseInt(id) }
         });
     }
     async softDelete(id) {
         return this.prisma.aula.update({
-            where: { id },
+            where: { id: parseInt(id) },
             data: { activa: false }
         });
     }
@@ -227,7 +311,7 @@ class AulaRepository {
     }
     async getEstadisticas(aulaId) {
         const aula = await this.prisma.aula.findUnique({
-            where: { id: aulaId },
+            where: { id: parseInt(aulaId) },
             include: {
                 _count: {
                     select: {
@@ -318,6 +402,76 @@ class AulaRepository {
             ubicacion: aula.ubicacion,
             totalReservas: aula._count.reserva_aulas
         }));
+    }
+    async addEquipamiento(aulaId, equipamientoId, cantidad, observaciones) {
+        return this.prisma.aulaEquipamiento.create({
+            data: {
+                aulaId,
+                equipamientoId,
+                cantidad,
+                observaciones
+            },
+            include: {
+                equipamiento: true,
+                aula: {
+                    select: {
+                        id: true,
+                        nombre: true
+                    }
+                }
+            }
+        });
+    }
+    async removeEquipamiento(aulaId, equipamientoId) {
+        return this.prisma.aulaEquipamiento.delete({
+            where: {
+                aulaId_equipamientoId: {
+                    aulaId,
+                    equipamientoId
+                }
+            }
+        });
+    }
+    async updateEquipamientoCantidad(aulaId, equipamientoId, cantidad, observaciones) {
+        return this.prisma.aulaEquipamiento.update({
+            where: {
+                aulaId_equipamientoId: {
+                    aulaId,
+                    equipamientoId
+                }
+            },
+            data: {
+                cantidad,
+                ...(observaciones !== undefined && { observaciones })
+            },
+            include: {
+                equipamiento: true
+            }
+        });
+    }
+    async getEquipamientos(aulaId) {
+        return this.prisma.aulaEquipamiento.findMany({
+            where: { aulaId },
+            include: {
+                equipamiento: true
+            },
+            orderBy: {
+                equipamiento: {
+                    nombre: 'asc'
+                }
+            }
+        });
+    }
+    async checkEquipamientoExists(aulaId, equipamientoId) {
+        const exists = await this.prisma.aulaEquipamiento.findUnique({
+            where: {
+                aulaId_equipamientoId: {
+                    aulaId,
+                    equipamientoId
+                }
+            }
+        });
+        return exists !== null;
     }
 }
 exports.AulaRepository = AulaRepository;

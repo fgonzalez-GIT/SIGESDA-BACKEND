@@ -24,5 +24,9 @@ export declare class AulaService {
     getAulasPorCapacidad(capacidadMinima: number): Promise<Aula[]>;
     getAulasConEquipamiento(): Promise<Aula[]>;
     getReservasDelAula(aulaId: string, fechaDesde?: string, fechaHasta?: string): Promise<any[]>;
+    addEquipamientoToAula(aulaId: number, equipamientoId: number, cantidad: number, observaciones?: string): Promise<any>;
+    removeEquipamientoFromAula(aulaId: number, equipamientoId: number): Promise<any>;
+    updateEquipamientoCantidad(aulaId: number, equipamientoId: number, cantidad: number, observaciones?: string): Promise<any>;
+    getEquipamientosDeAula(aulaId: number): Promise<any[]>;
 }
 //# sourceMappingURL=aula.service.d.ts.map

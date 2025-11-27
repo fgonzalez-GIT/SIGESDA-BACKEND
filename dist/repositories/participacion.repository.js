@@ -5,27 +5,23 @@ class ParticipacionRepository {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    mapDtoToPrisma(data) {
-        return {
-            persona_id: data.personaId,
-            actividad_id: data.actividadId,
-            fecha_inicio: data.fechaInicio,
-            fecha_fin: data.fechaFin || null,
-            precio_especial: data.precioEspecial ? Number(data.precioEspecial) : null,
-            activo: data.activa !== undefined ? data.activa : true,
-            observaciones: data.observaciones || null
-        };
-    }
     async create(data) {
         return this.prisma.participacion_actividades.create({
-            data: this.mapDtoToPrisma(data),
+            data: {
+                personaId: data.personaId,
+                actividadId: data.actividadId,
+                fechaInicio: data.fechaInicio,
+                fechaFin: data.fechaFin || null,
+                precioEspecial: data.precioEspecial ? Number(data.precioEspecial) : null,
+                activa: data.activa !== undefined ? data.activa : true,
+                observaciones: data.observaciones || null
+            },
             include: {
                 personas: {
                     select: {
                         id: true,
                         nombre: true,
                         apellido: true,
-                        tipo: true,
                         dni: true,
                         email: true
                     }
@@ -34,11 +30,11 @@ class ParticipacionRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         descripcion: true,
                         capacidadMaxima: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             }
@@ -47,29 +43,29 @@ class ParticipacionRepository {
     async findAll(query) {
         const where = {};
         if (query.personaId) {
-            where.persona_id = query.personaId;
+            where.personaId = query.personaId;
         }
         if (query.actividadId) {
-            where.actividad_id = query.actividadId;
+            where.actividadId = query.actividadId;
         }
         if (query.activa !== undefined) {
-            where.activo = query.activa;
+            where.activa = query.activa;
         }
         if (query.fechaDesde || query.fechaHasta) {
-            where.fecha_inicio = {};
+            where.fechaInicio = {};
             if (query.fechaDesde) {
-                where.fecha_inicio.gte = query.fechaDesde;
+                where.fechaInicio.gte = query.fechaDesde;
             }
             if (query.fechaHasta) {
-                where.fecha_inicio.lte = query.fechaHasta;
+                where.fechaInicio.lte = query.fechaHasta;
             }
         }
         if (query.conPrecioEspecial !== undefined) {
             if (query.conPrecioEspecial) {
-                where.precio_especial = { not: null };
+                where.precioEspecial = { not: null };
             }
             else {
-                where.precio_especial = null;
+                where.precioEspecial = null;
             }
         }
         if (query.search) {
@@ -144,7 +140,6 @@ class ParticipacionRepository {
                         id: true,
                         nombre: true,
                         apellido: true,
-                        tipo: true,
                         dni: true,
                         email: true
                     }
@@ -164,76 +159,73 @@ class ParticipacionRepository {
     }
     async findByPersonaId(personaId) {
         return this.prisma.participacion_actividades.findMany({
-            where: { persona_id: personaId },
+            where: { personaId: personaId },
             include: {
                 personas: {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             },
-            orderBy: { fecha_inicio: 'desc' }
+            orderBy: { fechaInicio: 'desc' }
         });
     }
     async findByActividadId(actividadId) {
         return this.prisma.participacion_actividades.findMany({
-            where: { actividad_id: actividadId },
+            where: { actividadId: actividadId },
             include: {
                 personas: {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             },
-            orderBy: { fecha_inicio: 'desc' }
+            orderBy: { fechaInicio: 'desc' }
         });
     }
     async findByPersonaAndActividad(personaId, actividadId) {
         return this.prisma.participacion_actividades.findFirst({
             where: {
-                persona_id: personaId,
-                actividad_id: actividadId
+                personaId: personaId,
+                actividadId: actividadId
             },
             include: {
                 personas: {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             }
@@ -241,14 +233,14 @@ class ParticipacionRepository {
     }
     async findParticipacionesActivas(personaId) {
         const where = {
-            activo: true,
+            activa: true,
             OR: [
-                { fecha_fin: null },
-                { fecha_fin: { gt: new Date() } }
+                { fechaFin: null },
+                { fechaFin: { gt: new Date() } }
             ]
         };
         if (personaId) {
-            where.persona_id = personaId;
+            where.personaId = personaId;
         }
         return this.prisma.participacion_actividades.findMany({
             where,
@@ -257,37 +249,36 @@ class ParticipacionRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             },
-            orderBy: { fecha_inicio: 'desc' }
+            orderBy: { fechaInicio: 'desc' }
         });
     }
     async update(id, data) {
         const updateData = {};
         if (data.personaId !== undefined)
-            updateData.persona_id = data.personaId;
+            updateData.personaId = data.personaId;
         if (data.actividadId !== undefined)
-            updateData.actividad_id = data.actividadId;
+            updateData.actividadId = data.actividadId;
         if (data.fechaInicio !== undefined)
-            updateData.fecha_inicio = data.fechaInicio;
+            updateData.fechaInicio = data.fechaInicio;
         if (data.fechaFin !== undefined)
-            updateData.fecha_fin = data.fechaFin || null;
+            updateData.fechaFin = data.fechaFin || null;
         if (data.precioEspecial !== undefined)
-            updateData.precio_especial = data.precioEspecial ? Number(data.precioEspecial) : null;
+            updateData.precioEspecial = data.precioEspecial ? Number(data.precioEspecial) : null;
         if (data.activa !== undefined)
-            updateData.activo = data.activa;
+            updateData.activa = data.activa;
         if (data.observaciones !== undefined)
             updateData.observaciones = data.observaciones || null;
         return this.prisma.participacion_actividades.update({
@@ -298,17 +289,16 @@ class ParticipacionRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             }
@@ -322,17 +312,16 @@ class ParticipacionRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             }
@@ -340,8 +329,8 @@ class ParticipacionRepository {
     }
     async finalizarParticipacion(id, fechaFin, motivo) {
         const updateData = {
-            activo: false,
-            fecha_fin: fechaFin || new Date()
+            activa: false,
+            fechaFin: fechaFin || new Date()
         };
         if (motivo) {
             updateData.observaciones = motivo;
@@ -354,17 +343,16 @@ class ParticipacionRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             }
@@ -374,25 +362,24 @@ class ParticipacionRepository {
         return this.prisma.participacion_actividades.update({
             where: { id },
             data: {
-                activo: true,
-                fecha_fin: null
+                activa: true,
+                fechaFin: null
             },
             include: {
                 personas: {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             }
@@ -400,16 +387,16 @@ class ParticipacionRepository {
     }
     async verificarConflictosHorarios(personaId, fechaInicio, fechaFin, excluirId) {
         const where = {
-            persona_id: personaId,
-            activo: true,
+            personaId: personaId,
+            activa: true,
             OR: [
                 {
                     AND: [
-                        { fecha_inicio: { lte: fechaInicio } },
+                        { fechaInicio: { lte: fechaInicio } },
                         {
                             OR: [
-                                { fecha_fin: null },
-                                { fecha_fin: { gte: fechaInicio } }
+                                { fechaFin: null },
+                                { fechaFin: { gte: fechaInicio } }
                             ]
                         }
                     ]
@@ -419,11 +406,11 @@ class ParticipacionRepository {
         if (fechaFin) {
             where.OR.push({
                 AND: [
-                    { fecha_inicio: { lte: fechaFin } },
+                    { fechaInicio: { lte: fechaFin } },
                     {
                         OR: [
-                            { fecha_fin: null },
-                            { fecha_fin: { gte: fechaInicio } }
+                            { fechaFin: null },
+                            { fechaFin: { gte: fechaInicio } }
                         ]
                     }
                 ]
@@ -439,17 +426,16 @@ class ParticipacionRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             }
@@ -458,10 +444,10 @@ class ParticipacionRepository {
     async contarParticipantesPorActividad(actividadId) {
         const [total, activos] = await Promise.all([
             this.prisma.participacion_actividades.count({
-                where: { actividad_id: actividadId }
+                where: { actividadId: actividadId }
             }),
             this.prisma.participacion_actividades.count({
-                where: { actividad_id: actividadId, activo: true }
+                where: { actividadId: actividadId, activa: true }
             })
         ]);
         return {
@@ -540,8 +526,8 @@ class ParticipacionRepository {
         fechaLimite.setDate(fechaLimite.getDate() + diasAnticipacion);
         return this.prisma.participacion_actividades.findMany({
             where: {
-                activo: true,
-                fecha_fin: {
+                activa: true,
+                fechaFin: {
                     not: null,
                     lte: fechaLimite
                 }
@@ -552,7 +538,6 @@ class ParticipacionRepository {
                         id: true,
                         nombre: true,
                         apellido: true,
-                        tipo: true,
                         dni: true,
                         email: true
                     }
@@ -561,13 +546,13 @@ class ParticipacionRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             },
-            orderBy: { fecha_fin: 'asc' }
+            orderBy: { fechaFin: 'asc' }
         });
     }
     async bulkCreate(participaciones) {
@@ -581,10 +566,10 @@ class ParticipacionRepository {
     }
     async transferirParticipacion(id, nuevaActividadId, fechaTransferencia, conservarFechaInicio = false) {
         const updateData = {
-            actividad_id: nuevaActividadId
+            actividadId: nuevaActividadId
         };
         if (!conservarFechaInicio) {
-            updateData.fecha_inicio = fechaTransferencia;
+            updateData.fechaInicio = fechaTransferencia;
         }
         return this.prisma.participacion_actividades.update({
             where: { id },
@@ -594,17 +579,16 @@ class ParticipacionRepository {
                     select: {
                         id: true,
                         nombre: true,
-                        apellido: true,
-                        tipo: true
+                        apellido: true
                     }
                 },
                 actividades: {
                     select: {
                         id: true,
                         nombre: true,
-                        codigo_actividad: true,
+                        codigoActividad: true,
                         costo: true,
-                        tipo_actividad_id: true
+                        tipoActividadId: true
                     }
                 }
             }
@@ -629,7 +613,6 @@ class ParticipacionRepository {
                         id: true,
                         nombre: true,
                         apellido: true,
-                        tipo: true,
                         dni: true,
                         email: true
                     }

@@ -25,6 +25,7 @@ router.post('/', actividadController.createActividad.bind(actividadController));
 router.get('/', actividadController.getActividades.bind(actividadController));
 router.get('/:id', actividadController.getActividadById.bind(actividadController));
 router.patch('/:id', actividadController.updateActividad.bind(actividadController));
+router.put('/:id', actividadController.updateActividad.bind(actividadController));
 router.delete('/:id', actividadController.deleteActividad.bind(actividadController));
 router.patch('/:id/estado', actividadController.cambiarEstado.bind(actividadController));
 router.post('/:id/duplicar', actividadController.duplicarActividad.bind(actividadController));

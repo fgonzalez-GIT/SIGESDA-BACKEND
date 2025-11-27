@@ -7,10 +7,15 @@ export class EquipamientoRepository {
   async create(data: CreateEquipamientoDto): Promise<Equipamiento> {
     return this.prisma.equipamiento.create({
       data: {
+        codigo: data.codigo!, // Código autogenerado en service
         nombre: data.nombre,
+        categoriaEquipamientoId: data.categoriaEquipamientoId,
         descripcion: data.descripcion,
         observaciones: data.observaciones,
         activo: data.activo ?? true
+      },
+      include: {
+        categoriaEquipamiento: true // Incluir la categoría en la respuesta
       }
     });
   }
@@ -42,6 +47,7 @@ export class EquipamientoRepository {
           { nombre: 'asc' }
         ],
         include: {
+          categoriaEquipamiento: true, // Incluir categoría
           _count: {
             select: {
               aulas_equipamientos: true // Cantidad de aulas que usan este equipamiento
@@ -59,6 +65,7 @@ export class EquipamientoRepository {
     return this.prisma.equipamiento.findUnique({
       where: { id },
       include: {
+        categoriaEquipamiento: true, // Incluir categoría
         aulas_equipamientos: {
           include: {
             aula: {
@@ -87,14 +94,42 @@ export class EquipamientoRepository {
     });
   }
 
+  async findByCodigo(codigo: string): Promise<Equipamiento | null> {
+    return this.prisma.equipamiento.findUnique({
+      where: { codigo }
+    });
+  }
+
+  async findMaxCodigoByCategoriaPrefix(prefix: string): Promise<string | null> {
+    const result = await this.prisma.equipamiento.findFirst({
+      where: {
+        codigo: {
+          startsWith: prefix
+        }
+      },
+      orderBy: {
+        codigo: 'desc'
+      },
+      select: {
+        codigo: true
+      }
+    });
+
+    return result?.codigo || null;
+  }
+
   async update(id: number, data: UpdateEquipamientoDto): Promise<Equipamiento> {
     return this.prisma.equipamiento.update({
       where: { id },
       data: {
         nombre: data.nombre,
+        categoriaEquipamientoId: data.categoriaEquipamientoId,
         descripcion: data.descripcion,
         observaciones: data.observaciones,
         activo: data.activo
+      },
+      include: {
+        categoriaEquipamiento: true // Incluir categoría en la respuesta
       }
     });
   }

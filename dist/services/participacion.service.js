@@ -54,8 +54,8 @@ class ParticipacionService {
         });
         return {
             ...participacion,
-            estado: (0, participacion_dto_1.determinarEstado)({ activa: participacion.activo, fechaFin: participacion.fecha_fin }),
-            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: participacion.activa, fechaFin: participacion.fechaFin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
         };
     }
     async findAll(query) {
@@ -63,8 +63,8 @@ class ParticipacionService {
         const totalPages = Math.ceil(result.total / query.limit);
         const participacionesConEstado = result.data.map(p => ({
             ...p,
-            estado: (0, participacion_dto_1.determinarEstado)({ activa: p.activo, fechaFin: p.fecha_fin }),
-            diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: p.activa, fechaFin: p.fechaFin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
         }));
         return {
             data: participacionesConEstado,
@@ -80,8 +80,8 @@ class ParticipacionService {
         }
         return {
             ...participacion,
-            estado: (0, participacion_dto_1.determinarEstado)({ activa: participacion.activo, fechaFin: participacion.fecha_fin }),
-            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: participacion.activa, fechaFin: participacion.fechaFin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
         };
     }
     async findByPersonaId(personaId) {
@@ -92,8 +92,8 @@ class ParticipacionService {
         const participaciones = await this.participacionRepository.findByPersonaId(personaId);
         return participaciones.map(p => ({
             ...p,
-            estado: (0, participacion_dto_1.determinarEstado)({ activa: p.activo, fechaFin: p.fecha_fin }),
-            diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: p.activa, fechaFin: p.fechaFin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
         }));
     }
     async findByActividadId(actividadId) {
@@ -104,8 +104,8 @@ class ParticipacionService {
         const participaciones = await this.participacionRepository.findByActividadId(actividadId);
         return participaciones.map(p => ({
             ...p,
-            estado: (0, participacion_dto_1.determinarEstado)({ activa: p.activo, fechaFin: p.fecha_fin }),
-            diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: p.activa, fechaFin: p.fechaFin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
         }));
     }
     async update(id, data) {
@@ -114,9 +114,9 @@ class ParticipacionService {
             throw new Error(`Participación con ID ${id} no encontrada`);
         }
         if (data.fechaInicio || data.fechaFin) {
-            const fechaInicio = data.fechaInicio || existing.fecha_inicio;
-            const fechaFin = data.fechaFin !== undefined ? data.fechaFin : existing.fecha_fin;
-            const conflictos = await this.participacionRepository.verificarConflictosHorarios(existing.persona_id, fechaInicio, fechaFin || undefined, id);
+            const fechaInicio = data.fechaInicio || existing.fechaInicio;
+            const fechaFin = data.fechaFin !== undefined ? data.fechaFin : existing.fechaFin;
+            const conflictos = await this.participacionRepository.verificarConflictosHorarios(existing.personaId, fechaInicio, fechaFin || undefined, id);
             if (conflictos.length > 0) {
                 const nombreConflictos = conflictos.map(c => c.actividades.nombre).join(', ');
                 throw new Error(`Las nuevas fechas se solapan con participaciones existentes en: ${nombreConflictos}`);
@@ -125,8 +125,8 @@ class ParticipacionService {
         const participacion = await this.participacionRepository.update(id, data);
         return {
             ...participacion,
-            estado: (0, participacion_dto_1.determinarEstado)({ activa: participacion.activo, fechaFin: participacion.fecha_fin }),
-            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+            estado: (0, participacion_dto_1.determinarEstado)({ activa: participacion.activa, fechaFin: participacion.fechaFin }),
+            diasTranscurridos: Math.floor((new Date().getTime() - participacion.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
         };
     }
     async delete(id) {
@@ -270,12 +270,12 @@ class ParticipacionService {
         if (!participacion) {
             throw new Error(`Participación con ID ${id} no encontrada`);
         }
-        if (participacion.activo) {
+        if (participacion.activa) {
             throw new Error('La participación ya está activa');
         }
-        const actividad = await this.actividadRepository.findById(participacion.actividad_id);
+        const actividad = await this.actividadRepository.findById(participacion.actividadId);
         if (actividad?.capacidadMaxima) {
-            const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(participacion.actividad_id);
+            const participantesActuales = await this.participacionRepository.contarParticipantesPorActividad(participacion.actividadId);
             if (participantesActuales.activos >= actividad.capacidadMaxima) {
                 throw new Error(`La actividad "${actividad.nombre}" ya no tiene cupos disponibles`);
             }
@@ -325,7 +325,7 @@ class ParticipacionService {
         return participaciones.map(p => ({
             ...p,
             estado: participacion_dto_1.EstadoParticipacion.ACTIVA,
-            diasTranscurridos: Math.floor((new Date().getTime() - p.fecha_inicio.getTime()) / (1000 * 60 * 60 * 24))
+            diasTranscurridos: Math.floor((new Date().getTime() - p.fechaInicio.getTime()) / (1000 * 60 * 60 * 24))
         }));
     }
     async getParticipacionesPorVencer(dias = 30) {
@@ -333,8 +333,8 @@ class ParticipacionService {
         return participaciones.map(p => ({
             ...p,
             estado: participacion_dto_1.EstadoParticipacion.ACTIVA,
-            diasRestantes: p.fecha_fin ?
-                Math.ceil((p.fecha_fin.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) :
+            diasRestantes: p.fechaFin ?
+                Math.ceil((p.fechaFin.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) :
                 null
         }));
     }

@@ -527,6 +527,7 @@ export declare class ActividadRepository {
         horaInicio: string;
         horaFin: string;
     }>;
+    deleteHorariosByActividad(actividadId: number): Promise<import(".prisma/client").Prisma.BatchPayload>;
     getHorariosByActividad(actividadId: number): Promise<{
         activo: boolean;
         id: number;

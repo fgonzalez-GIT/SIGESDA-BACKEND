@@ -415,6 +415,11 @@ class ActividadRepository {
             where: { id: horarioId }
         });
     }
+    async deleteHorariosByActividad(actividadId) {
+        return this.prisma.horarios_actividades.deleteMany({
+            where: { actividadId }
+        });
+    }
     async getHorariosByActividad(actividadId) {
         return this.prisma.horarios_actividades.findMany({
             where: { actividadId },

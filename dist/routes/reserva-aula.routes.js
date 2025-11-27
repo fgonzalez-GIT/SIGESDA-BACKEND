@@ -13,7 +13,7 @@ const reservaAulaRepository = new reserva_aula_repository_1.ReservaAulaRepositor
 const aulaRepository = new aula_repository_1.AulaRepository(database_1.prisma);
 const personaRepository = new persona_repository_1.PersonaRepository(database_1.prisma);
 const actividadRepository = new actividad_repository_1.ActividadRepository(database_1.prisma);
-const reservaAulaService = new reserva_aula_service_1.ReservaAulaService(reservaAulaRepository, aulaRepository, personaRepository, actividadRepository);
+const reservaAulaService = new reserva_aula_service_1.ReservaAulaService(reservaAulaRepository, aulaRepository, personaRepository, actividadRepository, database_1.prisma);
 const reservaAulaController = new reserva_aula_controller_1.ReservaAulaController(reservaAulaService);
 router.post('/', reservaAulaController.createReserva.bind(reservaAulaController));
 router.get('/', reservaAulaController.getReservas.bind(reservaAulaController));
@@ -27,9 +27,14 @@ router.get('/upcoming/proximas', reservaAulaController.getUpcomingReservations.b
 router.get('/current/actuales', reservaAulaController.getCurrentReservations.bind(reservaAulaController));
 router.get('/availability/check', reservaAulaController.checkAvailability.bind(reservaAulaController));
 router.post('/conflicts/detect', reservaAulaController.detectConflicts.bind(reservaAulaController));
+router.post('/conflicts/detect-all', reservaAulaController.detectAllConflicts.bind(reservaAulaController));
 router.post('/bulk/create', reservaAulaController.createBulkReservas.bind(reservaAulaController));
 router.delete('/bulk/delete', reservaAulaController.deleteBulkReservas.bind(reservaAulaController));
 router.post('/recurring/create', reservaAulaController.createRecurringReserva.bind(reservaAulaController));
+router.post('/:id/aprobar', reservaAulaController.aprobarReserva.bind(reservaAulaController));
+router.post('/:id/rechazar', reservaAulaController.rechazarReserva.bind(reservaAulaController));
+router.post('/:id/cancelar', reservaAulaController.cancelarReserva.bind(reservaAulaController));
+router.post('/:id/completar', reservaAulaController.completarReserva.bind(reservaAulaController));
 router.get('/aula/:aulaId', reservaAulaController.getReservasByAula.bind(reservaAulaController));
 router.get('/docente/:docenteId', reservaAulaController.getReservasByDocente.bind(reservaAulaController));
 router.get('/actividad/:actividadId', reservaAulaController.getReservasByActividad.bind(reservaAulaController));

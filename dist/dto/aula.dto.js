@@ -12,12 +12,22 @@ const aulaBaseSchema = zod_1.z.object({
         return val;
     }, zod_1.z.number().int().positive('La capacidad debe ser positiva')),
     ubicacion: zod_1.z.string().max(200).optional(),
-    equipamiento: zod_1.z.preprocess((val) => {
-        if (Array.isArray(val)) {
-            return val.join(', ');
+    tipoAulaId: zod_1.z.preprocess((val) => {
+        if (typeof val === 'string') {
+            const parsed = parseInt(val);
+            return isNaN(parsed) ? undefined : parsed;
         }
         return val;
-    }, zod_1.z.string().max(500).optional()),
+    }, zod_1.z.number().int().positive('ID de tipo de aula inválido').optional()),
+    estadoAulaId: zod_1.z.preprocess((val) => {
+        if (typeof val === 'string') {
+            const parsed = parseInt(val);
+            return isNaN(parsed) ? undefined : parsed;
+        }
+        return val;
+    }, zod_1.z.number().int().positive('ID de estado de aula inválido').optional()),
+    descripcion: zod_1.z.string().max(1000).optional(),
+    observaciones: zod_1.z.string().max(1000).optional(),
     activa: zod_1.z.preprocess((val) => {
         if (typeof val === 'string') {
             return val === 'true';
@@ -28,10 +38,11 @@ const aulaBaseSchema = zod_1.z.object({
             return false;
         return val;
     }, zod_1.z.boolean().default(true)),
-    tipo: zod_1.z.string().optional(),
-    estado: zod_1.z.string().optional(),
-    observaciones: zod_1.z.string().max(500).optional(),
-    descripcion: zod_1.z.string().max(500).optional()
+    equipamientos: zod_1.z.array(zod_1.z.object({
+        equipamientoId: zod_1.z.number().int().positive('ID de equipamiento inválido'),
+        cantidad: zod_1.z.number().int().positive('La cantidad debe ser positiva').default(1),
+        observaciones: zod_1.z.string().max(500).optional()
+    })).optional()
 });
 exports.createAulaSchema = zod_1.z.object({
     ...aulaBaseSchema.shape
@@ -46,6 +57,14 @@ exports.aulaQuerySchema = zod_1.z.object({
         }
         return val;
     }, zod_1.z.boolean().optional()),
+    tipoAulaId: zod_1.z.preprocess((val) => {
+        const parsed = parseInt(val);
+        return isNaN(parsed) ? undefined : parsed;
+    }, zod_1.z.number().int().positive().optional()),
+    estadoAulaId: zod_1.z.preprocess((val) => {
+        const parsed = parseInt(val);
+        return isNaN(parsed) ? undefined : parsed;
+    }, zod_1.z.number().int().positive().optional()),
     capacidadMinima: zod_1.z.preprocess((val) => {
         const parsed = parseInt(val);
         return isNaN(parsed) ? undefined : parsed;

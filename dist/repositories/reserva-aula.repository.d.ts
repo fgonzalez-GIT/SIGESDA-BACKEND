@@ -8,14 +8,14 @@ export declare class ReservaAulaRepository {
         data: ReservaAula[];
         total: number;
     }>;
-    findById(id: string): Promise<ReservaAula | null>;
+    findById(id: number): Promise<ReservaAula | null>;
     findByAulaId(aulaId: string, incluirPasadas?: boolean): Promise<ReservaAula[]>;
     findByDocenteId(docenteId: string, incluirPasadas?: boolean): Promise<ReservaAula[]>;
     findByActividadId(actividadId: string, incluirPasadas?: boolean): Promise<ReservaAula[]>;
     detectConflicts(conflictData: ConflictDetectionDto): Promise<ReservaAula[]>;
-    update(id: string, data: Partial<CreateReservaAulaDto>): Promise<ReservaAula>;
-    delete(id: string): Promise<ReservaAula>;
-    deleteBulk(ids: string[]): Promise<{
+    update(id: number, data: Partial<CreateReservaAulaDto>): Promise<ReservaAula>;
+    delete(id: number): Promise<ReservaAula>;
+    deleteBulk(ids: number[]): Promise<{
         count: number;
     }>;
     createBulk(reservas: CreateReservaAulaDto[]): Promise<{
@@ -25,5 +25,6 @@ export declare class ReservaAulaRepository {
     getStatistics(statsData: ReservaStatsDto): Promise<any>;
     getUpcomingReservations(limit?: number): Promise<ReservaAula[]>;
     getCurrentReservations(): Promise<ReservaAula[]>;
+    detectRecurrentConflicts(conflictData: ConflictDetectionDto): Promise<any[]>;
 }
 //# sourceMappingURL=reserva-aula.repository.d.ts.map

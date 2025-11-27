@@ -47,14 +47,40 @@ const aulaBaseSchema = z.object({
 });
 
 // DTO para crear aula
-export const createAulaSchema = z.object({
+// Soporta tanto 'equipamientos' (array de objetos) como 'equipamientoIds' (array de números)
+export const createAulaSchema = z.preprocess((data: any) => {
+  // Convertir equipamientoIds a equipamientos si existe
+  if (data && data.equipamientoIds && Array.isArray(data.equipamientoIds)) {
+    return {
+      ...data,
+      equipamientos: data.equipamientoIds.map((id: number) => ({
+        equipamientoId: id,
+        cantidad: 1
+      }))
+    };
+  }
+  return data;
+}, z.object({
   ...aulaBaseSchema.shape
-});
+}));
 
 // DTO para actualizar aula
-export const updateAulaSchema = z.object({
+// Soporta tanto 'equipamientos' (array de objetos) como 'equipamientoIds' (array de números)
+export const updateAulaSchema = z.preprocess((data: any) => {
+  // Convertir equipamientoIds a equipamientos si existe
+  if (data && data.equipamientoIds && Array.isArray(data.equipamientoIds)) {
+    return {
+      ...data,
+      equipamientos: data.equipamientoIds.map((id: number) => ({
+        equipamientoId: id,
+        cantidad: 1
+      }))
+    };
+  }
+  return data;
+}, z.object({
   ...aulaBaseSchema.partial().shape
-});
+}));
 
 // Query filters para listar aulas
 export const aulaQuerySchema = z.object({

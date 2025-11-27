@@ -3,20 +3,79 @@ import { EquipamientoRepository } from '@/repositories/equipamiento.repository';
 import { CreateEquipamientoDto, UpdateEquipamientoDto, EquipamientoQueryDto } from '@/dto/equipamiento.dto';
 import { logger } from '@/utils/logger';
 import { ConflictError, NotFoundError, ValidationError } from '@/utils/errors';
+import { prisma } from '@/config/database';
 
 export class EquipamientoService {
   constructor(private equipamientoRepository: EquipamientoRepository) {}
 
+  /**
+   * Generar código automático para equipamiento
+   * Patrón: CATEGORIA-XXX (ej: INST-001, MOB-001)
+   */
+  private async generateCodigoEquipamiento(categoriaEquipamientoId: number): Promise<string> {
+    // Obtener la categoría para usar su código como prefijo
+    const categoria = await prisma.categoriasEquipamiento.findUnique({
+      where: { id: categoriaEquipamientoId }
+    });
+
+    if (!categoria) {
+      throw new ValidationError(`Categoría de equipamiento con ID ${categoriaEquipamientoId} no encontrada`);
+    }
+
+    // Usar las primeras 4 letras del código de la categoría como prefijo
+    const prefix = categoria.codigo.substring(0, 4).toUpperCase();
+
+    // Obtener el último código con este prefijo
+    const maxCodigo = await this.equipamientoRepository.findMaxCodigoByCategoriaPrefix(prefix);
+
+    let nextNumber = 1;
+    if (maxCodigo) {
+      // Extraer el número del código (ej: "INST-005" → 5)
+      const match = maxCodigo.match(/\d+$/);
+      if (match) {
+        nextNumber = parseInt(match[0]) + 1;
+      }
+    }
+
+    // Generar código con padding de 3 dígitos (ej: INST-001, INST-002)
+    return `${prefix}-${String(nextNumber).padStart(3, '0')}`;
+  }
+
   async createEquipamiento(data: CreateEquipamientoDto): Promise<Equipamiento> {
-    // Validar que el nombre sea único
-    const existingEquipamiento = await this.equipamientoRepository.findByNombre(data.nombre);
-    if (existingEquipamiento) {
+    // 1. Validar que la categoría existe y está activa
+    const categoria = await prisma.categoriasEquipamiento.findUnique({
+      where: { id: data.categoriaEquipamientoId }
+    });
+
+    if (!categoria) {
+      throw new NotFoundError(`Categoría de equipamiento con ID ${data.categoriaEquipamientoId} no encontrada`);
+    }
+
+    if (!categoria.activo) {
+      throw new ValidationError(`La categoría "${categoria.nombre}" está inactiva`);
+    }
+
+    // 2. Validar que el nombre sea único
+    const existingNombre = await this.equipamientoRepository.findByNombre(data.nombre);
+    if (existingNombre) {
       throw new ConflictError(`Ya existe un equipamiento con el nombre ${data.nombre}`);
     }
 
+    // 3. Autogenerar código si no se proporciona
+    if (!data.codigo) {
+      data.codigo = await this.generateCodigoEquipamiento(data.categoriaEquipamientoId);
+    } else {
+      // Validar que el código proporcionado sea único
+      const existingCodigo = await this.equipamientoRepository.findByCodigo(data.codigo);
+      if (existingCodigo) {
+        throw new ConflictError(`Ya existe un equipamiento con el código ${data.codigo}`);
+      }
+    }
+
+    // 4. Crear el equipamiento
     const equipamiento = await this.equipamientoRepository.create(data);
 
-    logger.info(`Equipamiento creado: ${equipamiento.nombre} - ID: ${equipamiento.id}`);
+    logger.info(`Equipamiento creado: ${equipamiento.codigo} - ${equipamiento.nombre} (ID: ${equipamiento.id})`);
 
     return equipamiento;
   }
@@ -36,13 +95,18 @@ export class EquipamientoService {
   }
 
   async updateEquipamiento(id: number, data: UpdateEquipamientoDto): Promise<Equipamiento> {
-    // Verificar que el equipamiento existe
+    // 1. Verificar que el equipamiento existe
     const existingEquipamiento = await this.equipamientoRepository.findById(id);
     if (!existingEquipamiento) {
       throw new NotFoundError(`Equipamiento con ID ${id} no encontrado`);
     }
 
-    // Validar nombre único si se está actualizando
+    // 2. Validar que NO se intenta modificar el código (doble verificación, aunque el DTO ya lo valida)
+    if ('codigo' in data) {
+      throw new ValidationError('El código no se puede modificar');
+    }
+
+    // 3. Validar nombre único si se está actualizando
     if (data.nombre && data.nombre !== existingEquipamiento.nombre) {
       const equipamientoWithSameName = await this.equipamientoRepository.findByNombre(data.nombre);
       if (equipamientoWithSameName) {
@@ -50,6 +114,22 @@ export class EquipamientoService {
       }
     }
 
+    // 4. Validar categoría si se está cambiando
+    if (data.categoriaEquipamientoId && data.categoriaEquipamientoId !== (existingEquipamiento as any).categoriaEquipamientoId) {
+      const categoria = await prisma.categoriasEquipamiento.findUnique({
+        where: { id: data.categoriaEquipamientoId }
+      });
+
+      if (!categoria) {
+        throw new NotFoundError(`Categoría de equipamiento con ID ${data.categoriaEquipamientoId} no encontrada`);
+      }
+
+      if (!categoria.activo) {
+        throw new ValidationError(`La categoría "${categoria.nombre}" está inactiva`);
+      }
+    }
+
+    // 5. Actualizar el equipamiento
     const updatedEquipamiento = await this.equipamientoRepository.update(id, data);
 
     logger.info(`Equipamiento actualizado: ${updatedEquipamiento.nombre} (ID: ${id})`);
