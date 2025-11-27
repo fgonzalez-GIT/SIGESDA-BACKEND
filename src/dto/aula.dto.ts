@@ -1,4 +1,24 @@
 import { z } from 'zod';
+import { prisma } from '@/config/database';
+
+// Mapas de conversión código → ID para tipos y estados de aula
+// Se cargan dinámicamente al inicio de la aplicación
+let TIPO_AULA_MAP: Record<string, number> = {};
+let ESTADO_AULA_MAP: Record<string, number> = {};
+
+// Inicializar mapas (se ejecuta cuando se carga el módulo)
+(async () => {
+  try {
+    const tipos = await prisma.tipoAula.findMany({ where: { activo: true }, select: { id: true, codigo: true } });
+    const estados = await prisma.estadoAula.findMany({ where: { activo: true }, select: { id: true, codigo: true } });
+
+    TIPO_AULA_MAP = tipos.reduce((acc, t) => ({ ...acc, [t.codigo.toLowerCase()]: t.id }), {});
+    ESTADO_AULA_MAP = estados.reduce((acc, e) => ({ ...acc, [e.codigo.toLowerCase()]: e.id }), {});
+  } catch (error) {
+    // Si falla, usar mapas vacíos (no bloqueará la app)
+    console.warn('No se pudieron cargar los mapas de tipos/estados de aula:', error);
+  }
+})();
 
 // Schema base para aulas
 const aulaBaseSchema = z.object({
@@ -48,17 +68,35 @@ const aulaBaseSchema = z.object({
 
 // DTO para crear aula
 // Soporta tanto 'equipamientos' (array de objetos) como 'equipamientoIds' (array de números)
+// Soporta 'tipo' (string código) → convierte a 'tipoAulaId'
+// Soporta 'estado' (string código) → convierte a 'estadoAulaId'
 export const createAulaSchema = z.preprocess((data: any) => {
+  if (!data) return data;
+
   // Convertir equipamientoIds a equipamientos si existe
-  if (data && data.equipamientoIds && Array.isArray(data.equipamientoIds)) {
-    return {
-      ...data,
-      equipamientos: data.equipamientoIds.map((id: number) => ({
-        equipamientoId: id,
-        cantidad: 1
-      }))
-    };
+  if (data.equipamientoIds && Array.isArray(data.equipamientoIds)) {
+    data.equipamientos = data.equipamientoIds.map((id: number) => ({
+      equipamientoId: id,
+      cantidad: 1
+    }));
   }
+
+  // Convertir tipo (string) a tipoAulaId (number)
+  if (data.tipo && typeof data.tipo === 'string') {
+    const tipoId = TIPO_AULA_MAP[data.tipo.toLowerCase()];
+    if (tipoId) {
+      data.tipoAulaId = tipoId;
+    }
+  }
+
+  // Convertir estado (string) a estadoAulaId (number)
+  if (data.estado && typeof data.estado === 'string') {
+    const estadoId = ESTADO_AULA_MAP[data.estado.toLowerCase()];
+    if (estadoId) {
+      data.estadoAulaId = estadoId;
+    }
+  }
+
   return data;
 }, z.object({
   ...aulaBaseSchema.shape
@@ -66,17 +104,35 @@ export const createAulaSchema = z.preprocess((data: any) => {
 
 // DTO para actualizar aula
 // Soporta tanto 'equipamientos' (array de objetos) como 'equipamientoIds' (array de números)
+// Soporta 'tipo' (string código) → convierte a 'tipoAulaId'
+// Soporta 'estado' (string código) → convierte a 'estadoAulaId'
 export const updateAulaSchema = z.preprocess((data: any) => {
+  if (!data) return data;
+
   // Convertir equipamientoIds a equipamientos si existe
-  if (data && data.equipamientoIds && Array.isArray(data.equipamientoIds)) {
-    return {
-      ...data,
-      equipamientos: data.equipamientoIds.map((id: number) => ({
-        equipamientoId: id,
-        cantidad: 1
-      }))
-    };
+  if (data.equipamientoIds && Array.isArray(data.equipamientoIds)) {
+    data.equipamientos = data.equipamientoIds.map((id: number) => ({
+      equipamientoId: id,
+      cantidad: 1
+    }));
   }
+
+  // Convertir tipo (string) a tipoAulaId (number)
+  if (data.tipo && typeof data.tipo === 'string') {
+    const tipoId = TIPO_AULA_MAP[data.tipo.toLowerCase()];
+    if (tipoId) {
+      data.tipoAulaId = tipoId;
+    }
+  }
+
+  // Convertir estado (string) a estadoAulaId (number)
+  if (data.estado && typeof data.estado === 'string') {
+    const estadoId = ESTADO_AULA_MAP[data.estado.toLowerCase()];
+    if (estadoId) {
+      data.estadoAulaId = estadoId;
+    }
+  }
+
   return data;
 }, z.object({
   ...aulaBaseSchema.partial().shape

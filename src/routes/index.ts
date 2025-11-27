@@ -20,6 +20,8 @@ import estadosActividadRoutes from './estadosActividad.routes';
 import diasSemanaRoutes from './diasSemana.routes';
 import rolesDocentesRoutes from './rolesDocentes.routes';
 import categoriasEquipamientoRoutes from './categorias-equipamiento.routes';
+import tiposAulaRoutes from './tipos-aula.routes';
+import estadosAulaRoutes from './estados-aula.routes';
 
 const router = Router();
 
@@ -34,6 +36,8 @@ router.use('/catalogos/estados-reservas', estadoReservaRoutes);
 router.use('/catalogos/dias-semana', diasSemanaRoutes);
 router.use('/catalogos/roles-docentes', rolesDocentesRoutes);
 router.use('/catalogos/categorias-equipamiento', categoriasEquipamientoRoutes);
+router.use('/catalogos/tipos-aulas', tiposAulaRoutes);
+router.use('/catalogos/estados-aulas', estadosAulaRoutes);
 
 // Backward compatibility (rutas antiguas)
 router.use('/actividades/tipos-actividad', tiposActividadRoutes);
