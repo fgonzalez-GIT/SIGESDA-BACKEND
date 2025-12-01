@@ -7,6 +7,16 @@ const equipamientoBaseSchema = z.object({
     const parsed = parseInt(val as string);
     return isNaN(parsed) ? val : parsed;
   }, z.number().int().positive('ID de categoría inválido')),
+  estadoEquipamientoId: z.preprocess((val) => {
+    if (val === null || val === undefined) return undefined;
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? val : parsed;
+  }, z.number().int().positive('ID de estado de equipamiento inválido').optional()),
+  cantidad: z.preprocess((val) => {
+    if (val === null || val === undefined) return 1;
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? val : parsed;
+  }, z.number().int().positive('La cantidad debe ser al menos 1').default(1)),
   descripcion: z.string().max(1000).optional(),
   observaciones: z.string().max(1000).optional(),
   activo: z.preprocess((val) => {
@@ -48,6 +58,16 @@ export const equipamientoQuerySchema = z.object({
     }
     return val;
   }, z.boolean().optional()),
+  estadoEquipamientoId: z.preprocess((val) => {
+    const parsed = parseInt(val as string);
+    return isNaN(parsed) ? undefined : parsed;
+  }, z.number().int().positive().optional()),
+  conStock: z.preprocess((val) => {
+    if (typeof val === 'string') {
+      return val === 'true';
+    }
+    return val;
+  }, z.boolean().optional()), // Filtra equipamientos con cantidad > 0
   search: z.string().optional(), // Búsqueda por nombre, descripción u observaciones
   page: z.preprocess((val) => {
     const parsed = parseInt(val as string);

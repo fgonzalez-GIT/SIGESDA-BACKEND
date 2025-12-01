@@ -1,11 +1,18 @@
 import { Aula } from '@prisma/client';
 import { AulaRepository } from '@/repositories/aula.repository';
+import { EquipamientoRepository } from '@/repositories/equipamiento.repository';
 import { CreateAulaDto, UpdateAulaDto, AulaQueryDto, DisponibilidadAulaDto } from '@/dto/aula.dto';
 import { logger } from '@/utils/logger';
 import { ConflictError, NotFoundError, ValidationError } from '@/utils/errors';
+import { validarAsignacion } from '@/utils/equipamiento.helper';
+import { prisma } from '@/config/database';
 
 export class AulaService {
-  constructor(private aulaRepository: AulaRepository) {}
+  private equipamientoRepository: EquipamientoRepository;
+
+  constructor(private aulaRepository: AulaRepository) {
+    this.equipamientoRepository = new EquipamientoRepository(prisma);
+  }
 
   async createAula(data: CreateAulaDto): Promise<Aula> {
     // Validar que el nombre sea único
@@ -233,28 +240,59 @@ export class AulaService {
   // ============================================================================
 
   async addEquipamientoToAula(aulaId: number, equipamientoId: number, cantidad: number, observaciones?: string): Promise<any> {
-    // Verificar que el aula existe
+    // 1. Verificar que el aula existe
     const aula = await this.aulaRepository.findByIdSimple(aulaId.toString());
     if (!aula) {
       throw new NotFoundError(`Aula con ID ${aulaId} no encontrada`);
     }
 
-    // Verificar que el equipamiento no esté ya asignado a esta aula
+    // 2. Verificar que el equipamiento existe
+    const equipamiento = await this.equipamientoRepository.findById(equipamientoId);
+    if (!equipamiento) {
+      throw new NotFoundError(`Equipamiento con ID ${equipamientoId} no encontrado`);
+    }
+
+    // 3. Verificar que el equipamiento no esté ya asignado a esta aula
     const exists = await this.aulaRepository.checkEquipamientoExists(aulaId, equipamientoId);
     if (exists) {
       throw new ConflictError(`El equipamiento con ID ${equipamientoId} ya está asignado a esta aula`);
     }
 
-    // Validar cantidad
+    // 4. Validar cantidad solicitada
     if (cantidad < 1) {
       throw new ValidationError('La cantidad debe ser al menos 1');
     }
 
+    // 5. Obtener asignaciones actuales del equipamiento
+    const asignaciones = await prisma.aulaEquipamiento.findMany({
+      where: { equipamientoId }
+    });
+
+    // 6. Validar asignación (estado, disponibilidad, etc.)
+    const validacion = validarAsignacion(equipamiento, cantidad, asignaciones);
+
+    // 7. Si hay errores bloqueantes, rechazar la asignación
+    if (!validacion.esValido) {
+      throw new ValidationError(validacion.errors.join('; '));
+    }
+
+    // 8. Crear la asignación (permitir con warnings)
     const aulaEquipamiento = await this.aulaRepository.addEquipamiento(aulaId, equipamientoId, cantidad, observaciones);
 
-    logger.info(`Equipamiento ${equipamientoId} agregado al aula ${aulaId} (cantidad: ${cantidad})`);
+    // 9. Log con warnings si existen
+    if (validacion.warnings.length > 0) {
+      logger.warn(
+        `⚠️  Equipamiento ${equipamientoId} agregado al aula ${aulaId} con advertencias: ${validacion.warnings.join('; ')}`
+      );
+    } else {
+      logger.info(`Equipamiento ${equipamientoId} agregado al aula ${aulaId} (cantidad: ${cantidad})`);
+    }
 
-    return aulaEquipamiento;
+    // 10. Retornar con warnings incluidos
+    return {
+      ...aulaEquipamiento,
+      warnings: validacion.warnings.length > 0 ? validacion.warnings : undefined
+    };
   }
 
   async removeEquipamientoFromAula(aulaId: number, equipamientoId: number): Promise<any> {

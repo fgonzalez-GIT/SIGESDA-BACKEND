@@ -30,6 +30,14 @@ export enum DiaSemana {
   DOMINGO = 'DOMINGO'
 }
 
+export enum EstadoEquipamiento {
+  NUEVO = 'NUEVO',
+  USADO = 'USADO',
+  EN_REPARACION = 'EN_REPARACION',
+  ROTO = 'ROTO',
+  DADO_DE_BAJA = 'DADO_DE_BAJA'
+}
+
 // Additional application enums
 export enum HttpStatus {
   OK = 200,

@@ -209,22 +209,44 @@ model CategoriasEquipamiento {
   @@map("categorias_equipamiento")
 }
 
+model EstadoEquipamiento {
+  id            Int             @id @default(autoincrement())
+  codigo        String          @unique @db.VarChar(50)
+  nombre        String          @db.VarChar(100)
+  descripcion   String?         @db.Text
+  activo        Boolean         @default(true)
+  orden         Int             @default(0)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  equipamientos Equipamiento[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("estados_equipamientos")
+}
+
 model Equipamiento {
   id                       Int                       @id @default(autoincrement())
   codigo                   String                    @unique @db.VarChar(50)
   nombre                   String                    @unique @db.VarChar(200)
   categoriaEquipamientoId  Int                       @map("categoria_equipamiento_id")
+  estadoEquipamientoId     Int?                      @map("estado_equipamiento_id")
+  cantidad                 Int                       @default(1)
   descripcion              String?                   @db.Text
   observaciones            String?                   @db.Text
   activo                   Boolean                   @default(true)
   createdAt                DateTime                  @default(now()) @map("created_at")
   updatedAt                DateTime                  @updatedAt @map("updated_at")
   categoriaEquipamiento    CategoriasEquipamiento    @relation(fields: [categoriaEquipamientoId], references: [id], onDelete: Restrict)
+  estadoEquipamiento       EstadoEquipamiento?       @relation(fields: [estadoEquipamientoId], references: [id], onDelete: SetNull)
   aulas_equipamientos      AulaEquipamiento[]
 
   @@index([codigo])
   @@index([activo])
   @@index([categoriaEquipamientoId])
+  @@index([estadoEquipamientoId])
+  @@index([cantidad])
   @@map("equipamientos")
 }
 

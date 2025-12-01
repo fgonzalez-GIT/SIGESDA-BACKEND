@@ -496,6 +496,56 @@ async function main() {
     })
   ]);
 
+  // ========== Estados de Equipamiento ==========
+  console.log('  → estados_equipamientos...');
+  const estadosEquipamiento = await Promise.all([
+    prisma.estadoEquipamiento.create({
+      data: {
+        codigo: 'NUEVO',
+        nombre: 'Nuevo',
+        descripcion: 'Equipamiento nuevo sin uso',
+        activo: true,
+        orden: 1
+      }
+    }),
+    prisma.estadoEquipamiento.create({
+      data: {
+        codigo: 'USADO',
+        nombre: 'Usado',
+        descripcion: 'Equipamiento en buen estado con uso normal',
+        activo: true,
+        orden: 2
+      }
+    }),
+    prisma.estadoEquipamiento.create({
+      data: {
+        codigo: 'EN_REPARACION',
+        nombre: 'En Reparación',
+        descripcion: 'Equipamiento temporalmente fuera de servicio por mantenimiento',
+        activo: true,
+        orden: 3
+      }
+    }),
+    prisma.estadoEquipamiento.create({
+      data: {
+        codigo: 'ROTO',
+        nombre: 'Roto',
+        descripcion: 'Equipamiento averiado, no funcional',
+        activo: true,
+        orden: 4
+      }
+    }),
+    prisma.estadoEquipamiento.create({
+      data: {
+        codigo: 'DADO_DE_BAJA',
+        nombre: 'Dado de Baja',
+        descripcion: 'Equipamiento eliminado del inventario',
+        activo: true,
+        orden: 5
+      }
+    })
+  ]);
+
   // ========== Equipamiento ==========
   console.log('  → equipamientos...');
   const equipamientos = await Promise.all([
@@ -504,6 +554,8 @@ async function main() {
         codigo: 'INST-001',
         nombre: 'Piano de Cola',
         categoriaEquipamientoId: categoriasEquipamiento[0].id, // INST_MUS
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 2,
         descripcion: 'Piano de cola acústico profesional',
         observaciones: 'Requiere afinación periódica',
         activo: true
@@ -514,6 +566,8 @@ async function main() {
         codigo: 'INST-002',
         nombre: 'Piano Vertical',
         categoriaEquipamientoId: categoriasEquipamiento[0].id, // INST_MUS
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 3,
         descripcion: 'Piano vertical acústico',
         observaciones: 'Requiere afinación periódica',
         activo: true
@@ -524,6 +578,8 @@ async function main() {
         codigo: 'MOB-001',
         nombre: 'Sillas',
         categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 100,
         descripcion: 'Sillas estándar para alumnos',
         activo: true
       }
@@ -533,6 +589,8 @@ async function main() {
         codigo: 'MOB-002',
         nombre: 'Atriles',
         categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 80,
         descripcion: 'Atriles de partituras',
         activo: true
       }
@@ -542,6 +600,8 @@ async function main() {
         codigo: 'DIDA-001',
         nombre: 'Pizarra Musical',
         categoriaEquipamientoId: categoriasEquipamiento[4].id, // DIDACT
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 5,
         descripcion: 'Pizarra con pentagramas',
         activo: true
       }
@@ -551,6 +611,8 @@ async function main() {
         codigo: 'TEC_-001',
         nombre: 'Sistema de Sonido',
         categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 3,
         descripcion: 'Equipo de audio profesional con amplificadores y altavoces',
         activo: true
       }
@@ -560,6 +622,8 @@ async function main() {
         codigo: 'TEC_-002',
         nombre: 'Proyector',
         categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 4,
         descripcion: 'Proyector multimedia',
         activo: true
       }
@@ -569,6 +633,8 @@ async function main() {
         codigo: 'TEC_-003',
         nombre: 'Consola de Grabación',
         categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
+        estadoEquipamientoId: estadosEquipamiento[0].id, // NUEVO
+        cantidad: 1,
         descripcion: 'Consola digital de grabación multipista',
         activo: true
       }
@@ -578,7 +644,10 @@ async function main() {
         codigo: 'TEC_-004',
         nombre: 'Micrófonos',
         categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 15,
         descripcion: 'Set de micrófonos profesionales',
+        observaciones: '2 unidades en reparación',
         activo: true
       }
     }),
@@ -587,6 +656,8 @@ async function main() {
         codigo: 'INFR-001',
         nombre: 'Cabina Acústica',
         categoriaEquipamientoId: categoriasEquipamiento[3].id, // INFRAEST
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 2,
         descripcion: 'Cabina insonorizada para grabación',
         activo: true
       }
@@ -596,6 +667,8 @@ async function main() {
         codigo: 'MOB-003',
         nombre: 'Escritorio',
         categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 10,
         descripcion: 'Escritorio para docente',
         activo: true
       }
@@ -605,6 +678,8 @@ async function main() {
         codigo: 'MOB-004',
         nombre: 'Armario',
         categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
+        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
+        cantidad: 8,
         descripcion: 'Armario para almacenamiento de materiales',
         activo: true
       }

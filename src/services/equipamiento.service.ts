@@ -55,13 +55,33 @@ export class EquipamientoService {
       throw new ValidationError(`La categoría "${categoria.nombre}" está inactiva`);
     }
 
-    // 2. Validar que el nombre sea único
+    // 2. Validar estado si se proporciona
+    if (data.estadoEquipamientoId) {
+      const estado = await prisma.estadoEquipamiento.findUnique({
+        where: { id: data.estadoEquipamientoId }
+      });
+
+      if (!estado) {
+        throw new NotFoundError(`Estado de equipamiento con ID ${data.estadoEquipamientoId} no encontrado`);
+      }
+
+      if (!estado.activo) {
+        throw new ValidationError(`El estado "${estado.nombre}" está inactivo`);
+      }
+    }
+
+    // 3. Validar que la cantidad sea positiva
+    if (data.cantidad !== undefined && data.cantidad < 1) {
+      throw new ValidationError('La cantidad debe ser al menos 1');
+    }
+
+    // 4. Validar que el nombre sea único
     const existingNombre = await this.equipamientoRepository.findByNombre(data.nombre);
     if (existingNombre) {
       throw new ConflictError(`Ya existe un equipamiento con el nombre ${data.nombre}`);
     }
 
-    // 3. Autogenerar código si no se proporciona
+    // 5. Autogenerar código si no se proporciona
     if (!data.codigo) {
       data.codigo = await this.generateCodigoEquipamiento(data.categoriaEquipamientoId);
     } else {
@@ -72,10 +92,10 @@ export class EquipamientoService {
       }
     }
 
-    // 4. Crear el equipamiento
+    // 6. Crear el equipamiento
     const equipamiento = await this.equipamientoRepository.create(data);
 
-    logger.info(`Equipamiento creado: ${equipamiento.codigo} - ${equipamiento.nombre} (ID: ${equipamiento.id})`);
+    logger.info(`Equipamiento creado: ${equipamiento.codigo} - ${equipamiento.nombre} (ID: ${equipamiento.id}), Cantidad: ${equipamiento.cantidad}`);
 
     return equipamiento;
   }
@@ -129,7 +149,40 @@ export class EquipamientoService {
       }
     }
 
-    // 5. Actualizar el equipamiento
+    // 5. Validar estado si se está cambiando
+    if (data.estadoEquipamientoId && data.estadoEquipamientoId !== (existingEquipamiento as any).estadoEquipamientoId) {
+      const estado = await prisma.estadoEquipamiento.findUnique({
+        where: { id: data.estadoEquipamientoId }
+      });
+
+      if (!estado) {
+        throw new NotFoundError(`Estado de equipamiento con ID ${data.estadoEquipamientoId} no encontrado`);
+      }
+
+      if (!estado.activo) {
+        throw new ValidationError(`El estado "${estado.nombre}" está inactivo`);
+      }
+    }
+
+    // 6. Validar cantidad si se está cambiando
+    if (data.cantidad !== undefined && data.cantidad !== existingEquipamiento.cantidad) {
+      if (data.cantidad < 0) {
+        throw new ValidationError('La cantidad no puede ser negativa');
+      }
+
+      // Advertir si la nueva cantidad genera déficit de inventario
+      const cantidadAsignada = await this.equipamientoRepository.getCantidadAsignada(id);
+      if (data.cantidad < cantidadAsignada) {
+        const deficit = cantidadAsignada - data.cantidad;
+        logger.warn(
+          `⚠️  Cantidad de equipamiento "${existingEquipamiento.nombre}" (ID: ${id}) reducida. ` +
+          `Déficit de inventario: ${deficit} unidades. ` +
+          `(Asignadas: ${cantidadAsignada}, Nueva cantidad: ${data.cantidad})`
+        );
+      }
+    }
+
+    // 7. Actualizar el equipamiento
     const updatedEquipamiento = await this.equipamientoRepository.update(id, data);
 
     logger.info(`Equipamiento actualizado: ${updatedEquipamiento.nombre} (ID: ${id})`);
@@ -211,5 +264,29 @@ export class EquipamientoService {
       totalCantidad,
       aulas: aulasList
     };
+  }
+
+  /**
+   * Obtiene información de disponibilidad de un equipamiento
+   */
+  async getDisponibilidadEquipamiento(id: number): Promise<any> {
+    const equipamiento = await this.equipamientoRepository.findByIdWithDisponibilidad(id);
+    if (!equipamiento) {
+      throw new NotFoundError(`Equipamiento con ID ${id} no encontrado`);
+    }
+
+    return equipamiento;
+  }
+
+  /**
+   * Obtiene la cantidad disponible de un equipamiento
+   */
+  async getCantidadDisponible(id: number): Promise<number> {
+    const equipamiento = await this.equipamientoRepository.findById(id);
+    if (!equipamiento) {
+      throw new NotFoundError(`Equipamiento con ID ${id} no encontrado`);
+    }
+
+    return this.equipamientoRepository.getCantidadDisponible(id);
   }
 }
