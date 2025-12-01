@@ -2,6 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.estadisticasAulaSchema = exports.disponibilidadAulaSchema = exports.aulaQuerySchema = exports.updateAulaSchema = exports.createAulaSchema = void 0;
 const zod_1 = require("zod");
+const database_1 = require("@/config/database");
+let TIPO_AULA_MAP = {};
+let ESTADO_AULA_MAP = {};
+(async () => {
+    try {
+        const tipos = await database_1.prisma.tipoAula.findMany({ where: { activo: true }, select: { id: true, codigo: true } });
+        const estados = await database_1.prisma.estadoAula.findMany({ where: { activo: true }, select: { id: true, codigo: true } });
+        TIPO_AULA_MAP = tipos.reduce((acc, t) => ({ ...acc, [t.codigo.toLowerCase()]: t.id }), {});
+        ESTADO_AULA_MAP = estados.reduce((acc, e) => ({ ...acc, [e.codigo.toLowerCase()]: e.id }), {});
+    }
+    catch (error) {
+        console.warn('No se pudieron cargar los mapas de tipos/estados de aula:', error);
+    }
+})();
 const aulaBaseSchema = zod_1.z.object({
     nombre: zod_1.z.string().min(1, 'Nombre es requerido').max(100),
     capacidad: zod_1.z.preprocess((val) => {
@@ -44,12 +58,56 @@ const aulaBaseSchema = zod_1.z.object({
         observaciones: zod_1.z.string().max(500).optional()
     })).optional()
 });
-exports.createAulaSchema = zod_1.z.object({
+exports.createAulaSchema = zod_1.z.preprocess((data) => {
+    if (!data)
+        return data;
+    if (data.equipamientoIds && Array.isArray(data.equipamientoIds)) {
+        data.equipamientos = data.equipamientoIds.map((id) => ({
+            equipamientoId: id,
+            cantidad: 1
+        }));
+    }
+    if (data.tipo && typeof data.tipo === 'string') {
+        const tipoId = TIPO_AULA_MAP[data.tipo.toLowerCase()];
+        if (tipoId) {
+            data.tipoAulaId = tipoId;
+        }
+    }
+    if (data.estado && typeof data.estado === 'string') {
+        const estadoId = ESTADO_AULA_MAP[data.estado.toLowerCase()];
+        if (estadoId) {
+            data.estadoAulaId = estadoId;
+        }
+    }
+    return data;
+}, zod_1.z.object({
     ...aulaBaseSchema.shape
-});
-exports.updateAulaSchema = zod_1.z.object({
+}));
+exports.updateAulaSchema = zod_1.z.preprocess((data) => {
+    if (!data)
+        return data;
+    if (data.equipamientoIds && Array.isArray(data.equipamientoIds)) {
+        data.equipamientos = data.equipamientoIds.map((id) => ({
+            equipamientoId: id,
+            cantidad: 1
+        }));
+    }
+    if (data.tipo && typeof data.tipo === 'string') {
+        const tipoId = TIPO_AULA_MAP[data.tipo.toLowerCase()];
+        if (tipoId) {
+            data.tipoAulaId = tipoId;
+        }
+    }
+    if (data.estado && typeof data.estado === 'string') {
+        const estadoId = ESTADO_AULA_MAP[data.estado.toLowerCase()];
+        if (estadoId) {
+            data.estadoAulaId = estadoId;
+        }
+    }
+    return data;
+}, zod_1.z.object({
     ...aulaBaseSchema.partial().shape
-});
+}));
 exports.aulaQuerySchema = zod_1.z.object({
     activa: zod_1.z.preprocess((val) => {
         if (typeof val === 'string') {

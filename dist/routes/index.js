@@ -25,6 +25,8 @@ const estadosActividad_routes_1 = __importDefault(require("./estadosActividad.ro
 const diasSemana_routes_1 = __importDefault(require("./diasSemana.routes"));
 const rolesDocentes_routes_1 = __importDefault(require("./rolesDocentes.routes"));
 const categorias_equipamiento_routes_1 = __importDefault(require("./categorias-equipamiento.routes"));
+const tipos_aula_routes_1 = __importDefault(require("./tipos-aula.routes"));
+const estados_aula_routes_1 = __importDefault(require("./estados-aula.routes"));
 const router = (0, express_1.Router)();
 router.use('/catalogos/tipos-actividades', tiposActividad_routes_1.default);
 router.use('/catalogos/categorias-actividades', categoriasActividad_routes_1.default);
@@ -33,6 +35,8 @@ router.use('/catalogos/estados-reservas', estado_reserva_routes_1.default);
 router.use('/catalogos/dias-semana', diasSemana_routes_1.default);
 router.use('/catalogos/roles-docentes', rolesDocentes_routes_1.default);
 router.use('/catalogos/categorias-equipamiento', categorias_equipamiento_routes_1.default);
+router.use('/catalogos/tipos-aulas', tipos_aula_routes_1.default);
+router.use('/catalogos/estados-aulas', estados_aula_routes_1.default);
 router.use('/actividades/tipos-actividad', tiposActividad_routes_1.default);
 router.use('/actividades/categorias-actividad', categoriasActividad_routes_1.default);
 router.use('/personas', persona_routes_1.default);

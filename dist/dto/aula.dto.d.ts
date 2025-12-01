@@ -1,5 +1,5 @@
 import { z } from 'zod';
-export declare const createAulaSchema: z.ZodObject<{
+export declare const createAulaSchema: z.ZodEffects<z.ZodObject<{
     nombre: z.ZodString;
     capacidad: z.ZodEffects<z.ZodNumber, number, unknown>;
     ubicacion: z.ZodOptional<z.ZodString>;
@@ -49,8 +49,22 @@ export declare const createAulaSchema: z.ZodObject<{
         observaciones?: string | undefined;
         cantidad?: number | undefined;
     }[] | undefined;
-}>;
-export declare const updateAulaSchema: z.ZodObject<{
+}>, {
+    nombre: string;
+    activa: boolean;
+    capacidad: number;
+    observaciones?: string | undefined;
+    descripcion?: string | undefined;
+    ubicacion?: string | undefined;
+    tipoAulaId?: number | undefined;
+    estadoAulaId?: number | undefined;
+    equipamientos?: {
+        equipamientoId: number;
+        cantidad: number;
+        observaciones?: string | undefined;
+    }[] | undefined;
+}, unknown>;
+export declare const updateAulaSchema: z.ZodEffects<z.ZodObject<{
     nombre: z.ZodOptional<z.ZodString>;
     capacidad: z.ZodOptional<z.ZodEffects<z.ZodNumber, number, unknown>>;
     ubicacion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
@@ -100,7 +114,21 @@ export declare const updateAulaSchema: z.ZodObject<{
         observaciones?: string | undefined;
         cantidad?: number | undefined;
     }[] | undefined;
-}>;
+}>, {
+    observaciones?: string | undefined;
+    nombre?: string | undefined;
+    descripcion?: string | undefined;
+    activa?: boolean | undefined;
+    capacidad?: number | undefined;
+    ubicacion?: string | undefined;
+    tipoAulaId?: number | undefined;
+    estadoAulaId?: number | undefined;
+    equipamientos?: {
+        equipamientoId: number;
+        cantidad: number;
+        observaciones?: string | undefined;
+    }[] | undefined;
+}, unknown>;
 export declare const aulaQuerySchema: z.ZodObject<{
     activa: z.ZodEffects<z.ZodOptional<z.ZodBoolean>, boolean | undefined, unknown>;
     tipoAulaId: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;

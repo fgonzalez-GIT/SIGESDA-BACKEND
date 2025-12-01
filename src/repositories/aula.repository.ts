@@ -179,19 +179,60 @@ export class AulaRepository {
   }
 
   async update(id: string, data: Partial<CreateAulaDto>): Promise<Aula> {
+    const aulaId = parseInt(id);
+    const { equipamientos, ...basicFields } = data;
+
+    // Preparar datos básicos para actualizar
     const updateData: any = {};
+    if (basicFields.nombre !== undefined) updateData.nombre = basicFields.nombre;
+    if (basicFields.capacidad !== undefined) updateData.capacidad = basicFields.capacidad;
+    if (basicFields.ubicacion !== undefined) updateData.ubicacion = basicFields.ubicacion;
+    if (basicFields.tipoAulaId !== undefined) updateData.tipoAulaId = basicFields.tipoAulaId;
+    if (basicFields.estadoAulaId !== undefined) updateData.estadoAulaId = basicFields.estadoAulaId;
+    if (basicFields.descripcion !== undefined) updateData.descripcion = basicFields.descripcion;
+    if (basicFields.observaciones !== undefined) updateData.observaciones = basicFields.observaciones;
+    if (basicFields.activa !== undefined) updateData.activa = basicFields.activa;
 
-    if (data.nombre !== undefined) updateData.nombre = data.nombre;
-    if (data.capacidad !== undefined) updateData.capacidad = data.capacidad;
-    if (data.ubicacion !== undefined) updateData.ubicacion = data.ubicacion;
-    if (data.tipoAulaId !== undefined) updateData.tipoAulaId = data.tipoAulaId;
-    if (data.estadoAulaId !== undefined) updateData.estadoAulaId = data.estadoAulaId;
-    if (data.descripcion !== undefined) updateData.descripcion = data.descripcion;
-    if (data.observaciones !== undefined) updateData.observaciones = data.observaciones;
-    if (data.activa !== undefined) updateData.activa = data.activa;
+    // Si se envían equipamientos, usar transacción para sincronizar
+    if (equipamientos !== undefined) {
+      return this.prisma.$transaction(async (tx) => {
+        // 1. Eliminar todos los equipamientos actuales del aula
+        await tx.aulaEquipamiento.deleteMany({
+          where: { aulaId }
+        });
 
+        // 2. Actualizar aula con nuevos equipamientos
+        return tx.aula.update({
+          where: { id: aulaId },
+          data: {
+            ...updateData,
+            // Crear nuevos equipamientos si hay
+            ...(equipamientos.length > 0 && {
+              aulas_equipamientos: {
+                create: equipamientos.map(eq => ({
+                  equipamientoId: eq.equipamientoId,
+                  cantidad: eq.cantidad || 1,
+                  observaciones: eq.observaciones
+                }))
+              }
+            })
+          },
+          include: {
+            tipoAula: true,
+            estadoAula: true,
+            aulas_equipamientos: {
+              include: {
+                equipamiento: true
+              }
+            }
+          }
+        });
+      });
+    }
+
+    // Si NO se envían equipamientos, solo actualizar campos básicos
     return this.prisma.aula.update({
-      where: { id: parseInt(id) },
+      where: { id: aulaId },
       data: updateData,
       include: {
         tipoAula: true,
