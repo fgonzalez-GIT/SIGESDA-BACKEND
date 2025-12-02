@@ -148,4 +148,20 @@ export class EquipamientoController {
       next(error);
     }
   }
+
+  async getDisponibilidad(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { id } = req.params;
+      const disponibilidad = await this.equipamientoService.getDisponibilidadEquipamiento(parseInt(id));
+
+      const response: ApiResponse = {
+        success: true,
+        data: disponibilidad
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

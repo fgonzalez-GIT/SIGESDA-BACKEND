@@ -121,7 +121,7 @@ export class ReservaAulaRepository {
         skip,
         take: query.limit,
         include: {
-          aula: {
+          aulas: {
             select: {
               id: true,
               nombre: true,
@@ -130,7 +130,7 @@ export class ReservaAulaRepository {
               activa: true
             }
           },
-          actividad: {
+          actividades: {
             select: {
               id: true,
               nombre: true,
@@ -138,7 +138,7 @@ export class ReservaAulaRepository {
               activa: true
             }
           },
-          docente: {
+          personas: {
             select: {
               id: true,
               nombre: true,

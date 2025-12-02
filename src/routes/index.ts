@@ -22,6 +22,7 @@ import rolesDocentesRoutes from './rolesDocentes.routes';
 import categoriasEquipamientoRoutes from './categorias-equipamiento.routes';
 import tiposAulaRoutes from './tipos-aula.routes';
 import estadosAulaRoutes from './estados-aula.routes';
+import estadosEquipamientoRoutes from './estados-equipamiento.routes';
 
 const router = Router();
 
@@ -36,6 +37,7 @@ router.use('/catalogos/estados-reservas', estadoReservaRoutes);
 router.use('/catalogos/dias-semana', diasSemanaRoutes);
 router.use('/catalogos/roles-docentes', rolesDocentesRoutes);
 router.use('/catalogos/categorias-equipamiento', categoriasEquipamientoRoutes);
+router.use('/catalogos/estados-equipamientos', estadosEquipamientoRoutes);
 router.use('/catalogos/tipos-aulas', tiposAulaRoutes);
 router.use('/catalogos/estados-aulas', estadosAulaRoutes);
 

@@ -21,5 +21,6 @@ router.delete('/:id', equipamientoController.deleteEquipamiento.bind(equipamient
 // Rutas específicas por ID
 router.post('/:id/reactivar', equipamientoController.reactivateEquipamiento.bind(equipamientoController));
 router.get('/:id/estadisticas', equipamientoController.getEquipamientoStats.bind(equipamientoController));
+router.get('/:id/disponibilidad', equipamientoController.getDisponibilidad.bind(equipamientoController));
 
 export default router;
