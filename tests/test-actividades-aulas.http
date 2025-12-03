@@ -1,0 +1,244 @@
+###############################################################################
+# TEST: SISTEMA DE ASIGNACIÓN DE AULAS A ACTIVIDADES
+# Archivo: tests/test-actividades-aulas.http
+#
+# INSTRUCCIONES:
+# 1. Asegúrate de que el servidor esté corriendo en http://localhost:3001
+# 2. Ejecuta las requests en orden para validar el flujo completo
+# 3. Ajusta los IDs según tu base de datos
+###############################################################################
+
+@baseUrl = http://localhost:3001/api
+@actividadId = 1
+@aulaId = 1
+@aulaId2 = 2
+
+###############################################################################
+# 1. VERIFICAR DISPONIBILIDAD
+###############################################################################
+
+### 1.1 Verificar disponibilidad de aula para actividad
+POST {{baseUrl}}/actividades/{{actividadId}}/aulas/verificar-disponibilidad
+Content-Type: application/json
+
+{
+  "aulaId": {{aulaId}}
+}
+
+### 1.2 Obtener sugerencias de aulas disponibles para actividad
+GET {{baseUrl}}/actividades/{{actividadId}}/aulas/sugerencias
+
+### 1.3 Obtener sugerencias con filtros
+GET {{baseUrl}}/actividades/{{actividadId}}/aulas/sugerencias?capacidadMinima=20&tipoAulaId=1
+
+###############################################################################
+# 2. ASIGNAR AULAS
+###############################################################################
+
+### 2.1 Asignar aula a actividad (caso exitoso)
+POST {{baseUrl}}/actividades/{{actividadId}}/aulas
+Content-Type: application/json
+
+{
+  "aulaId": {{aulaId}},
+  "prioridad": 1,
+  "observaciones": "Aula principal para la actividad"
+}
+
+### 2.2 Intentar asignar aula ya asignada (debe fallar)
+POST {{baseUrl}}/actividades/{{actividadId}}/aulas
+Content-Type: application/json
+
+{
+  "aulaId": {{aulaId}},
+  "prioridad": 1
+}
+
+### 2.3 Asignar segunda aula con menor prioridad
+POST {{baseUrl}}/actividades/{{actividadId}}/aulas
+Content-Type: application/json
+
+{
+  "aulaId": {{aulaId2}},
+  "prioridad": 2,
+  "observaciones": "Aula alternativa"
+}
+
+### 2.4 Asignar múltiples aulas de una vez
+POST {{baseUrl}}/actividades/{{actividadId}}/aulas/multiple
+Content-Type: application/json
+
+{
+  "aulas": [
+    {
+      "aulaId": 3,
+      "prioridad": 3,
+      "observaciones": "Aula para prácticas"
+    },
+    {
+      "aulaId": 4,
+      "prioridad": 4,
+      "observaciones": "Aula de respaldo"
+    }
+  ]
+}
+
+###############################################################################
+# 3. CONSULTAR ASIGNACIONES
+###############################################################################
+
+### 3.1 Listar todas las asignaciones
+GET {{baseUrl}}/actividades-aulas
+
+### 3.2 Listar asignaciones con filtros
+GET {{baseUrl}}/actividades-aulas?activa=true&page=1&limit=10
+
+### 3.3 Obtener asignación específica por ID
+GET {{baseUrl}}/actividades-aulas/1
+
+### 3.4 Obtener todas las aulas de una actividad
+GET {{baseUrl}}/actividades/{{actividadId}}/aulas
+
+### 3.5 Obtener todas las aulas de una actividad (incluyendo inactivas)
+GET {{baseUrl}}/actividades/{{actividadId}}/aulas?soloActivas=false
+
+### 3.6 Obtener todas las actividades de un aula
+GET {{baseUrl}}/aulas/{{aulaId}}/actividades
+
+### 3.7 Obtener ocupación de un aula
+GET {{baseUrl}}/aulas/{{aulaId}}/ocupacion
+
+###############################################################################
+# 4. ACTUALIZAR ASIGNACIONES
+###############################################################################
+
+### 4.1 Actualizar prioridad de asignación
+PUT {{baseUrl}}/actividades-aulas/1
+Content-Type: application/json
+
+{
+  "prioridad": 1,
+  "observaciones": "Actualizada a prioridad 1"
+}
+
+### 4.2 Cambiar aula de actividad
+PUT {{baseUrl}}/actividades/{{actividadId}}/aulas/{{aulaId}}/cambiar
+Content-Type: application/json
+
+{
+  "nuevaAulaId": {{aulaId2}},
+  "observaciones": "Cambio por mantenimiento del aula anterior"
+}
+
+###############################################################################
+# 5. DESASIGNAR Y REACTIVAR
+###############################################################################
+
+### 5.1 Desasignar aula de actividad (soft delete)
+POST {{baseUrl}}/actividades-aulas/1/desasignar
+Content-Type: application/json
+
+{
+  "fechaDesasignacion": "2025-12-31T23:59:59Z",
+  "observaciones": "Fin de ciclo lectivo"
+}
+
+### 5.2 Reactivar asignación desactivada
+POST {{baseUrl}}/actividades-aulas/1/reactivar
+
+### 5.3 Eliminar permanentemente asignación
+DELETE {{baseUrl}}/actividades-aulas/1
+
+###############################################################################
+# 6. CASOS DE ERROR - VALIDACIONES
+###############################################################################
+
+### 6.1 Intentar asignar actividad sin horarios
+POST {{baseUrl}}/actividades/999/aulas
+Content-Type: application/json
+
+{
+  "aulaId": {{aulaId}}
+}
+
+### 6.2 Intentar asignar aula inactiva
+POST {{baseUrl}}/actividades/{{actividadId}}/aulas
+Content-Type: application/json
+
+{
+  "aulaId": 999
+}
+
+### 6.3 Intentar asignar con capacidad insuficiente
+# (Requiere que la actividad tenga más participantes que la capacidad del aula)
+POST {{baseUrl}}/actividades/{{actividadId}}/aulas
+Content-Type: application/json
+
+{
+  "aulaId": 10
+}
+
+###############################################################################
+# 7. ESCENARIOS COMPLEJOS
+###############################################################################
+
+### 7.1 Flujo completo: Verificar → Asignar → Consultar → Cambiar → Desasignar
+# Paso 1: Verificar disponibilidad
+POST {{baseUrl}}/actividades/{{actividadId}}/aulas/verificar-disponibilidad
+Content-Type: application/json
+
+{
+  "aulaId": {{aulaId}}
+}
+
+# Paso 2: Si está disponible, asignar
+POST {{baseUrl}}/actividades/{{actividadId}}/aulas
+Content-Type: application/json
+
+{
+  "aulaId": {{aulaId}},
+  "prioridad": 1
+}
+
+# Paso 3: Consultar asignación
+GET {{baseUrl}}/actividades/{{actividadId}}/aulas
+
+# Paso 4: Cambiar a otra aula
+PUT {{baseUrl}}/actividades/{{actividadId}}/aulas/{{aulaId}}/cambiar
+Content-Type: application/json
+
+{
+  "nuevaAulaId": {{aulaId2}}
+}
+
+# Paso 5: Desasignar cuando ya no se necesite
+POST {{baseUrl}}/actividades-aulas/1/desasignar
+Content-Type: application/json
+
+{
+  "observaciones": "Actividad finalizada"
+}
+
+###############################################################################
+# 8. REPORTES Y ESTADÍSTICAS
+###############################################################################
+
+### 8.1 Listar todas las aulas ocupadas
+GET {{baseUrl}}/actividades-aulas?activa=true
+
+### 8.2 Aulas de actividades de tipo específico
+GET {{baseUrl}}/actividades-aulas?actividadId={{actividadId}}
+
+### 8.3 Actividades en aula específica
+GET {{baseUrl}}/aulas/{{aulaId}}/actividades
+
+### 8.4 Resumen de ocupación de aula
+GET {{baseUrl}}/aulas/{{aulaId}}/ocupacion
+
+###############################################################################
+# NOTAS:
+# - Asegúrate de tener actividades con horarios definidos antes de asignar aulas
+# - Los conflictos horarios se detectan automáticamente
+# - Las validaciones de capacidad se ejecutan en cada asignación
+# - Usa el endpoint de sugerencias para encontrar aulas disponibles
+###############################################################################

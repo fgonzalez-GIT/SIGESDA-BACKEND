@@ -31,6 +31,7 @@ model actividades {
   reserva_aulas             reserva_aulas[]
   secciones_actividades     secciones_actividades[]
   docentes_actividades      docentes_actividades[]
+  actividades_aulas         actividades_aulas[]
 
   @@index([tipoActividadId])
   @@index([categoriaId])
@@ -151,6 +152,7 @@ model Aula {
   aulas_equipamientos      AulaEquipamiento[]
   reserva_aulas            reserva_aulas[]
   reservas_aulas_secciones reservas_aulas_secciones[]
+  actividades_aulas        actividades_aulas[]
 
   @@index([tipoAulaId])
   @@index([estadoAulaId])
@@ -388,6 +390,26 @@ model docentes_actividades {
   @@index([docenteId])
   @@index([rolDocenteId])
   @@index([activo])
+}
+
+model actividades_aulas {
+  id                 Int         @id @default(autoincrement())
+  actividadId        Int         @map("actividad_id")
+  aulaId             Int         @map("aula_id")
+  fechaAsignacion    DateTime    @default(now()) @map("fecha_asignacion")
+  fechaDesasignacion DateTime?   @map("fecha_desasignacion")
+  activa             Boolean     @default(true)
+  prioridad          Int?        @default(1)
+  observaciones      String?     @db.Text
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+  actividades        actividades @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  aulas              Aula        @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+
+  @@unique([actividadId, aulaId], name: "unique_actividad_aula")
+  @@index([actividadId])
+  @@index([aulaId])
+  @@index([activa])
 }
 
 model MedioPago {

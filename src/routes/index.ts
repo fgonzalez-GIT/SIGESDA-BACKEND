@@ -23,6 +23,7 @@ import categoriasEquipamientoRoutes from './categorias-equipamiento.routes';
 import tiposAulaRoutes from './tipos-aula.routes';
 import estadosAulaRoutes from './estados-aula.routes';
 import estadosEquipamientoRoutes from './estados-equipamiento.routes';
+import actividadAulaRoutes from './actividad-aula.routes';
 
 const router = Router();
 
@@ -48,6 +49,8 @@ router.use('/actividades/categorias-actividad', categoriasActividadRoutes);
 // Rutas generales
 router.use('/personas', personaRoutes);
 router.use('/', personaTipoRoutes); // Rutas de persona-tipo (incluye personas/:id/tipos y catalogos)
+router.use('/actividades-aulas', actividadAulaRoutes); // IMPORTANTE: Antes de /actividades para evitar conflictos
+router.use('/', actividadAulaRoutes); // Monta rutas con prefijos /actividades/:id/aulas y /aulas/:id/actividades
 router.use('/actividades', actividadRoutes);
 router.use('/aulas', aulaRoutes);
 router.use('/equipamientos', equipamientoRoutes);
