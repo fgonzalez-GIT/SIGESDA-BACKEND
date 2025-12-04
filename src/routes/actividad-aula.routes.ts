@@ -15,7 +15,7 @@ const actividadAulaController = new ActividadAulaController();
  * @query actividadId, aulaId, activa, incluirRelaciones, page, limit
  */
 router.get(
-  '/',
+  '/actividades-aulas',
   actividadAulaController.findAll.bind(actividadAulaController)
 );
 
@@ -25,7 +25,7 @@ router.get(
  * @param id - ID de la asignación
  */
 router.get(
-  '/:id',
+  '/actividades-aulas/:id',
   actividadAulaController.findById.bind(actividadAulaController)
 );
 
@@ -36,7 +36,7 @@ router.get(
  * @body prioridad, fechaDesasignacion, activa, observaciones
  */
 router.put(
-  '/:id',
+  '/actividades-aulas/:id',
   actividadAulaController.update.bind(actividadAulaController)
 );
 
@@ -46,7 +46,7 @@ router.put(
  * @param id - ID de la asignación
  */
 router.delete(
-  '/:id',
+  '/actividades-aulas/:id',
   actividadAulaController.delete.bind(actividadAulaController)
 );
 
@@ -57,7 +57,7 @@ router.delete(
  * @body fechaDesasignacion, observaciones
  */
 router.post(
-  '/:id/desasignar',
+  '/actividades-aulas/:id/desasignar',
   actividadAulaController.desasignarAula.bind(actividadAulaController)
 );
 
@@ -67,7 +67,7 @@ router.post(
  * @param id - ID de la asignación
  */
 router.post(
-  '/:id/reactivar',
+  '/actividades-aulas/:id/reactivar',
   actividadAulaController.reactivarAsignacion.bind(actividadAulaController)
 );
 

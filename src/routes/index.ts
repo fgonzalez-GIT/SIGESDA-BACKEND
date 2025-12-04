@@ -49,8 +49,7 @@ router.use('/actividades/categorias-actividad', categoriasActividadRoutes);
 // Rutas generales
 router.use('/personas', personaRoutes);
 router.use('/', personaTipoRoutes); // Rutas de persona-tipo (incluye personas/:id/tipos y catalogos)
-router.use('/actividades-aulas', actividadAulaRoutes); // IMPORTANTE: Antes de /actividades para evitar conflictos
-router.use('/', actividadAulaRoutes); // Monta rutas con prefijos /actividades/:id/aulas y /aulas/:id/actividades
+router.use('/', actividadAulaRoutes); // Rutas con paths completos (/actividades-aulas, /actividades/:id/aulas, /aulas/:id/actividades)
 router.use('/actividades', actividadRoutes);
 router.use('/aulas', aulaRoutes);
 router.use('/equipamientos', equipamientoRoutes);

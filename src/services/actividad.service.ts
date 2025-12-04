@@ -734,8 +734,9 @@ export class ActividadService {
             tipo: (act as any).tipos_actividades?.nombre || act.tipo,
             horarios: (act as any).horarios_actividades?.map((h: any) => ({
               horaInicio: typeof h.hora_inicio === 'string' ? h.hora_inicio : h.horaInicio,
-              horaFin: ActividadRepository.formatTime(h.hora_fin),
-              aula: h.reservas_aulas_actividades?.[0]?.aulas?.nombre
+              horaFin: ActividadRepository.formatTime(h.hora_fin)
+              // Campo 'aula' eliminado - la relación reservas_aulas_actividades no existe en horarios_actividades
+              // Si necesitas el aula, usa (act as any).actividades_aulas en su lugar
             })),
             docentes: (act as any).docentes_actividades?.map((d: any) => ({
               nombre: `${d.personas.nombre} ${d.personas.apellido}`,

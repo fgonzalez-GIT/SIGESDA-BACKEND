@@ -106,7 +106,22 @@ export class ActividadAulaController {
   async findById(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID inválido'
+        });
+      }
+
       const asignacion = await this.actividadAulaService.findById(id);
+
+      if (!asignacion) {
+        return res.status(404).json({
+          success: false,
+          error: 'Asignación no encontrada'
+        });
+      }
 
       return res.json({
         success: true,

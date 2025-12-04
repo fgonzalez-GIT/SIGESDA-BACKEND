@@ -37,6 +37,7 @@ router.get('/codigo/:codigo', actividadController.getActividadByCodigo.bind(acti
 // ==================== GESTIÓN DE HORARIOS (INDEPENDIENTES) ====================
 
 router.patch('/horarios/:horarioId', actividadController.actualizarHorario.bind(actividadController));
+router.put('/horarios/:horarioId', actividadController.actualizarHorario.bind(actividadController)); // Alias para PATCH
 router.delete('/horarios/:horarioId', actividadController.eliminarHorario.bind(actividadController));
 
 // ==================== CRUD PRINCIPAL ====================
