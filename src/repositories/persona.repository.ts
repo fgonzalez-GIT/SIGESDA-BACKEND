@@ -229,6 +229,18 @@ export class PersonaRepository {
     return this.prisma.persona.findUnique({
       where: { id },
       include: includeRelations ? {
+        tipos: {
+          where: { activo: true },
+          include: {
+            tipoPersona: true,
+            categoria: true,
+            especialidad: true,
+            razonSocial: true
+          }
+        },
+        contactos: {
+          where: { activo: true }
+        },
         participacion_actividades: {
           include: {
             actividades: true
