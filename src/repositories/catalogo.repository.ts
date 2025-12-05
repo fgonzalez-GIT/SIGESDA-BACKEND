@@ -198,12 +198,12 @@ export class CatalogoRepository {
   /**
    * Listar todas las especialidades con información de uso
    */
-  async getAllEspecialidadesWithStats(): Promise<Array<EspecialidadDocente & { _count: { personasTipo: number } }>> {
+  async getAllEspecialidadesWithStats(): Promise<Array<EspecialidadDocente & { _count: { personaTipos: number } }>> {
     return this.prisma.especialidadDocente.findMany({
       include: {
         _count: {
           select: {
-            personasTipo: {
+            personaTipos: {
               where: {
                 activo: true,
                 fechaDesasignacion: null,
