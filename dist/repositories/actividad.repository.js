@@ -424,12 +424,7 @@ class ActividadRepository {
         return this.prisma.horarios_actividades.findMany({
             where: { actividadId },
             include: {
-                diasSemana: true,
-                reservas_aulas_actividades: {
-                    include: {
-                        aulas: true
-                    }
-                }
+                diasSemana: true
             },
             orderBy: [
                 { diaSemanaId: 'asc' },

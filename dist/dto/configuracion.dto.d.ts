@@ -18,8 +18,8 @@ export declare const createConfiguracionSchema: z.ZodEffects<z.ZodObject<{
 }, {
     valor: string;
     clave: string;
-    tipo?: TipoConfiguracion | undefined;
     descripcion?: string | undefined;
+    tipo?: TipoConfiguracion | undefined;
 }>, {
     valor: string;
     tipo: TipoConfiguracion;
@@ -28,8 +28,8 @@ export declare const createConfiguracionSchema: z.ZodEffects<z.ZodObject<{
 }, {
     valor: string;
     clave: string;
-    tipo?: TipoConfiguracion | undefined;
     descripcion?: string | undefined;
+    tipo?: TipoConfiguracion | undefined;
 }>;
 export declare const updateConfiguracionSchema: z.ZodEffects<z.ZodObject<{
     valor: z.ZodOptional<z.ZodString>;
@@ -37,20 +37,20 @@ export declare const updateConfiguracionSchema: z.ZodEffects<z.ZodObject<{
     tipo: z.ZodOptional<z.ZodNativeEnum<typeof TipoConfiguracion>>;
 }, "strip", z.ZodTypeAny, {
     valor?: string | undefined;
-    tipo?: TipoConfiguracion | undefined;
     descripcion?: string | undefined;
+    tipo?: TipoConfiguracion | undefined;
 }, {
     valor?: string | undefined;
-    tipo?: TipoConfiguracion | undefined;
     descripcion?: string | undefined;
+    tipo?: TipoConfiguracion | undefined;
 }>, {
     valor?: string | undefined;
-    tipo?: TipoConfiguracion | undefined;
     descripcion?: string | undefined;
+    tipo?: TipoConfiguracion | undefined;
 }, {
     valor?: string | undefined;
-    tipo?: TipoConfiguracion | undefined;
     descripcion?: string | undefined;
+    tipo?: TipoConfiguracion | undefined;
 }>;
 export declare const configuracionQuerySchema: z.ZodObject<{
     tipo: z.ZodOptional<z.ZodNativeEnum<typeof TipoConfiguracion>>;
@@ -92,8 +92,8 @@ export declare const importarConfiguracionesSchema: z.ZodObject<{
     }, {
         valor: string;
         clave: string;
-        tipo?: TipoConfiguracion | undefined;
         descripcion?: string | undefined;
+        tipo?: TipoConfiguracion | undefined;
     }>, "many">;
     sobrescribir: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
@@ -108,8 +108,8 @@ export declare const importarConfiguracionesSchema: z.ZodObject<{
     configuraciones: {
         valor: string;
         clave: string;
-        tipo?: TipoConfiguracion | undefined;
         descripcion?: string | undefined;
+        tipo?: TipoConfiguracion | undefined;
     }[];
     sobrescribir?: boolean | undefined;
 }>;

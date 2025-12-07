@@ -9,13 +9,13 @@ export declare class EstadoReservaService {
         message: string;
         data: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     }>;
     findAll(query: QueryEstadosReservasDto): Promise<{
@@ -26,13 +26,13 @@ export declare class EstadoReservaService {
             };
         } & {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         })[];
         message: string;
     }>;
@@ -44,26 +44,26 @@ export declare class EstadoReservaService {
             };
         } & {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     }>;
     findByCodigo(codigo: string): Promise<{
         success: boolean;
         data: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     }>;
     update(id: number, data: UpdateEstadoReservaDto): Promise<{
@@ -71,13 +71,13 @@ export declare class EstadoReservaService {
         message: string;
         data: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     }>;
     delete(id: number): Promise<{
@@ -85,13 +85,13 @@ export declare class EstadoReservaService {
         message: string;
         data: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     }>;
     reorder(data: ReorderEstadosReservasDto): Promise<{
@@ -103,13 +103,13 @@ export declare class EstadoReservaService {
     }>;
     getEstadoInicial(): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     validateEstado(estadoId: number): Promise<boolean>;
     validateTransicion(estadoActualCodigo: string, nuevoEstadoCodigo: string): Promise<boolean>;

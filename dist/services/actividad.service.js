@@ -429,8 +429,7 @@ class ActividadService {
                     tipo: act.tipos_actividades?.nombre || act.tipo,
                     horarios: act.horarios_actividades?.map((h) => ({
                         horaInicio: typeof h.hora_inicio === 'string' ? h.hora_inicio : h.horaInicio,
-                        horaFin: actividad_repository_1.ActividadRepository.formatTime(h.hora_fin),
-                        aula: h.reservas_aulas_actividades?.[0]?.aulas?.nombre
+                        horaFin: actividad_repository_1.ActividadRepository.formatTime(h.hora_fin)
                     })),
                     docentes: act.docentes_actividades?.map((d) => ({
                         nombre: `${d.personas.nombre} ${d.personas.apellido}`,

@@ -10,5 +10,6 @@ export declare class EquipamientoController {
     deleteEquipamiento(req: Request, res: Response, next: NextFunction): Promise<void>;
     reactivateEquipamiento(req: Request, res: Response, next: NextFunction): Promise<void>;
     getEquipamientoStats(req: Request, res: Response, next: NextFunction): Promise<void>;
+    getDisponibilidad(req: Request, res: Response, next: NextFunction): Promise<void>;
 }
 //# sourceMappingURL=equipamiento.controller.d.ts.map

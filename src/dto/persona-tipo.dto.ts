@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { TipoContacto } from '@prisma/client';
 
 // ======================================================================
 // DTOs para PersonaTipo
@@ -79,35 +78,11 @@ export const updatePersonaTipoSchema = z.object({
 });
 
 // ======================================================================
-// DTOs para ContactoPersona
-// ======================================================================
-
-export const createContactoPersonaSchema = z.object({
-  tipoContacto: z.nativeEnum(TipoContacto, {
-    errorMap: () => ({ message: 'Tipo de contacto inválido' })
-  }),
-  valor: z.string().min(1, 'El valor del contacto es requerido').max(200),
-  principal: z.boolean().default(false),
-  observaciones: z.string().max(500).optional(),
-  activo: z.boolean().default(true)
-});
-
-export const updateContactoPersonaSchema = z.object({
-  tipoContacto: z.nativeEnum(TipoContacto).optional(),
-  valor: z.string().min(1).max(200).optional(),
-  principal: z.boolean().optional(),
-  observaciones: z.string().max(500).optional(),
-  activo: z.boolean().optional()
-});
-
-// ======================================================================
 // Tipos TypeScript
 // ======================================================================
 
 export type CreatePersonaTipoDto = z.infer<typeof createPersonaTipoSchema>;
 export type UpdatePersonaTipoDto = z.infer<typeof updatePersonaTipoSchema>;
-export type CreateContactoPersonaDto = z.infer<typeof createContactoPersonaSchema>;
-export type UpdateContactoPersonaDto = z.infer<typeof updateContactoPersonaSchema>;
 
 // ======================================================================
 // Tipos de datos por tipo de persona (para validación)

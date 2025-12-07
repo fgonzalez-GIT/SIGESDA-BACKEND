@@ -66,7 +66,7 @@ class PersonaRepository {
                 },
                 contactos: {
                     create: contactos.map((contacto) => ({
-                        tipoContacto: contacto.tipoContacto,
+                        tipoContactoId: contacto.tipoContactoId,
                         valor: contacto.valor,
                         principal: contacto.principal ?? false,
                         observaciones: contacto.observaciones,
@@ -167,6 +167,18 @@ class PersonaRepository {
         return this.prisma.persona.findUnique({
             where: { id },
             include: includeRelations ? {
+                tipos: {
+                    where: { activo: true },
+                    include: {
+                        tipoPersona: true,
+                        categoria: true,
+                        especialidad: true,
+                        razonSocial: true
+                    }
+                },
+                contactos: {
+                    where: { activo: true }
+                },
                 participacion_actividades: {
                     include: {
                         actividades: true
@@ -282,7 +294,7 @@ class PersonaRepository {
                     await tx.contactoPersona.createMany({
                         data: contactos.map((contacto) => ({
                             personaId: id,
-                            tipoContacto: contacto.tipoContacto,
+                            tipoContactoId: contacto.tipoContactoId,
                             valor: contacto.valor,
                             principal: contacto.principal ?? false,
                             observaciones: contacto.observaciones,

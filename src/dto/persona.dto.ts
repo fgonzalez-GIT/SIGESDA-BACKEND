@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { TipoContacto } from '@prisma/client';
-import { createPersonaTipoSchema, createContactoPersonaSchema } from './persona-tipo.dto';
+import { createPersonaTipoSchema } from './persona-tipo.dto';
+import { createContactoPersonaSchema } from './contacto.dto';
 
 // ======================================================================
 // SCHEMAS BASE
@@ -387,24 +387,27 @@ export function transformLegacyToNew(legacyData: CreatePersonaLegacyDto): Create
 
   newData.tipos = [tipoData];
 
-  // Migrar email y teléfono a contactos
-  if (baseData.email) {
-    newData.contactos.push({
-      tipoContacto: TipoContacto.EMAIL,
-      valor: baseData.email,
-      principal: true,
-      activo: true
-    });
-  }
-
-  if (baseData.telefono) {
-    newData.contactos.push({
-      tipoContacto: TipoContacto.TELEFONO,
-      valor: baseData.telefono,
-      principal: true,
-      activo: true
-    });
-  }
+  // TODO: Migrar email y teléfono a contactos
+  // NOTA: Después de migración ENUM→Catálogo, estos campos deben usar tipoContactoId
+  // Los IDs deben buscarse dinámicamente del catálogo tipo_contacto_catalogo
+  // Código legacy comentado:
+  // if (baseData.email) {
+  //   newData.contactos.push({
+  //     tipoContactoId: 1, // ID de EMAIL en tipo_contacto_catalogo
+  //     valor: baseData.email,
+  //     principal: true,
+  //     activo: true
+  //   });
+  // }
+  //
+  // if (baseData.telefono) {
+  //   newData.contactos.push({
+  //     tipoContactoId: 2, // ID de TELEFONO en tipo_contacto_catalogo
+  //     valor: baseData.telefono,
+  //     principal: true,
+  //     activo: true
+  //   });
+  // }
 
   return newData;
 }

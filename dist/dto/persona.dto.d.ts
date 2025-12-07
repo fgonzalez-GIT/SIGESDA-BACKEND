@@ -62,26 +62,19 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         razonSocialId?: number | undefined;
     }>, "many">>>;
     contactos: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodObject<{
-        tipoContacto: z.ZodNativeEnum<{
-            EMAIL: "EMAIL";
-            TELEFONO: "TELEFONO";
-            CELULAR: "CELULAR";
-            WHATSAPP: "WHATSAPP";
-            TELEGRAM: "TELEGRAM";
-            OTRO: "OTRO";
-        }>;
+        tipoContactoId: z.ZodNumber;
         valor: z.ZodString;
         principal: z.ZodDefault<z.ZodBoolean>;
         observaciones: z.ZodOptional<z.ZodString>;
         activo: z.ZodDefault<z.ZodBoolean>;
     }, "strip", z.ZodTypeAny, {
         activo: boolean;
-        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        tipoContactoId: number;
         valor: string;
         principal: boolean;
         observaciones?: string | undefined;
     }, {
-        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        tipoContactoId: number;
         valor: string;
         observaciones?: string | undefined;
         activo?: boolean | undefined;
@@ -114,7 +107,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
     }[];
     contactos: {
         activo: boolean;
-        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        tipoContactoId: number;
         valor: string;
         principal: boolean;
         observaciones?: string | undefined;
@@ -147,7 +140,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         razonSocialId?: number | undefined;
     }[] | undefined;
     contactos?: {
-        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        tipoContactoId: number;
         valor: string;
         observaciones?: string | undefined;
         activo?: boolean | undefined;
@@ -172,7 +165,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
     }[];
     contactos: {
         activo: boolean;
-        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        tipoContactoId: number;
         valor: string;
         principal: boolean;
         observaciones?: string | undefined;
@@ -257,26 +250,19 @@ export declare const updatePersonaSchema: z.ZodObject<{
         razonSocialId?: number | undefined;
     }>, "many">>;
     contactos: z.ZodOptional<z.ZodArray<z.ZodObject<{
-        tipoContacto: z.ZodNativeEnum<{
-            EMAIL: "EMAIL";
-            TELEFONO: "TELEFONO";
-            CELULAR: "CELULAR";
-            WHATSAPP: "WHATSAPP";
-            TELEGRAM: "TELEGRAM";
-            OTRO: "OTRO";
-        }>;
+        tipoContactoId: z.ZodNumber;
         valor: z.ZodString;
         principal: z.ZodDefault<z.ZodBoolean>;
         observaciones: z.ZodOptional<z.ZodString>;
         activo: z.ZodDefault<z.ZodBoolean>;
     }, "strip", z.ZodTypeAny, {
         activo: boolean;
-        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        tipoContactoId: number;
         valor: string;
         principal: boolean;
         observaciones?: string | undefined;
     }, {
-        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        tipoContactoId: number;
         valor: string;
         observaciones?: string | undefined;
         activo?: boolean | undefined;
@@ -309,7 +295,7 @@ export declare const updatePersonaSchema: z.ZodObject<{
     }[] | undefined;
     contactos?: {
         activo: boolean;
-        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        tipoContactoId: number;
         valor: string;
         principal: boolean;
         observaciones?: string | undefined;
@@ -340,7 +326,7 @@ export declare const updatePersonaSchema: z.ZodObject<{
         razonSocialId?: number | undefined;
     }[] | undefined;
     contactos?: {
-        tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
+        tipoContactoId: number;
         valor: string;
         observaciones?: string | undefined;
         activo?: boolean | undefined;

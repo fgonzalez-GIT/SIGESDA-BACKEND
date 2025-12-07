@@ -5,13 +5,13 @@ export declare class EstadoReservaRepository {
     constructor(prisma: PrismaClient);
     create(data: CreateEstadoReservaDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     findAll(query: QueryEstadosReservasDto): Promise<({
         _count: {
@@ -19,13 +19,13 @@ export declare class EstadoReservaRepository {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     })[]>;
     findById(id: number): Promise<{
         _count: {
@@ -33,43 +33,43 @@ export declare class EstadoReservaRepository {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     findByCodigo(codigo: string): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     update(id: number, data: UpdateEstadoReservaDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     delete(id: number): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     reorder(data: ReorderEstadosReservasDto): Promise<{
         message: string;

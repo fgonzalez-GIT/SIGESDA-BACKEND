@@ -20,6 +20,7 @@ router.get('/reportes/por-tipo', actividadController.getResumenPorTipo.bind(acti
 router.get('/reportes/horario-semanal', actividadController.getHorarioSemanal.bind(actividadController));
 router.get('/codigo/:codigo', actividadController.getActividadByCodigo.bind(actividadController));
 router.patch('/horarios/:horarioId', actividadController.actualizarHorario.bind(actividadController));
+router.put('/horarios/:horarioId', actividadController.actualizarHorario.bind(actividadController));
 router.delete('/horarios/:horarioId', actividadController.eliminarHorario.bind(actividadController));
 router.post('/', actividadController.createActividad.bind(actividadController));
 router.get('/', actividadController.getActividades.bind(actividadController));

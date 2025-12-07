@@ -128,7 +128,7 @@ class CatalogoRepository {
             include: {
                 _count: {
                     select: {
-                        personasTipo: {
+                        personaTipos: {
                             where: {
                                 activo: true,
                                 fechaDesasignacion: null,

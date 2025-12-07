@@ -7,13 +7,13 @@ export declare const createTipoAulaSchema: z.ZodObject<{
     orden: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | null | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
     orden?: number | undefined;
@@ -26,15 +26,15 @@ export declare const updateTipoAulaSchema: z.ZodObject<{
     orden: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }>;
 export type CreateTipoAulaDto = z.infer<typeof createTipoAulaSchema>;
@@ -47,13 +47,13 @@ export declare const createEstadoAulaSchema: z.ZodObject<{
     orden: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | null | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
     orden?: number | undefined;
@@ -66,15 +66,15 @@ export declare const updateEstadoAulaSchema: z.ZodObject<{
     orden: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }>;
 export type CreateEstadoAulaDto = z.infer<typeof createEstadoAulaSchema>;
@@ -102,12 +102,12 @@ export declare const queryTiposAulasCatalogoSchema: z.ZodObject<{
     orderBy: z.ZodDefault<z.ZodEnum<["codigo", "nombre", "orden", "created_at"]>>;
     orderDir: z.ZodDefault<z.ZodEnum<["asc", "desc"]>>;
 }, "strip", z.ZodTypeAny, {
-    orderBy: "nombre" | "codigo" | "orden" | "created_at";
+    orderBy: "codigo" | "nombre" | "orden" | "created_at";
     orderDir: "asc" | "desc";
     includeInactive: boolean;
     search?: string | undefined;
 }, {
-    orderBy?: "nombre" | "codigo" | "orden" | "created_at" | undefined;
+    orderBy?: "codigo" | "nombre" | "orden" | "created_at" | undefined;
     search?: string | undefined;
     orderDir?: "asc" | "desc" | undefined;
     includeInactive?: unknown;

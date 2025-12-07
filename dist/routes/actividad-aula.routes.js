@@ -1,0 +1,22 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const actividad_aula_controller_1 = require("@/controllers/actividad-aula.controller");
+const router = (0, express_1.Router)();
+const actividadAulaController = new actividad_aula_controller_1.ActividadAulaController();
+router.get('/actividades-aulas', actividadAulaController.findAll.bind(actividadAulaController));
+router.get('/actividades-aulas/:id', actividadAulaController.findById.bind(actividadAulaController));
+router.put('/actividades-aulas/:id', actividadAulaController.update.bind(actividadAulaController));
+router.delete('/actividades-aulas/:id', actividadAulaController.delete.bind(actividadAulaController));
+router.post('/actividades-aulas/:id/desasignar', actividadAulaController.desasignarAula.bind(actividadAulaController));
+router.post('/actividades-aulas/:id/reactivar', actividadAulaController.reactivarAsignacion.bind(actividadAulaController));
+router.post('/actividades/:actividadId/aulas', actividadAulaController.asignarAula.bind(actividadAulaController));
+router.get('/actividades/:actividadId/aulas', actividadAulaController.getAulasByActividad.bind(actividadAulaController));
+router.post('/actividades/:actividadId/aulas/verificar-disponibilidad', actividadAulaController.verificarDisponibilidad.bind(actividadAulaController));
+router.get('/actividades/:actividadId/aulas/sugerencias', actividadAulaController.sugerirAulas.bind(actividadAulaController));
+router.post('/actividades/:actividadId/aulas/multiple', actividadAulaController.asignarMultiplesAulas.bind(actividadAulaController));
+router.put('/actividades/:actividadId/aulas/:aulaId/cambiar', actividadAulaController.cambiarAula.bind(actividadAulaController));
+router.get('/aulas/:aulaId/actividades', actividadAulaController.getActividadesByAula.bind(actividadAulaController));
+router.get('/aulas/:aulaId/ocupacion', actividadAulaController.getOcupacionAula.bind(actividadAulaController));
+exports.default = router;
+//# sourceMappingURL=actividad-aula.routes.js.map

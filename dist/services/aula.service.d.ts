@@ -3,6 +3,7 @@ import { AulaRepository } from '@/repositories/aula.repository';
 import { CreateAulaDto, UpdateAulaDto, AulaQueryDto, DisponibilidadAulaDto } from '@/dto/aula.dto';
 export declare class AulaService {
     private aulaRepository;
+    private equipamientoRepository;
     constructor(aulaRepository: AulaRepository);
     createAula(data: CreateAulaDto): Promise<Aula>;
     getAulas(query: AulaQueryDto): Promise<{

@@ -16,5 +16,7 @@ export declare class EquipamientoService {
     deleteEquipamiento(id: number, hard?: boolean): Promise<Equipamiento>;
     reactivateEquipamiento(id: number): Promise<Equipamiento>;
     getEquipamientoStats(id: number): Promise<any>;
+    getDisponibilidadEquipamiento(id: number): Promise<any>;
+    getCantidadDisponible(id: number): Promise<number>;
 }
 //# sourceMappingURL=equipamiento.service.d.ts.map

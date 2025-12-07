@@ -733,20 +733,40 @@ model PersonaTipo {
   @@map("persona_tipo")
 }
 
+model TipoContactoCatalogo {
+  id          Int               @id @default(autoincrement())
+  codigo      String            @unique @db.VarChar(50)
+  nombre      String            @db.VarChar(100)
+  descripcion String?           @db.Text
+  icono       String?           @db.VarChar(50)
+  pattern     String?           @db.VarChar(500)
+  activo      Boolean           @default(true)
+  orden       Int               @default(0)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  contactos   ContactoPersona[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("tipo_contacto_catalogo")
+}
+
 model ContactoPersona {
-  id            Int          @id @default(autoincrement())
-  personaId     Int          @map("persona_id")
-  tipoContacto  TipoContacto @map("tipo_contacto")
-  valor         String       @db.VarChar(200)
-  principal     Boolean      @default(false)
-  activo        Boolean      @default(true)
-  observaciones String?      @db.VarChar(500)
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt @map("updated_at")
-  persona       Persona      @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  id              Int                    @id @default(autoincrement())
+  personaId       Int                    @map("persona_id")
+  tipoContactoId  Int                    @map("tipo_contacto_id")
+  valor           String                 @db.VarChar(200)
+  principal       Boolean                @default(false)
+  activo          Boolean                @default(true)
+  observaciones   String?                @db.VarChar(500)
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  persona         Persona                @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  tipoContacto    TipoContactoCatalogo   @relation(fields: [tipoContactoId], references: [id], onDelete: Restrict)
 
   @@index([personaId], map: "contacto_persona_persona_id_idx")
-  @@index([tipoContacto], map: "contacto_persona_tipo_contacto_idx")
+  @@index([tipoContactoId], map: "contacto_persona_tipo_contacto_id_idx")
   @@index([activo], map: "contacto_persona_activo_idx")
   @@index([principal], map: "contacto_persona_principal_idx")
   @@map("contacto_persona")
@@ -812,6 +832,8 @@ enum TipoPersona {
   PROVEEDOR
 }
 
+// ❌ DEPRECADO: enum TipoContacto (migrado a tabla tipo_contacto_catalogo)
+// Mantenido temporalmente para rollback. Se eliminará en próxima versión.
 enum TipoContacto {
   EMAIL
   TELEFONO

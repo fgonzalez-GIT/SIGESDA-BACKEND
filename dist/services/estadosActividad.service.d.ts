@@ -5,13 +5,13 @@ export declare class EstadosActividadService {
     constructor(repository: EstadosActividadRepository);
     create(data: CreateEstadoActividadDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     findAll(query: QueryTiposCatalogoDto): Promise<({
         _count: {
@@ -19,13 +19,13 @@ export declare class EstadosActividadService {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     })[]>;
     findById(id: number): Promise<{
         _count: {
@@ -33,33 +33,33 @@ export declare class EstadosActividadService {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     update(id: number, data: UpdateEstadoActividadDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     delete(id: number): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     reorder(data: ReorderCatalogoDto): Promise<{
         message: string;
@@ -71,13 +71,13 @@ export declare class EstadosActividadService {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     })[]>;
 }
 //# sourceMappingURL=estadosActividad.service.d.ts.map

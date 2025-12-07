@@ -389,7 +389,7 @@ export declare const queryActividadesSchema: z.ZodObject<{
     orderBy: z.ZodDefault<z.ZodEnum<["nombre", "codigo", "fechaDesde", "costo", "cupoMaximo", "created_at"]>>;
     orderDir: z.ZodDefault<z.ZodEnum<["asc", "desc"]>>;
 }, "strip", z.ZodTypeAny, {
-    orderBy: "nombre" | "codigo" | "fechaDesde" | "cupoMaximo" | "costo" | "created_at";
+    orderBy: "codigo" | "nombre" | "fechaDesde" | "cupoMaximo" | "costo" | "created_at";
     page: number;
     limit: number;
     incluirRelaciones: boolean;
@@ -406,7 +406,7 @@ export declare const queryActividadesSchema: z.ZodObject<{
     costoHasta?: number | undefined;
     vigentes?: boolean | undefined;
 }, {
-    orderBy?: "nombre" | "codigo" | "fechaDesde" | "cupoMaximo" | "costo" | "created_at" | undefined;
+    orderBy?: "codigo" | "nombre" | "fechaDesde" | "cupoMaximo" | "costo" | "created_at" | undefined;
     search?: string | undefined;
     categoriaId?: unknown;
     page?: unknown;

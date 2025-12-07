@@ -36,6 +36,20 @@ class EquipamientoService {
         if (!categoria.activo) {
             throw new errors_1.ValidationError(`La categoría "${categoria.nombre}" está inactiva`);
         }
+        if (data.estadoEquipamientoId) {
+            const estado = await database_1.prisma.estadoEquipamiento.findUnique({
+                where: { id: data.estadoEquipamientoId }
+            });
+            if (!estado) {
+                throw new errors_1.NotFoundError(`Estado de equipamiento con ID ${data.estadoEquipamientoId} no encontrado`);
+            }
+            if (!estado.activo) {
+                throw new errors_1.ValidationError(`El estado "${estado.nombre}" está inactivo`);
+            }
+        }
+        if (data.cantidad !== undefined && data.cantidad < 1) {
+            throw new errors_1.ValidationError('La cantidad debe ser al menos 1');
+        }
         const existingNombre = await this.equipamientoRepository.findByNombre(data.nombre);
         if (existingNombre) {
             throw new errors_1.ConflictError(`Ya existe un equipamiento con el nombre ${data.nombre}`);
@@ -50,7 +64,7 @@ class EquipamientoService {
             }
         }
         const equipamiento = await this.equipamientoRepository.create(data);
-        logger_1.logger.info(`Equipamiento creado: ${equipamiento.codigo} - ${equipamiento.nombre} (ID: ${equipamiento.id})`);
+        logger_1.logger.info(`Equipamiento creado: ${equipamiento.codigo} - ${equipamiento.nombre} (ID: ${equipamiento.id}), Cantidad: ${equipamiento.cantidad}`);
         return equipamiento;
     }
     async getEquipamientos(query) {
@@ -87,6 +101,29 @@ class EquipamientoService {
             }
             if (!categoria.activo) {
                 throw new errors_1.ValidationError(`La categoría "${categoria.nombre}" está inactiva`);
+            }
+        }
+        if (data.estadoEquipamientoId && data.estadoEquipamientoId !== existingEquipamiento.estadoEquipamientoId) {
+            const estado = await database_1.prisma.estadoEquipamiento.findUnique({
+                where: { id: data.estadoEquipamientoId }
+            });
+            if (!estado) {
+                throw new errors_1.NotFoundError(`Estado de equipamiento con ID ${data.estadoEquipamientoId} no encontrado`);
+            }
+            if (!estado.activo) {
+                throw new errors_1.ValidationError(`El estado "${estado.nombre}" está inactivo`);
+            }
+        }
+        if (data.cantidad !== undefined && data.cantidad !== existingEquipamiento.cantidad) {
+            if (data.cantidad < 0) {
+                throw new errors_1.ValidationError('La cantidad no puede ser negativa');
+            }
+            const cantidadAsignada = await this.equipamientoRepository.getCantidadAsignada(id);
+            if (data.cantidad < cantidadAsignada) {
+                const deficit = cantidadAsignada - data.cantidad;
+                logger_1.logger.warn(`⚠️  Cantidad de equipamiento "${existingEquipamiento.nombre}" (ID: ${id}) reducida. ` +
+                    `Déficit de inventario: ${deficit} unidades. ` +
+                    `(Asignadas: ${cantidadAsignada}, Nueva cantidad: ${data.cantidad})`);
             }
         }
         const updatedEquipamiento = await this.equipamientoRepository.update(id, data);
@@ -151,6 +188,20 @@ class EquipamientoService {
             totalCantidad,
             aulas: aulasList
         };
+    }
+    async getDisponibilidadEquipamiento(id) {
+        const equipamiento = await this.equipamientoRepository.findByIdWithDisponibilidad(id);
+        if (!equipamiento) {
+            throw new errors_1.NotFoundError(`Equipamiento con ID ${id} no encontrado`);
+        }
+        return equipamiento;
+    }
+    async getCantidadDisponible(id) {
+        const equipamiento = await this.equipamientoRepository.findById(id);
+        if (!equipamiento) {
+            throw new errors_1.NotFoundError(`Equipamiento con ID ${id} no encontrado`);
+        }
+        return this.equipamientoRepository.getCantidadDisponible(id);
     }
 }
 exports.EquipamientoService = EquipamientoService;

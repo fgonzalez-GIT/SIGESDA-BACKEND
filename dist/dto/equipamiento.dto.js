@@ -8,6 +8,18 @@ const equipamientoBaseSchema = zod_1.z.object({
         const parsed = parseInt(val);
         return isNaN(parsed) ? val : parsed;
     }, zod_1.z.number().int().positive('ID de categoría inválido')),
+    estadoEquipamientoId: zod_1.z.preprocess((val) => {
+        if (val === null || val === undefined)
+            return undefined;
+        const parsed = parseInt(val);
+        return isNaN(parsed) ? val : parsed;
+    }, zod_1.z.number().int().positive('ID de estado de equipamiento inválido').optional()),
+    cantidad: zod_1.z.preprocess((val) => {
+        if (val === null || val === undefined)
+            return 1;
+        const parsed = parseInt(val);
+        return isNaN(parsed) ? val : parsed;
+    }, zod_1.z.number().int().positive('La cantidad debe ser al menos 1').default(1)),
     descripcion: zod_1.z.string().max(1000).optional(),
     observaciones: zod_1.z.string().max(1000).optional(),
     activo: zod_1.z.preprocess((val) => {
@@ -32,6 +44,16 @@ exports.updateEquipamientoSchema = zod_1.z.object({
 });
 exports.equipamientoQuerySchema = zod_1.z.object({
     activo: zod_1.z.preprocess((val) => {
+        if (typeof val === 'string') {
+            return val === 'true';
+        }
+        return val;
+    }, zod_1.z.boolean().optional()),
+    estadoEquipamientoId: zod_1.z.preprocess((val) => {
+        const parsed = parseInt(val);
+        return isNaN(parsed) ? undefined : parsed;
+    }, zod_1.z.number().int().positive().optional()),
+    conStock: zod_1.z.preprocess((val) => {
         if (typeof val === 'string') {
             return val === 'true';
         }

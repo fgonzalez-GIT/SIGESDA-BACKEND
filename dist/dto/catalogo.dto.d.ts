@@ -11,8 +11,8 @@ export declare const createTipoPersonaSchema: z.ZodObject<{
     requiereRazonSocial: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | undefined;
     requiereCategoriaId?: boolean | undefined;
@@ -20,8 +20,8 @@ export declare const createTipoPersonaSchema: z.ZodObject<{
     requiereCuit?: boolean | undefined;
     requiereRazonSocial?: boolean | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | undefined;
     orden?: number | undefined;
@@ -73,13 +73,13 @@ export declare const createEspecialidadSchema: z.ZodObject<{
     orden: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | undefined;
     orden?: number | undefined;

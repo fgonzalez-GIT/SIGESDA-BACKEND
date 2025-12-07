@@ -7,13 +7,13 @@ export declare const createCategoriaEquipamientoSchema: z.ZodObject<{
     orden: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | null | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
     orden?: number | undefined;
@@ -26,15 +26,15 @@ export declare const updateCategoriaEquipamientoSchema: z.ZodObject<{
     orden: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }>;
 export type CreateCategoriaEquipamientoDto = z.infer<typeof createCategoriaEquipamientoSchema>;

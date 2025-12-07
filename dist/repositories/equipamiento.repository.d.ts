@@ -16,5 +16,9 @@ export declare class EquipamientoRepository {
     delete(id: number): Promise<Equipamiento>;
     softDelete(id: number): Promise<Equipamiento>;
     checkUsageInAulas(id: number): Promise<number>;
+    getCantidadAsignada(equipamientoId: number): Promise<number>;
+    getCantidadDisponible(equipamientoId: number): Promise<number>;
+    findByEstado(estadoEquipamientoId: number): Promise<Equipamiento[]>;
+    findByIdWithDisponibilidad(equipamientoId: number): Promise<any>;
 }
 //# sourceMappingURL=equipamiento.repository.d.ts.map

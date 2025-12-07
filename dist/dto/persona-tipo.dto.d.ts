@@ -97,62 +97,8 @@ export declare const updatePersonaTipoSchema: z.ZodObject<{
     razonSocialId?: number | undefined;
     fechaDesasignacion?: string | undefined;
 }>;
-export declare const createContactoPersonaSchema: z.ZodObject<{
-    tipoContacto: z.ZodNativeEnum<{
-        EMAIL: "EMAIL";
-        TELEFONO: "TELEFONO";
-        CELULAR: "CELULAR";
-        WHATSAPP: "WHATSAPP";
-        TELEGRAM: "TELEGRAM";
-        OTRO: "OTRO";
-    }>;
-    valor: z.ZodString;
-    principal: z.ZodDefault<z.ZodBoolean>;
-    observaciones: z.ZodOptional<z.ZodString>;
-    activo: z.ZodDefault<z.ZodBoolean>;
-}, "strip", z.ZodTypeAny, {
-    activo: boolean;
-    tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
-    valor: string;
-    principal: boolean;
-    observaciones?: string | undefined;
-}, {
-    tipoContacto: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO";
-    valor: string;
-    observaciones?: string | undefined;
-    activo?: boolean | undefined;
-    principal?: boolean | undefined;
-}>;
-export declare const updateContactoPersonaSchema: z.ZodObject<{
-    tipoContacto: z.ZodOptional<z.ZodNativeEnum<{
-        EMAIL: "EMAIL";
-        TELEFONO: "TELEFONO";
-        CELULAR: "CELULAR";
-        WHATSAPP: "WHATSAPP";
-        TELEGRAM: "TELEGRAM";
-        OTRO: "OTRO";
-    }>>;
-    valor: z.ZodOptional<z.ZodString>;
-    principal: z.ZodOptional<z.ZodBoolean>;
-    observaciones: z.ZodOptional<z.ZodString>;
-    activo: z.ZodOptional<z.ZodBoolean>;
-}, "strip", z.ZodTypeAny, {
-    observaciones?: string | undefined;
-    activo?: boolean | undefined;
-    tipoContacto?: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO" | undefined;
-    valor?: string | undefined;
-    principal?: boolean | undefined;
-}, {
-    observaciones?: string | undefined;
-    activo?: boolean | undefined;
-    tipoContacto?: "EMAIL" | "TELEFONO" | "CELULAR" | "WHATSAPP" | "TELEGRAM" | "OTRO" | undefined;
-    valor?: string | undefined;
-    principal?: boolean | undefined;
-}>;
 export type CreatePersonaTipoDto = z.infer<typeof createPersonaTipoSchema>;
 export type UpdatePersonaTipoDto = z.infer<typeof updatePersonaTipoSchema>;
-export type CreateContactoPersonaDto = z.infer<typeof createContactoPersonaSchema>;
-export type UpdateContactoPersonaDto = z.infer<typeof updateContactoPersonaSchema>;
 export interface SocioData {
     categoriaId: number;
     numeroSocio?: number;

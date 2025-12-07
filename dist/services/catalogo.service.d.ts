@@ -10,13 +10,13 @@ export declare class CatalogoService {
     toggleActivoTipoPersona(id: number, activo: boolean): Promise<TipoPersonaCatalogo>;
     getAllTiposPersonaWithStats(): Promise<({
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
         requiresCategoria: boolean;
         requiresEspecialidad: boolean;
         requiresCuit: boolean;
@@ -32,16 +32,16 @@ export declare class CatalogoService {
     toggleActivoEspecialidad(id: number, activo: boolean): Promise<EspecialidadDocente>;
     getAllEspecialidadesWithStats(): Promise<({
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     } & {
         _count: {
-            personasTipo: number;
+            personaTipos: number;
         };
     })[]>;
     getEspecialidadById(id: number): Promise<EspecialidadDocente>;

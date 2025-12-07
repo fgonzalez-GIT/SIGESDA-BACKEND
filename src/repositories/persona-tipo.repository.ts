@@ -1,5 +1,5 @@
 import { PrismaClient, PersonaTipo, ContactoPersona, TipoPersonaCatalogo, EspecialidadDocente, RazonSocial } from '@prisma/client';
-import { CreatePersonaTipoDto, UpdatePersonaTipoDto, CreateContactoPersonaDto, UpdateContactoPersonaDto } from '@/dto/persona-tipo.dto';
+import { CreatePersonaTipoDto, UpdatePersonaTipoDto } from '@/dto/persona-tipo.dto';
 
 export class PersonaTipoRepository {
   constructor(private prisma: PrismaClient) {}
@@ -264,14 +264,15 @@ export class PersonaTipoRepository {
 
   /**
    * Agregar un contacto a una persona
+   * @deprecated Usar ContactoRepository en su lugar
    */
-  async agregarContacto(personaId: number, data: CreateContactoPersonaDto): Promise<ContactoPersona> {
+  async agregarContacto(personaId: number, data: any): Promise<ContactoPersona> {
     // Si se marca como principal, desmarcar otros contactos del mismo tipo
-    if (data.principal) {
+    if (data.principal && data.tipoContactoId) {
       await this.prisma.contactoPersona.updateMany({
         where: {
           personaId,
-          tipoContacto: data.tipoContacto,
+          tipoContactoId: data.tipoContactoId,
           principal: true
         },
         data: {
@@ -283,7 +284,7 @@ export class PersonaTipoRepository {
     return this.prisma.contactoPersona.create({
       data: {
         personaId,
-        tipoContacto: data.tipoContacto,
+        tipoContactoId: data.tipoContactoId,
         valor: data.valor,
         principal: data.principal ?? false,
         observaciones: data.observaciones,
@@ -294,6 +295,7 @@ export class PersonaTipoRepository {
 
   /**
    * Obtener todos los contactos de una persona
+   * @deprecated Usar ContactoRepository en su lugar
    */
   async findContactosByPersonaId(personaId: number, soloActivos = false): Promise<ContactoPersona[]> {
     return this.prisma.contactoPersona.findMany({
@@ -301,9 +303,12 @@ export class PersonaTipoRepository {
         personaId,
         ...(soloActivos && { activo: true })
       },
+      include: {
+        tipoContacto: true
+      },
       orderBy: [
         { principal: 'desc' },
-        { tipoContacto: 'asc' },
+        { tipoContacto: { orden: 'asc' } },
         { createdAt: 'desc' }
       ]
     });
@@ -320,8 +325,9 @@ export class PersonaTipoRepository {
 
   /**
    * Actualizar un contacto
+   * @deprecated Usar ContactoRepository en su lugar
    */
-  async updateContacto(id: number, data: UpdateContactoPersonaDto): Promise<ContactoPersona> {
+  async updateContacto(id: number, data: any): Promise<ContactoPersona> {
     const contacto = await this.findContactoById(id);
     if (!contacto) {
       throw new Error(`Contacto con ID ${id} no encontrado`);
@@ -329,10 +335,11 @@ export class PersonaTipoRepository {
 
     // Si se marca como principal, desmarcar otros del mismo tipo
     if (data.principal) {
+      const tipoId = data.tipoContactoId || contacto.tipoContactoId;
       await this.prisma.contactoPersona.updateMany({
         where: {
           personaId: contacto.personaId,
-          tipoContacto: data.tipoContacto || contacto.tipoContacto,
+          tipoContactoId: tipoId,
           principal: true,
           id: { not: id }
         },

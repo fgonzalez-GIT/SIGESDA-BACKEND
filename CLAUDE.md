@@ -304,6 +304,28 @@ Required variables (see `.env.example`):
   - Family discounts (0-100%), permissions, group support
   - Works with all person types (SOCIO, NO_SOCIO, DOCENTE, PROVEEDOR)
 
+### Tipos de Contacto (Catálogo)
+- **Tables**: `contacto_persona`, `tipo_contacto_catalogo`
+- **Pattern**: Catálogo (Persona → ContactoPersona → TipoContactoCatalogo)
+- **Migration**: ENUM → Tabla catálogo (2025-01-05)
+- **Campos catálogo**: codigo, nombre, descripcion, icono, pattern, activo, orden
+- **Rules**:
+  - ✅ Patrón de referencia: EspecialidadDocente (tabla catálogo con FK)
+  - ✅ Validación de formato con regex patterns (email, teléfono, etc.)
+  - ✅ Sistema de contacto principal (1 principal por tipo)
+  - ✅ Soft delete con campo activo
+  - ✅ Prevención de duplicados (mismo valor para misma persona)
+  - Gestión completa desde UI de admin (CRUD)
+- **Tipos predefinidos**: EMAIL, TELEFONO, CELULAR, WHATSAPP, TELEGRAM, OTRO
+- **Endpoints**:
+  - `POST/GET/PUT/DELETE /api/personas/:personaId/contactos` (gestión de contactos)
+  - `POST/GET/PUT/DELETE /api/catalogos/tipos-contacto` (admin catálogo)
+  - `GET /api/catalogos/tipos-contacto/estadisticas/uso` (estadísticas)
+- **Scripts**:
+  - Migration: `scripts/migrate-tipos-contacto-to-catalog.sql`
+  - Rollback: `scripts/rollback-tipos-contacto-to-enum.sql`
+  - Test: `tests/migration/test-tipos-contacto-migration.ts`
+
 ### Actividades
 - **Tables**: `actividades`, `horarios_actividades`, `docentes_actividades`
 - **Catalogs**: `tipos_actividades`, `categorias_actividades`, `estados_actividades`, `roles_docentes`
@@ -363,6 +385,34 @@ Required variables (see `.env.example`):
 - **Services Updated**: reserva-aula, participacion, cuota, recibo (now use Architecture V2)
 - **Test**: `tests/test-soft-delete-persona.ts` - Validates complete soft delete workflow
 - **Rationale**: Consistency with 25+ tables using `activo: Boolean` pattern
+
+### ✅ IMPLEMENTED (2025-01-05): Tipos de Contacto - Migración ENUM → Catálogo
+**Change**: Migrated TipoContacto from PostgreSQL ENUM to separate catalog table (tipo_contacto_catalogo)
+
+**Rationale**:
+- Consistency with other catalogs (EspecialidadDocente, CategoriaSocio, etc.)
+- Enable admin UI management (add/edit/delete types without migrations)
+- Support for additional fields (icono, pattern, descripcion, orden)
+- Regex pattern validation for format checking (email, phone, etc.)
+
+**Implementation**:
+- **Schema**: New model `TipoContactoCatalogo` with FK relationship to `ContactoPersona`
+- **Migration Script**: `scripts/migrate-tipos-contacto-to-catalog.sql` (12 steps with validation)
+- **Rollback Script**: `scripts/rollback-tipos-contacto-to-enum.sql` (full revert capability)
+- **Architecture**:
+  - Repository: `ContactoRepository`, `TipoContactoRepository`
+  - Service: `ContactoService`, `TipoContactoService`
+  - Controller: `ContactoPersonaController`, `TipoContactoController`
+  - DTOs: `contacto.dto.ts` (separate from persona-tipo.dto.ts)
+- **Features**:
+  - Pattern validation (regex per tipo)
+  - Duplicate prevention (same value per person)
+  - Principal contact system (1 principal per type)
+  - Soft delete (activo field)
+  - Usage statistics endpoint
+- **Testing**: `tests/migration/test-tipos-contacto-migration.ts` (8 validation tests)
+
+**Breaking Changes**: None (backward-compatible endpoints maintained)
 
 ### ✅ FIXED (2025-01-02): Four Critical Issues Resolved
 1. **docentes_actividades table**: Added missing table + roles_docentes catalog

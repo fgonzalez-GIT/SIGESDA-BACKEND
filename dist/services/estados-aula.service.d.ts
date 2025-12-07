@@ -5,13 +5,13 @@ export declare class EstadosAulaService {
     constructor(repository: EstadosAulaRepository);
     create(data: CreateEstadoAulaDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     findAll(options?: {
         includeInactive?: boolean;
@@ -24,13 +24,13 @@ export declare class EstadosAulaService {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     })[]>;
     findById(id: number): Promise<{
         _count: {
@@ -38,33 +38,33 @@ export declare class EstadosAulaService {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     update(id: number, data: UpdateEstadoAulaDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     delete(id: number): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     reorder(data: ReorderEstadoAulaDto): Promise<{
         message: string;
@@ -76,13 +76,13 @@ export declare class EstadosAulaService {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     })[]>;
 }
 //# sourceMappingURL=estados-aula.service.d.ts.map

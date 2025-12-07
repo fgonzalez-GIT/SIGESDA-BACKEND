@@ -7,13 +7,13 @@ export declare const createEstadoReservaSchema: z.ZodObject<{
     orden: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | null | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
     orden?: number | undefined;
@@ -26,15 +26,15 @@ export declare const updateEstadoReservaSchema: z.ZodObject<{
     orden: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }>;
 export type CreateEstadoReservaDto = z.infer<typeof createEstadoReservaSchema>;
@@ -48,7 +48,7 @@ export declare const queryEstadosReservasSchema: z.ZodObject<{
     orderBy: z.ZodDefault<z.ZodEnum<["codigo", "nombre", "orden", "created_at"]>>;
     orderDir: z.ZodDefault<z.ZodEnum<["asc", "desc"]>>;
 }, "strip", z.ZodTypeAny, {
-    orderBy: "nombre" | "codigo" | "orden" | "created_at";
+    orderBy: "codigo" | "nombre" | "orden" | "created_at";
     page: number;
     limit: number;
     orderDir: "asc" | "desc";
@@ -56,7 +56,7 @@ export declare const queryEstadosReservasSchema: z.ZodObject<{
     search?: string | undefined;
     activo?: boolean | undefined;
 }, {
-    orderBy?: "nombre" | "codigo" | "orden" | "created_at" | undefined;
+    orderBy?: "codigo" | "nombre" | "orden" | "created_at" | undefined;
     search?: string | undefined;
     activo?: unknown;
     page?: unknown;

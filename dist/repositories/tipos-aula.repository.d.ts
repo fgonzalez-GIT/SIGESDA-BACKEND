@@ -5,13 +5,13 @@ export declare class TiposAulaRepository {
     constructor(prisma: PrismaClient);
     create(data: CreateTipoAulaDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     findAll(options?: {
         includeInactive?: boolean;
@@ -24,13 +24,13 @@ export declare class TiposAulaRepository {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     })[]>;
     findById(id: number): Promise<{
         _count: {
@@ -38,43 +38,43 @@ export declare class TiposAulaRepository {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     findByCodigo(codigo: string): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     } | null>;
     update(id: number, data: UpdateTipoAulaDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     delete(id: number): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     reorder(data: ReorderTipoAulaDto): Promise<{
         message: string;

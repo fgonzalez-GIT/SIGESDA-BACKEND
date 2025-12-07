@@ -122,7 +122,7 @@ class CatalogoAdminController {
                 success: true,
                 data: especialidades.map(esp => ({
                     ...esp,
-                    docentesActivos: esp._count.personasTipo,
+                    docentesActivos: esp._count.personaTipos,
                     esProtegida: esp.codigo === 'GENERAL'
                 }))
             };

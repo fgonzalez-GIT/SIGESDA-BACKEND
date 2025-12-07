@@ -1,11 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AulaService = void 0;
+const equipamiento_repository_1 = require("@/repositories/equipamiento.repository");
 const logger_1 = require("@/utils/logger");
 const errors_1 = require("@/utils/errors");
+const equipamiento_helper_1 = require("@/utils/equipamiento.helper");
+const database_1 = require("@/config/database");
 class AulaService {
     constructor(aulaRepository) {
         this.aulaRepository = aulaRepository;
+        this.equipamientoRepository = new equipamiento_repository_1.EquipamientoRepository(database_1.prisma);
     }
     async createAula(data) {
         const existingAula = await this.aulaRepository.findByNombre(data.nombre);
@@ -168,6 +172,10 @@ class AulaService {
         if (!aula) {
             throw new errors_1.NotFoundError(`Aula con ID ${aulaId} no encontrada`);
         }
+        const equipamiento = await this.equipamientoRepository.findById(equipamientoId);
+        if (!equipamiento) {
+            throw new errors_1.NotFoundError(`Equipamiento con ID ${equipamientoId} no encontrado`);
+        }
         const exists = await this.aulaRepository.checkEquipamientoExists(aulaId, equipamientoId);
         if (exists) {
             throw new errors_1.ConflictError(`El equipamiento con ID ${equipamientoId} ya está asignado a esta aula`);
@@ -175,9 +183,24 @@ class AulaService {
         if (cantidad < 1) {
             throw new errors_1.ValidationError('La cantidad debe ser al menos 1');
         }
+        const asignaciones = await database_1.prisma.aulaEquipamiento.findMany({
+            where: { equipamientoId }
+        });
+        const validacion = (0, equipamiento_helper_1.validarAsignacion)(equipamiento, cantidad, asignaciones);
+        if (!validacion.esValido) {
+            throw new errors_1.ValidationError(validacion.errors.join('; '));
+        }
         const aulaEquipamiento = await this.aulaRepository.addEquipamiento(aulaId, equipamientoId, cantidad, observaciones);
-        logger_1.logger.info(`Equipamiento ${equipamientoId} agregado al aula ${aulaId} (cantidad: ${cantidad})`);
-        return aulaEquipamiento;
+        if (validacion.warnings.length > 0) {
+            logger_1.logger.warn(`⚠️  Equipamiento ${equipamientoId} agregado al aula ${aulaId} con advertencias: ${validacion.warnings.join('; ')}`);
+        }
+        else {
+            logger_1.logger.info(`Equipamiento ${equipamientoId} agregado al aula ${aulaId} (cantidad: ${cantidad})`);
+        }
+        return {
+            ...aulaEquipamiento,
+            warnings: validacion.warnings.length > 0 ? validacion.warnings : undefined
+        };
     }
     async removeEquipamientoFromAula(aulaId, equipamientoId) {
         const aula = await this.aulaRepository.findByIdSimple(aulaId.toString());

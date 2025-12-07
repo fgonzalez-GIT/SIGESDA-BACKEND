@@ -16,5 +16,6 @@ router.put('/:id', equipamientoController.updateEquipamiento.bind(equipamientoCo
 router.delete('/:id', equipamientoController.deleteEquipamiento.bind(equipamientoController));
 router.post('/:id/reactivar', equipamientoController.reactivateEquipamiento.bind(equipamientoController));
 router.get('/:id/estadisticas', equipamientoController.getEquipamientoStats.bind(equipamientoController));
+router.get('/:id/disponibilidad', equipamientoController.getDisponibilidad.bind(equipamientoController));
 exports.default = router;
 //# sourceMappingURL=equipamiento.routes.js.map

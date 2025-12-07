@@ -24,7 +24,7 @@ export declare class CatalogoRepository {
     countDocentesConEspecialidad(especialidadId: number, soloActivos?: boolean): Promise<number>;
     getAllEspecialidadesWithStats(): Promise<Array<EspecialidadDocente & {
         _count: {
-            personasTipo: number;
+            personaTipos: number;
         };
     }>>;
 }

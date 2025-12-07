@@ -3,28 +3,28 @@ export declare class DiasSemanaService {
     private repository;
     constructor(repository: DiasSemanaRepository);
     findAll(): Promise<{
+        codigo: string;
         nombre: string;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        codigo: string;
-        orden: number;
     }[]>;
     findById(id: number): Promise<{
+        codigo: string;
         nombre: string;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        codigo: string;
-        orden: number;
     }>;
     findByCodigo(codigo: string): Promise<{
+        codigo: string;
         nombre: string;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        codigo: string;
-        orden: number;
     }>;
 }
 //# sourceMappingURL=diasSemana.service.d.ts.map

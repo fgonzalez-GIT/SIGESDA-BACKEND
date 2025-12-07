@@ -19,6 +19,13 @@ export declare enum DiaSemana {
     SABADO = "SABADO",
     DOMINGO = "DOMINGO"
 }
+export declare enum EstadoEquipamiento {
+    NUEVO = "NUEVO",
+    USADO = "USADO",
+    EN_REPARACION = "EN_REPARACION",
+    ROTO = "ROTO",
+    DADO_DE_BAJA = "DADO_DE_BAJA"
+}
 export declare enum HttpStatus {
     OK = 200,
     CREATED = 201,

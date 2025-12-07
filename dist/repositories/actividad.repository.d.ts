@@ -7,10 +7,10 @@ export declare class ActividadRepository {
         observaciones: string | null;
         categoriaId: number;
         nombre: string;
+        descripcion: string | null;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
         codigoActividad: string;
@@ -25,10 +25,10 @@ export declare class ActividadRepository {
             observaciones: string | null;
             categoriaId: number;
             nombre: string;
+            descripcion: string | null;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
             activa: boolean;
             capacidadMaxima: number | null;
             codigoActividad: string;
@@ -43,12 +43,12 @@ export declare class ActividadRepository {
     findById(id: number): Promise<({
         horarios_actividades: ({
             diasSemana: {
+                codigo: string;
                 nombre: string;
+                orden: number;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
-                codigo: string;
-                orden: number;
             };
         } & {
             activo: boolean;
@@ -69,23 +69,23 @@ export declare class ActividadRepository {
                 tipos: ({
                     especialidad: {
                         activo: boolean;
+                        codigo: string;
                         nombre: string;
+                        descripcion: string | null;
+                        orden: number;
                         id: number;
                         createdAt: Date;
                         updatedAt: Date;
-                        descripcion: string | null;
-                        codigo: string;
-                        orden: number;
                     } | null;
                     tipoPersona: {
                         activo: boolean;
+                        codigo: string;
                         nombre: string;
+                        descripcion: string | null;
+                        orden: number;
                         id: number;
                         createdAt: Date;
                         updatedAt: Date;
-                        descripcion: string | null;
-                        codigo: string;
-                        orden: number;
                         requiresCategoria: boolean;
                         requiresEspecialidad: boolean;
                         requiresCuit: boolean;
@@ -114,13 +114,13 @@ export declare class ActividadRepository {
             };
             rolesDocentes: {
                 activo: boolean;
+                codigo: string;
                 nombre: string;
+                descripcion: string | null;
+                orden: number;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
-                descripcion: string | null;
-                codigo: string;
-                orden: number;
             };
         } & {
             observaciones: string | null;
@@ -143,13 +143,13 @@ export declare class ActividadRepository {
                 tipos: ({
                     tipoPersona: {
                         activo: boolean;
+                        codigo: string;
                         nombre: string;
+                        descripcion: string | null;
+                        orden: number;
                         id: number;
                         createdAt: Date;
                         updatedAt: Date;
-                        descripcion: string | null;
-                        codigo: string;
-                        orden: number;
                         requiresCategoria: boolean;
                         requiresEspecialidad: boolean;
                         requiresCuit: boolean;
@@ -193,42 +193,42 @@ export declare class ActividadRepository {
         };
         tiposActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
         categoriasActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
         estadosActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     } & {
         observaciones: string | null;
         categoriaId: number;
         nombre: string;
+        descripcion: string | null;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
         codigoActividad: string;
@@ -241,42 +241,42 @@ export declare class ActividadRepository {
     findByCodigoActividad(codigo: string): Promise<({
         tiposActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
         categoriasActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
         estadosActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     } & {
         observaciones: string | null;
         categoriaId: number;
         nombre: string;
+        descripcion: string | null;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
         codigoActividad: string;
@@ -289,12 +289,12 @@ export declare class ActividadRepository {
     update(id: number, data: UpdateActividadDto): Promise<{
         horarios_actividades: ({
             diasSemana: {
+                codigo: string;
                 nombre: string;
+                orden: number;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
-                codigo: string;
-                orden: number;
             };
         } & {
             activo: boolean;
@@ -313,23 +313,23 @@ export declare class ActividadRepository {
                 tipos: ({
                     especialidad: {
                         activo: boolean;
+                        codigo: string;
                         nombre: string;
+                        descripcion: string | null;
+                        orden: number;
                         id: number;
                         createdAt: Date;
                         updatedAt: Date;
-                        descripcion: string | null;
-                        codigo: string;
-                        orden: number;
                     } | null;
                     tipoPersona: {
                         activo: boolean;
+                        codigo: string;
                         nombre: string;
+                        descripcion: string | null;
+                        orden: number;
                         id: number;
                         createdAt: Date;
                         updatedAt: Date;
-                        descripcion: string | null;
-                        codigo: string;
-                        orden: number;
                         requiresCategoria: boolean;
                         requiresEspecialidad: boolean;
                         requiresCuit: boolean;
@@ -358,13 +358,13 @@ export declare class ActividadRepository {
             };
             rolesDocentes: {
                 activo: boolean;
+                codigo: string;
                 nombre: string;
+                descripcion: string | null;
+                orden: number;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
-                descripcion: string | null;
-                codigo: string;
-                orden: number;
             };
         } & {
             observaciones: string | null;
@@ -380,42 +380,42 @@ export declare class ActividadRepository {
         })[];
         tiposActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
         categoriasActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
         estadosActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     } & {
         observaciones: string | null;
         categoriaId: number;
         nombre: string;
+        descripcion: string | null;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
         codigoActividad: string;
@@ -429,10 +429,10 @@ export declare class ActividadRepository {
         observaciones: string | null;
         categoriaId: number;
         nombre: string;
+        descripcion: string | null;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
         codigoActividad: string;
@@ -445,22 +445,22 @@ export declare class ActividadRepository {
     cambiarEstado(id: number, nuevoEstadoId: number, observaciones?: string): Promise<{
         estadosActividades: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     } & {
         observaciones: string | null;
         categoriaId: number;
         nombre: string;
+        descripcion: string | null;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
         activa: boolean;
         capacidadMaxima: number | null;
         codigoActividad: string;
@@ -477,12 +477,12 @@ export declare class ActividadRepository {
             codigoActividad: string;
         };
         diasSemana: {
+            codigo: string;
             nombre: string;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            codigo: string;
-            orden: number;
         };
     } & {
         activo: boolean;
@@ -500,12 +500,12 @@ export declare class ActividadRepository {
             id: number;
         };
         diasSemana: {
+            codigo: string;
             nombre: string;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            codigo: string;
-            orden: number;
         };
     } & {
         activo: boolean;
@@ -528,7 +528,16 @@ export declare class ActividadRepository {
         horaFin: string;
     }>;
     deleteHorariosByActividad(actividadId: number): Promise<import(".prisma/client").Prisma.BatchPayload>;
-    getHorariosByActividad(actividadId: number): Promise<{
+    getHorariosByActividad(actividadId: number): Promise<({
+        diasSemana: {
+            codigo: string;
+            nombre: string;
+            orden: number;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    } & {
         activo: boolean;
         id: number;
         createdAt: Date;
@@ -537,7 +546,7 @@ export declare class ActividadRepository {
         diaSemanaId: number;
         horaInicio: string;
         horaFin: string;
-    }[]>;
+    })[]>;
     findHorarioById(horarioId: number): Promise<({
         actividades: {
             nombre: string;
@@ -545,12 +554,12 @@ export declare class ActividadRepository {
             codigoActividad: string;
         };
         diasSemana: {
+            codigo: string;
             nombre: string;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            codigo: string;
-            orden: number;
         };
     } & {
         activo: boolean;
@@ -565,13 +574,13 @@ export declare class ActividadRepository {
     findAsignacionDocente(actividadId: number, docenteId: number, rolDocenteId: number): Promise<({
         rolesDocentes: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     } & {
         observaciones: string | null;
@@ -598,23 +607,23 @@ export declare class ActividadRepository {
             tipos: ({
                 especialidad: {
                     activo: boolean;
+                    codigo: string;
                     nombre: string;
+                    descripcion: string | null;
+                    orden: number;
                     id: number;
                     createdAt: Date;
                     updatedAt: Date;
-                    descripcion: string | null;
-                    codigo: string;
-                    orden: number;
                 } | null;
                 tipoPersona: {
                     activo: boolean;
+                    codigo: string;
                     nombre: string;
+                    descripcion: string | null;
+                    orden: number;
                     id: number;
                     createdAt: Date;
                     updatedAt: Date;
-                    descripcion: string | null;
-                    codigo: string;
-                    orden: number;
                     requiresCategoria: boolean;
                     requiresEspecialidad: boolean;
                     requiresCuit: boolean;
@@ -643,13 +652,13 @@ export declare class ActividadRepository {
         };
         rolesDocentes: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     } & {
         observaciones: string | null;
@@ -671,13 +680,13 @@ export declare class ActividadRepository {
         };
         rolesDocentes: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     } & {
         observaciones: string | null;
@@ -703,13 +712,13 @@ export declare class ActividadRepository {
         };
         rolesDocentes: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     } & {
         observaciones: string | null;
@@ -732,23 +741,23 @@ export declare class ActividadRepository {
             tipos: ({
                 especialidad: {
                     activo: boolean;
+                    codigo: string;
                     nombre: string;
+                    descripcion: string | null;
+                    orden: number;
                     id: number;
                     createdAt: Date;
                     updatedAt: Date;
-                    descripcion: string | null;
-                    codigo: string;
-                    orden: number;
                 } | null;
                 tipoPersona: {
                     activo: boolean;
+                    codigo: string;
                     nombre: string;
+                    descripcion: string | null;
+                    orden: number;
                     id: number;
                     createdAt: Date;
                     updatedAt: Date;
-                    descripcion: string | null;
-                    codigo: string;
-                    orden: number;
                     requiresCategoria: boolean;
                     requiresEspecialidad: boolean;
                     requiresCuit: boolean;
@@ -777,13 +786,13 @@ export declare class ActividadRepository {
         };
         rolesDocentes: {
             activo: boolean;
+            codigo: string;
             nombre: string;
+            descripcion: string | null;
+            orden: number;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            descripcion: string | null;
-            codigo: string;
-            orden: number;
         };
     } & {
         observaciones: string | null;
@@ -822,26 +831,26 @@ export declare class ActividadRepository {
             telefono: string | null;
             tipos: ({
                 categoria: {
+                    codigo: string;
                     nombre: string;
+                    descripcion: string | null;
+                    orden: number;
                     id: number;
                     createdAt: Date;
                     updatedAt: Date;
-                    descripcion: string | null;
                     descuento: import("@prisma/client/runtime/library").Decimal;
                     activa: boolean;
-                    codigo: string;
-                    orden: number;
                     montoCuota: import("@prisma/client/runtime/library").Decimal;
                 } | null;
                 tipoPersona: {
                     activo: boolean;
+                    codigo: string;
                     nombre: string;
+                    descripcion: string | null;
+                    orden: number;
                     id: number;
                     createdAt: Date;
                     updatedAt: Date;
-                    descripcion: string | null;
-                    codigo: string;
-                    orden: number;
                     requiresCategoria: boolean;
                     requiresEspecialidad: boolean;
                     requiresCuit: boolean;
@@ -899,13 +908,13 @@ export declare class ActividadRepository {
             tipos: ({
                 tipoPersona: {
                     activo: boolean;
+                    codigo: string;
                     nombre: string;
+                    descripcion: string | null;
+                    orden: number;
                     id: number;
                     createdAt: Date;
                     updatedAt: Date;
-                    descripcion: string | null;
-                    codigo: string;
-                    orden: number;
                     requiresCategoria: boolean;
                     requiresEspecialidad: boolean;
                     requiresCuit: boolean;
@@ -967,51 +976,51 @@ export declare class ActividadRepository {
     } | null>;
     getTiposActividades(): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }[]>;
     getCategoriasActividades(): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }[]>;
     getEstadosActividades(): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }[]>;
     getDiasSemana(): Promise<{
+        codigo: string;
         nombre: string;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        codigo: string;
-        orden: number;
     }[]>;
     getRolesDocentes(): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }[]>;
     private parseTimeToDate;
     static formatTime(date: Date): string;

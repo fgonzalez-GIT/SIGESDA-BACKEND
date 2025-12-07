@@ -1,17 +1,23 @@
 import { Router } from 'express';
 import { PersonaTipoController } from '@/controllers/persona-tipo.controller';
+import { ContactoPersonaController } from '@/controllers/contacto-persona.controller';
 import { PersonaTipoService } from '@/services/persona-tipo.service';
+import { ContactoService } from '@/services/contacto.service';
 import { PersonaTipoRepository } from '@/repositories/persona-tipo.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { prisma } from '@/config/database';
 
 const router = Router();
 
-// Initialize dependencies
+// Initialize dependencies - Tipos de Persona
 const personaTipoRepository = new PersonaTipoRepository(prisma);
 const personaRepository = new PersonaRepository(prisma);
 const personaTipoService = new PersonaTipoService(personaTipoRepository, personaRepository);
 const personaTipoController = new PersonaTipoController(personaTipoService);
+
+// Initialize dependencies - Contactos de Persona
+const contactoService = new ContactoService(prisma);
+const contactoPersonaController = new ContactoPersonaController(contactoService);
 
 // ======================================================================
 // RUTAS DE GESTIÓN DE TIPOS
@@ -54,25 +60,37 @@ router.delete(
 // Agregar contacto a persona
 router.post(
   '/personas/:personaId/contactos',
-  personaTipoController.agregarContacto.bind(personaTipoController)
+  contactoPersonaController.agregarContacto.bind(contactoPersonaController)
 );
 
 // Obtener contactos de una persona
 router.get(
   '/personas/:personaId/contactos',
-  personaTipoController.getContactosByPersona.bind(personaTipoController)
+  contactoPersonaController.getContactosByPersona.bind(contactoPersonaController)
+);
+
+// Obtener un contacto específico
+router.get(
+  '/personas/:personaId/contactos/:contactoId',
+  contactoPersonaController.getContactoById.bind(contactoPersonaController)
 );
 
 // Actualizar contacto
 router.put(
   '/personas/:personaId/contactos/:contactoId',
-  personaTipoController.updateContacto.bind(personaTipoController)
+  contactoPersonaController.updateContacto.bind(contactoPersonaController)
 );
 
-// Eliminar contacto
+// Eliminar contacto (soft delete)
 router.delete(
   '/personas/:personaId/contactos/:contactoId',
-  personaTipoController.eliminarContacto.bind(personaTipoController)
+  contactoPersonaController.eliminarContacto.bind(contactoPersonaController)
+);
+
+// Eliminar contacto permanentemente (hard delete)
+router.delete(
+  '/personas/:personaId/contactos/:contactoId/permanente',
+  contactoPersonaController.eliminarContactoPermanente.bind(contactoPersonaController)
 );
 
 // ======================================================================

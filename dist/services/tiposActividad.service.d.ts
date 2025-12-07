@@ -5,13 +5,13 @@ export declare class TiposActividadService {
     constructor(repository: TiposActividadRepository);
     create(data: CreateTipoActividadDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     findAll(query: QueryTiposCatalogoDto): Promise<({
         _count: {
@@ -19,13 +19,13 @@ export declare class TiposActividadService {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     })[]>;
     findById(id: number): Promise<{
         _count: {
@@ -33,33 +33,33 @@ export declare class TiposActividadService {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     update(id: number, data: UpdateTipoActividadDto): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     delete(id: number): Promise<{
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     }>;
     reorder(data: ReorderCatalogoDto): Promise<{
         message: string;
@@ -71,13 +71,13 @@ export declare class TiposActividadService {
         };
     } & {
         activo: boolean;
+        codigo: string;
         nombre: string;
+        descripcion: string | null;
+        orden: number;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        descripcion: string | null;
-        codigo: string;
-        orden: number;
     })[]>;
 }
 //# sourceMappingURL=tiposActividad.service.d.ts.map

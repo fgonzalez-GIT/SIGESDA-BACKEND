@@ -4,8 +4,8 @@ exports.createPersonaLegacySchema = exports.personaQuerySchema = exports.updateP
 exports.validatePersonaTipoData = validatePersonaTipoData;
 exports.transformLegacyToNew = transformLegacyToNew;
 const zod_1 = require("zod");
-const client_1 = require("@prisma/client");
 const persona_tipo_dto_1 = require("./persona-tipo.dto");
+const contacto_dto_1 = require("./contacto.dto");
 const personaBaseSchema = zod_1.z.object({
     nombre: zod_1.z.string().min(1, 'Nombre es requerido').max(100),
     apellido: zod_1.z.string().min(1, 'Apellido es requerido').max(100),
@@ -92,7 +92,7 @@ exports.createPersonaSchema = zod_1.z.preprocess((data) => {
 }, zod_1.z.object({
     ...personaBaseSchema.shape,
     tipos: zod_1.z.array(persona_tipo_dto_1.createPersonaTipoSchema).optional().default([]),
-    contactos: zod_1.z.array(persona_tipo_dto_1.createContactoPersonaSchema).optional().default([])
+    contactos: zod_1.z.array(contacto_dto_1.createContactoPersonaSchema).optional().default([])
 }));
 exports.updatePersonaSchema = zod_1.z.object({
     nombre: zod_1.z.string().min(1).max(100).optional(),
@@ -107,7 +107,7 @@ exports.updatePersonaSchema = zod_1.z.object({
     fechaBaja: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
     motivoBaja: zod_1.z.string().max(500).optional().nullable(),
     tipos: zod_1.z.array(persona_tipo_dto_1.createPersonaTipoSchema).optional(),
-    contactos: zod_1.z.array(persona_tipo_dto_1.createContactoPersonaSchema).optional()
+    contactos: zod_1.z.array(contacto_dto_1.createContactoPersonaSchema).optional()
 });
 exports.personaQuerySchema = zod_1.z.object({
     tiposCodigos: zod_1.z.preprocess((val) => {
@@ -249,22 +249,6 @@ function transformLegacyToNew(legacyData) {
             break;
     }
     newData.tipos = [tipoData];
-    if (baseData.email) {
-        newData.contactos.push({
-            tipoContacto: client_1.TipoContacto.EMAIL,
-            valor: baseData.email,
-            principal: true,
-            activo: true
-        });
-    }
-    if (baseData.telefono) {
-        newData.contactos.push({
-            tipoContacto: client_1.TipoContacto.TELEFONO,
-            valor: baseData.telefono,
-            principal: true,
-            activo: true
-        });
-    }
     return newData;
 }
 //# sourceMappingURL=persona.dto.js.map

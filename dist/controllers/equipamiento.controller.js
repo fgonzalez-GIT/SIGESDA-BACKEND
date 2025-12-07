@@ -127,6 +127,20 @@ class EquipamientoController {
             next(error);
         }
     }
+    async getDisponibilidad(req, res, next) {
+        try {
+            const { id } = req.params;
+            const disponibilidad = await this.equipamientoService.getDisponibilidadEquipamiento(parseInt(id));
+            const response = {
+                success: true,
+                data: disponibilidad
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
 }
 exports.EquipamientoController = EquipamientoController;
 //# sourceMappingURL=equipamiento.controller.js.map

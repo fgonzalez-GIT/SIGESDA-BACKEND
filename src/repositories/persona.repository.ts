@@ -102,7 +102,7 @@ export class PersonaRepository {
         // Crear contactos
         contactos: {
           create: contactos.map((contacto) => ({
-            tipoContacto: contacto.tipoContacto,
+            tipoContactoId: contacto.tipoContactoId,
             valor: contacto.valor,
             principal: contacto.principal ?? false,
             observaciones: contacto.observaciones,
@@ -394,7 +394,7 @@ export class PersonaRepository {
           await tx.contactoPersona.createMany({
             data: contactos.map((contacto) => ({
               personaId: id,
-              tipoContacto: contacto.tipoContacto,
+              tipoContactoId: contacto.tipoContactoId,
               valor: contacto.valor,
               principal: contacto.principal ?? false,
               observaciones: contacto.observaciones,

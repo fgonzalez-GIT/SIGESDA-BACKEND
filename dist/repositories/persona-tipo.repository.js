@@ -190,11 +190,11 @@ class PersonaTipoRepository {
         });
     }
     async agregarContacto(personaId, data) {
-        if (data.principal) {
+        if (data.principal && data.tipoContactoId) {
             await this.prisma.contactoPersona.updateMany({
                 where: {
                     personaId,
-                    tipoContacto: data.tipoContacto,
+                    tipoContactoId: data.tipoContactoId,
                     principal: true
                 },
                 data: {
@@ -205,7 +205,7 @@ class PersonaTipoRepository {
         return this.prisma.contactoPersona.create({
             data: {
                 personaId,
-                tipoContacto: data.tipoContacto,
+                tipoContactoId: data.tipoContactoId,
                 valor: data.valor,
                 principal: data.principal ?? false,
                 observaciones: data.observaciones,
@@ -219,9 +219,12 @@ class PersonaTipoRepository {
                 personaId,
                 ...(soloActivos && { activo: true })
             },
+            include: {
+                tipoContacto: true
+            },
             orderBy: [
                 { principal: 'desc' },
-                { tipoContacto: 'asc' },
+                { tipoContacto: { orden: 'asc' } },
                 { createdAt: 'desc' }
             ]
         });
@@ -237,10 +240,11 @@ class PersonaTipoRepository {
             throw new Error(`Contacto con ID ${id} no encontrado`);
         }
         if (data.principal) {
+            const tipoId = data.tipoContactoId || contacto.tipoContactoId;
             await this.prisma.contactoPersona.updateMany({
                 where: {
                     personaId: contacto.personaId,
-                    tipoContacto: data.tipoContacto || contacto.tipoContacto,
+                    tipoContactoId: tipoId,
                     principal: true,
                     id: { not: id }
                 },

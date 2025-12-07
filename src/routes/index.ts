@@ -25,6 +25,7 @@ import estadosAulaRoutes from './estados-aula.routes';
 import estadosEquipamientoRoutes from './estados-equipamiento.routes';
 import actividadAulaRoutes from './actividad-aula.routes';
 import catalogoAdminRoutes from './catalogo-admin.routes';
+import tipoContactoRoutes from './tipo-contacto.routes';
 
 const router = Router();
 
@@ -42,6 +43,7 @@ router.use('/catalogos/categorias-equipamiento', categoriasEquipamientoRoutes);
 router.use('/catalogos/estados-equipamientos', estadosEquipamientoRoutes);
 router.use('/catalogos/tipos-aulas', tiposAulaRoutes);
 router.use('/catalogos/estados-aulas', estadosAulaRoutes);
+router.use('/catalogos/tipos-contacto', tipoContactoRoutes);
 
 // Admin catalog routes (protected, requires admin role when auth is enabled)
 router.use('/admin/catalogos', catalogoAdminRoutes);

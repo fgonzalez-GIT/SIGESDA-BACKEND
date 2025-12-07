@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateContactoPersonaSchema = exports.createContactoPersonaSchema = exports.updatePersonaTipoSchema = exports.createPersonaTipoSchema = void 0;
+exports.updatePersonaTipoSchema = exports.createPersonaTipoSchema = void 0;
 const zod_1 = require("zod");
-const client_1 = require("@prisma/client");
 const personaTipoBaseSchema = zod_1.z.object({
     tipoPersonaId: zod_1.z.number().int().positive('ID de tipo de persona inválido').optional(),
     tipoPersonaCodigo: zod_1.z.string().min(1, 'Código de tipo es requerido').optional(),
@@ -52,21 +51,5 @@ exports.updatePersonaTipoSchema = zod_1.z.object({
     cuit: zod_1.z.string().length(11).optional(),
     razonSocialId: zod_1.z.number().int().positive().optional(),
     observaciones: zod_1.z.string().max(500).optional()
-});
-exports.createContactoPersonaSchema = zod_1.z.object({
-    tipoContacto: zod_1.z.nativeEnum(client_1.TipoContacto, {
-        errorMap: () => ({ message: 'Tipo de contacto inválido' })
-    }),
-    valor: zod_1.z.string().min(1, 'El valor del contacto es requerido').max(200),
-    principal: zod_1.z.boolean().default(false),
-    observaciones: zod_1.z.string().max(500).optional(),
-    activo: zod_1.z.boolean().default(true)
-});
-exports.updateContactoPersonaSchema = zod_1.z.object({
-    tipoContacto: zod_1.z.nativeEnum(client_1.TipoContacto).optional(),
-    valor: zod_1.z.string().min(1).max(200).optional(),
-    principal: zod_1.z.boolean().optional(),
-    observaciones: zod_1.z.string().max(500).optional(),
-    activo: zod_1.z.boolean().optional()
 });
 //# sourceMappingURL=persona-tipo.dto.js.map

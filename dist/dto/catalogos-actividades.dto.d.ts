@@ -7,13 +7,13 @@ export declare const createTipoActividadSchema: z.ZodObject<{
     orden: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | null | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
     orden?: number | undefined;
@@ -26,15 +26,15 @@ export declare const updateTipoActividadSchema: z.ZodObject<{
     orden: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }>;
 export type CreateTipoActividadDto = z.infer<typeof createTipoActividadSchema>;
@@ -47,13 +47,13 @@ export declare const createCategoriaActividadSchema: z.ZodObject<{
     orden: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | null | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
     orden?: number | undefined;
@@ -66,15 +66,15 @@ export declare const updateCategoriaActividadSchema: z.ZodObject<{
     orden: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }>;
 export type CreateCategoriaActividadDto = z.infer<typeof createCategoriaActividadSchema>;
@@ -87,13 +87,13 @@ export declare const createEstadoActividadSchema: z.ZodObject<{
     orden: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | null | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
     orden?: number | undefined;
@@ -106,15 +106,15 @@ export declare const updateEstadoActividadSchema: z.ZodObject<{
     orden: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }>;
 export type CreateEstadoActividadDto = z.infer<typeof createEstadoActividadSchema>;
@@ -125,15 +125,15 @@ export declare const diaSemanaSchema: z.ZodObject<{
     nombre: z.ZodString;
     orden: z.ZodNumber;
 }, "strip", z.ZodTypeAny, {
-    nombre: string;
-    id: number;
     codigo: string;
+    nombre: string;
     orden: number;
+    id: number;
 }, {
-    nombre: string;
-    id: number;
     codigo: string;
+    nombre: string;
     orden: number;
+    id: number;
 }>;
 export type DiaSemanaDto = z.infer<typeof diaSemanaSchema>;
 export declare const createRolDocenteSchema: z.ZodObject<{
@@ -144,13 +144,13 @@ export declare const createRolDocenteSchema: z.ZodObject<{
     orden: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     activo: boolean;
-    nombre: string;
     codigo: string;
+    nombre: string;
     orden: number;
     descripcion?: string | null | undefined;
 }, {
-    nombre: string;
     codigo: string;
+    nombre: string;
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
     orden?: number | undefined;
@@ -163,15 +163,15 @@ export declare const updateRolDocenteSchema: z.ZodObject<{
     orden: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }, {
     activo?: boolean | undefined;
+    codigo?: string | undefined;
     nombre?: string | undefined;
     descripcion?: string | null | undefined;
-    codigo?: string | undefined;
     orden?: number | undefined;
 }>;
 export type CreateRolDocenteDto = z.infer<typeof createRolDocenteSchema>;
@@ -199,12 +199,12 @@ export declare const queryTiposCatalogoSchema: z.ZodObject<{
     orderBy: z.ZodDefault<z.ZodEnum<["codigo", "nombre", "orden", "created_at"]>>;
     orderDir: z.ZodDefault<z.ZodEnum<["asc", "desc"]>>;
 }, "strip", z.ZodTypeAny, {
-    orderBy: "nombre" | "codigo" | "orden" | "created_at";
+    orderBy: "codigo" | "nombre" | "orden" | "created_at";
     orderDir: "asc" | "desc";
     includeInactive: boolean;
     search?: string | undefined;
 }, {
-    orderBy?: "nombre" | "codigo" | "orden" | "created_at" | undefined;
+    orderBy?: "codigo" | "nombre" | "orden" | "created_at" | undefined;
     search?: string | undefined;
     orderDir?: "asc" | "desc" | undefined;
     includeInactive?: unknown;

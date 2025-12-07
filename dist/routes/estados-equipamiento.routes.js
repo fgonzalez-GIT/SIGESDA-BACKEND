@@ -1,0 +1,19 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const estados_equipamiento_controller_1 = require("@/controllers/estados-equipamiento.controller");
+const estados_equipamiento_service_1 = require("@/services/estados-equipamiento.service");
+const estados_equipamiento_repository_1 = require("@/repositories/estados-equipamiento.repository");
+const database_1 = require("@/config/database");
+const router = (0, express_1.Router)();
+const repository = new estados_equipamiento_repository_1.EstadosEquipamientoRepository(database_1.prisma);
+const service = new estados_equipamiento_service_1.EstadosEquipamientoService(repository);
+const controller = new estados_equipamiento_controller_1.EstadosEquipamientoController(service);
+router.patch('/reorder', controller.reorder.bind(controller));
+router.post('/', controller.create.bind(controller));
+router.get('/', controller.findAll.bind(controller));
+router.get('/:id', controller.findById.bind(controller));
+router.put('/:id', controller.update.bind(controller));
+router.delete('/:id', controller.delete.bind(controller));
+exports.default = router;
+//# sourceMappingURL=estados-equipamiento.routes.js.map

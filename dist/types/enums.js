@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LogLevel = exports.HttpStatus = exports.DiaSemana = exports.TipoActividad = exports.TipoPersona = exports.EstadoRecibo = exports.TipoParentesco = exports.MedioPagoTipo = exports.TipoRecibo = void 0;
+exports.LogLevel = exports.HttpStatus = exports.EstadoEquipamiento = exports.DiaSemana = exports.TipoActividad = exports.TipoPersona = exports.EstadoRecibo = exports.TipoParentesco = exports.MedioPagoTipo = exports.TipoRecibo = void 0;
 var client_1 = require("@prisma/client");
 Object.defineProperty(exports, "TipoRecibo", { enumerable: true, get: function () { return client_1.TipoRecibo; } });
 Object.defineProperty(exports, "MedioPagoTipo", { enumerable: true, get: function () { return client_1.MedioPagoTipo; } });
@@ -29,6 +29,14 @@ var DiaSemana;
     DiaSemana["SABADO"] = "SABADO";
     DiaSemana["DOMINGO"] = "DOMINGO";
 })(DiaSemana || (exports.DiaSemana = DiaSemana = {}));
+var EstadoEquipamiento;
+(function (EstadoEquipamiento) {
+    EstadoEquipamiento["NUEVO"] = "NUEVO";
+    EstadoEquipamiento["USADO"] = "USADO";
+    EstadoEquipamiento["EN_REPARACION"] = "EN_REPARACION";
+    EstadoEquipamiento["ROTO"] = "ROTO";
+    EstadoEquipamiento["DADO_DE_BAJA"] = "DADO_DE_BAJA";
+})(EstadoEquipamiento || (exports.EstadoEquipamiento = EstadoEquipamiento = {}));
 var HttpStatus;
 (function (HttpStatus) {
     HttpStatus[HttpStatus["OK"] = 200] = "OK";
