@@ -1,0 +1,104 @@
+### =======================================================================
+### TEST: Cambiar Tipo de Persona (NO_SOCIO → SOCIO)
+### =======================================================================
+### Caso de uso: Cambiar persona ID 30 de NO_SOCIO a SOCIO
+### Los tipos mutuamente excluyentes se reemplazan automáticamente
+### =======================================================================
+
+### 1. Ver estado actual de persona ID 30
+GET http://localhost:8000/api/personas/30
+
+###
+
+### 2. Listar tipos actuales de persona ID 30
+GET http://localhost:8000/api/personas/30/tipos
+
+###
+
+### 3. Asignar tipo SOCIO (auto-reemplaza NO_SOCIO por ser mutuamente excluyente)
+POST http://localhost:8000/api/personas/30/tipos
+Content-Type: application/json
+
+{
+  "tipoPersonaCodigo": "SOCIO"
+}
+
+###
+
+### 4. Verificar cambio - Listar tipos actualizados
+GET http://localhost:8000/api/personas/30/tipos
+
+###
+
+### 5. Ver persona completa con tipos actualizados
+GET http://localhost:8000/api/personas/30
+
+###
+
+### =======================================================================
+### EJEMPLOS ADICIONALES
+### =======================================================================
+
+### 6. Asignar tipo SOCIO con datos completos
+POST http://localhost:8000/api/personas/30/tipos
+Content-Type: application/json
+
+{
+  "tipoPersonaCodigo": "SOCIO",
+  "categoriaId": 1,
+  "numeroSocio": 12345,
+  "fechaIngreso": "2025-01-01"
+}
+
+###
+
+### 7. Actualizar categoría de socio existente
+### Primero obtener el ID del PersonaTipo (tipoId)
+GET http://localhost:8000/api/personas/30/tipos
+
+### Luego actualizar con el tipoId obtenido (ejemplo: tipoId = 40)
+PUT http://localhost:8000/api/personas/30/tipos/40
+Content-Type: application/json
+
+{
+  "categoriaId": 2
+}
+
+###
+
+### 8. Asignar DOCENTE (múltiples tipos permitidos)
+POST http://localhost:8000/api/personas/30/tipos
+Content-Type: application/json
+
+{
+  "tipoPersonaCodigo": "DOCENTE",
+  "especialidadId": 1,
+  "honorariosPorHora": 5000
+}
+
+###
+
+### 9. Desasignar tipo DOCENTE (soft delete)
+### Usar tipoPersonaId obtenido del catálogo (ej: 9 para DOCENTE)
+DELETE http://localhost:8000/api/personas/30/tipos/9
+
+###
+
+### =======================================================================
+### CATÁLOGOS DE REFERENCIA
+### =======================================================================
+
+### 10. Ver catálogo de tipos de persona
+GET http://localhost:8000/api/catalogos/tipos-persona
+
+###
+
+### 11. Ver categorías de socio disponibles
+GET http://localhost:8000/api/categorias-socios
+
+###
+
+### 12. Ver especialidades de docentes
+GET http://localhost:8000/api/catalogos/especialidades-docentes
+
+###
