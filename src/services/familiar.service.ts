@@ -402,6 +402,17 @@ export class FamiliarService {
       if ((parentesco === TipoParentesco.PADRE || parentesco === TipoParentesco.MADRE) && familiarAge <= socioAge) {
         logger.warn(`Advertencia: Se está estableciendo como ${parentesco} a una persona de edad similar o menor`);
       }
+
+      // Validación para relaciones maritales (CONYUGE, ESPOSA, ESPOSO)
+      if ((parentesco === TipoParentesco.CONYUGE ||
+           parentesco === TipoParentesco.ESPOSA ||
+           parentesco === TipoParentesco.ESPOSO) &&
+          Math.abs(socioAge - familiarAge) > 25) {
+        logger.warn(
+          `Advertencia: Gran diferencia de edad entre cónyuges ` +
+          `(${Math.abs(socioAge - familiarAge)} años de diferencia)`
+        );
+      }
     }
 
     // Additional validation rules can be added here

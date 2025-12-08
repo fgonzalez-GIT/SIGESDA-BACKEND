@@ -1,0 +1,258 @@
+### ========================================================================
+### TEST: Parentescos ESPOSA y ESPOSO
+### ========================================================================
+### Pruebas de los nuevos valores agregados al enum TipoParentesco
+### Valida sincronización bidireccional automática (ESPOSA ↔ ESPOSO)
+### ========================================================================
+
+@baseUrl = http://localhost:8000/api
+
+### ========================================================================
+### 1. VERIFICAR TIPOS DE PARENTESCO DISPONIBLES
+### ========================================================================
+
+### Test 1.1: Obtener catálogo de tipos (debe incluir ESPOSA y ESPOSO)
+GET {{baseUrl}}/familiares/tipos-parentesco
+
+### Expected Response:
+# Debe incluir en el array: "CONYUGE", "ESPOSA", "ESPOSO"
+
+###
+
+### ========================================================================
+### 2. CREAR RELACIÓN CON ESPOSA
+### ========================================================================
+
+### Test 2.1: Crear relación ESPOSA (persona 21 → ESPOSA → persona 23)
+POST {{baseUrl}}/familiares
+Content-Type: application/json
+
+{
+  "socioId": 21,
+  "familiarId": 23,
+  "parentesco": "ESPOSA",
+  "descripcion": "Esposa del socio 21",
+  "permisoResponsableFinanciero": true,
+  "permisoContactoEmergencia": true,
+  "permisoAutorizadoRetiro": true,
+  "descuento": 30,
+  "activo": true,
+  "grupoFamiliarId": null
+}
+
+### Expected Response:
+# - HTTP 201 Created
+# - relacionPrincipal.parentesco = "ESPOSA"
+# - relacionInversa.parentesco = "ESPOSO" (sincronización automática)
+
+###
+
+### Test 2.2: Verificar sincronización bidireccional (debe existir relación ESPOSO inversa)
+GET {{baseUrl}}/familiares?socioId=23&familiarId=21
+
+### Expected Response:
+# - Debe existir relación con parentesco = "ESPOSO"
+# - Sincronización automática correcta
+
+###
+
+### ========================================================================
+### 3. CREAR RELACIÓN CON ESPOSO
+### ========================================================================
+
+### Test 3.1: Crear relación ESPOSO (persona 22 → ESPOSO → persona 24)
+POST {{baseUrl}}/familiares
+Content-Type: application/json
+
+{
+  "socioId": 22,
+  "familiarId": 24,
+  "parentesco": "ESPOSO",
+  "descripcion": "Esposo de la socia 24",
+  "permisoResponsableFinanciero": true,
+  "permisoContactoEmergencia": true,
+  "permisoAutorizadoRetiro": true,
+  "descuento": 30,
+  "activo": true,
+  "grupoFamiliarId": null
+}
+
+### Expected Response:
+# - HTTP 201 Created
+# - relacionPrincipal.parentesco = "ESPOSO"
+# - relacionInversa.parentesco = "ESPOSA" (sincronización automática)
+
+###
+
+### Test 3.2: Verificar sincronización bidireccional (debe existir relación ESPOSA inversa)
+GET {{baseUrl}}/familiares?socioId=24&familiarId=22
+
+### Expected Response:
+# - Debe existir relación con parentesco = "ESPOSA"
+# - Sincronización automática correcta
+
+###
+
+### ========================================================================
+### 4. COMPARACIÓN: CONYUGE vs ESPOSA/ESPOSO
+### ========================================================================
+
+### Test 4.1: Crear relación genérica CONYUGE
+POST {{baseUrl}}/familiares
+Content-Type: application/json
+
+{
+  "socioId": 25,
+  "familiarId": 26,
+  "parentesco": "CONYUGE",
+  "descripcion": "Relación marital genérica",
+  "permisoResponsableFinanciero": true,
+  "permisoContactoEmergencia": true,
+  "permisoAutorizadoRetiro": true,
+  "descuento": 30,
+  "activo": true,
+  "grupoFamiliarId": null
+}
+
+### Expected Response:
+# - relacionPrincipal.parentesco = "CONYUGE"
+# - relacionInversa.parentesco = "CONYUGE" (simétrico)
+
+###
+
+### Test 4.2: Verificar que CONYUGE es simétrico (ambas relaciones son CONYUGE)
+GET {{baseUrl}}/familiares?socioId=26&familiarId=25
+
+### Expected Response:
+# - parentesco = "CONYUGE" (no "ESPOSA" ni "ESPOSO")
+
+###
+
+### ========================================================================
+### 5. ACTUALIZACIÓN DE PARENTESCO
+### ========================================================================
+
+### Test 5.1: Actualizar de CONYUGE a ESPOSA
+# Primero obtener ID de relación existente
+GET {{baseUrl}}/familiares?socioId=25&familiarId=26
+
+### Luego actualizar con el ID obtenido (ejemplo: id = 100)
+PUT {{baseUrl}}/familiares/100
+Content-Type: application/json
+
+{
+  "parentesco": "ESPOSA"
+}
+
+### Expected Response:
+# - parentesco actualizado a "ESPOSA"
+# - Relación inversa debe cambiar a "ESPOSO" automáticamente
+
+###
+
+### Test 5.2: Verificar sincronización tras actualización
+GET {{baseUrl}}/familiares?socioId=26&familiarId=25
+
+### Expected Response:
+# - parentesco debe ser "ESPOSO" (inversa sincronizada)
+
+###
+
+### ========================================================================
+### 6. VALIDACIÓN DE EDAD (WARNING LOGS)
+### ========================================================================
+
+### Test 6.1: Crear relación ESPOSA con gran diferencia de edad (> 25 años)
+# Debe generar WARNING en logs del servidor
+POST {{baseUrl}}/familiares
+Content-Type: application/json
+
+{
+  "socioId": 1,
+  "familiarId": 10,
+  "parentesco": "ESPOSA",
+  "descripcion": "Gran diferencia de edad",
+  "permisoResponsableFinanciero": false,
+  "permisoContactoEmergencia": true,
+  "permisoAutorizadoRetiro": false,
+  "descuento": 0,
+  "activo": true
+}
+
+### Expected Behavior:
+# - HTTP 201 Created (no error)
+# - LOG WARNING en consola del servidor:
+#   "Advertencia: Gran diferencia de edad entre cónyuges (XX años de diferencia)"
+
+###
+
+### ========================================================================
+### 7. ESTADÍSTICAS Y FILTROS
+### ========================================================================
+
+### Test 7.1: Filtrar familiares por parentesco ESPOSA
+GET {{baseUrl}}/familiares?parentesco=ESPOSA
+
+### Expected Response:
+# - Lista de relaciones con parentesco = "ESPOSA"
+
+###
+
+### Test 7.2: Filtrar familiares por parentesco ESPOSO
+GET {{baseUrl}}/familiares?parentesco=ESPOSO
+
+### Expected Response:
+# - Lista de relaciones con parentesco = "ESPOSO"
+
+###
+
+### Test 7.3: Filtrar familiares por parentesco CONYUGE
+GET {{baseUrl}}/familiares?parentesco=CONYUGE
+
+### Expected Response:
+# - Lista de relaciones con parentesco = "CONYUGE"
+
+###
+
+### ========================================================================
+### 8. VALIDACIÓN DE ERRORES
+### ========================================================================
+
+### Test 8.1: Intentar crear con valor inválido (debe fallar)
+POST {{baseUrl}}/familiares
+Content-Type: application/json
+
+{
+  "socioId": 1,
+  "familiarId": 2,
+  "parentesco": "MARIDO",
+  "descripcion": "Valor no válido"
+}
+
+### Expected Response:
+# - HTTP 400 Bad Request
+# - Error: "parentesco: Tipo de parentesco inválido"
+
+###
+
+### ========================================================================
+### 9. ELIMINACIÓN
+### ========================================================================
+
+### Test 9.1: Eliminar relación ESPOSA (debe eliminar ambas relaciones)
+DELETE {{baseUrl}}/familiares/100
+
+### Expected Response:
+# - HTTP 200 OK
+# - Ambas relaciones (ESPOSA y ESPOSO) marcadas como activo=false
+
+###
+
+### Test 9.2: Verificar que relación inversa también fue eliminada
+GET {{baseUrl}}/familiares?socioId=26&familiarId=25&activos=false
+
+### Expected Response:
+# - Relación con activo=false
+# - Sincronización de eliminación correcta
+
+###

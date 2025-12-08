@@ -124,7 +124,25 @@ export const familiarFixtures = {
   },
   conyuge: {
     parentesco: TipoParentesco.CONYUGE,
-    descripcion: 'Cónyuge',
+    descripcion: 'Cónyuge (genérico)',
+    permisoResponsableFinanciero: true,
+    permisoContactoEmergencia: true,
+    permisoAutorizadoRetiro: true,
+    descuento: 30.00,
+    activo: true
+  },
+  esposa: {
+    parentesco: TipoParentesco.ESPOSA,
+    descripcion: 'Esposa',
+    permisoResponsableFinanciero: true,
+    permisoContactoEmergencia: true,
+    permisoAutorizadoRetiro: true,
+    descuento: 30.00,
+    activo: true
+  },
+  esposo: {
+    parentesco: TipoParentesco.ESPOSO,
+    descripcion: 'Esposo',
     permisoResponsableFinanciero: true,
     permisoContactoEmergencia: true,
     permisoAutorizadoRetiro: true,

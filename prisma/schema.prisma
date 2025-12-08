@@ -790,7 +790,9 @@ enum MedioPagoTipo {
 enum TipoParentesco {
   HIJO
   HIJA
-  CONYUGE
+  CONYUGE      // Genérico - Género neutro (simétrico)
+  ESPOSA       // Específico - Género femenino (asimétrico)
+  ESPOSO       // Específico - Género masculino (asimétrico)
   PADRE
   MADRE
   HERMANO

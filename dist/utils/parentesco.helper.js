@@ -17,6 +17,8 @@ exports.PARENTESCO_COMPLEMENTARIO = {
     [client_1.TipoParentesco.HERMANO]: client_1.TipoParentesco.HERMANO,
     [client_1.TipoParentesco.HERMANA]: client_1.TipoParentesco.HERMANA,
     [client_1.TipoParentesco.CONYUGE]: client_1.TipoParentesco.CONYUGE,
+    [client_1.TipoParentesco.ESPOSA]: client_1.TipoParentesco.ESPOSO,
+    [client_1.TipoParentesco.ESPOSO]: client_1.TipoParentesco.ESPOSA,
     [client_1.TipoParentesco.ABUELO]: client_1.TipoParentesco.NIETO,
     [client_1.TipoParentesco.ABUELA]: client_1.TipoParentesco.NIETA,
     [client_1.TipoParentesco.NIETO]: client_1.TipoParentesco.ABUELO,
@@ -42,7 +44,9 @@ exports.PARENTESCOS_PRIMER_GRADO = [
     client_1.TipoParentesco.HIJA,
     client_1.TipoParentesco.HERMANO,
     client_1.TipoParentesco.HERMANA,
-    client_1.TipoParentesco.CONYUGE
+    client_1.TipoParentesco.CONYUGE,
+    client_1.TipoParentesco.ESPOSA,
+    client_1.TipoParentesco.ESPOSO
 ];
 exports.PARENTESCOS_SEGUNDO_GRADO = [
     client_1.TipoParentesco.ABUELO,
@@ -85,7 +89,9 @@ exports.PARENTESCOS_ASIMETRICOS = [
     client_1.TipoParentesco.TIO,
     client_1.TipoParentesco.TIA,
     client_1.TipoParentesco.SOBRINO,
-    client_1.TipoParentesco.SOBRINA
+    client_1.TipoParentesco.SOBRINA,
+    client_1.TipoParentesco.ESPOSA,
+    client_1.TipoParentesco.ESPOSO
 ];
 function getParentescoComplementario(parentesco) {
     return exports.PARENTESCO_COMPLEMENTARIO[parentesco];

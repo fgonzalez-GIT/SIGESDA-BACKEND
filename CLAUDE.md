@@ -295,14 +295,37 @@ Required variables (see `.env.example`):
 
 ### Relaciones Familiares
 - **Table**: `familiares`
-- **Enum**: `TipoParentesco` (18 types)
+- **Enum**: `TipoParentesco` (20 types - actualizado 2025-12-08)
 - **Helper**: `src/utils/parentesco.helper.ts`
 - **Rules**:
   - ✅ Automatic bidirectional sync (CREATE/UPDATE/DELETE)
-  - ✅ Complementary parentescos (PADRE↔HIJO, etc.)
+  - ✅ Complementary parentescos (PADRE↔HIJO, ESPOSA↔ESPOSO, etc.)
   - Unique constraint per person pair
   - Family discounts (0-100%), permissions, group support
   - Works with all person types (SOCIO, NO_SOCIO, DOCENTE, PROVEEDOR)
+
+**Tipos de Parentesco Maritales:**
+- **CONYUGE**: Valor genérico, género neutro (simétrico)
+  - Uso: Cuando no se desea especificar género o para inclusividad
+  - Sincronización: CONYUGE ↔ CONYUGE (A→CONYUGE→B implica B→CONYUGE→A)
+  - Recomendado para: Organizaciones con políticas de género inclusivas
+- **ESPOSA**: Valor específico, género femenino (asimétrico)
+  - Uso: Cuando se desea especificar relación marital femenina
+  - Sincronización: ESPOSA ↔ ESPOSO (A→ESPOSA→B implica B→ESPOSO→A)
+  - Mayor claridad semántica en español
+- **ESPOSO**: Valor específico, género masculino (asimétrico)
+  - Uso: Cuando se desea especificar relación marital masculina
+  - Sincronización: ESPOSO ↔ ESPOSA (A→ESPOSO→B implica B→ESPOSA→A)
+  - Mayor claridad semántica en español
+
+**Nota Importante:** Los tres valores coexisten para máxima flexibilidad. CONYUGE se mantiene para retrocompatibilidad con datos existentes y para organizaciones que prefieren valor género-neutro. Los usuarios pueden elegir libremente entre:
+- **Enfoque genérico**: Usar siempre CONYUGE (simplicidad, neutralidad)
+- **Enfoque específico**: Usar ESPOSA/ESPOSO (claridad, granularidad)
+
+**Validaciones Automáticas:**
+- ✅ Sincronización bidireccional correcta según tipo (simétrico vs asimétrico)
+- ✅ Warning log si diferencia de edad > 25 años entre cónyuges
+- ✅ Prevención de duplicados (misma relación entre dos personas)
 
 ### Tipos de Contacto (Catálogo)
 - **Tables**: `contacto_persona`, `tipo_contacto_catalogo`

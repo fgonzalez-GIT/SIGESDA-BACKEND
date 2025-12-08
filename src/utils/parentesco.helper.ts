@@ -26,7 +26,11 @@ export const PARENTESCO_COMPLEMENTARIO: Record<TipoParentesco, TipoParentesco> =
   // Relaciones horizontales de primer grado
   [TipoParentesco.HERMANO]: TipoParentesco.HERMANO,  // Si A es hermano de B → B es hermano de A
   [TipoParentesco.HERMANA]: TipoParentesco.HERMANA,  // Si A es hermana de B → B es hermana de A
-  [TipoParentesco.CONYUGE]: TipoParentesco.CONYUGE,  // Si A es cónyuge de B → B es cónyuge de A
+
+  // Relaciones maritales (conyugales)
+  [TipoParentesco.CONYUGE]: TipoParentesco.CONYUGE,  // Si A es cónyuge de B → B es cónyuge de A (simétrico, género neutro)
+  [TipoParentesco.ESPOSA]: TipoParentesco.ESPOSO,    // Si A es esposa de B → B es esposo de A (asimétrico, género femenino)
+  [TipoParentesco.ESPOSO]: TipoParentesco.ESPOSA,    // Si A es esposo de B → B es esposa de A (asimétrico, género masculino)
 
   // === SEGUNDO GRADO: Relaciones indirectas (abuelos, tíos, primos) ===
 
@@ -63,7 +67,7 @@ export enum GradoParentesco {
  * Parentescos de primer grado (relaciones más cercanas)
  * - Línea directa ascendente/descendente: padres-hijos
  * - Línea colateral: hermanos
- * - Vínculo conyugal: cónyuge
+ * - Vínculo conyugal: cónyuge, esposa, esposo
  */
 export const PARENTESCOS_PRIMER_GRADO: TipoParentesco[] = [
   TipoParentesco.PADRE,
@@ -72,7 +76,9 @@ export const PARENTESCOS_PRIMER_GRADO: TipoParentesco[] = [
   TipoParentesco.HIJA,
   TipoParentesco.HERMANO,
   TipoParentesco.HERMANA,
-  TipoParentesco.CONYUGE
+  TipoParentesco.CONYUGE,  // Género neutro (genérico)
+  TipoParentesco.ESPOSA,   // Género femenino (específico)
+  TipoParentesco.ESPOSO    // Género masculino (específico)
 ];
 
 /**
@@ -140,7 +146,9 @@ export const PARENTESCOS_ASIMETRICOS: TipoParentesco[] = [
   TipoParentesco.TIO,
   TipoParentesco.TIA,
   TipoParentesco.SOBRINO,
-  TipoParentesco.SOBRINA
+  TipoParentesco.SOBRINA,
+  TipoParentesco.ESPOSA,   // Relación marital asimétrica (ESPOSA ↔ ESPOSO)
+  TipoParentesco.ESPOSO    // Relación marital asimétrica (ESPOSO ↔ ESPOSA)
 ];
 
 /**

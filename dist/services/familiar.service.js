@@ -259,6 +259,13 @@ class FamiliarService {
             if ((parentesco === client_1.TipoParentesco.PADRE || parentesco === client_1.TipoParentesco.MADRE) && familiarAge <= socioAge) {
                 logger_1.logger.warn(`Advertencia: Se está estableciendo como ${parentesco} a una persona de edad similar o menor`);
             }
+            if ((parentesco === client_1.TipoParentesco.CONYUGE ||
+                parentesco === client_1.TipoParentesco.ESPOSA ||
+                parentesco === client_1.TipoParentesco.ESPOSO) &&
+                Math.abs(socioAge - familiarAge) > 25) {
+                logger_1.logger.warn(`Advertencia: Gran diferencia de edad entre cónyuges ` +
+                    `(${Math.abs(socioAge - familiarAge)} años de diferencia)`);
+            }
         }
     }
 }

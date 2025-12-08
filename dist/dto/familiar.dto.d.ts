@@ -6,6 +6,8 @@ export declare const createFamiliarSchema: z.ZodEffects<z.ZodObject<{
         HIJO: "HIJO";
         HIJA: "HIJA";
         CONYUGE: "CONYUGE";
+        ESPOSA: "ESPOSA";
+        ESPOSO: "ESPOSO";
         PADRE: "PADRE";
         MADRE: "MADRE";
         HERMANO: "HERMANO";
@@ -33,7 +35,7 @@ export declare const createFamiliarSchema: z.ZodEffects<z.ZodObject<{
     activo: boolean;
     socioId: number;
     familiarId: number;
-    parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+    parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
     permisoResponsableFinanciero: boolean;
     permisoContactoEmergencia: boolean;
     permisoAutorizadoRetiro: boolean;
@@ -43,7 +45,7 @@ export declare const createFamiliarSchema: z.ZodEffects<z.ZodObject<{
 }, {
     socioId: number;
     familiarId: number;
-    parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+    parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
     activo?: boolean | undefined;
     descripcion?: string | undefined;
     permisoResponsableFinanciero?: boolean | undefined;
@@ -55,7 +57,7 @@ export declare const createFamiliarSchema: z.ZodEffects<z.ZodObject<{
     activo: boolean;
     socioId: number;
     familiarId: number;
-    parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+    parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
     permisoResponsableFinanciero: boolean;
     permisoContactoEmergencia: boolean;
     permisoAutorizadoRetiro: boolean;
@@ -65,7 +67,7 @@ export declare const createFamiliarSchema: z.ZodEffects<z.ZodObject<{
 }, {
     socioId: number;
     familiarId: number;
-    parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+    parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
     activo?: boolean | undefined;
     descripcion?: string | undefined;
     permisoResponsableFinanciero?: boolean | undefined;
@@ -79,6 +81,8 @@ export declare const updateFamiliarSchema: z.ZodObject<{
         HIJO: "HIJO";
         HIJA: "HIJA";
         CONYUGE: "CONYUGE";
+        ESPOSA: "ESPOSA";
+        ESPOSO: "ESPOSO";
         PADRE: "PADRE";
         MADRE: "MADRE";
         HERMANO: "HERMANO";
@@ -105,7 +109,7 @@ export declare const updateFamiliarSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
-    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
+    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
     permisoResponsableFinanciero?: boolean | undefined;
     permisoContactoEmergencia?: boolean | undefined;
     permisoAutorizadoRetiro?: boolean | undefined;
@@ -114,7 +118,7 @@ export declare const updateFamiliarSchema: z.ZodObject<{
 }, {
     activo?: boolean | undefined;
     descripcion?: string | null | undefined;
-    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
+    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
     permisoResponsableFinanciero?: boolean | undefined;
     permisoContactoEmergencia?: boolean | undefined;
     permisoAutorizadoRetiro?: boolean | undefined;
@@ -128,6 +132,8 @@ export declare const familiarQuerySchema: z.ZodObject<{
         HIJO: "HIJO";
         HIJA: "HIJA";
         CONYUGE: "CONYUGE";
+        ESPOSA: "ESPOSA";
+        ESPOSO: "ESPOSO";
         PADRE: "PADRE";
         MADRE: "MADRE";
         HERMANO: "HERMANO";
@@ -156,7 +162,7 @@ export declare const familiarQuerySchema: z.ZodObject<{
     includeInactivos: boolean;
     socioId?: number | undefined;
     familiarId?: number | undefined;
-    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
+    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
     grupoFamiliarId?: number | undefined;
 }, {
     soloActivos?: unknown;
@@ -164,7 +170,7 @@ export declare const familiarQuerySchema: z.ZodObject<{
     limit?: unknown;
     socioId?: unknown;
     familiarId?: unknown;
-    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
+    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
     grupoFamiliarId?: unknown;
     includeInactivos?: unknown;
 }>;
@@ -176,6 +182,8 @@ export declare const createBulkFamiliaresSchema: z.ZodObject<{
             HIJO: "HIJO";
             HIJA: "HIJA";
             CONYUGE: "CONYUGE";
+            ESPOSA: "ESPOSA";
+            ESPOSO: "ESPOSO";
             PADRE: "PADRE";
             MADRE: "MADRE";
             HERMANO: "HERMANO";
@@ -203,7 +211,7 @@ export declare const createBulkFamiliaresSchema: z.ZodObject<{
         activo: boolean;
         socioId: number;
         familiarId: number;
-        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
         permisoResponsableFinanciero: boolean;
         permisoContactoEmergencia: boolean;
         permisoAutorizadoRetiro: boolean;
@@ -213,7 +221,7 @@ export declare const createBulkFamiliaresSchema: z.ZodObject<{
     }, {
         socioId: number;
         familiarId: number;
-        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
         activo?: boolean | undefined;
         descripcion?: string | undefined;
         permisoResponsableFinanciero?: boolean | undefined;
@@ -225,7 +233,7 @@ export declare const createBulkFamiliaresSchema: z.ZodObject<{
         activo: boolean;
         socioId: number;
         familiarId: number;
-        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
         permisoResponsableFinanciero: boolean;
         permisoContactoEmergencia: boolean;
         permisoAutorizadoRetiro: boolean;
@@ -235,7 +243,7 @@ export declare const createBulkFamiliaresSchema: z.ZodObject<{
     }, {
         socioId: number;
         familiarId: number;
-        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
         activo?: boolean | undefined;
         descripcion?: string | undefined;
         permisoResponsableFinanciero?: boolean | undefined;
@@ -249,7 +257,7 @@ export declare const createBulkFamiliaresSchema: z.ZodObject<{
         activo: boolean;
         socioId: number;
         familiarId: number;
-        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
         permisoResponsableFinanciero: boolean;
         permisoContactoEmergencia: boolean;
         permisoAutorizadoRetiro: boolean;
@@ -261,7 +269,7 @@ export declare const createBulkFamiliaresSchema: z.ZodObject<{
     familiares: {
         socioId: number;
         familiarId: number;
-        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
+        parentesco: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA";
         activo?: boolean | undefined;
         descripcion?: string | undefined;
         permisoResponsableFinanciero?: boolean | undefined;
@@ -285,6 +293,8 @@ export declare const familiarSearchSchema: z.ZodObject<{
         HIJO: "HIJO";
         HIJA: "HIJA";
         CONYUGE: "CONYUGE";
+        ESPOSA: "ESPOSA";
+        ESPOSO: "ESPOSO";
         PADRE: "PADRE";
         MADRE: "MADRE";
         HERMANO: "HERMANO";
@@ -306,10 +316,10 @@ export declare const familiarSearchSchema: z.ZodObject<{
     search: string;
     includeInactivos: boolean;
     searchBy: "nombre" | "dni" | "email" | "all";
-    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
+    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
 }, {
     search: string;
-    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
+    parentesco?: "HIJO" | "HIJA" | "CONYUGE" | "ESPOSA" | "ESPOSO" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "OTRO" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | undefined;
     includeInactivos?: boolean | undefined;
     searchBy?: "nombre" | "dni" | "email" | "all" | undefined;
 }>;
