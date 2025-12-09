@@ -268,3 +268,213 @@ export function getInfoParentesco(parentesco: TipoParentesco): {
     simetrico: isParentescoSimetrico(parentesco)
   };
 }
+
+// ============================================================================
+// LÓGICA CON GÉNERO (AGREGADO 2025-12-09)
+// ============================================================================
+
+/**
+ * Tipo de género (debe coincidir con el enum Genero de Prisma)
+ */
+export type Genero = 'MASCULINO' | 'FEMENINO' | 'NO_BINARIO' | 'PREFIERO_NO_DECIR' | null;
+
+/**
+ * Obtiene el parentesco complementario considerando el género de la persona destino
+ *
+ * Esta función permite relaciones familiares asimétricas correctas basadas en género:
+ * - PADRE + MASCULINO → HIJO (no HIJA)
+ * - PADRE + FEMENINO → HIJA (no HIJO)
+ * - MADRE + MASCULINO → HIJO (no HIJA)
+ * - MADRE + FEMENINO → HIJA (no HIJO)
+ *
+ * **Fallback para género NULL/NO_BINARIO/PREFIERO_NO_DECIR:**
+ * - Usa forma masculina por defecto (convención del español genérico)
+ * - PADRE/MADRE → HIJO (no HIJA)
+ * - HERMANO/HERMANA → HERMANO (no HERMANA)
+ * - ABUELO/ABUELA → NIETO (no NIETA)
+ *
+ * **Para usuarios NO_BINARIO/PREFIERO_NO_DECIR:**
+ * - La función retorna la forma masculina como sugerencia
+ * - El service layer debe permitir override manual del parentesco
+ * - Ver: familiar.service.ts para implementación de override
+ *
+ * @param parentesco - El parentesco original (de A hacia B)
+ * @param generoDestino - Género de la persona B (destino de la relación)
+ * @returns El parentesco complementario (de B hacia A)
+ *
+ * @example
+ * // Relación padre-hijo con género masculino
+ * getParentescoComplementarioConGenero('PADRE', 'MASCULINO') // Returns: 'HIJO'
+ *
+ * @example
+ * // Relación padre-hija con género femenino
+ * getParentescoComplementarioConGenero('PADRE', 'FEMENINO') // Returns: 'HIJA'
+ *
+ * @example
+ * // Relación sin género (fallback a masculino)
+ * getParentescoComplementarioConGenero('PADRE', null) // Returns: 'HIJO'
+ *
+ * @example
+ * // Relación con género no binario (fallback a masculino)
+ * getParentescoComplementarioConGenero('MADRE', 'NO_BINARIO') // Returns: 'HIJO'
+ *
+ * @example
+ * // Relación simétrica (género no importa)
+ * getParentescoComplementarioConGenero('CONYUGE', 'MASCULINO') // Returns: 'CONYUGE'
+ * getParentescoComplementarioConGenero('HERMANO', 'FEMENINO') // Returns: 'HERMANA'
+ */
+export function getParentescoComplementarioConGenero(
+  parentesco: TipoParentesco,
+  generoDestino?: Genero
+): TipoParentesco {
+  // Para relaciones simétricas y maritales asimétricas específicas,
+  // usar el mapa original (no dependen del género del hijo/familiar)
+  const relacionesSinGenero: TipoParentesco[] = [
+    TipoParentesco.CONYUGE,  // Simétrico género neutro
+    TipoParentesco.ESPOSA,   // Asimétrico marital (género del cónyuge, no del hijo)
+    TipoParentesco.ESPOSO,   // Asimétrico marital (género del cónyuge, no del hijo)
+    TipoParentesco.OTRO      // Genérico
+  ];
+
+  if (relacionesSinGenero.includes(parentesco)) {
+    return PARENTESCO_COMPLEMENTARIO[parentesco];
+  }
+
+  // Normalizar género: NULL, NO_BINARIO, PREFIERO_NO_DECIR → usar masculino
+  const usarMasculino = !generoDestino || generoDestino === 'NO_BINARIO' || generoDestino === 'PREFIERO_NO_DECIR';
+  const esFemenino = generoDestino === 'FEMENINO';
+
+  // === RELACIONES PADRE/MADRE → HIJO/HIJA ===
+  if (parentesco === TipoParentesco.PADRE || parentesco === TipoParentesco.MADRE) {
+    return esFemenino ? TipoParentesco.HIJA : TipoParentesco.HIJO;
+  }
+
+  // === RELACIONES HIJO/HIJA → PADRE/MADRE ===
+  // NOTA: Aquí el género es del PADRE, no del hijo
+  // Como no tenemos el género del padre aquí, usamos la lógica original
+  // (HIJO → PADRE, HIJA → MADRE)
+  // TODO: Si se requiere mayor precisión, se debe pasar el género del padre también
+  if (parentesco === TipoParentesco.HIJO) {
+    return TipoParentesco.PADRE;  // Mantener lógica original
+  }
+  if (parentesco === TipoParentesco.HIJA) {
+    return TipoParentesco.MADRE;  // Mantener lógica original
+  }
+
+  // === RELACIONES HERMANO/HERMANA ===
+  // Si A es HERMANO/HERMANA de B, entonces B es HERMANO/HERMANA según su género
+  if (parentesco === TipoParentesco.HERMANO || parentesco === TipoParentesco.HERMANA) {
+    return esFemenino ? TipoParentesco.HERMANA : TipoParentesco.HERMANO;
+  }
+
+  // === RELACIONES ABUELO/ABUELA → NIETO/NIETA ===
+  if (parentesco === TipoParentesco.ABUELO || parentesco === TipoParentesco.ABUELA) {
+    return esFemenino ? TipoParentesco.NIETA : TipoParentesco.NIETO;
+  }
+
+  // === RELACIONES NIETO/NIETA → ABUELO/ABUELA ===
+  // Similar a HIJO/HIJA, usamos lógica original
+  if (parentesco === TipoParentesco.NIETO) {
+    return TipoParentesco.ABUELO;  // Mantener lógica original
+  }
+  if (parentesco === TipoParentesco.NIETA) {
+    return TipoParentesco.ABUELA;  // Mantener lógica original
+  }
+
+  // === RELACIONES TIO/TIA → SOBRINO/SOBRINA ===
+  if (parentesco === TipoParentesco.TIO || parentesco === TipoParentesco.TIA) {
+    return esFemenino ? TipoParentesco.SOBRINA : TipoParentesco.SOBRINO;
+  }
+
+  // === RELACIONES SOBRINO/SOBRINA → TIO/TIA ===
+  if (parentesco === TipoParentesco.SOBRINO) {
+    return TipoParentesco.TIO;  // Mantener lógica original
+  }
+  if (parentesco === TipoParentesco.SOBRINA) {
+    return TipoParentesco.TIA;  // Mantener lógica original
+  }
+
+  // === RELACIONES PRIMO/PRIMA ===
+  // Si A es PRIMO/PRIMA de B, entonces B es PRIMO/PRIMA según su género
+  if (parentesco === TipoParentesco.PRIMO || parentesco === TipoParentesco.PRIMA) {
+    return esFemenino ? TipoParentesco.PRIMA : TipoParentesco.PRIMO;
+  }
+
+  // Fallback: usar mapa original si no se encuentra lógica específica
+  return PARENTESCO_COMPLEMENTARIO[parentesco];
+}
+
+/**
+ * Valida si un parentesco es consistente con el género de la persona
+ *
+ * Verifica si hay conflicto entre el parentesco asignado y el género de la persona:
+ * - HIJO requiere género MASCULINO
+ * - HIJA requiere género FEMENINO
+ * - HERMANO requiere género MASCULINO
+ * - HERMANA requiere género FEMENINO
+ * - etc.
+ *
+ * **Política de validación:**
+ * - NULL/NO_BINARIO/PREFIERO_NO_DECIR: SIEMPRE válido (no se fuerza género)
+ * - Conflictos detectados generan WARNING (no error) según user requirements
+ *
+ * @param parentesco - El parentesco asignado
+ * @param genero - El género de la persona
+ * @returns { valid: boolean, warning?: string }
+ *
+ * @example
+ * validateParentescoGenero('HIJO', 'MASCULINO') // { valid: true }
+ * validateParentescoGenero('HIJO', 'FEMENINO')  // { valid: true, warning: "..." }
+ * validateParentescoGenero('HIJO', null)        // { valid: true } (NULL siempre válido)
+ */
+export function validateParentescoGenero(
+  parentesco: TipoParentesco,
+  genero: Genero
+): { valid: boolean; warning?: string } {
+  // NULL, NO_BINARIO, PREFIERO_NO_DECIR: siempre válido
+  if (!genero || genero === 'NO_BINARIO' || genero === 'PREFIERO_NO_DECIR') {
+    return { valid: true };
+  }
+
+  // Definir parentescos que requieren género específico
+  const parentescosMasculinos: TipoParentesco[] = [
+    TipoParentesco.HIJO,
+    TipoParentesco.PADRE,
+    TipoParentesco.HERMANO,
+    TipoParentesco.ABUELO,
+    TipoParentesco.NIETO,
+    TipoParentesco.TIO,
+    TipoParentesco.SOBRINO,
+    TipoParentesco.PRIMO,
+    TipoParentesco.ESPOSO
+  ];
+
+  const parentescosFemeninos: TipoParentesco[] = [
+    TipoParentesco.HIJA,
+    TipoParentesco.MADRE,
+    TipoParentesco.HERMANA,
+    TipoParentesco.ABUELA,
+    TipoParentesco.NIETA,
+    TipoParentesco.TIA,
+    TipoParentesco.SOBRINA,
+    TipoParentesco.PRIMA,
+    TipoParentesco.ESPOSA
+  ];
+
+  // Verificar conflictos
+  if (genero === 'MASCULINO' && parentescosFemeninos.includes(parentesco)) {
+    return {
+      valid: true,  // Permitir operación (solo warning)
+      warning: `Posible inconsistencia: persona con género MASCULINO asignada como ${parentesco} (parentesco femenino)`
+    };
+  }
+
+  if (genero === 'FEMENINO' && parentescosMasculinos.includes(parentesco)) {
+    return {
+      valid: true,  // Permitir operación (solo warning)
+      warning: `Posible inconsistencia: persona con género FEMENINO asignada como ${parentesco} (parentesco masculino)`
+    };
+  }
+
+  return { valid: true };
+}

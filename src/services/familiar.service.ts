@@ -14,9 +14,12 @@ import {
 import { logger } from '@/utils/logger';
 import {
   getParentescoComplementario,
+  getParentescoComplementarioConGenero,
+  validateParentescoGenero,
   getRelacionBidireccionalDescripcion,
   getGradoParentesco,
-  GradoParentesco
+  GradoParentesco,
+  Genero
 } from '@/utils/parentesco.helper';
 
 export class FamiliarService {
@@ -78,12 +81,32 @@ export class FamiliarService {
     }
 
     // =========================================================================
-    // SINCRONIZACIÓN BIDIRECCIONAL AUTOMÁTICA
+    // SINCRONIZACIÓN BIDIRECCIONAL AUTOMÁTICA CON GÉNERO
     // =========================================================================
 
-    // Obtener el parentesco complementario
-    const parentescoComplementario = getParentescoComplementario(data.parentesco);
+    // Validar consistencia género-parentesco para persona A (quien inicia la relación)
+    const validacionA = validateParentescoGenero(data.parentesco, personaA.genero as Genero);
+    if (validacionA.warning) {
+      logger.warn(`⚠️  ${validacionA.warning} - Persona: ${personaA.nombre} ${personaA.apellido} (ID: ${personaA.id})`);
+    }
+
+    // Obtener el parentesco complementario usando el género de persona B
+    const parentescoComplementario = getParentescoComplementarioConGenero(
+      data.parentesco,
+      personaB.genero as Genero
+    );
     const gradoParentesco = getGradoParentesco(data.parentesco);
+
+    // Validar consistencia género-parentesco para persona B (relación inversa)
+    const validacionB = validateParentescoGenero(parentescoComplementario, personaB.genero as Genero);
+    if (validacionB.warning) {
+      logger.warn(`⚠️  ${validacionB.warning} - Persona: ${personaB.nombre} ${personaB.apellido} (ID: ${personaB.id})`);
+    }
+
+    // Log informativo sobre género
+    logger.info(`   🧬 Género persona A (${personaA.nombre}): ${personaA.genero || 'NO_ESPECIFICADO'}`);
+    logger.info(`   🧬 Género persona B (${personaB.nombre}): ${personaB.genero || 'NO_ESPECIFICADO'}`);
+    logger.info(`   🔗 Parentesco complementario calculado: ${parentescoComplementario}`);
 
     // Crear la relación principal (A → B)
     const relacionPrincipal = await this.familiarRepository.create(data);
@@ -214,9 +237,38 @@ export class FamiliarService {
         updateDataInversa.activo = data.activo;
       }
 
-      // Si se cambió el parentesco, actualizar el complementario en la relación inversa
+      // Si se cambió el parentesco, actualizar el complementario en la relación inversa usando género
       if (data.parentesco) {
-        updateDataInversa.parentesco = getParentescoComplementario(data.parentesco);
+        // Obtener personas para acceder al género
+        const personaA = await this.personaRepository.findById(existingRelacion.socioId);
+        const personaB = await this.personaRepository.findById(existingRelacion.familiarId);
+
+        if (personaA && personaB) {
+          // Validar consistencia género-parentesco
+          const validacionA = validateParentescoGenero(data.parentesco, personaA.genero as Genero);
+          if (validacionA.warning) {
+            logger.warn(`⚠️  ${validacionA.warning} - Persona: ${personaA.nombre} ${personaA.apellido} (ID: ${personaA.id})`);
+          }
+
+          // Calcular parentesco complementario con género
+          const parentescoComplementario = getParentescoComplementarioConGenero(
+            data.parentesco,
+            personaB.genero as Genero
+          );
+          updateDataInversa.parentesco = parentescoComplementario;
+
+          // Validar consistencia género-parentesco para relación inversa
+          const validacionB = validateParentescoGenero(parentescoComplementario, personaB.genero as Genero);
+          if (validacionB.warning) {
+            logger.warn(`⚠️  ${validacionB.warning} - Persona: ${personaB.nombre} ${personaB.apellido} (ID: ${personaB.id})`);
+          }
+
+          logger.info(`   🔗 Parentesco complementario actualizado: ${parentescoComplementario} (género B: ${personaB.genero || 'NO_ESPECIFICADO'})`);
+        } else {
+          // Fallback a lógica sin género si no se encuentran las personas
+          updateDataInversa.parentesco = getParentescoComplementario(data.parentesco);
+          logger.warn(`⚠️  No se pudo obtener género de personas - Usando lógica de parentesco sin género`);
+        }
       }
 
       // Sincronizar descripción si se modificó
@@ -385,6 +437,17 @@ export class FamiliarService {
 
   // Helper method to validate parentesco relationships
   private validateParentesco(parentesco: TipoParentesco, socio: any, familiar: any): void {
+    // =========================================================================
+    // VALIDACIÓN GÉNERO-PARENTESCO
+    // =========================================================================
+    const validacionGenero = validateParentescoGenero(parentesco, socio.genero as Genero);
+    if (validacionGenero.warning) {
+      logger.warn(`⚠️  ${validacionGenero.warning} - Persona: ${socio.nombre} ${socio.apellido} (ID: ${socio.id})`);
+    }
+
+    // =========================================================================
+    // VALIDACIÓN EDAD-PARENTESCO
+    // =========================================================================
     // Basic business rules for parentesco validation
     // This can be extended with more complex family relationship logic
 

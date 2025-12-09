@@ -438,6 +438,7 @@ model Persona {
   telefono                  String?
   direccion                 String?
   fechaNacimiento           DateTime?
+  genero                    Genero?
   numeroSocio               Int?                        @unique
   categoria                 CategoriaSocioLegacy?
   fechaIngreso              DateTime?
@@ -469,6 +470,7 @@ model Persona {
 
   @@index([categoriaId])
   @@index([activo])
+  @@index([genero])
   @@map("personas")
 }
 
@@ -843,4 +845,11 @@ enum TipoContacto {
   WHATSAPP
   TELEGRAM
   OTRO
+}
+
+enum Genero {
+  MASCULINO
+  FEMENINO
+  NO_BINARIO
+  PREFIERO_NO_DECIR
 }

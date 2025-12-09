@@ -15,6 +15,9 @@ const personaBaseSchema = z.object({
   telefono: z.string().max(20).optional(),
   direccion: z.string().max(200).optional(),
   fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
+  genero: z.enum(['MASCULINO', 'FEMENINO', 'NO_BINARIO', 'PREFIERO_NO_DECIR'], {
+    errorMap: () => ({ message: 'Género debe ser MASCULINO, FEMENINO, NO_BINARIO o PREFIERO_NO_DECIR' })
+  }).optional(),
   observaciones: z.string().max(500).optional()
 });
 
@@ -128,6 +131,9 @@ export const updatePersonaSchema = z.object({
   telefono: z.string().max(20).optional().nullable(),
   direccion: z.string().max(200).optional().nullable(),
   fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
+  genero: z.enum(['MASCULINO', 'FEMENINO', 'NO_BINARIO', 'PREFIERO_NO_DECIR'], {
+    errorMap: () => ({ message: 'Género debe ser MASCULINO, FEMENINO, NO_BINARIO o PREFIERO_NO_DECIR' })
+  }).optional().nullable(),
   observaciones: z.string().max(500).optional().nullable(),
 
   // Campos de soft delete
@@ -184,6 +190,9 @@ export const personaQuerySchema = z.object({
     },
     z.boolean().optional()
   ),
+
+  // Filtro por género
+  genero: z.enum(['MASCULINO', 'FEMENINO', 'NO_BINARIO', 'PREFIERO_NO_DECIR']).optional(),
 
   // Búsqueda por nombre, dni, email
   search: z.string().optional(),

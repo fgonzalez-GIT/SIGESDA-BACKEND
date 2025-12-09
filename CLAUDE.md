@@ -327,6 +327,22 @@ Required variables (see `.env.example`):
 - ✅ Warning log si diferencia de edad > 25 años entre cónyuges
 - ✅ Prevención de duplicados (misma relación entre dos personas)
 
+**Campo Género en Personas (IMPLEMENTADO 2025-12-09):**
+- **Enum**: `Genero` - Valores: MASCULINO, FEMENINO, NO_BINARIO, PREFIERO_NO_DECIR
+- **Campo**: `personas.genero` (opcional, nullable para retrocompatibilidad)
+- **Uso**: Determina parentesco complementario en relaciones asimétricas
+- **Lógica**:
+  - PADRE + hijo MASCULINO → HIJO (no HIJA)
+  - PADRE + hijo FEMENINO → HIJA (no HIJO)
+  - MADRE + hijo MASCULINO → HIJO (no HIJA)
+  - MADRE + hijo FEMENINO → HIJA (no HIJO)
+  - HERMANO + hermano FEMENINO → HERMANA
+  - Género NULL/NO_BINARIO/PREFIERO_NO_DECIR → usa forma masculina (fallback)
+- **Validación**: Solo warnings en logs (no errores HTTP 400) si género conflicta con parentesco
+- **Funciones**: `getParentescoComplementarioConGenero()`, `validateParentescoGenero()`
+- **Test**: `tests/test-genero-parentesco.ts`
+- **Docs**: Ver `GENERO_IMPLEMENTATION.md` para documentación completa
+
 ### Tipos de Contacto (Catálogo)
 - **Tables**: `contacto_persona`, `tipo_contacto_catalogo`
 - **Pattern**: Catálogo (Persona → ContactoPersona → TipoContactoCatalogo)
