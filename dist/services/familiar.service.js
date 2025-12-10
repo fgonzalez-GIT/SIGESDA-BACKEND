@@ -40,8 +40,19 @@ class FamiliarService {
         if (data.descuento && (data.descuento < 0 || data.descuento > 100)) {
             throw new Error('El descuento debe estar entre 0 y 100');
         }
-        const parentescoComplementario = (0, parentesco_helper_1.getParentescoComplementario)(data.parentesco);
+        const validacionA = (0, parentesco_helper_1.validateParentescoGenero)(data.parentesco, personaA.genero);
+        if (validacionA.warning) {
+            logger_1.logger.warn(`⚠️  ${validacionA.warning} - Persona: ${personaA.nombre} ${personaA.apellido} (ID: ${personaA.id})`);
+        }
+        const parentescoComplementario = (0, parentesco_helper_1.getParentescoComplementarioConGenero)(data.parentesco, personaA.genero);
         const gradoParentesco = (0, parentesco_helper_1.getGradoParentesco)(data.parentesco);
+        const validacionB = (0, parentesco_helper_1.validateParentescoGenero)(parentescoComplementario, personaA.genero);
+        if (validacionB.warning) {
+            logger_1.logger.warn(`⚠️  ${validacionB.warning} - Persona: ${personaB.nombre} ${personaB.apellido} (ID: ${personaB.id})`);
+        }
+        logger_1.logger.info(`   🧬 Género persona A (${personaA.nombre}): ${personaA.genero || 'NO_ESPECIFICADO'}`);
+        logger_1.logger.info(`   🧬 Género persona B (${personaB.nombre}): ${personaB.genero || 'NO_ESPECIFICADO'}`);
+        logger_1.logger.info(`   🔗 Parentesco complementario calculado: ${parentescoComplementario} (basado en género de persona A)`);
         const relacionPrincipal = await this.familiarRepository.create(data);
         const relacionInversa = await this.familiarRepository.create({
             socioId: data.familiarId,
@@ -126,7 +137,25 @@ class FamiliarService {
                 updateDataInversa.activo = data.activo;
             }
             if (data.parentesco) {
-                updateDataInversa.parentesco = (0, parentesco_helper_1.getParentescoComplementario)(data.parentesco);
+                const personaA = await this.personaRepository.findById(existingRelacion.socioId);
+                const personaB = await this.personaRepository.findById(existingRelacion.familiarId);
+                if (personaA && personaB) {
+                    const validacionA = (0, parentesco_helper_1.validateParentescoGenero)(data.parentesco, personaA.genero);
+                    if (validacionA.warning) {
+                        logger_1.logger.warn(`⚠️  ${validacionA.warning} - Persona: ${personaA.nombre} ${personaA.apellido} (ID: ${personaA.id})`);
+                    }
+                    const parentescoComplementario = (0, parentesco_helper_1.getParentescoComplementarioConGenero)(data.parentesco, personaA.genero);
+                    updateDataInversa.parentesco = parentescoComplementario;
+                    const validacionB = (0, parentesco_helper_1.validateParentescoGenero)(parentescoComplementario, personaA.genero);
+                    if (validacionB.warning) {
+                        logger_1.logger.warn(`⚠️  ${validacionB.warning} - Persona: ${personaA.nombre} ${personaA.apellido} (ID: ${personaA.id})`);
+                    }
+                    logger_1.logger.info(`   🔗 Parentesco complementario actualizado: ${parentescoComplementario} (basado en género de persona A: ${personaA.genero || 'NO_ESPECIFICADO'})`);
+                }
+                else {
+                    updateDataInversa.parentesco = (0, parentesco_helper_1.getParentescoComplementario)(data.parentesco);
+                    logger_1.logger.warn(`⚠️  No se pudo obtener género de personas - Usando lógica de parentesco sin género`);
+                }
             }
             if (data.descripcion !== undefined) {
                 updateDataInversa.descripcion = data.descripcion
@@ -250,6 +279,10 @@ class FamiliarService {
         return Object.values(client_1.TipoParentesco);
     }
     validateParentesco(parentesco, socio, familiar) {
+        const validacionGenero = (0, parentesco_helper_1.validateParentescoGenero)(parentesco, socio.genero);
+        if (validacionGenero.warning) {
+            logger_1.logger.warn(`⚠️  ${validacionGenero.warning} - Persona: ${socio.nombre} ${socio.apellido} (ID: ${socio.id})`);
+        }
         if (socio.fechaNacimiento && familiar.fechaNacimiento) {
             const socioAge = new Date().getFullYear() - new Date(socio.fechaNacimiento).getFullYear();
             const familiarAge = new Date().getFullYear() - new Date(familiar.fechaNacimiento).getFullYear();

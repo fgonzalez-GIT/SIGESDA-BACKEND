@@ -8,6 +8,8 @@ exports.areParentescosComplementarios = areParentescosComplementarios;
 exports.getRelacionBidireccionalDescripcion = getRelacionBidireccionalDescripcion;
 exports.validateRelacionBidireccional = validateRelacionBidireccional;
 exports.getInfoParentesco = getInfoParentesco;
+exports.getParentescoComplementarioConGenero = getParentescoComplementarioConGenero;
+exports.validateParentescoGenero = validateParentescoGenero;
 const client_1 = require("@prisma/client");
 exports.PARENTESCO_COMPLEMENTARIO = {
     [client_1.TipoParentesco.PADRE]: client_1.TipoParentesco.HIJO,
@@ -128,5 +130,83 @@ function getInfoParentesco(parentesco) {
         complementario: getParentescoComplementario(parentesco),
         simetrico: isParentescoSimetrico(parentesco)
     };
+}
+function getParentescoComplementarioConGenero(parentesco, generoDestino) {
+    const relacionesSinGenero = [
+        client_1.TipoParentesco.CONYUGE,
+        client_1.TipoParentesco.ESPOSA,
+        client_1.TipoParentesco.ESPOSO,
+        client_1.TipoParentesco.OTRO
+    ];
+    if (relacionesSinGenero.includes(parentesco)) {
+        return exports.PARENTESCO_COMPLEMENTARIO[parentesco];
+    }
+    const usarMasculino = !generoDestino || generoDestino === 'NO_BINARIO' || generoDestino === 'PREFIERO_NO_DECIR';
+    const esFemenino = generoDestino === 'FEMENINO';
+    if (parentesco === client_1.TipoParentesco.PADRE || parentesco === client_1.TipoParentesco.MADRE) {
+        return esFemenino ? client_1.TipoParentesco.HIJA : client_1.TipoParentesco.HIJO;
+    }
+    if (parentesco === client_1.TipoParentesco.HIJO || parentesco === client_1.TipoParentesco.HIJA) {
+        return esFemenino ? client_1.TipoParentesco.MADRE : client_1.TipoParentesco.PADRE;
+    }
+    if (parentesco === client_1.TipoParentesco.HERMANO || parentesco === client_1.TipoParentesco.HERMANA) {
+        return esFemenino ? client_1.TipoParentesco.HERMANA : client_1.TipoParentesco.HERMANO;
+    }
+    if (parentesco === client_1.TipoParentesco.ABUELO || parentesco === client_1.TipoParentesco.ABUELA) {
+        return esFemenino ? client_1.TipoParentesco.NIETA : client_1.TipoParentesco.NIETO;
+    }
+    if (parentesco === client_1.TipoParentesco.NIETO || parentesco === client_1.TipoParentesco.NIETA) {
+        return esFemenino ? client_1.TipoParentesco.ABUELA : client_1.TipoParentesco.ABUELO;
+    }
+    if (parentesco === client_1.TipoParentesco.TIO || parentesco === client_1.TipoParentesco.TIA) {
+        return esFemenino ? client_1.TipoParentesco.SOBRINA : client_1.TipoParentesco.SOBRINO;
+    }
+    if (parentesco === client_1.TipoParentesco.SOBRINO || parentesco === client_1.TipoParentesco.SOBRINA) {
+        return esFemenino ? client_1.TipoParentesco.TIA : client_1.TipoParentesco.TIO;
+    }
+    if (parentesco === client_1.TipoParentesco.PRIMO || parentesco === client_1.TipoParentesco.PRIMA) {
+        return esFemenino ? client_1.TipoParentesco.PRIMA : client_1.TipoParentesco.PRIMO;
+    }
+    return exports.PARENTESCO_COMPLEMENTARIO[parentesco];
+}
+function validateParentescoGenero(parentesco, genero) {
+    if (!genero || genero === 'NO_BINARIO' || genero === 'PREFIERO_NO_DECIR') {
+        return { valid: true };
+    }
+    const parentescosMasculinos = [
+        client_1.TipoParentesco.HIJO,
+        client_1.TipoParentesco.PADRE,
+        client_1.TipoParentesco.HERMANO,
+        client_1.TipoParentesco.ABUELO,
+        client_1.TipoParentesco.NIETO,
+        client_1.TipoParentesco.TIO,
+        client_1.TipoParentesco.SOBRINO,
+        client_1.TipoParentesco.PRIMO,
+        client_1.TipoParentesco.ESPOSO
+    ];
+    const parentescosFemeninos = [
+        client_1.TipoParentesco.HIJA,
+        client_1.TipoParentesco.MADRE,
+        client_1.TipoParentesco.HERMANA,
+        client_1.TipoParentesco.ABUELA,
+        client_1.TipoParentesco.NIETA,
+        client_1.TipoParentesco.TIA,
+        client_1.TipoParentesco.SOBRINA,
+        client_1.TipoParentesco.PRIMA,
+        client_1.TipoParentesco.ESPOSA
+    ];
+    if (genero === 'MASCULINO' && parentescosFemeninos.includes(parentesco)) {
+        return {
+            valid: true,
+            warning: `Posible inconsistencia: persona con género MASCULINO asignada como ${parentesco} (parentesco femenino)`
+        };
+    }
+    if (genero === 'FEMENINO' && parentescosMasculinos.includes(parentesco)) {
+        return {
+            valid: true,
+            warning: `Posible inconsistencia: persona con género FEMENINO asignada como ${parentesco} (parentesco masculino)`
+        };
+    }
+    return { valid: true };
 }
 //# sourceMappingURL=parentesco.helper.js.map

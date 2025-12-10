@@ -31,4 +31,10 @@ export declare function getInfoParentesco(parentesco: TipoParentesco): {
     complementario: TipoParentesco;
     simetrico: boolean;
 };
+export type Genero = 'MASCULINO' | 'FEMENINO' | 'NO_BINARIO' | 'PREFIERO_NO_DECIR' | null;
+export declare function getParentescoComplementarioConGenero(parentesco: TipoParentesco, generoDestino?: Genero): TipoParentesco;
+export declare function validateParentescoGenero(parentesco: TipoParentesco, genero: Genero): {
+    valid: boolean;
+    warning?: string;
+};
 //# sourceMappingURL=parentesco.helper.d.ts.map

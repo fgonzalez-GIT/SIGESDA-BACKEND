@@ -33,6 +33,7 @@ export declare function darDeBajaPersona(personaId: number, motivoBaja?: string,
     telefono: string | null;
     direccion: string | null;
     fechaNacimiento: Date | null;
+    genero: import(".prisma/client").$Enums.Genero | null;
     especialidad: string | null;
     id: number;
     categoria: import(".prisma/client").$Enums.CategoriaSocioLegacy | null;
@@ -57,6 +58,7 @@ export declare function reactivarPersona(personaId: number, prisma?: PrismaClien
     telefono: string | null;
     direccion: string | null;
     fechaNacimiento: Date | null;
+    genero: import(".prisma/client").$Enums.Genero | null;
     especialidad: string | null;
     id: number;
     categoria: import(".prisma/client").$Enums.CategoriaSocioLegacy | null;

@@ -14,6 +14,9 @@ const personaBaseSchema = zod_1.z.object({
     telefono: zod_1.z.string().max(20).optional(),
     direccion: zod_1.z.string().max(200).optional(),
     fechaNacimiento: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional(),
+    genero: zod_1.z.enum(['MASCULINO', 'FEMENINO', 'NO_BINARIO', 'PREFIERO_NO_DECIR'], {
+        errorMap: () => ({ message: 'Género debe ser MASCULINO, FEMENINO, NO_BINARIO o PREFIERO_NO_DECIR' })
+    }).optional(),
     observaciones: zod_1.z.string().max(500).optional()
 });
 exports.createPersonaSchema = zod_1.z.preprocess((data) => {
@@ -102,6 +105,9 @@ exports.updatePersonaSchema = zod_1.z.object({
     telefono: zod_1.z.string().max(20).optional().nullable(),
     direccion: zod_1.z.string().max(200).optional().nullable(),
     fechaNacimiento: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
+    genero: zod_1.z.enum(['MASCULINO', 'FEMENINO', 'NO_BINARIO', 'PREFIERO_NO_DECIR'], {
+        errorMap: () => ({ message: 'Género debe ser MASCULINO, FEMENINO, NO_BINARIO o PREFIERO_NO_DECIR' })
+    }).optional().nullable(),
     observaciones: zod_1.z.string().max(500).optional().nullable(),
     activo: zod_1.z.boolean().optional(),
     fechaBaja: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/, 'Fecha debe tener formato YYYY-MM-DD o ISO 8601').optional().nullable(),
@@ -130,6 +136,7 @@ exports.personaQuerySchema = zod_1.z.object({
         }
         return val;
     }, zod_1.z.boolean().optional()),
+    genero: zod_1.z.enum(['MASCULINO', 'FEMENINO', 'NO_BINARIO', 'PREFIERO_NO_DECIR']).optional(),
     search: zod_1.z.string().optional(),
     page: zod_1.z.preprocess((val) => {
         if (!val)

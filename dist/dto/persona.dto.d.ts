@@ -87,6 +87,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
     telefono: z.ZodOptional<z.ZodString>;
     direccion: z.ZodOptional<z.ZodString>;
     fechaNacimiento: z.ZodOptional<z.ZodString>;
+    genero: z.ZodOptional<z.ZodEnum<["MASCULINO", "FEMENINO", "NO_BINARIO", "PREFIERO_NO_DECIR"]>>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     nombre: string;
@@ -117,6 +118,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }, {
     nombre: string;
     apellido: string;
@@ -126,6 +128,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
     tipos?: {
         tipoPersonaId?: number | undefined;
         tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
@@ -175,6 +178,7 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }, unknown>;
 export declare const updatePersonaSchema: z.ZodObject<{
     nombre: z.ZodOptional<z.ZodString>;
@@ -184,6 +188,7 @@ export declare const updatePersonaSchema: z.ZodObject<{
     telefono: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     direccion: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     fechaNacimiento: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    genero: z.ZodNullable<z.ZodOptional<z.ZodEnum<["MASCULINO", "FEMENINO", "NO_BINARIO", "PREFIERO_NO_DECIR"]>>>;
     observaciones: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     activo: z.ZodOptional<z.ZodBoolean>;
     fechaBaja: z.ZodNullable<z.ZodOptional<z.ZodString>>;
@@ -280,6 +285,7 @@ export declare const updatePersonaSchema: z.ZodObject<{
     telefono?: string | null | undefined;
     direccion?: string | null | undefined;
     fechaNacimiento?: string | null | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | null | undefined;
     tipos?: {
         activo: boolean;
         tipoPersonaId?: number | undefined;
@@ -312,6 +318,7 @@ export declare const updatePersonaSchema: z.ZodObject<{
     telefono?: string | null | undefined;
     direccion?: string | null | undefined;
     fechaNacimiento?: string | null | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | null | undefined;
     tipos?: {
         tipoPersonaId?: number | undefined;
         tipoPersonaCodigo?: "SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR" | undefined;
@@ -338,6 +345,7 @@ export declare const personaQuerySchema: z.ZodObject<{
     categoriaId: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;
     especialidadId: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;
     activo: z.ZodEffects<z.ZodOptional<z.ZodBoolean>, boolean | undefined, unknown>;
+    genero: z.ZodOptional<z.ZodEnum<["MASCULINO", "FEMENINO", "NO_BINARIO", "PREFIERO_NO_DECIR"]>>;
     search: z.ZodOptional<z.ZodString>;
     page: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;
     limit: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;
@@ -350,6 +358,7 @@ export declare const personaQuerySchema: z.ZodObject<{
     activo?: boolean | undefined;
     categoriaId?: number | undefined;
     especialidadId?: number | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
     tiposCodigos?: ("SOCIO" | "NO_SOCIO" | "DOCENTE" | "PROVEEDOR")[] | undefined;
     page?: number | undefined;
     limit?: number | undefined;
@@ -358,6 +367,7 @@ export declare const personaQuerySchema: z.ZodObject<{
     activo?: unknown;
     categoriaId?: unknown;
     especialidadId?: unknown;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
     tiposCodigos?: unknown;
     page?: unknown;
     limit?: unknown;
@@ -376,6 +386,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono: z.ZodOptional<z.ZodString>;
     direccion: z.ZodOptional<z.ZodString>;
     fechaNacimiento: z.ZodOptional<z.ZodString>;
+    genero: z.ZodOptional<z.ZodEnum<["MASCULINO", "FEMENINO", "NO_BINARIO", "PREFIERO_NO_DECIR"]>>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     categoriaId: number;
@@ -390,6 +401,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }, {
     categoriaId: number;
     nombre: string;
@@ -403,6 +415,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }>, z.ZodObject<{
     tipo: z.ZodLiteral<"NO_SOCIO">;
     nombre: z.ZodString;
@@ -412,6 +425,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono: z.ZodOptional<z.ZodString>;
     direccion: z.ZodOptional<z.ZodString>;
     fechaNacimiento: z.ZodOptional<z.ZodString>;
+    genero: z.ZodOptional<z.ZodEnum<["MASCULINO", "FEMENINO", "NO_BINARIO", "PREFIERO_NO_DECIR"]>>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     nombre: string;
@@ -423,6 +437,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }, {
     nombre: string;
     apellido: string;
@@ -433,6 +448,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }>, z.ZodObject<{
     tipo: z.ZodLiteral<"DOCENTE">;
     especialidad: z.ZodString;
@@ -444,6 +460,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono: z.ZodOptional<z.ZodString>;
     direccion: z.ZodOptional<z.ZodString>;
     fechaNacimiento: z.ZodOptional<z.ZodString>;
+    genero: z.ZodOptional<z.ZodEnum<["MASCULINO", "FEMENINO", "NO_BINARIO", "PREFIERO_NO_DECIR"]>>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     nombre: string;
@@ -457,6 +474,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }, {
     nombre: string;
     apellido: string;
@@ -469,6 +487,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }>, z.ZodObject<{
     tipo: z.ZodLiteral<"PROVEEDOR">;
     cuit: z.ZodString;
@@ -480,6 +499,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono: z.ZodOptional<z.ZodString>;
     direccion: z.ZodOptional<z.ZodString>;
     fechaNacimiento: z.ZodOptional<z.ZodString>;
+    genero: z.ZodOptional<z.ZodEnum<["MASCULINO", "FEMENINO", "NO_BINARIO", "PREFIERO_NO_DECIR"]>>;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     cuit: string;
@@ -493,6 +513,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }, {
     cuit: string;
     razonSocialId: number;
@@ -505,6 +526,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }>]>, {
     categoriaId: number;
     nombre: string;
@@ -518,6 +540,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 } | {
     nombre: string;
     apellido: string;
@@ -528,6 +551,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 } | {
     nombre: string;
     apellido: string;
@@ -540,6 +564,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 } | {
     cuit: string;
     razonSocialId: number;
@@ -552,6 +577,7 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
+    genero?: "MASCULINO" | "FEMENINO" | "NO_BINARIO" | "PREFIERO_NO_DECIR" | undefined;
 }, unknown>;
 export type CreatePersonaDto = z.infer<typeof createPersonaSchema>;
 export type UpdatePersonaDto = z.infer<typeof updatePersonaSchema>;
