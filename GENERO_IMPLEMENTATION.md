@@ -412,5 +412,80 @@ Para dudas o issues:
 
 ---
 
-**Última actualización**: 2025-12-09
-**Versión**: 1.0.0
+## 🐛 Correcciones de Bugs (Changelog)
+
+### Bug Fix: Género incorrecto en relación inversa (2025-12-10)
+
+**Problema Identificado:**
+Cuando se creaba una relación familiar del tipo `HIJO/HIJA → PADRE/MADRE`, el sistema usaba incorrectamente el **género del hijo** para determinar el parentesco del progenitor en la relación inversa.
+
+**Ejemplo del bug:**
+```json
+// Request
+{
+  "socioId": 30,     // María Cristina (FEMENINO)
+  "familiarId": 29,  // Manuel (MASCULINO)
+  "parentesco": "HIJO"
+}
+
+// Comportamiento INCORRECTO (antes del fix):
+// - María Cristina → HIJO → Manuel ✅
+// - Manuel → PADRE → María Cristina ❌ (incorrecto, debería ser MADRE)
+
+// Comportamiento CORRECTO (después del fix):
+// - María Cristina → HIJO → Manuel ✅
+// - Manuel → MADRE → María Cristina ✅
+```
+
+**Causa raíz:**
+En `familiar.service.ts`, líneas 96 y 257, se pasaba `personaB.genero` (género del hijo) en lugar de `personaA.genero` (género del progenitor) a la función `getParentescoComplementarioConGenero()`.
+
+**Archivos corregidos:**
+- ✅ `src/services/familiar.service.ts`:
+  - Línea 97: `personaB.genero` → `personaA.genero` (CREATE operation)
+  - Línea 258: `personaB.genero` → `personaA.genero` (UPDATE operation)
+  - Actualizados comentarios y logs para reflejar cambio
+
+- ✅ `src/utils/parentesco.helper.ts`:
+  - Línea 302: Actualizada documentación del parámetro `generoDestino`
+  - Líneas 352-359: Eliminado TODO y actualizada lógica `HIJO/HIJA → PADRE/MADRE`
+  - Líneas 372-376: Actualizada lógica `NIETO/NIETA → ABUELO/ABUELA`
+  - Líneas 383-387: Actualizada lógica `SOBRINO/SOBRINA → TIO/TIA`
+
+**Relaciones afectadas por el fix:**
+- ✅ `HIJO/HIJA → PADRE/MADRE` (ahora usa género del progenitor)
+- ✅ `NIETO/NIETA → ABUELO/ABUELA` (ahora usa género del abuelo/a)
+- ✅ `SOBRINO/SOBRINA → TIO/TIA` (ahora usa género del tío/a)
+
+**Verificación:**
+```bash
+# Test manual realizado 2025-12-10
+curl -X POST http://localhost:8000/api/familiares \
+  -H "Content-Type: application/json" \
+  -d '{
+    "socioId": 30,     # María Cristina (FEMENINO)
+    "familiarId": 29,  # Manuel (MASCULINO)
+    "parentesco": "HIJO"
+  }'
+
+# Resultado:
+# - ID 32: María Cristina → HIJO → Manuel
+# - ID 33: Manuel → MADRE → María Cristina ✅ (CORRECTO)
+```
+
+**Impacto:**
+- **Severidad**: Alta (relaciones inversas incorrectas en base de datos)
+- **Alcance**: Solo afecta relaciones creadas/actualizadas ANTES de este fix
+- **Datos históricos**: Relaciones existentes NO se corrigen automáticamente
+- **Migración de datos**: No requerida (las nuevas relaciones usarán lógica correcta)
+
+**Nota sobre datos existentes:**
+Si tienes relaciones familiares creadas antes de este fix con parentescos incorrectos, puedes:
+1. Eliminarlas y recrearlas (recomendado para pocas relaciones)
+2. Actualizarlas manualmente usando `PUT /api/familiares/:id` con el parentesco correcto
+3. Ejecutar un script de migración de datos (disponible bajo demanda)
+
+---
+
+**Última actualización**: 2025-12-10
+**Versión**: 1.0.1

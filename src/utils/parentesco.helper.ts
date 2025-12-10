@@ -299,7 +299,7 @@ export type Genero = 'MASCULINO' | 'FEMENINO' | 'NO_BINARIO' | 'PREFIERO_NO_DECI
  * - Ver: familiar.service.ts para implementación de override
  *
  * @param parentesco - El parentesco original (de A hacia B)
- * @param generoDestino - Género de la persona B (destino de la relación)
+ * @param generoDestino - Género de la persona A (quien recibirá el parentesco complementario en la relación inversa)
  * @returns El parentesco complementario (de B hacia A)
  *
  * @example
@@ -350,15 +350,12 @@ export function getParentescoComplementarioConGenero(
   }
 
   // === RELACIONES HIJO/HIJA → PADRE/MADRE ===
-  // NOTA: Aquí el género es del PADRE, no del hijo
-  // Como no tenemos el género del padre aquí, usamos la lógica original
-  // (HIJO → PADRE, HIJA → MADRE)
-  // TODO: Si se requiere mayor precisión, se debe pasar el género del padre también
-  if (parentesco === TipoParentesco.HIJO) {
-    return TipoParentesco.PADRE;  // Mantener lógica original
-  }
-  if (parentesco === TipoParentesco.HIJA) {
-    return TipoParentesco.MADRE;  // Mantener lógica original
+  // Ahora usamos el género del progenitor (pasado como generoDestino) para determinar PADRE o MADRE
+  // - Si hijo/hija tiene un progenitor FEMENINO → retorna MADRE
+  // - Si hijo/hija tiene un progenitor MASCULINO → retorna PADRE
+  // - Si género es NULL/NO_BINARIO/PREFIERO_NO_DECIR → retorna PADRE (fallback masculino)
+  if (parentesco === TipoParentesco.HIJO || parentesco === TipoParentesco.HIJA) {
+    return esFemenino ? TipoParentesco.MADRE : TipoParentesco.PADRE;
   }
 
   // === RELACIONES HERMANO/HERMANA ===
@@ -373,12 +370,9 @@ export function getParentescoComplementarioConGenero(
   }
 
   // === RELACIONES NIETO/NIETA → ABUELO/ABUELA ===
-  // Similar a HIJO/HIJA, usamos lógica original
-  if (parentesco === TipoParentesco.NIETO) {
-    return TipoParentesco.ABUELO;  // Mantener lógica original
-  }
-  if (parentesco === TipoParentesco.NIETA) {
-    return TipoParentesco.ABUELA;  // Mantener lógica original
+  // Similar a HIJO/HIJA, usamos el género del abuelo/a (pasado como generoDestino)
+  if (parentesco === TipoParentesco.NIETO || parentesco === TipoParentesco.NIETA) {
+    return esFemenino ? TipoParentesco.ABUELA : TipoParentesco.ABUELO;
   }
 
   // === RELACIONES TIO/TIA → SOBRINO/SOBRINA ===
@@ -387,11 +381,9 @@ export function getParentescoComplementarioConGenero(
   }
 
   // === RELACIONES SOBRINO/SOBRINA → TIO/TIA ===
-  if (parentesco === TipoParentesco.SOBRINO) {
-    return TipoParentesco.TIO;  // Mantener lógica original
-  }
-  if (parentesco === TipoParentesco.SOBRINA) {
-    return TipoParentesco.TIA;  // Mantener lógica original
+  // Usamos el género del tío/a (pasado como generoDestino)
+  if (parentesco === TipoParentesco.SOBRINO || parentesco === TipoParentesco.SOBRINA) {
+    return esFemenino ? TipoParentesco.TIA : TipoParentesco.TIO;
   }
 
   // === RELACIONES PRIMO/PRIMA ===

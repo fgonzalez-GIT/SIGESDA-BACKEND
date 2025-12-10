@@ -90,15 +90,16 @@ export class FamiliarService {
       logger.warn(`⚠️  ${validacionA.warning} - Persona: ${personaA.nombre} ${personaA.apellido} (ID: ${personaA.id})`);
     }
 
-    // Obtener el parentesco complementario usando el género de persona B
+    // Obtener el parentesco complementario usando el género de persona A
+    // (quien recibirá el parentesco complementario en la relación inversa)
     const parentescoComplementario = getParentescoComplementarioConGenero(
       data.parentesco,
-      personaB.genero as Genero
+      personaA.genero as Genero
     );
     const gradoParentesco = getGradoParentesco(data.parentesco);
 
-    // Validar consistencia género-parentesco para persona B (relación inversa)
-    const validacionB = validateParentescoGenero(parentescoComplementario, personaB.genero as Genero);
+    // Validar consistencia género-parentesco para persona A (relación inversa)
+    const validacionB = validateParentescoGenero(parentescoComplementario, personaA.genero as Genero);
     if (validacionB.warning) {
       logger.warn(`⚠️  ${validacionB.warning} - Persona: ${personaB.nombre} ${personaB.apellido} (ID: ${personaB.id})`);
     }
@@ -106,7 +107,7 @@ export class FamiliarService {
     // Log informativo sobre género
     logger.info(`   🧬 Género persona A (${personaA.nombre}): ${personaA.genero || 'NO_ESPECIFICADO'}`);
     logger.info(`   🧬 Género persona B (${personaB.nombre}): ${personaB.genero || 'NO_ESPECIFICADO'}`);
-    logger.info(`   🔗 Parentesco complementario calculado: ${parentescoComplementario}`);
+    logger.info(`   🔗 Parentesco complementario calculado: ${parentescoComplementario} (basado en género de persona A)`);
 
     // Crear la relación principal (A → B)
     const relacionPrincipal = await this.familiarRepository.create(data);
@@ -251,19 +252,20 @@ export class FamiliarService {
           }
 
           // Calcular parentesco complementario con género
+          // (usar género de persona A quien recibirá el parentesco complementario)
           const parentescoComplementario = getParentescoComplementarioConGenero(
             data.parentesco,
-            personaB.genero as Genero
+            personaA.genero as Genero
           );
           updateDataInversa.parentesco = parentescoComplementario;
 
           // Validar consistencia género-parentesco para relación inversa
-          const validacionB = validateParentescoGenero(parentescoComplementario, personaB.genero as Genero);
+          const validacionB = validateParentescoGenero(parentescoComplementario, personaA.genero as Genero);
           if (validacionB.warning) {
-            logger.warn(`⚠️  ${validacionB.warning} - Persona: ${personaB.nombre} ${personaB.apellido} (ID: ${personaB.id})`);
+            logger.warn(`⚠️  ${validacionB.warning} - Persona: ${personaA.nombre} ${personaA.apellido} (ID: ${personaA.id})`);
           }
 
-          logger.info(`   🔗 Parentesco complementario actualizado: ${parentescoComplementario} (género B: ${personaB.genero || 'NO_ESPECIFICADO'})`);
+          logger.info(`   🔗 Parentesco complementario actualizado: ${parentescoComplementario} (basado en género de persona A: ${personaA.genero || 'NO_ESPECIFICADO'})`);
         } else {
           // Fallback a lógica sin género si no se encuentran las personas
           updateDataInversa.parentesco = getParentescoComplementario(data.parentesco);
