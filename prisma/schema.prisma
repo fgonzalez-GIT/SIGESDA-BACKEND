@@ -254,18 +254,86 @@ model Cuota {
   reciboId         Int            @unique
   mes              Int
   anio             Int
-  montoBase        Decimal        @db.Decimal(8, 2)
-  montoActividades Decimal        @default(0) @db.Decimal(8, 2)
+  montoBase        Decimal?       @db.Decimal(8, 2)
+  montoActividades Decimal?       @default(0) @db.Decimal(8, 2)
   montoTotal       Decimal        @db.Decimal(8, 2)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   categoriaId      Int
   categoria        CategoriaSocio @relation(fields: [categoriaId], references: [id])
   recibo           Recibo         @relation(fields: [reciboId], references: [id], onDelete: Cascade)
+  items            ItemCuota[]
 
   @@index([categoriaId])
   @@index([mes, anio])
   @@map("cuotas")
+}
+
+/// Catálogo de categorías de ítems (BASE, ACTIVIDAD, DESCUENTO, etc.) - Gestionable vía CRUD
+model CategoriaItem {
+  id          Int              @id @default(autoincrement())
+  codigo      String           @unique @db.VarChar(50)
+  nombre      String           @db.VarChar(100)
+  descripcion String?
+  icono       String?          @db.VarChar(10)
+  color       String?          @db.VarChar(20)
+  activo      Boolean          @default(true)
+  orden       Int              @default(0)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  tiposItems  TipoItemCuota[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("categorias_items")
+}
+
+/// Catálogo de tipos de ítems configurables para cuotas
+model TipoItemCuota {
+  id              Int            @id @default(autoincrement())
+  codigo          String         @unique @db.VarChar(100)
+  nombre          String         @db.VarChar(200)
+  descripcion     String?
+  categoriaItemId Int            @map("categoria_item_id")
+  esCalculado     Boolean        @default(true) @map("es_calculado")
+  formula         Json?
+  activo          Boolean        @default(true)
+  orden           Int            @default(0)
+  configurable    Boolean        @default(true)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  categoriaItem   CategoriaItem  @relation(fields: [categoriaItemId], references: [id], onDelete: Restrict)
+  itemsCuota      ItemCuota[]
+
+  @@index([codigo])
+  @@index([categoriaItemId])
+  @@index([activo])
+  @@index([orden])
+  @@map("tipos_items_cuota")
+}
+
+/// Ítems individuales que componen una cuota (base, actividades, descuentos, etc.)
+model ItemCuota {
+  id             Int           @id @default(autoincrement())
+  cuotaId        Int           @map("cuota_id")
+  tipoItemId     Int           @map("tipo_item_id")
+  concepto       String
+  monto          Decimal       @db.Decimal(10, 2)
+  cantidad       Decimal       @default(1) @db.Decimal(8, 2)
+  porcentaje     Decimal?      @db.Decimal(5, 2)
+  esAutomatico   Boolean       @default(true) @map("es_automatico")
+  esEditable     Boolean       @default(false) @map("es_editable")
+  observaciones  String?
+  metadata       Json?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  cuota          Cuota         @relation(fields: [cuotaId], references: [id], onDelete: Cascade)
+  tipoItem       TipoItemCuota @relation(fields: [tipoItemId], references: [id], onDelete: Restrict)
+
+  @@index([cuotaId])
+  @@index([tipoItemId])
+  @@map("items_cuota")
 }
 
 model Familiar {
