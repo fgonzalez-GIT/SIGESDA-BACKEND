@@ -1,0 +1,855 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model actividades {
+  id                        Int                         @id @default(autoincrement())
+  codigoActividad           String                      @unique @map("codigo_actividad") @db.VarChar(50)
+  nombre                    String
+  tipoActividadId           Int                         @map("tipo_actividad_id")
+  categoriaId               Int                         @map("categoria_id")
+  estadoId                  Int                         @map("estado_id")
+  descripcion               String?
+  fechaDesde                DateTime                    @map("fecha_desde")
+  fechaHasta                DateTime?                   @map("fecha_hasta")
+  capacidadMaxima           Int?
+  costo                     Decimal                     @default(0) @db.Decimal(8, 2)
+  activa                    Boolean                     @default(true)
+  observaciones             String?
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime                    @updatedAt
+  tiposActividades          tipos_actividades           @relation(fields: [tipoActividadId], references: [id], onDelete: Restrict)
+  categoriasActividades     categorias_actividades      @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  estadosActividades        estados_actividades         @relation(fields: [estadoId], references: [id], onDelete: Restrict)
+  horarios_actividades      horarios_actividades[]
+  participacion_actividades participacion_actividades[]
+  reserva_aulas             reserva_aulas[]
+  secciones_actividades     secciones_actividades[]
+  docentes_actividades      docentes_actividades[]
+  actividades_aulas         actividades_aulas[]
+
+  @@index([tipoActividadId])
+  @@index([categoriaId])
+  @@index([estadoId])
+  @@index([activa])
+  @@index([fechaDesde])
+}
+
+model tipos_actividades {
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?       @db.Text
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  actividades actividades[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model categorias_actividades {
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?       @db.Text
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  actividades actividades[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model estados_actividades {
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
+  descripcion String?       @db.Text
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  actividades actividades[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model dias_semana {
+  id                  Int                      @id @default(autoincrement())
+  codigo              String                   @unique @db.VarChar(50)
+  nombre              String                   @db.VarChar(100)
+  orden               Int
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+  horariosActividades horarios_actividades[]
+
+  @@index([codigo])
+  @@index([orden])
+}
+
+model roles_docentes {
+  id                   Int                    @id @default(autoincrement())
+  codigo               String                 @unique @db.VarChar(50)
+  nombre               String                 @db.VarChar(100)
+  descripcion          String?                @db.Text
+  activo               Boolean                @default(true)
+  orden                Int                    @default(0)
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
+  docentes_actividades docentes_actividades[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model tipos_persona {
+  id                   Int      @id @default(autoincrement())
+  codigo               String   @unique @db.VarChar(50)
+  nombre               String   @db.VarChar(100)
+  descripcion          String?  @db.Text
+  activo               Boolean  @default(true)
+  orden                Int      @default(0)
+  requiresCategoria    Boolean  @default(false) @map("requires_categoria")
+  requiresEspecialidad Boolean  @default(false) @map("requires_especialidad")
+  requiresCuit         Boolean  @default(false) @map("requires_cuit")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+}
+
+model Aula {
+  id                       Int                        @id @default(autoincrement())
+  nombre                   String                     @unique
+  capacidad                Int
+  ubicacion                String?
+  tipoAulaId               Int?                       @map("tipo_aula_id")
+  estadoAulaId             Int?                       @map("estado_aula_id")
+  descripcion              String?                    @db.Text
+  observaciones            String?                    @db.Text
+  activa                   Boolean                    @default(true)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  tipoAula                 TipoAula?                  @relation(fields: [tipoAulaId], references: [id], onDelete: SetNull)
+  estadoAula               EstadoAula?                @relation(fields: [estadoAulaId], references: [id], onDelete: SetNull)
+  aulas_equipamientos      AulaEquipamiento[]
+  reserva_aulas            reserva_aulas[]
+  reservas_aulas_secciones reservas_aulas_secciones[]
+  actividades_aulas        actividades_aulas[]
+
+  @@index([tipoAulaId])
+  @@index([estadoAulaId])
+  @@index([activa])
+  @@map("aulas")
+}
+
+model TipoAula {
+  id          Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(50)
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  activo      Boolean   @default(true)
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  aulas       Aula[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("tipos_aulas")
+}
+
+model EstadoAula {
+  id          Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(50)
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  activo      Boolean   @default(true)
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  aulas       Aula[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("estados_aulas")
+}
+
+model CategoriasEquipamiento {
+  id            Int             @id @default(autoincrement())
+  codigo        String          @unique @db.VarChar(50)
+  nombre        String          @db.VarChar(100)
+  descripcion   String?         @db.Text
+  activo        Boolean         @default(true)
+  orden         Int             @default(0)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  equipamientos Equipamiento[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("categorias_equipamiento")
+}
+
+model EstadoEquipamiento {
+  id            Int             @id @default(autoincrement())
+  codigo        String          @unique @db.VarChar(50)
+  nombre        String          @db.VarChar(100)
+  descripcion   String?         @db.Text
+  activo        Boolean         @default(true)
+  orden         Int             @default(0)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  equipamientos Equipamiento[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("estados_equipamientos")
+}
+
+model Equipamiento {
+  id                       Int                       @id @default(autoincrement())
+  codigo                   String                    @unique @db.VarChar(50)
+  nombre                   String                    @unique @db.VarChar(200)
+  categoriaEquipamientoId  Int                       @map("categoria_equipamiento_id")
+  estadoEquipamientoId     Int?                      @map("estado_equipamiento_id")
+  cantidad                 Int                       @default(1)
+  descripcion              String?                   @db.Text
+  observaciones            String?                   @db.Text
+  activo                   Boolean                   @default(true)
+  createdAt                DateTime                  @default(now()) @map("created_at")
+  updatedAt                DateTime                  @updatedAt @map("updated_at")
+  categoriaEquipamiento    CategoriasEquipamiento    @relation(fields: [categoriaEquipamientoId], references: [id], onDelete: Restrict)
+  estadoEquipamiento       EstadoEquipamiento?       @relation(fields: [estadoEquipamientoId], references: [id], onDelete: SetNull)
+  aulas_equipamientos      AulaEquipamiento[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([categoriaEquipamientoId])
+  @@index([estadoEquipamientoId])
+  @@index([cantidad])
+  @@map("equipamientos")
+}
+
+model AulaEquipamiento {
+  id             Int          @id @default(autoincrement())
+  aulaId         Int          @map("aula_id")
+  equipamientoId Int          @map("equipamiento_id")
+  cantidad       Int          @default(1)
+  observaciones  String?      @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  aula           Aula         @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  equipamiento   Equipamiento @relation(fields: [equipamientoId], references: [id], onDelete: Restrict)
+
+  @@unique([aulaId, equipamientoId])
+  @@index([aulaId])
+  @@index([equipamientoId])
+  @@map("aulas_equipamientos")
+}
+
+model CategoriaSocio {
+  id           Int           @id @default(autoincrement())
+  codigo       String        @unique
+  nombre       String        @unique
+  descripcion  String?
+  montoCuota   Decimal       @default(0) @db.Decimal(10, 2)
+  descuento    Decimal       @default(0) @db.Decimal(5, 2)
+  activa       Boolean       @default(true)
+  orden        Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  cuotas       Cuota[]
+  personas     Persona[]
+  personaTipos PersonaTipo[]
+
+  @@map("categorias_socios")
+}
+
+model ComisionDirectiva {
+  id          Int       @id @default(autoincrement())
+  socioId     Int       @unique
+  cargo       String
+  fechaInicio DateTime
+  fechaFin    DateTime?
+  activo      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  personas    Persona   @relation(fields: [socioId], references: [id], onDelete: Cascade)
+
+  @@map("comision_directiva")
+}
+
+model ConfiguracionSistema {
+  id          Int      @id @default(autoincrement())
+  clave       String   @unique
+  valor       String
+  descripcion String?
+  tipo        String   @default("STRING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("configuracion_sistema")
+}
+
+model Cuota {
+  id               Int            @id @default(autoincrement())
+  reciboId         Int            @unique
+  mes              Int
+  anio             Int
+  montoBase        Decimal        @db.Decimal(8, 2)
+  montoActividades Decimal        @default(0) @db.Decimal(8, 2)
+  montoTotal       Decimal        @db.Decimal(8, 2)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  categoriaId      Int
+  categoria        CategoriaSocio @relation(fields: [categoriaId], references: [id])
+  recibo           Recibo         @relation(fields: [reciboId], references: [id], onDelete: Cascade)
+
+  @@unique([categoriaId, mes, anio])
+  @@index([categoriaId])
+  @@map("cuotas")
+}
+
+model Familiar {
+  id                           Int            @id @default(autoincrement())
+  socioId                      Int
+  familiarId                   Int
+  parentesco                   TipoParentesco
+  createdAt                    DateTime       @default(now())
+  updatedAt                    DateTime       @updatedAt
+  descripcion                  String?
+  permisoResponsableFinanciero Boolean        @default(false)
+  permisoContactoEmergencia    Boolean        @default(false)
+  permisoAutorizadoRetiro      Boolean        @default(false)
+  descuento                    Decimal        @default(0) @db.Decimal(5, 2)
+  activo                       Boolean        @default(true)
+  grupoFamiliarId              Int?
+  familiar                     Persona        @relation("FamiliarParentesco", fields: [familiarId], references: [id], onDelete: Cascade)
+  socio                        Persona        @relation("SocioFamiliar", fields: [socioId], references: [id], onDelete: Cascade)
+
+  @@unique([socioId, familiarId])
+  @@index([grupoFamiliarId])
+  @@index([activo])
+  @@map("familiares")
+}
+
+model horarios_actividades {
+  id          Int         @id @default(autoincrement())
+  actividadId Int         @map("actividad_id")
+  diaSemanaId Int         @map("dia_semana_id")
+  horaInicio  String      @map("hora_inicio")
+  horaFin     String      @map("hora_fin")
+  activo      Boolean     @default(true)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  actividades actividades @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  diasSemana  dias_semana @relation(fields: [diaSemanaId], references: [id], onDelete: Restrict)
+
+  @@unique([actividadId, diaSemanaId, horaInicio])
+}
+
+model docentes_actividades {
+  id                 Int            @id @default(autoincrement())
+  actividadId        Int            @map("actividad_id")
+  docenteId          Int            @map("docente_id")
+  rolDocenteId       Int            @map("rol_docente_id")
+  fechaAsignacion    DateTime       @default(now()) @map("fecha_asignacion")
+  fechaDesasignacion DateTime?      @map("fecha_desasignacion")
+  activo             Boolean        @default(true)
+  observaciones      String?        @db.Text
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  actividades        actividades    @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  personas           Persona        @relation(fields: [docenteId], references: [id], onDelete: Cascade)
+  rolesDocentes      roles_docentes @relation(fields: [rolDocenteId], references: [id], onDelete: Restrict)
+
+  @@unique([actividadId, docenteId, rolDocenteId], name: "unique_docente_actividad_rol")
+  @@index([actividadId])
+  @@index([docenteId])
+  @@index([rolDocenteId])
+  @@index([activo])
+}
+
+model actividades_aulas {
+  id                 Int         @id @default(autoincrement())
+  actividadId        Int         @map("actividad_id")
+  aulaId             Int         @map("aula_id")
+  fechaAsignacion    DateTime    @default(now()) @map("fecha_asignacion")
+  fechaDesasignacion DateTime?   @map("fecha_desasignacion")
+  activa             Boolean     @default(true)
+  prioridad          Int?        @default(1)
+  observaciones      String?     @db.Text
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+  actividades        actividades @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  aulas              Aula        @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+
+  @@unique([actividadId, aulaId], name: "unique_actividad_aula")
+  @@index([actividadId])
+  @@index([aulaId])
+  @@index([activa])
+}
+
+model MedioPago {
+  id            Int           @id @default(autoincrement())
+  reciboId      Int
+  tipo          MedioPagoTipo
+  importe       Decimal       @db.Decimal(10, 2)
+  numero        String?
+  fecha         DateTime      @default(now())
+  banco         String?
+  observaciones String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  recibo        Recibo        @relation(fields: [reciboId], references: [id], onDelete: Cascade)
+
+  @@map("medios_pago")
+}
+
+model Persona {
+  id                        Int                         @id @default(autoincrement())
+  activo                    Boolean                     @default(true)
+  nombre                    String
+  apellido                  String
+  dni                       String                      @unique
+  email                     String?                     @unique
+  telefono                  String?
+  direccion                 String?
+  fechaNacimiento           DateTime?
+  genero                    Genero?
+  numeroSocio               Int?                        @unique
+  categoria                 CategoriaSocioLegacy?
+  fechaIngreso              DateTime?
+  fechaBaja                 DateTime?
+  motivoBaja                String?
+  especialidad              String?
+  honorariosPorHora         Decimal?                    @db.Decimal(10, 2)
+  cuit                      String?                     @unique
+  razonSocial               String?
+  observaciones             String?
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime                    @updatedAt
+  categoriaId               Int?
+  comision_directiva        ComisionDirectiva?
+  parentescos               Familiar[]                  @relation("FamiliarParentesco")
+  socios                    Familiar[]                  @relation("SocioFamiliar")
+  tipos                     PersonaTipo[]
+  contactos                 ContactoPersona[]
+  participacion_actividades participacion_actividades[]
+  participaciones_secciones participaciones_secciones[]
+  categorias_socios         CategoriaSocio?             @relation(fields: [categoriaId], references: [id])
+  recibosEmitidos           Recibo[]                    @relation("ReciboEmisor")
+  recibosRecibidos          Recibo[]                    @relation("ReciboReceptor")
+  reserva_aulas             reserva_aulas[]             @relation("ReservaDocente")
+  reservasCanceladas        reserva_aulas[]             @relation("ReservaCanceladaPor")
+  reservasAprobadas         reserva_aulas[]             @relation("ReservaAprobadaPor")
+  secciones_actividades     secciones_actividades[]     @relation("DocenteSeccion")
+  docentes_actividades      docentes_actividades[]
+
+  @@index([categoriaId])
+  @@index([activo])
+  @@index([genero])
+  @@map("personas")
+}
+
+model Recibo {
+  id               Int          @id @default(autoincrement())
+  numero           String       @unique
+  tipo             TipoRecibo
+  importe          Decimal      @db.Decimal(10, 2)
+  fecha            DateTime     @default(now())
+  fechaVencimiento DateTime?
+  estado           EstadoRecibo @default(PENDIENTE)
+  concepto         String
+  observaciones    String?
+  emisorId         Int?
+  receptorId       Int?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  cuota            Cuota?
+  mediosPago       MedioPago[]
+  emisor           Persona?     @relation("ReciboEmisor", fields: [emisorId], references: [id])
+  receptor         Persona?     @relation("ReciboReceptor", fields: [receptorId], references: [id])
+
+  @@map("recibos")
+}
+
+model horarios_secciones {
+  id                    Int                   @id @default(autoincrement())
+  seccionId             Int
+  diaSemana             String                // ⚠️ TEMPORAL: Debería ser diaSemanaId Int FK
+  horaInicio            String
+  horaFin               String
+  activo                Boolean               @default(true)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime
+  secciones_actividades secciones_actividades @relation(fields: [seccionId], references: [id], onDelete: Cascade)
+
+  @@index([activo])
+  @@index([diaSemana])
+  @@index([seccionId, diaSemana, horaInicio])
+}
+
+model participacion_actividades {
+  id             Int         @id @default(autoincrement())
+  personaId      Int
+  actividadId    Int
+  fechaInicio    DateTime
+  fechaFin       DateTime?
+  precioEspecial Decimal?    @db.Decimal(8, 2)
+  activa         Boolean     @default(true)
+  observaciones  String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  actividades    actividades @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  personas       Persona     @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@unique([personaId, actividadId])
+}
+
+model participaciones_secciones {
+  id                    Int                   @id @default(autoincrement())
+  personaId             Int
+  seccionId             Int
+  fechaInicio           DateTime
+  fechaFin              DateTime?
+  precioEspecial        Decimal?              @db.Decimal(8, 2)
+  activa                Boolean               @default(true)
+  observaciones         String?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime
+  personas              Persona               @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  secciones_actividades secciones_actividades @relation(fields: [seccionId], references: [id], onDelete: Cascade)
+
+  @@unique([personaId, seccionId])
+  @@index([activa])
+  @@index([personaId])
+  @@index([seccionId])
+}
+
+model EstadoReserva {
+  id                Int              @id @default(autoincrement())
+  codigo            String           @unique @db.VarChar(50)
+  nombre            String           @db.VarChar(100)
+  descripcion       String?          @db.Text
+  activo            Boolean          @default(true)
+  orden             Int              @default(0)
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  reservas          reserva_aulas[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("estados_reservas")
+}
+
+model reserva_aulas {
+  id                 Int             @id @default(autoincrement())
+  aulaId             Int
+  actividadId        Int?
+  docenteId          Int
+  estadoReservaId    Int?            @map("estado_reserva_id")
+  fechaInicio        DateTime
+  fechaFin           DateTime
+  observaciones      String?
+  activa             Boolean         @default(true)
+  motivoCancelacion  String?         @db.Text @map("motivo_cancelacion")
+  canceladoPorId     Int?            @map("cancelado_por_id")
+  aprobadoPorId      Int?            @map("aprobado_por_id")
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  // Relaciones
+  actividades        actividades?    @relation(fields: [actividadId], references: [id])
+  aulas              Aula            @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  personas           Persona         @relation("ReservaDocente", fields: [docenteId], references: [id], onDelete: Cascade)
+  estadoReserva      EstadoReserva?  @relation(fields: [estadoReservaId], references: [id])
+  canceladoPor       Persona?        @relation("ReservaCanceladaPor", fields: [canceladoPorId], references: [id])
+  aprobadoPor        Persona?        @relation("ReservaAprobadaPor", fields: [aprobadoPorId], references: [id])
+
+  // Índices de performance
+  @@index([aulaId, fechaInicio, fechaFin])
+  @@index([docenteId, fechaInicio])
+  @@index([actividadId])
+  @@index([estadoReservaId])
+  @@index([fechaInicio, fechaFin])
+  @@index([activa])
+}
+
+model reservas_aulas_secciones {
+  id                    Int                   @id @default(autoincrement())
+  seccionId             Int
+  aulaId                Int
+  diaSemana             String                // ⚠️ TEMPORAL: Debería ser diaSemanaId Int FK
+  horaInicio            String
+  horaFin               String
+  fechaVigencia         DateTime
+  fechaFin              DateTime?
+  observaciones         String?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  aulas                 Aula                  @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  secciones_actividades secciones_actividades @relation(fields: [seccionId], references: [id], onDelete: Cascade)
+
+  @@unique([seccionId, aulaId, diaSemana, horaInicio])
+  @@index([aulaId, diaSemana, horaInicio])
+  @@index([seccionId])
+}
+
+model secciones_actividades {
+  id                        Int                         @id @default(autoincrement())
+  actividadId               Int
+  nombre                    String
+  codigo                    String?
+  capacidadMaxima           Int?
+  activa                    Boolean                     @default(true)
+  observaciones             String?
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime
+  horarios_secciones        horarios_secciones[]
+  participaciones_secciones participaciones_secciones[]
+  reservas_aulas_secciones  reservas_aulas_secciones[]
+  actividades               actividades                 @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  personas                  Persona[]                   @relation("DocenteSeccion")
+
+  @@unique([actividadId, nombre])
+  @@index([activa])
+  @@index([actividadId])
+}
+
+// ============================================================================
+// ARQUITECTURA V2: SOPORTE PARA MÚLTIPLES TIPOS POR PERSONA
+// ============================================================================
+
+model TipoPersonaCatalogo {
+  id                   Int           @id @default(autoincrement())
+  codigo               String        @unique @db.VarChar(50)
+  nombre               String        @db.VarChar(100)
+  descripcion          String?       @db.Text
+  activo               Boolean       @default(true)
+  orden                Int           @default(0)
+  requiresCategoria    Boolean       @default(false) @map("requires_categoria")
+  requiresEspecialidad Boolean       @default(false) @map("requires_especialidad")
+  requiresCuit         Boolean       @default(false) @map("requires_cuit")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  personaTipos         PersonaTipo[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("tipo_persona_catalogo")
+}
+
+model EspecialidadDocente {
+  id           Int           @id @default(autoincrement())
+  codigo       String        @unique @db.VarChar(50)
+  nombre       String        @db.VarChar(100)
+  descripcion  String?       @db.Text
+  activo       Boolean       @default(true)
+  orden        Int           @default(0)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  personaTipos PersonaTipo[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@map("especialidad_docente")
+}
+
+model RazonSocial {
+  id           Int           @id @default(autoincrement())
+  codigo       String        @unique @db.VarChar(50)
+  nombre       String        @db.VarChar(200)
+  descripcion  String?       @db.Text
+  activo       Boolean       @default(true)
+  orden        Int           @default(0)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  personaTipos PersonaTipo[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("razon_social_catalogo")
+}
+
+model PersonaTipo {
+  id                 Int                  @id @default(autoincrement())
+  personaId          Int                  @map("persona_id")
+  tipoPersonaId      Int                  @map("tipo_persona_id")
+  activo             Boolean              @default(true)
+  fechaAsignacion    DateTime             @default(now()) @map("fecha_asignacion")
+  fechaDesasignacion DateTime?            @map("fecha_desasignacion")
+  // Campos específicos de SOCIO
+  categoriaId        Int?                 @map("categoria_id")
+  numeroSocio        Int?                 @map("numero_socio")
+  fechaIngreso       DateTime?            @map("fecha_ingreso")
+  fechaBaja          DateTime?            @map("fecha_baja")
+  motivoBaja         String?              @map("motivo_baja") @db.VarChar(200)
+  // Campos específicos de DOCENTE
+  especialidadId     Int?                 @map("especialidad_id")
+  honorariosPorHora  Decimal?             @map("honorarios_por_hora") @db.Decimal(10, 2)
+  // Campos específicos de PROVEEDOR
+  cuit               String?              @db.VarChar(11)
+  razonSocialId      Int?                 @map("razon_social_id")
+  observaciones      String?              @db.Text
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  persona            Persona              @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  tipoPersona        TipoPersonaCatalogo  @relation(fields: [tipoPersonaId], references: [id], onDelete: Restrict)
+  categoria          CategoriaSocio?      @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  especialidad       EspecialidadDocente? @relation(fields: [especialidadId], references: [id], onDelete: SetNull)
+  razonSocial        RazonSocial?         @relation(fields: [razonSocialId], references: [id], onDelete: SetNull)
+
+  @@unique([personaId, tipoPersonaId], map: "persona_tipo_persona_id_tipo_persona_id_key")
+  @@index([personaId], map: "persona_tipo_persona_id_idx")
+  @@index([tipoPersonaId], map: "persona_tipo_tipo_persona_id_idx")
+  @@index([activo], map: "persona_tipo_activo_idx")
+  @@index([categoriaId], map: "persona_tipo_categoria_id_idx")
+  @@index([especialidadId], map: "persona_tipo_especialidad_id_idx")
+  @@index([numeroSocio], map: "persona_tipo_numero_socio_idx")
+  @@map("persona_tipo")
+}
+
+model TipoContactoCatalogo {
+  id          Int               @id @default(autoincrement())
+  codigo      String            @unique @db.VarChar(50)
+  nombre      String            @db.VarChar(100)
+  descripcion String?           @db.Text
+  icono       String?           @db.VarChar(50)
+  pattern     String?           @db.VarChar(500)
+  activo      Boolean           @default(true)
+  orden       Int               @default(0)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  contactos   ContactoPersona[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("tipo_contacto_catalogo")
+}
+
+model ContactoPersona {
+  id              Int                    @id @default(autoincrement())
+  personaId       Int                    @map("persona_id")
+  tipoContactoId  Int                    @map("tipo_contacto_id")
+  valor           String                 @db.VarChar(200)
+  principal       Boolean                @default(false)
+  activo          Boolean                @default(true)
+  observaciones   String?                @db.VarChar(500)
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  persona         Persona                @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  tipoContacto    TipoContactoCatalogo   @relation(fields: [tipoContactoId], references: [id], onDelete: Restrict)
+
+  @@index([personaId], map: "contacto_persona_persona_id_idx")
+  @@index([tipoContactoId], map: "contacto_persona_tipo_contacto_id_idx")
+  @@index([activo], map: "contacto_persona_activo_idx")
+  @@index([principal], map: "contacto_persona_principal_idx")
+  @@map("contacto_persona")
+}
+
+enum EstadoRecibo {
+  PENDIENTE
+  PAGADO
+  VENCIDO
+  CANCELADO
+}
+
+enum MedioPagoTipo {
+  EFECTIVO
+  TRANSFERENCIA
+  TARJETA_DEBITO
+  TARJETA_CREDITO
+  CHEQUE
+}
+
+enum TipoParentesco {
+  HIJO
+  HIJA
+  CONYUGE      // Genérico - Género neutro (simétrico)
+  ESPOSA       // Específico - Género femenino (asimétrico)
+  ESPOSO       // Específico - Género masculino (asimétrico)
+  PADRE
+  MADRE
+  HERMANO
+  HERMANA
+  OTRO
+  ABUELO
+  ABUELA
+  NIETO
+  NIETA
+  TIO
+  TIA
+  SOBRINO
+  SOBRINA
+  PRIMO
+  PRIMA
+}
+
+enum TipoRecibo {
+  CUOTA
+  SUELDO
+  DEUDA
+  PAGO_ACTIVIDAD
+}
+
+enum CategoriaSocioLegacy {
+  ACTIVO
+  ESTUDIANTE
+  FAMILIAR
+  JUBILADO
+}
+
+// ❌ ELIMINADO: enum DiaSemana (ahora usa tabla dias_semana)
+// ❌ ELIMINADO: enum TipoActividad (ahora usa tabla tipos_actividades)
+
+enum TipoPersona {
+  SOCIO
+  NO_SOCIO
+  DOCENTE
+  PROVEEDOR
+}
+
+// ❌ DEPRECADO: enum TipoContacto (migrado a tabla tipo_contacto_catalogo)
+// Mantenido temporalmente para rollback. Se eliminará en próxima versión.
+enum TipoContacto {
+  EMAIL
+  TELEFONO
+  CELULAR
+  WHATSAPP
+  TELEGRAM
+  OTRO
+}
+
+enum Genero {
+  MASCULINO
+  FEMENINO
+  NO_BINARIO
+  PREFIERO_NO_DECIR
+}
