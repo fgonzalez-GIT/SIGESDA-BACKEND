@@ -26,6 +26,9 @@ import estadosEquipamientoRoutes from './estados-equipamiento.routes';
 import actividadAulaRoutes from './actividad-aula.routes';
 import catalogoAdminRoutes from './catalogo-admin.routes';
 import tipoContactoRoutes from './tipo-contacto.routes';
+import categoriaItemRoutes from './categoria-item.routes';
+import tipoItemCuotaRoutes from './tipo-item-cuota.routes';
+import itemCuotaRoutes from './item-cuota.routes';
 
 const router = Router();
 
@@ -44,6 +47,8 @@ router.use('/catalogos/estados-equipamientos', estadosEquipamientoRoutes);
 router.use('/catalogos/tipos-aulas', tiposAulaRoutes);
 router.use('/catalogos/estados-aulas', estadosAulaRoutes);
 router.use('/catalogos/tipos-contacto', tipoContactoRoutes);
+router.use('/catalogos/categorias-items', categoriaItemRoutes);
+router.use('/catalogos/tipos-items-cuota', tipoItemCuotaRoutes);
 
 // Admin catalog routes (protected, requires admin role when auth is enabled)
 router.use('/admin/catalogos', catalogoAdminRoutes);
@@ -66,6 +71,7 @@ router.use('/familiares', familiarRoutes);
 router.use('/reservas', reservaAulaRoutes);
 router.use('/recibos', reciboRoutes);
 router.use('/cuotas', cuotaRoutes);
+router.use('/items-cuota', itemCuotaRoutes); // Rutas para operaciones individuales de ítems
 router.use('/medios-pago', medioPagoRoutes);
 router.use('/categorias-socios', categoriaSocioRouter);
 

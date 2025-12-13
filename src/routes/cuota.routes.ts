@@ -5,17 +5,23 @@ import { CuotaRepository } from '@/repositories/cuota.repository';
 import { ReciboRepository } from '@/repositories/recibo.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { ConfiguracionRepository } from '@/repositories/configuracion.repository';
+import { ItemCuotaController } from '@/controllers/item-cuota.controller';
+import { ItemCuotaService } from '@/services/item-cuota.service';
 import { prisma } from '@/config/database';
 
 const router = Router();
 
-// Initialize dependencies
+// Initialize dependencies - Cuota
 const cuotaRepository = new CuotaRepository(prisma);
 const reciboRepository = new ReciboRepository(prisma);
 const personaRepository = new PersonaRepository(prisma);
 const configuracionRepository = new ConfiguracionRepository(prisma);
 const cuotaService = new CuotaService(cuotaRepository, reciboRepository, personaRepository, configuracionRepository);
 const cuotaController = new CuotaController(cuotaService);
+
+// Initialize dependencies - ItemCuota
+const itemCuotaService = new ItemCuotaService();
+const itemCuotaController = new ItemCuotaController(itemCuotaService);
 
 // Basic CRUD Routes
 router.post('/', cuotaController.createCuota.bind(cuotaController));
@@ -51,5 +57,17 @@ router.get('/validar/:mes/:anio/generacion', cuotaController.validarGeneracionCu
 router.get('/recibo/:reciboId', cuotaController.getCuotaByReciboId.bind(cuotaController));
 router.get('/socio/:socioId', cuotaController.getCuotasBySocio.bind(cuotaController));
 router.get('/periodo/:mes/:anio', cuotaController.getCuotasPorPeriodo.bind(cuotaController));
+
+// ========================================
+// ITEMS DE CUOTA SUB-ROUTES
+// ========================================
+
+// Items routes for specific cuota
+router.get('/:cuotaId/items', itemCuotaController.getItemsByCuotaId.bind(itemCuotaController));
+router.get('/:cuotaId/items/desglose', itemCuotaController.getDesgloseByCuotaId.bind(itemCuotaController));
+router.get('/:cuotaId/items/segmentados', itemCuotaController.getItemsSegmentados.bind(itemCuotaController));
+router.post('/:cuotaId/items', itemCuotaController.addManualItem.bind(itemCuotaController));
+router.post('/:cuotaId/items/regenerar', itemCuotaController.regenerarItems.bind(itemCuotaController));
+router.post('/:cuotaId/items/descuento-global', itemCuotaController.aplicarDescuentoGlobal.bind(itemCuotaController));
 
 export default router;
