@@ -1,8 +1,8 @@
 # 📋 CHECKLIST DE PROGRESO - IMPLEMENTACIÓN CUOTAS V2
 
-**Última actualización:** 2025-12-12
-**Branch:** `back-etapa-9`
-**Estado general:** FASE 1 en progreso (75% completado)
+**Última actualización:** 2025-12-13
+**Branch:** `feature/cuotas-items-system`
+**Estado general:** FASE 2 en progreso (75% completado)
 
 ---
 
@@ -98,7 +98,7 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ---
 
-## 🔄 FASE 2: Diseño del Sistema de Ítems (3-4 días) - **EN PROGRESO 60%**
+## 🔄 FASE 2: Diseño del Sistema de Ítems (3-4 días) - **EN PROGRESO 75%**
 
 ### Tasks completadas:
 
@@ -120,23 +120,30 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
   - **Tipos de ítems**: 8 creados (5 activos, 3 inactivos)
   - **Estado**: ✅ Datos iniciales cargados
 
+- [x] **2.5** Repository Layer
+  - **Archivos creados:**
+    - `src/repositories/categoria-item.repository.ts` (145 líneas)
+    - `src/repositories/tipo-item-cuota.repository.ts` (280 líneas)
+    - `src/repositories/item-cuota.repository.ts` (415 líneas)
+  - **Features**: CRUD completo, soft delete, usage stats, transacciones
+  - **Commit**: 7657abb - Repository layer
+  - **Estado**: ✅ Implementado y commiteado
+
+- [x] **2.6** Service Layer
+  - **Archivos creados:**
+    - `src/services/categoria-item.service.ts` (230+ líneas)
+    - `src/services/tipo-item-cuota.service.ts` (380+ líneas)
+    - `src/services/item-cuota.service.ts` (450+ líneas)
+  - **Features**: Validaciones negocio, auto-recálculo, descuentos globales, duplicación
+  - **Commit**: dccf389 - Service layer
+  - **Estado**: ✅ Implementado y commiteado
+
 ### Tasks pendientes:
 
 - [ ] **2.4** Migración de datos existentes (legacy → ítems)
   - Convertir cuotas con `montoBase` y `montoActividades` a sistema de ítems
   - Script de migración con transacciones
   - Rollback seguro
-
-- [ ] **2.5** Repository Layer
-  - `src/repositories/item-cuota.repository.ts`
-  - `src/repositories/tipo-item-cuota.repository.ts`
-  - `src/repositories/categoria-item.repository.ts`
-  - CRUD completo + métodos de negocio
-
-- [ ] **2.6** Service Layer
-  - `src/services/item-cuota.service.ts`
-  - Validaciones de negocio
-  - Lógica de cálculo de ítems
 
 - [ ] **2.7** Controller + Routes
   - `src/controllers/item-cuota.controller.ts`
@@ -152,8 +159,10 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 - ✅ `docs/FASE2_DISEÑO_ITEMS.md` - Documento técnico completo
 - ✅ `prisma/migrations/20251213000000_add_items_cuota_system/migration.sql`
 - ✅ `prisma/seed-items-catalogos.ts` - Seed de catálogos
+- ✅ 3 Repositories (category, tipo, item)
+- ✅ 3 Services (category, tipo, item)
 
-**Próximo paso**: Task 2.4 - Migración de datos legacy o Task 2.5 - Repository Layer
+**Próximo paso**: Task 2.7 - Controller + Routes o Task 2.4 - Migración de datos legacy
 
 ---
 
@@ -328,28 +337,28 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 ╠════════════════════════════════════════════════════════════════╣
 ║ FASE 0: ████████████████████████████████████████ 100% ✅      ║
 ║ FASE 1: ████████████████████████████████████████ 100% ✅      ║
-║ FASE 2: ████████████████████░░░░░░░░░░░░░░░░░░░  60% 🔄      ║
+║ FASE 2: ██████████████████████████████░░░░░░░░░░  75% 🔄      ║
 ║ FASE 3: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 4: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 5: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 6: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 7: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ╠════════════════════════════════════════════════════════════════╣
-║ TOTAL:  ████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  33% 🔄      ║
+║ TOTAL:  ██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░  38% 🔄      ║
 ╚════════════════════════════════════════════════════════════════╝
 
 Fases completadas: 2/8 (Fase 0 + Fase 1)
-Fase en progreso:  FASE 2 (60% - Tasks 2.1-2.3 completadas)
-Días invertidos:   ~3-4 días
-Días restantes:    ~23-30 días
-Próximo paso:      FASE 2 Task 2.4 - Migración datos legacy o Task 2.5 - Repository Layer
+Fase en progreso:  FASE 2 (75% - Tasks 2.1-2.3, 2.5-2.6 completadas)
+Días invertidos:   ~4-5 días
+Días restantes:    ~22-29 días
+Próximo paso:      FASE 2 Task 2.7 - Controller + Routes
 ```
 
 ---
 
 ## 🎯 PRÓXIMOS PASOS AL REANUDAR
 
-**Estado actual**: FASE 2 en progreso (60% completado - Tasks 2.1-2.3 ✅)
+**Estado actual**: FASE 2 en progreso (75% completado - Tasks 2.1-2.3, 2.5-2.6 ✅)
 
 **Cuando retomes el trabajo, ejecuta en este orden:**
 
@@ -359,7 +368,13 @@ Próximo paso:      FASE 2 Task 2.4 - Migración datos legacy o Task 2.5 - Repos
    git log --oneline -5
    ```
 
-2. **Verificar datos de catálogos cargados**
+2. **Verificar servicios creados**
+   ```bash
+   ls -lh src/services/*item*.ts
+   ```
+   - Debe mostrar: 3 archivos (categoria-item, tipo-item-cuota, item-cuota)
+
+3. **Verificar datos de catálogos cargados**
    ```bash
    npx tsx -e "
    import { PrismaClient } from '@prisma/client';
@@ -374,16 +389,11 @@ Próximo paso:      FASE 2 Task 2.4 - Migración datos legacy o Task 2.5 - Repos
    ```
    - Debe mostrar: **Categorías: 6, Tipos: 8**
 
-3. **Revisar documentación Fase 2 completada**
-   ```bash
-   cat docs/FASE2_DISEÑO_ITEMS.md | head -50
-   ```
-
 4. **Decidir siguiente task:**
-   - **Opción A**: Task 2.4 - Migración de datos legacy (convertir cuotas existentes a ítems)
-   - **Opción B**: Task 2.5 - Repository Layer (crear repositories para ítems)
+   - **Opción A**: Task 2.7 - Controller + Routes (crear endpoints REST)
+   - **Opción B**: Task 2.4 - Migración de datos legacy (convertir cuotas existentes a ítems)
 
-   **Recomendación**: Iniciar con Task 2.5 (Repository Layer) para tener la infraestructura antes de migrar datos
+   **Recomendación**: Continuar con Task 2.7 (Controller + Routes) para completar la infraestructura completa
 
 ---
 
@@ -445,6 +455,6 @@ Antes de apagar la PC, marca estos items:
 
 ---
 
-**Última modificación:** 2025-12-12
+**Última modificación:** 2025-12-13
 **Modificado por:** Claude Code
-**Próxima sesión:** Iniciar FASE 2 - Diseño del Sistema de Ítems
+**Próxima sesión:** FASE 2 Task 2.7 - Controller + Routes
