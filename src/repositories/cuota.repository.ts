@@ -598,31 +598,47 @@ export class CuotaRepository {
   }
 
   async getCuotasPorGenerar(mes: number, anio: number, categorias?: CategoriaSocio[]): Promise<any[]> {
-    // Obtener socios activos que no tienen cuota para este período
-    const wherePersona: any = {
-      tipo: 'SOCIO',
-      fechaBaja: null
-    };
+    // ✅ ARCHITECTURE V2: Usar tabla persona_tipo con relaciones many-to-many
 
-    if (categorias && categorias.length > 0) {
-      wherePersona.categoria = {
-        in: categorias
-      };
-    }
+    // 1. Construir filtro de categorías si se especifica
+    const whereCategoria = categorias && categorias.length > 0
+      ? { id: { in: categorias.map(c => typeof c === 'object' ? (c as any).id : c) } }
+      : {};
 
+    // 2. Obtener socios activos usando Architecture V2
     const sociosActivos = await this.prisma.persona.findMany({
-      where: wherePersona,
-      select: {
-        id: true,
-        nombre: true,
-        apellido: true,
-        dni: true,
-        numeroSocio: true,
-        categoria: true
+      where: {
+        activo: true,  // Persona activa
+        tipos: {
+          some: {
+            activo: true,  // Tipo activo
+            tipoPersona: {
+              codigo: 'SOCIO'  // Es SOCIO
+            },
+            categoria: whereCategoria  // Filtro de categoría (si aplica)
+          }
+        }
+      },
+      include: {
+        tipos: {
+          where: {
+            activo: true,
+            tipoPersona: { codigo: 'SOCIO' }
+          },
+          include: {
+            categoria: true,
+            tipoPersona: true
+          }
+        }
       }
     });
 
-    // Obtener cuotas ya generadas para este período
+    // 3. Si no hay socios, retornar vacío
+    if (sociosActivos.length === 0) {
+      return [];
+    }
+
+    // 4. Obtener cuotas ya generadas para este período
     const cuotasExistentes = await this.prisma.cuota.findMany({
       where: {
         mes,
@@ -644,9 +660,26 @@ export class CuotaRepository {
       }
     });
 
+    // 5. Crear set de socios que ya tienen cuota
     const sociosConCuota = new Set(cuotasExistentes.map(c => c.recibo.receptorId));
 
-    return sociosActivos.filter(socio => !sociosConCuota.has(socio.id));
+    // 6. Filtrar socios sin cuota y mapear a formato esperado
+    return sociosActivos
+      .filter(socio => !sociosConCuota.has(socio.id))
+      .map(socio => {
+        // Obtener el primer tipo SOCIO activo (puede haber múltiples categorías, usamos la primera)
+        const tipoSocio = socio.tipos[0];
+
+        return {
+          id: socio.id,
+          nombre: socio.nombre,
+          apellido: socio.apellido,
+          dni: socio.dni,
+          numeroSocio: socio.numeroSocio,
+          categoria: tipoSocio?.categoria || null,
+          categoriaId: tipoSocio?.categoriaId || null
+        };
+      });
   }
 
   async getResumenMensual(mes: number, anio: number): Promise<any> {

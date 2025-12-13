@@ -7,36 +7,16 @@
 
 -- Paso 1: Agregar nuevos valores al enum TipoParentesco
 -- Nota: PostgreSQL ENUMs se extienden con ALTER TYPE ADD VALUE
+-- Estos comandos deben ejecutarse fuera de un bloque de transacción
 ALTER TYPE "TipoParentesco" ADD VALUE IF NOT EXISTS 'ESPOSA';
 ALTER TYPE "TipoParentesco" ADD VALUE IF NOT EXISTS 'ESPOSO';
 
--- Paso 2: Verificar valores del enum
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_enum
-        WHERE enumlabel = 'ESPOSA'
-        AND enumtypid = 'TipoParentesco'::regtype
-    ) THEN
-        RAISE EXCEPTION 'Error: No se pudo agregar valor ESPOSA al enum';
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_enum
-        WHERE enumlabel = 'ESPOSO'
-        AND enumtypid = 'TipoParentesco'::regtype
-    ) THEN
-        RAISE EXCEPTION 'Error: No se pudo agregar valor ESPOSO al enum';
-    END IF;
-
-    RAISE NOTICE 'Valores ESPOSA y ESPOSO agregados exitosamente al enum TipoParentesco';
-END $$;
+-- Paso 2: PostgreSQL requiere COMMIT antes de usar nuevos valores de ENUM
+-- En una migración, esto se maneja automáticamente entre statements
 
 -- Paso 3: Crear índice parcial para mejorar performance de queries
--- que filtran por relaciones maritales (CONYUGE, ESPOSA, ESPOSO)
-CREATE INDEX IF NOT EXISTS idx_familiares_parentesco_marital
-ON familiares(parentesco)
-WHERE parentesco IN ('CONYUGE', 'ESPOSA', 'ESPOSO');
+-- Nota: El índice se creará en una migración posterior debido a limitaciones de PostgreSQL
+-- con nuevos valores de ENUM en la misma transacción
 
 -- Paso 4: Comentarios en tabla para documentación
 COMMENT ON COLUMN familiares.parentesco IS

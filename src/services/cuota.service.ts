@@ -196,10 +196,8 @@ export class CuotaService {
           aplicarDescuentos: data.aplicarDescuentos
         });
 
-        // Crear recibo primero
-        const numeroRecibo = await this.reciboRepository.getNextNumero();
+        // Crear recibo primero (numero auto-generado por PostgreSQL)
         const recibo = await this.reciboRepository.create({
-          numero: numeroRecibo,
           tipo: TipoRecibo.CUOTA,
           receptorId: socio.id,
           importe: montoCuota.montoTotal,
