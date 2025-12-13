@@ -98,38 +98,62 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ---
 
-## ⏸️ FASE 2: Diseño del Sistema de Ítems (3-4 días) - **PENDIENTE 0%**
+## 🔄 FASE 2: Diseño del Sistema de Ítems (3-4 días) - **EN PROGRESO 60%**
+
+### Tasks completadas:
+
+- [x] **2.1** Diseño de tablas con **3 TABLAS CATÁLOGO** (100% CRUD)
+  - **Archivo**: `docs/FASE2_DISEÑO_ITEMS.md` (completo, 1200+ líneas)
+  - **Tablas**: `categorias_items`, `tipos_items_cuota`, `items_cuota`
+  - **Schema Prisma**: 3 modelos agregados + modificación de `Cuota`
+  - **Estado**: ✅ Diseño completo y documentado
+
+- [x] **2.2** Migración de base de datos
+  - **Migration**: `20251213000000_add_items_cuota_system/migration.sql`
+  - **Aplicada**: ✅ Tablas creadas en DB
+  - **Prisma Client**: ✅ Regenerado
+  - **Estado**: ✅ Schema en producción
+
+- [x] **2.3** Seed de catálogos predefinidos
+  - **Script**: `prisma/seed-items-catalogos.ts`
+  - **Categorías**: 6 creadas (BASE, ACTIVIDAD, DESCUENTO, RECARGO, BONIFICACION, OTRO)
+  - **Tipos de ítems**: 8 creados (5 activos, 3 inactivos)
+  - **Estado**: ✅ Datos iniciales cargados
 
 ### Tasks pendientes:
 
-- [ ] **2.1** Diseño de tablas: `items_cuota`, `items_cuota_tipos`
-  - Definir estructura de ítems configurables
-  - Campos: código, nombre, descripción, monto_base, tipo, categoría
-  - Relaciones con cuotas y categorías
+- [ ] **2.4** Migración de datos existentes (legacy → ítems)
+  - Convertir cuotas con `montoBase` y `montoActividades` a sistema de ítems
+  - Script de migración con transacciones
+  - Rollback seguro
 
-- [ ] **2.2** Sistema de templates de ítems
-  - Template por categoría de socio
-  - Herencia de ítems globales
-  - Ítems específicos opcionales
+- [ ] **2.5** Repository Layer
+  - `src/repositories/item-cuota.repository.ts`
+  - `src/repositories/tipo-item-cuota.repository.ts`
+  - `src/repositories/categoria-item.repository.ts`
+  - CRUD completo + métodos de negocio
 
-- [ ] **2.3** Migración de datos existentes
-  - Convertir campos actuales (montoBase, montoActividades) a ítems
-  - Script de migración con validación
-  - Rollback plan
-
-- [ ] **2.4** Repository + Service + Controller para ítems
-  - CRUD completo de ítems
-  - Endpoints REST
+- [ ] **2.6** Service Layer
+  - `src/services/item-cuota.service.ts`
   - Validaciones de negocio
+  - Lógica de cálculo de ítems
 
-- [ ] **2.5** Tests unitarios e integración
-  - Tests de CRUD
-  - Tests de templates
+- [ ] **2.7** Controller + Routes
+  - `src/controllers/item-cuota.controller.ts`
+  - `src/routes/item-cuota.routes.ts`
+  - Endpoints REST completos
+
+- [ ] **2.8** Tests de integración
+  - `tests/fase2-items-integration.ts`
+  - Tests de CRUD de ítems
   - Tests de migración de datos
 
-**Documentos a crear:**
-- `docs/FASE2_DISEÑO_ITEMS.md`
-- `prisma/migrations/XXXXXX_create_items_cuota_tables/migration.sql`
+**Documentos creados:**
+- ✅ `docs/FASE2_DISEÑO_ITEMS.md` - Documento técnico completo
+- ✅ `prisma/migrations/20251213000000_add_items_cuota_system/migration.sql`
+- ✅ `prisma/seed-items-catalogos.ts` - Seed de catálogos
+
+**Próximo paso**: Task 2.4 - Migración de datos legacy o Task 2.5 - Repository Layer
 
 ---
 
@@ -304,25 +328,28 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 ╠════════════════════════════════════════════════════════════════╣
 ║ FASE 0: ████████████████████████████████████████ 100% ✅      ║
 ║ FASE 1: ████████████████████████████████████████ 100% ✅      ║
-║ FASE 2: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
+║ FASE 2: ████████████████████░░░░░░░░░░░░░░░░░░░  60% 🔄      ║
 ║ FASE 3: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 4: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 5: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 6: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 7: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ╠════════════════════════════════════════════════════════════════╣
-║ TOTAL:  ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  25% 🔄      ║
+║ TOTAL:  ████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  33% 🔄      ║
 ╚════════════════════════════════════════════════════════════════╝
 
 Fases completadas: 2/8 (Fase 0 + Fase 1)
-Días invertidos:   ~2-3 días
-Días restantes:    ~25-33 días
-Próxima fase:      FASE 2 - Diseño del Sistema de Ítems
+Fase en progreso:  FASE 2 (60% - Tasks 2.1-2.3 completadas)
+Días invertidos:   ~3-4 días
+Días restantes:    ~23-30 días
+Próximo paso:      FASE 2 Task 2.4 - Migración datos legacy o Task 2.5 - Repository Layer
 ```
 
 ---
 
 ## 🎯 PRÓXIMOS PASOS AL REANUDAR
+
+**Estado actual**: FASE 2 en progreso (60% completado - Tasks 2.1-2.3 ✅)
 
 **Cuando retomes el trabajo, ejecuta en este orden:**
 
@@ -332,22 +359,31 @@ Próxima fase:      FASE 2 - Diseño del Sistema de Ítems
    git log --oneline -5
    ```
 
-2. **Ejecutar tests de regresión Fase 1**
+2. **Verificar datos de catálogos cargados**
    ```bash
-   npx tsx tests/fase1-regression-tests.ts
+   npx tsx -e "
+   import { PrismaClient } from '@prisma/client';
+   const prisma = new PrismaClient();
+   (async () => {
+     const cats = await prisma.categoriaItem.count();
+     const tipos = await prisma.tipoItemCuota.count();
+     console.log(\`Categorías: \${cats}, Tipos: \${tipos}\`);
+     await prisma.\$disconnect();
+   })();
+   "
    ```
-   - ✅ Todos deben pasar
-   - Si alguno falla, revisar antes de continuar
+   - Debe mostrar: **Categorías: 6, Tipos: 8**
 
-3. **Revisar documentación Fase 2**
+3. **Revisar documentación Fase 2 completada**
    ```bash
-   cat PLAN_IMPLEMENTACION_CUOTAS_V2.md | grep -A 20 "FASE 2"
+   cat docs/FASE2_DISEÑO_ITEMS.md | head -50
    ```
 
-4. **Iniciar Task 2.1** (Diseño de tablas de ítems)
-   - Leer sección de Fase 2 en el plan
-   - Crear archivo `docs/FASE2_DISEÑO_ITEMS.md`
-   - Diseñar schema de tablas `items_cuota`
+4. **Decidir siguiente task:**
+   - **Opción A**: Task 2.4 - Migración de datos legacy (convertir cuotas existentes a ítems)
+   - **Opción B**: Task 2.5 - Repository Layer (crear repositories para ítems)
+
+   **Recomendación**: Iniciar con Task 2.5 (Repository Layer) para tener la infraestructura antes de migrar datos
 
 ---
 
