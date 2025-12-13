@@ -123,9 +123,7 @@ class CuotaService {
                     incluirActividades: true,
                     aplicarDescuentos: data.aplicarDescuentos
                 });
-                const numeroRecibo = await this.reciboRepository.getNextNumero();
                 const recibo = await this.reciboRepository.create({
-                    numero: numeroRecibo,
                     tipo: client_1.TipoRecibo.CUOTA,
                     receptorId: socio.id,
                     importe: montoCuota.montoTotal,

@@ -17,7 +17,6 @@ export declare function getActiveTipos(personaId: number, prisma?: PrismaClient)
 export declare function isPersonaActiva(personaId: number, prisma?: PrismaClient): Promise<boolean>;
 export declare function darDeBajaPersona(personaId: number, motivoBaja?: string, prisma?: PrismaClient): Promise<{
     razonSocial: string | null;
-    observaciones: string | null;
     activo: boolean;
     categoriaId: number | null;
     numeroSocio: number | null;
@@ -42,7 +41,6 @@ export declare function darDeBajaPersona(personaId: number, motivoBaja?: string,
 }>;
 export declare function reactivarPersona(personaId: number, prisma?: PrismaClient): Promise<{
     razonSocial: string | null;
-    observaciones: string | null;
     activo: boolean;
     categoriaId: number | null;
     numeroSocio: number | null;

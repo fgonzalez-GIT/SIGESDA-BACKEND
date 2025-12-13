@@ -396,8 +396,8 @@ export declare const queryActividadesSchema: z.ZodObject<{
     orderDir: "asc" | "desc";
     search?: string | undefined;
     categoriaId?: number | undefined;
-    aulaId?: string | undefined;
     docenteId?: string | undefined;
+    aulaId?: string | undefined;
     tipoActividadId?: number | undefined;
     estadoId?: number | undefined;
     diaSemanaId?: number | undefined;
@@ -411,8 +411,8 @@ export declare const queryActividadesSchema: z.ZodObject<{
     categoriaId?: unknown;
     page?: unknown;
     limit?: unknown;
-    aulaId?: string | undefined;
     docenteId?: string | undefined;
+    aulaId?: string | undefined;
     tipoActividadId?: unknown;
     estadoId?: unknown;
     diaSemanaId?: unknown;
@@ -502,13 +502,13 @@ export declare const reporteOcupacionSchema: z.ZodObject<{
     docenteId: z.ZodOptional<z.ZodString>;
     fechaReferencia: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    aulaId?: string | undefined;
     docenteId?: string | undefined;
+    aulaId?: string | undefined;
     diaSemanaId?: number | undefined;
     fechaReferencia?: string | undefined;
 }, {
-    aulaId?: string | undefined;
     docenteId?: string | undefined;
+    aulaId?: string | undefined;
     diaSemanaId?: number | undefined;
     fechaReferencia?: string | undefined;
 }>;

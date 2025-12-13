@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const item_cuota_controller_1 = require("@/controllers/item-cuota.controller");
+const item_cuota_service_1 = require("@/services/item-cuota.service");
+const item_cuota_repository_1 = require("@/repositories/item-cuota.repository");
+const tipo_item_cuota_repository_1 = require("@/repositories/tipo-item-cuota.repository");
+const router = (0, express_1.Router)();
+const itemRepository = new item_cuota_repository_1.ItemCuotaRepository();
+const tipoRepository = new tipo_item_cuota_repository_1.TipoItemCuotaRepository();
+const service = new item_cuota_service_1.ItemCuotaService();
+const controller = new item_cuota_controller_1.ItemCuotaController(service);
+router.get('/estadisticas', controller.getGlobalStats.bind(controller));
+router.get('/tipo/:codigo', controller.findByTipoItemCodigo.bind(controller));
+router.get('/categoria/:codigo', controller.findByCategoriaCodigo.bind(controller));
+router.get('/:id', controller.getById.bind(controller));
+router.put('/:id', controller.updateItem.bind(controller));
+router.delete('/:id', controller.deleteItem.bind(controller));
+router.post('/:id/duplicar', controller.duplicarItem.bind(controller));
+exports.default = router;
+//# sourceMappingURL=item-cuota.routes.js.map

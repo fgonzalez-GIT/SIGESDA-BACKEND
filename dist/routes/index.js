@@ -31,6 +31,9 @@ const estados_equipamiento_routes_1 = __importDefault(require("./estados-equipam
 const actividad_aula_routes_1 = __importDefault(require("./actividad-aula.routes"));
 const catalogo_admin_routes_1 = __importDefault(require("./catalogo-admin.routes"));
 const tipo_contacto_routes_1 = __importDefault(require("./tipo-contacto.routes"));
+const categoria_item_routes_1 = __importDefault(require("./categoria-item.routes"));
+const tipo_item_cuota_routes_1 = __importDefault(require("./tipo-item-cuota.routes"));
+const item_cuota_routes_1 = __importDefault(require("./item-cuota.routes"));
 const router = (0, express_1.Router)();
 router.use('/catalogos/tipos-actividades', tiposActividad_routes_1.default);
 router.use('/catalogos/categorias-actividades', categoriasActividad_routes_1.default);
@@ -43,6 +46,8 @@ router.use('/catalogos/estados-equipamientos', estados_equipamiento_routes_1.def
 router.use('/catalogos/tipos-aulas', tipos_aula_routes_1.default);
 router.use('/catalogos/estados-aulas', estados_aula_routes_1.default);
 router.use('/catalogos/tipos-contacto', tipo_contacto_routes_1.default);
+router.use('/catalogos/categorias-items', categoria_item_routes_1.default);
+router.use('/catalogos/tipos-items-cuota', tipo_item_cuota_routes_1.default);
 router.use('/admin/catalogos', catalogo_admin_routes_1.default);
 router.use('/actividades/tipos-actividad', tiposActividad_routes_1.default);
 router.use('/actividades/categorias-actividad', categoriasActividad_routes_1.default);
@@ -59,6 +64,7 @@ router.use('/familiares', familiar_routes_1.default);
 router.use('/reservas', reserva_aula_routes_1.default);
 router.use('/recibos', recibo_routes_1.default);
 router.use('/cuotas', cuota_routes_1.default);
+router.use('/items-cuota', item_cuota_routes_1.default);
 router.use('/medios-pago', medio_pago_routes_1.default);
 router.use('/categorias-socios', categoria_socio_routes_1.categoriaSocioRouter);
 router.use('/socios', persona_routes_1.default);

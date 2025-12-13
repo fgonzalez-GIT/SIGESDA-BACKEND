@@ -7,655 +7,119 @@ export declare class ActividadService {
     constructor(actividadRepository: ActividadRepository, prisma?: PrismaClient);
     private generateCodigoActividad;
     createActividad(data: CreateActividadDto): Promise<{
-        observaciones: string | null;
-        categoriaId: number;
         nombre: string;
         descripcion: string | null;
+        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         activa: boolean;
         capacidadMaxima: number | null;
-        codigoActividad: string;
-        tipoActividadId: number;
-        estadoId: number;
-        fechaDesde: Date;
-        fechaHasta: Date | null;
-        costo: import("@prisma/client/runtime/library").Decimal;
+        precio: import("@prisma/client/runtime/library").Decimal;
+        duracion: number | null;
     }>;
     private validateHorarios;
     getActividades(query: QueryActividadesDto): Promise<{
         pages: number;
         data: {
-            observaciones: string | null;
-            categoriaId: number;
             nombre: string;
             descripcion: string | null;
+            tipo: import(".prisma/client").$Enums.TipoActividad;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             activa: boolean;
             capacidadMaxima: number | null;
-            codigoActividad: string;
-            tipoActividadId: number;
-            estadoId: number;
-            fechaDesde: Date;
-            fechaHasta: Date | null;
-            costo: import("@prisma/client/runtime/library").Decimal;
+            precio: import("@prisma/client/runtime/library").Decimal;
+            duracion: number | null;
         }[];
         total: number;
     }>;
     getActividadById(id: number): Promise<{
-        horarios_actividades: ({
-            diasSemana: {
-                codigo: string;
-                nombre: string;
-                orden: number;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-        } & {
-            activo: boolean;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            actividadId: number;
-            diaSemanaId: number;
-            horaInicio: string;
-            horaFin: string;
-        })[];
-        docentes_actividades: ({
-            personas: {
-                nombre: string;
-                apellido: string;
-                email: string | null;
-                telefono: string | null;
-                tipos: ({
-                    especialidad: {
-                        activo: boolean;
-                        codigo: string;
-                        nombre: string;
-                        descripcion: string | null;
-                        orden: number;
-                        id: number;
-                        createdAt: Date;
-                        updatedAt: Date;
-                    } | null;
-                    tipoPersona: {
-                        activo: boolean;
-                        codigo: string;
-                        nombre: string;
-                        descripcion: string | null;
-                        orden: number;
-                        id: number;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        requiresCategoria: boolean;
-                        requiresEspecialidad: boolean;
-                        requiresCuit: boolean;
-                    };
-                } & {
-                    tipoPersonaId: number;
-                    observaciones: string | null;
-                    activo: boolean;
-                    categoriaId: number | null;
-                    numeroSocio: number | null;
-                    fechaIngreso: Date | null;
-                    fechaBaja: Date | null;
-                    motivoBaja: string | null;
-                    especialidadId: number | null;
-                    honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
-                    cuit: string | null;
-                    razonSocialId: number | null;
-                    fechaDesasignacion: Date | null;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    fechaAsignacion: Date;
-                    personaId: number;
-                })[];
-                id: number;
-            };
-            rolesDocentes: {
-                activo: boolean;
-                codigo: string;
-                nombre: string;
-                descripcion: string | null;
-                orden: number;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-        } & {
-            observaciones: string | null;
-            activo: boolean;
-            fechaDesasignacion: Date | null;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            fechaAsignacion: Date;
-            actividadId: number;
-            docenteId: number;
-            rolDocenteId: number;
-        })[];
-        participacion_actividades: ({
-            personas: {
-                nombre: string;
-                apellido: string;
-                email: string | null;
-                telefono: string | null;
-                tipos: ({
-                    tipoPersona: {
-                        activo: boolean;
-                        codigo: string;
-                        nombre: string;
-                        descripcion: string | null;
-                        orden: number;
-                        id: number;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        requiresCategoria: boolean;
-                        requiresEspecialidad: boolean;
-                        requiresCuit: boolean;
-                    };
-                } & {
-                    tipoPersonaId: number;
-                    observaciones: string | null;
-                    activo: boolean;
-                    categoriaId: number | null;
-                    numeroSocio: number | null;
-                    fechaIngreso: Date | null;
-                    fechaBaja: Date | null;
-                    motivoBaja: string | null;
-                    especialidadId: number | null;
-                    honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
-                    cuit: string | null;
-                    razonSocialId: number | null;
-                    fechaDesasignacion: Date | null;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    fechaAsignacion: Date;
-                    personaId: number;
-                })[];
-                id: number;
-            };
-        } & {
-            observaciones: string | null;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            personaId: number;
-            actividadId: number;
-            fechaInicio: Date;
-            fechaFin: Date | null;
-            precioEspecial: import("@prisma/client/runtime/library").Decimal | null;
-            activa: boolean;
-        })[];
-        _count: {
-            participacion_actividades: number;
-        };
-        tiposActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-        categoriasActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-        estadosActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-    } & {
-        observaciones: string | null;
-        categoriaId: number;
         nombre: string;
         descripcion: string | null;
+        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         activa: boolean;
         capacidadMaxima: number | null;
-        codigoActividad: string;
-        tipoActividadId: number;
-        estadoId: number;
-        fechaDesde: Date;
-        fechaHasta: Date | null;
-        costo: import("@prisma/client/runtime/library").Decimal;
+        precio: import("@prisma/client/runtime/library").Decimal;
+        duracion: number | null;
     }>;
     getActividadByCodigo(codigo: string): Promise<{
-        tiposActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-        categoriasActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-        estadosActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-    } & {
-        observaciones: string | null;
-        categoriaId: number;
         nombre: string;
         descripcion: string | null;
+        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         activa: boolean;
         capacidadMaxima: number | null;
-        codigoActividad: string;
-        tipoActividadId: number;
-        estadoId: number;
-        fechaDesde: Date;
-        fechaHasta: Date | null;
-        costo: import("@prisma/client/runtime/library").Decimal;
+        precio: import("@prisma/client/runtime/library").Decimal;
+        duracion: number | null;
     }>;
-    updateActividad(id: number, data: UpdateActividadDto): Promise<({
-        horarios_actividades: ({
-            diasSemana: {
-                codigo: string;
-                nombre: string;
-                orden: number;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-        } & {
-            activo: boolean;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            actividadId: number;
-            diaSemanaId: number;
-            horaInicio: string;
-            horaFin: string;
-        })[];
-        docentes_actividades: ({
-            personas: {
-                nombre: string;
-                apellido: string;
-                email: string | null;
-                telefono: string | null;
-                tipos: ({
-                    especialidad: {
-                        activo: boolean;
-                        codigo: string;
-                        nombre: string;
-                        descripcion: string | null;
-                        orden: number;
-                        id: number;
-                        createdAt: Date;
-                        updatedAt: Date;
-                    } | null;
-                    tipoPersona: {
-                        activo: boolean;
-                        codigo: string;
-                        nombre: string;
-                        descripcion: string | null;
-                        orden: number;
-                        id: number;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        requiresCategoria: boolean;
-                        requiresEspecialidad: boolean;
-                        requiresCuit: boolean;
-                    };
-                } & {
-                    tipoPersonaId: number;
-                    observaciones: string | null;
-                    activo: boolean;
-                    categoriaId: number | null;
-                    numeroSocio: number | null;
-                    fechaIngreso: Date | null;
-                    fechaBaja: Date | null;
-                    motivoBaja: string | null;
-                    especialidadId: number | null;
-                    honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
-                    cuit: string | null;
-                    razonSocialId: number | null;
-                    fechaDesasignacion: Date | null;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    fechaAsignacion: Date;
-                    personaId: number;
-                })[];
-                id: number;
-            };
-            rolesDocentes: {
-                activo: boolean;
-                codigo: string;
-                nombre: string;
-                descripcion: string | null;
-                orden: number;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-        } & {
-            observaciones: string | null;
-            activo: boolean;
-            fechaDesasignacion: Date | null;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            fechaAsignacion: Date;
-            actividadId: number;
-            docenteId: number;
-            rolDocenteId: number;
-        })[];
-        participacion_actividades: ({
-            personas: {
-                nombre: string;
-                apellido: string;
-                email: string | null;
-                telefono: string | null;
-                tipos: ({
-                    tipoPersona: {
-                        activo: boolean;
-                        codigo: string;
-                        nombre: string;
-                        descripcion: string | null;
-                        orden: number;
-                        id: number;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        requiresCategoria: boolean;
-                        requiresEspecialidad: boolean;
-                        requiresCuit: boolean;
-                    };
-                } & {
-                    tipoPersonaId: number;
-                    observaciones: string | null;
-                    activo: boolean;
-                    categoriaId: number | null;
-                    numeroSocio: number | null;
-                    fechaIngreso: Date | null;
-                    fechaBaja: Date | null;
-                    motivoBaja: string | null;
-                    especialidadId: number | null;
-                    honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
-                    cuit: string | null;
-                    razonSocialId: number | null;
-                    fechaDesasignacion: Date | null;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    fechaAsignacion: Date;
-                    personaId: number;
-                })[];
-                id: number;
-            };
-        } & {
-            observaciones: string | null;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            personaId: number;
-            actividadId: number;
-            fechaInicio: Date;
-            fechaFin: Date | null;
-            precioEspecial: import("@prisma/client/runtime/library").Decimal | null;
-            activa: boolean;
-        })[];
-        _count: {
-            participacion_actividades: number;
-        };
-        tiposActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-        categoriasActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-        estadosActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-    } & {
-        observaciones: string | null;
-        categoriaId: number;
+    updateActividad(id: number, data: UpdateActividadDto): Promise<{
         nombre: string;
         descripcion: string | null;
+        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         activa: boolean;
         capacidadMaxima: number | null;
-        codigoActividad: string;
-        tipoActividadId: number;
-        estadoId: number;
-        fechaDesde: Date;
-        fechaHasta: Date | null;
-        costo: import("@prisma/client/runtime/library").Decimal;
-    }) | null>;
+        precio: import("@prisma/client/runtime/library").Decimal;
+        duracion: number | null;
+    } | null>;
     deleteActividad(id: number): Promise<{
         message: string;
     }>;
     cambiarEstado(id: number, nuevoEstadoId: number, observaciones?: string): Promise<{
-        estadosActividades: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-    } & {
-        observaciones: string | null;
-        categoriaId: number;
         nombre: string;
         descripcion: string | null;
+        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         activa: boolean;
         capacidadMaxima: number | null;
-        codigoActividad: string;
-        tipoActividadId: number;
-        estadoId: number;
-        fechaDesde: Date;
-        fechaHasta: Date | null;
-        costo: import("@prisma/client/runtime/library").Decimal;
+        precio: import("@prisma/client/runtime/library").Decimal;
+        duracion: number | null;
     }>;
     agregarHorario(actividadId: number, horarioData: any): Promise<{
-        actividades: {
-            nombre: string;
-            id: number;
-            codigoActividad: string;
-        };
-        diasSemana: {
-            codigo: string;
-            nombre: string;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-    } & {
         activo: boolean;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         actividadId: number;
-        diaSemanaId: number;
         horaInicio: string;
         horaFin: string;
+        diaSemana: import(".prisma/client").$Enums.DiaSemana;
     }>;
     actualizarHorario(horarioId: number, horarioData: any): Promise<{
-        actividades: {
-            nombre: string;
-            id: number;
-        };
-        diasSemana: {
-            codigo: string;
-            nombre: string;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-    } & {
         activo: boolean;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         actividadId: number;
-        diaSemanaId: number;
         horaInicio: string;
         horaFin: string;
+        diaSemana: import(".prisma/client").$Enums.DiaSemana;
     }>;
     eliminarHorario(horarioId: number): Promise<{
         message: string;
     }>;
-    getHorariosByActividad(actividadId: number): Promise<({
-        diasSemana: {
-            codigo: string;
-            nombre: string;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-    } & {
+    getHorariosByActividad(actividadId: number): Promise<{
         activo: boolean;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         actividadId: number;
-        diaSemanaId: number;
         horaInicio: string;
         horaFin: string;
-    })[]>;
+        diaSemana: import(".prisma/client").$Enums.DiaSemana;
+    }[]>;
     asignarDocente(actividadId: number, docenteId: number, rolDocenteId: number, observaciones?: string): Promise<{
-        actividades: {
-            nombre: string;
-            id: number;
-            codigoActividad: string;
-        };
-        personas: {
-            nombre: string;
-            apellido: string;
-            email: string | null;
-            tipos: ({
-                especialidad: {
-                    activo: boolean;
-                    codigo: string;
-                    nombre: string;
-                    descripcion: string | null;
-                    orden: number;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                } | null;
-                tipoPersona: {
-                    activo: boolean;
-                    codigo: string;
-                    nombre: string;
-                    descripcion: string | null;
-                    orden: number;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    requiresCategoria: boolean;
-                    requiresEspecialidad: boolean;
-                    requiresCuit: boolean;
-                };
-            } & {
-                tipoPersonaId: number;
-                observaciones: string | null;
-                activo: boolean;
-                categoriaId: number | null;
-                numeroSocio: number | null;
-                fechaIngreso: Date | null;
-                fechaBaja: Date | null;
-                motivoBaja: string | null;
-                especialidadId: number | null;
-                honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
-                cuit: string | null;
-                razonSocialId: number | null;
-                fechaDesasignacion: Date | null;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-                fechaAsignacion: Date;
-                personaId: number;
-            })[];
-            id: number;
-        };
-        rolesDocentes: {
-            activo: boolean;
-            codigo: string;
-            nombre: string;
-            descripcion: string | null;
-            orden: number;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
-    } & {
         observaciones: string | null;
         activo: boolean;
         fechaDesasignacion: Date | null;
@@ -879,52 +343,6 @@ export declare class ActividadService {
         activa: boolean;
     })[]>;
     addParticipante(actividadId: number, personaId: number, fechaInicio: string, observaciones?: string): Promise<{
-        actividades: {
-            nombre: string;
-            id: number;
-            codigoActividad: string;
-        };
-        personas: {
-            nombre: string;
-            apellido: string;
-            email: string | null;
-            tipos: ({
-                tipoPersona: {
-                    activo: boolean;
-                    codigo: string;
-                    nombre: string;
-                    descripcion: string | null;
-                    orden: number;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    requiresCategoria: boolean;
-                    requiresEspecialidad: boolean;
-                    requiresCuit: boolean;
-                };
-            } & {
-                tipoPersonaId: number;
-                observaciones: string | null;
-                activo: boolean;
-                categoriaId: number | null;
-                numeroSocio: number | null;
-                fechaIngreso: Date | null;
-                fechaBaja: Date | null;
-                motivoBaja: string | null;
-                especialidadId: number | null;
-                honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
-                cuit: string | null;
-                razonSocialId: number | null;
-                fechaDesasignacion: Date | null;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-                fechaAsignacion: Date;
-                personaId: number;
-            })[];
-            id: number;
-        };
-    } & {
         observaciones: string | null;
         id: number;
         createdAt: Date;
@@ -1056,21 +474,16 @@ export declare class ActividadService {
         updatedAt: Date;
     }[]>;
     duplicarActividad(idOriginal: number, nuevoCodigoActividad: string, nuevoNombre: string, nuevaFechaDesde: string | Date, nuevaFechaHasta?: string | Date | null, copiarHorarios?: boolean, copiarDocentes?: boolean): Promise<{
-        observaciones: string | null;
-        categoriaId: number;
         nombre: string;
         descripcion: string | null;
+        tipo: import(".prisma/client").$Enums.TipoActividad;
         id: number;
         createdAt: Date;
         updatedAt: Date;
         activa: boolean;
         capacidadMaxima: number | null;
-        codigoActividad: string;
-        tipoActividadId: number;
-        estadoId: number;
-        fechaDesde: Date;
-        fechaHasta: Date | null;
-        costo: import("@prisma/client/runtime/library").Decimal;
+        precio: import("@prisma/client/runtime/library").Decimal;
+        duracion: number | null;
     }>;
     getResumenPorTipo(): Promise<{
         tipo: {

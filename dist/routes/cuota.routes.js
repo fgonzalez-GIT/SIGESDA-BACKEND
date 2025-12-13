@@ -7,6 +7,8 @@ const cuota_repository_1 = require("@/repositories/cuota.repository");
 const recibo_repository_1 = require("@/repositories/recibo.repository");
 const persona_repository_1 = require("@/repositories/persona.repository");
 const configuracion_repository_1 = require("@/repositories/configuracion.repository");
+const item_cuota_controller_1 = require("@/controllers/item-cuota.controller");
+const item_cuota_service_1 = require("@/services/item-cuota.service");
 const database_1 = require("@/config/database");
 const router = (0, express_1.Router)();
 const cuotaRepository = new cuota_repository_1.CuotaRepository(database_1.prisma);
@@ -15,6 +17,8 @@ const personaRepository = new persona_repository_1.PersonaRepository(database_1.
 const configuracionRepository = new configuracion_repository_1.ConfiguracionRepository(database_1.prisma);
 const cuotaService = new cuota_service_1.CuotaService(cuotaRepository, reciboRepository, personaRepository, configuracionRepository);
 const cuotaController = new cuota_controller_1.CuotaController(cuotaService);
+const itemCuotaService = new item_cuota_service_1.ItemCuotaService();
+const itemCuotaController = new item_cuota_controller_1.ItemCuotaController(itemCuotaService);
 router.post('/', cuotaController.createCuota.bind(cuotaController));
 router.get('/', cuotaController.getCuotas.bind(cuotaController));
 router.get('/:id', cuotaController.getCuotaById.bind(cuotaController));
@@ -36,5 +40,11 @@ router.get('/validar/:mes/:anio/generacion', cuotaController.validarGeneracionCu
 router.get('/recibo/:reciboId', cuotaController.getCuotaByReciboId.bind(cuotaController));
 router.get('/socio/:socioId', cuotaController.getCuotasBySocio.bind(cuotaController));
 router.get('/periodo/:mes/:anio', cuotaController.getCuotasPorPeriodo.bind(cuotaController));
+router.get('/:cuotaId/items', itemCuotaController.getItemsByCuotaId.bind(itemCuotaController));
+router.get('/:cuotaId/items/desglose', itemCuotaController.getDesgloseByCuotaId.bind(itemCuotaController));
+router.get('/:cuotaId/items/segmentados', itemCuotaController.getItemsSegmentados.bind(itemCuotaController));
+router.post('/:cuotaId/items', itemCuotaController.addManualItem.bind(itemCuotaController));
+router.post('/:cuotaId/items/regenerar', itemCuotaController.regenerarItems.bind(itemCuotaController));
+router.post('/:cuotaId/items/descuento-global', itemCuotaController.aplicarDescuentoGlobal.bind(itemCuotaController));
 exports.default = router;
 //# sourceMappingURL=cuota.routes.js.map

@@ -98,7 +98,7 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ---
 
-## 🔄 FASE 2: Diseño del Sistema de Ítems (3-4 días) - **EN PROGRESO 75%**
+## 🔄 FASE 2: Diseño del Sistema de Ítems (3-4 días) - **EN PROGRESO 88%**
 
 ### Tasks completadas:
 
@@ -138,22 +138,41 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
   - **Commit**: dccf389 - Service layer
   - **Estado**: ✅ Implementado y commiteado
 
+- [x] **2.7** Controller + Routes + DTOs
+  - **DTOs creados:**
+    - `src/dto/item-cuota.dto.ts` (280+ líneas, 18 schemas Zod)
+  - **Controllers creados:**
+    - `src/controllers/categoria-item.controller.ts` (230+ líneas, 11 endpoints)
+    - `src/controllers/tipo-item-cuota.controller.ts` (350+ líneas, 15 endpoints)
+    - `src/controllers/item-cuota.controller.ts` (300+ líneas, 13 endpoints)
+  - **Routes creadas:**
+    - `src/routes/categoria-item.routes.ts`
+    - `src/routes/tipo-item-cuota.routes.ts`
+    - `src/routes/item-cuota.routes.ts`
+    - Integración en `src/routes/cuota.routes.ts`
+    - Registro en `src/routes/index.ts`
+  - **Endpoints REST**: 39 endpoints totales
+  - **Rutas principales**:
+    - `/api/catalogos/categorias-items` (CRUD categorías)
+    - `/api/catalogos/tipos-items-cuota` (CRUD tipos + fórmulas)
+    - `/api/items-cuota` (operaciones individuales)
+    - `/api/cuotas/:cuotaId/items` (operaciones por cuota)
+  - **Commit**: feat(fase2): Add controllers, DTOs and routes
+  - **Estado**: ✅ Implementado y commiteado
+
 ### Tasks pendientes:
 
-- [ ] **2.4** Migración de datos existentes (legacy → ítems)
+- [ ] **2.4** Migración de datos existentes (legacy → ítems) - **OPCIONAL**
   - Convertir cuotas con `montoBase` y `montoActividades` a sistema de ítems
   - Script de migración con transacciones
   - Rollback seguro
-
-- [ ] **2.7** Controller + Routes
-  - `src/controllers/item-cuota.controller.ts`
-  - `src/routes/item-cuota.routes.ts`
-  - Endpoints REST completos
+  - **Nota**: Puede hacerse después de validar infraestructura
 
 - [ ] **2.8** Tests de integración
   - `tests/fase2-items-integration.ts`
   - Tests de CRUD de ítems
-  - Tests de migración de datos
+  - Tests de validaciones de negocio
+  - Tests de endpoints REST
 
 **Documentos creados:**
 - ✅ `docs/FASE2_DISEÑO_ITEMS.md` - Documento técnico completo
@@ -161,8 +180,11 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 - ✅ `prisma/seed-items-catalogos.ts` - Seed de catálogos
 - ✅ 3 Repositories (category, tipo, item)
 - ✅ 3 Services (category, tipo, item)
+- ✅ 3 Controllers (category, tipo, item)
+- ✅ 1 DTO file (18 schemas Zod)
+- ✅ 4 Route files (39 endpoints REST)
 
-**Próximo paso**: Task 2.7 - Controller + Routes o Task 2.4 - Migración de datos legacy
+**Próximo paso**: Tests de validación de infraestructura completa
 
 ---
 
@@ -337,28 +359,28 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 ╠════════════════════════════════════════════════════════════════╣
 ║ FASE 0: ████████████████████████████████████████ 100% ✅      ║
 ║ FASE 1: ████████████████████████████████████████ 100% ✅      ║
-║ FASE 2: ██████████████████████████████░░░░░░░░░░  75% 🔄      ║
+║ FASE 2: ███████████████████████████████████░░░░░  88% 🔄      ║
 ║ FASE 3: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 4: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 5: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 6: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 7: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ╠════════════════════════════════════════════════════════════════╣
-║ TOTAL:  ██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░  38% 🔄      ║
+║ TOTAL:  ███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░  41% 🔄      ║
 ╚════════════════════════════════════════════════════════════════╝
 
 Fases completadas: 2/8 (Fase 0 + Fase 1)
-Fase en progreso:  FASE 2 (75% - Tasks 2.1-2.3, 2.5-2.6 completadas)
+Fase en progreso:  FASE 2 (88% - Tasks 2.1-2.3, 2.5-2.7 completadas)
 Días invertidos:   ~4-5 días
-Días restantes:    ~22-29 días
-Próximo paso:      FASE 2 Task 2.7 - Controller + Routes
+Días restantes:    ~21-28 días
+Próximo paso:      Tests de validación + FASE 2 Task 2.8 (Tests integración)
 ```
 
 ---
 
 ## 🎯 PRÓXIMOS PASOS AL REANUDAR
 
-**Estado actual**: FASE 2 en progreso (75% completado - Tasks 2.1-2.3, 2.5-2.6 ✅)
+**Estado actual**: FASE 2 en progreso (88% completado - Tasks 2.1-2.3, 2.5-2.7 ✅)
 
 **Cuando retomes el trabajo, ejecuta en este orden:**
 
@@ -368,14 +390,27 @@ Próximo paso:      FASE 2 Task 2.7 - Controller + Routes
    git log --oneline -5
    ```
 
-2. **Verificar servicios creados**
+2. **Verificar archivos creados (infraestructura completa)**
    ```bash
+   ls -lh src/repositories/*item*.ts
    ls -lh src/services/*item*.ts
+   ls -lh src/controllers/*item*.ts
+   ls -lh src/routes/*item*.ts
+   ls -lh src/dto/item-cuota.dto.ts
    ```
-   - Debe mostrar: 3 archivos (categoria-item, tipo-item-cuota, item-cuota)
+   - Debe mostrar: 3 repos, 3 services, 3 controllers, 4 routes, 1 DTO
 
-3. **Verificar datos de catálogos cargados**
+3. **RECOMENDADO: Ejecutar tests de validación básicos**
    ```bash
+   # Test 1: Compilación TypeScript
+   npm run build
+
+   # Test 2: Verificar que el servidor arranca sin errores
+   npm run dev
+   # Esperar a ver: "✓ Servidor escuchando en puerto 3001"
+   # Ctrl+C para detener
+
+   # Test 3: Verificar datos de catálogos cargados
    npx tsx -e "
    import { PrismaClient } from '@prisma/client';
    const prisma = new PrismaClient();
@@ -386,14 +421,15 @@ Próximo paso:      FASE 2 Task 2.7 - Controller + Routes
      await prisma.\$disconnect();
    })();
    "
+   # Debe mostrar: Categorías: 6, Tipos: 8
    ```
-   - Debe mostrar: **Categorías: 6, Tipos: 8**
 
 4. **Decidir siguiente task:**
-   - **Opción A**: Task 2.7 - Controller + Routes (crear endpoints REST)
-   - **Opción B**: Task 2.4 - Migración de datos legacy (convertir cuotas existentes a ítems)
+   - **Opción A (RECOMENDADA)**: Task 2.8 - Tests de integración formales
+   - **Opción B**: Task 2.4 - Migración de datos legacy (opcional)
+   - **Opción C**: Pasar directamente a FASE 3 - Motor de Reglas
 
-   **Recomendación**: Continuar con Task 2.7 (Controller + Routes) para completar la infraestructura completa
+   **Recomendación**: Ejecutar tests de validación (paso 3) y luego decidir entre Task 2.8 o continuar a FASE 3
 
 ---
 
@@ -457,4 +493,4 @@ Antes de apagar la PC, marca estos items:
 
 **Última modificación:** 2025-12-13
 **Modificado por:** Claude Code
-**Próxima sesión:** FASE 2 Task 2.7 - Controller + Routes
+**Próxima sesión:** Tests de validación de infraestructura completa

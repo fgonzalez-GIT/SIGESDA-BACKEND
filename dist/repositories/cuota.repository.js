@@ -531,26 +531,38 @@ class CuotaRepository {
         return count > 0;
     }
     async getCuotasPorGenerar(mes, anio, categorias) {
-        const wherePersona = {
-            tipo: 'SOCIO',
-            fechaBaja: null
-        };
-        if (categorias && categorias.length > 0) {
-            wherePersona.categoria = {
-                in: categorias
-            };
-        }
+        const whereCategoria = categorias && categorias.length > 0
+            ? { id: { in: categorias.map(c => typeof c === 'object' ? c.id : c) } }
+            : {};
         const sociosActivos = await this.prisma.persona.findMany({
-            where: wherePersona,
-            select: {
-                id: true,
-                nombre: true,
-                apellido: true,
-                dni: true,
-                numeroSocio: true,
-                categoria: true
+            where: {
+                activo: true,
+                tipos: {
+                    some: {
+                        activo: true,
+                        tipoPersona: {
+                            codigo: 'SOCIO'
+                        },
+                        categoria: whereCategoria
+                    }
+                }
+            },
+            include: {
+                tipos: {
+                    where: {
+                        activo: true,
+                        tipoPersona: { codigo: 'SOCIO' }
+                    },
+                    include: {
+                        categoria: true,
+                        tipoPersona: true
+                    }
+                }
             }
         });
+        if (sociosActivos.length === 0) {
+            return [];
+        }
         const cuotasExistentes = await this.prisma.cuota.findMany({
             where: {
                 mes,
@@ -572,7 +584,20 @@ class CuotaRepository {
             }
         });
         const sociosConCuota = new Set(cuotasExistentes.map(c => c.recibo.receptorId));
-        return sociosActivos.filter(socio => !sociosConCuota.has(socio.id));
+        return sociosActivos
+            .filter(socio => !sociosConCuota.has(socio.id))
+            .map(socio => {
+            const tipoSocio = socio.tipos[0];
+            return {
+                id: socio.id,
+                nombre: socio.nombre,
+                apellido: socio.apellido,
+                dni: socio.dni,
+                numeroSocio: socio.numeroSocio,
+                categoria: tipoSocio?.categoria || null,
+                categoriaId: tipoSocio?.categoriaId || null
+            };
+        });
     }
     async getResumenMensual(mes, anio) {
         return this.prisma.$queryRaw `

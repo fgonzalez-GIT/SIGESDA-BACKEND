@@ -3,9 +3,7 @@ import { CreateReciboDto, ReciboQueryDto, ReciboSearchDto, ReciboStatsDto } from
 export declare class ReciboRepository {
     private prisma;
     constructor(prisma: PrismaClient);
-    create(data: CreateReciboDto & {
-        numero: string;
-    }): Promise<Recibo>;
+    create(data: CreateReciboDto): Promise<Recibo>;
     findAll(query: ReciboQueryDto): Promise<{
         data: Recibo[];
         total: number;
@@ -19,9 +17,7 @@ export declare class ReciboRepository {
     deleteBulk(ids: string[]): Promise<{
         count: number;
     }>;
-    createBulk(recibos: (CreateReciboDto & {
-        numero: string;
-    })[]): Promise<{
+    createBulk(recibos: CreateReciboDto[]): Promise<{
         count: number;
     }>;
     updateBulkEstados(ids: string[], nuevoEstado: EstadoRecibo, observaciones?: string): Promise<{
@@ -29,7 +25,6 @@ export declare class ReciboRepository {
     }>;
     search(searchData: ReciboSearchDto): Promise<Recibo[]>;
     getStatistics(statsData: ReciboStatsDto): Promise<any>;
-    getNextNumero(): Promise<string>;
     getVencidos(): Promise<Recibo[]>;
     getPendientes(): Promise<Recibo[]>;
     markVencidosAsVencido(): Promise<{

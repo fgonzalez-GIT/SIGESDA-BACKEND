@@ -1,0 +1,23 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const categoria_item_controller_1 = require("@/controllers/categoria-item.controller");
+const categoria_item_service_1 = require("@/services/categoria-item.service");
+const categoria_item_repository_1 = require("@/repositories/categoria-item.repository");
+const router = (0, express_1.Router)();
+const repository = new categoria_item_repository_1.CategoriaItemRepository();
+const service = new categoria_item_service_1.CategoriaItemService();
+const controller = new categoria_item_controller_1.CategoriaItemController(service);
+router.get('/resumen', controller.getSummary.bind(controller));
+router.post('/reordenar', controller.reorder.bind(controller));
+router.get('/codigo/:codigo', controller.getByCodigo.bind(controller));
+router.patch('/:id/desactivar', controller.deactivate.bind(controller));
+router.patch('/:id/activar', controller.activate.bind(controller));
+router.get('/:id/estadisticas', controller.getUsageStats.bind(controller));
+router.post('/', controller.create.bind(controller));
+router.get('/', controller.getAll.bind(controller));
+router.get('/:id', controller.getById.bind(controller));
+router.put('/:id', controller.update.bind(controller));
+router.delete('/:id', controller.delete.bind(controller));
+exports.default = router;
+//# sourceMappingURL=categoria-item.routes.js.map

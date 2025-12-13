@@ -8,10 +8,10 @@ export declare const createReservaAulaSchema: z.ZodEffects<z.ZodEffects<z.ZodEff
     fechaFin: z.ZodString;
     observaciones: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
+    docenteId: number;
     fechaInicio: string;
     fechaFin: string;
     aulaId: number;
-    docenteId: number;
     observaciones?: string | undefined;
     actividadId?: number | undefined;
     estadoReservaId?: number | undefined;
@@ -20,14 +20,14 @@ export declare const createReservaAulaSchema: z.ZodEffects<z.ZodEffects<z.ZodEff
     fechaFin: string;
     observaciones?: string | undefined;
     actividadId?: unknown;
-    aulaId?: unknown;
     docenteId?: unknown;
+    aulaId?: unknown;
     estadoReservaId?: unknown;
 }>, {
+    docenteId: number;
     fechaInicio: string;
     fechaFin: string;
     aulaId: number;
-    docenteId: number;
     observaciones?: string | undefined;
     actividadId?: number | undefined;
     estadoReservaId?: number | undefined;
@@ -36,14 +36,14 @@ export declare const createReservaAulaSchema: z.ZodEffects<z.ZodEffects<z.ZodEff
     fechaFin: string;
     observaciones?: string | undefined;
     actividadId?: unknown;
-    aulaId?: unknown;
     docenteId?: unknown;
+    aulaId?: unknown;
     estadoReservaId?: unknown;
 }>, {
+    docenteId: number;
     fechaInicio: string;
     fechaFin: string;
     aulaId: number;
-    docenteId: number;
     observaciones?: string | undefined;
     actividadId?: number | undefined;
     estadoReservaId?: number | undefined;
@@ -52,14 +52,14 @@ export declare const createReservaAulaSchema: z.ZodEffects<z.ZodEffects<z.ZodEff
     fechaFin: string;
     observaciones?: string | undefined;
     actividadId?: unknown;
-    aulaId?: unknown;
     docenteId?: unknown;
+    aulaId?: unknown;
     estadoReservaId?: unknown;
 }>, {
+    docenteId: number;
     fechaInicio: string;
     fechaFin: string;
     aulaId: number;
-    docenteId: number;
     observaciones?: string | undefined;
     actividadId?: number | undefined;
     estadoReservaId?: number | undefined;
@@ -68,8 +68,8 @@ export declare const createReservaAulaSchema: z.ZodEffects<z.ZodEffects<z.ZodEff
     fechaFin: string;
     observaciones?: string | undefined;
     actividadId?: unknown;
-    aulaId?: unknown;
     docenteId?: unknown;
+    aulaId?: unknown;
     estadoReservaId?: unknown;
 }>;
 export declare const updateReservaAulaSchema: z.ZodEffects<z.ZodObject<{
@@ -83,34 +83,34 @@ export declare const updateReservaAulaSchema: z.ZodEffects<z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     observaciones?: string | null | undefined;
     actividadId?: number | null | undefined;
+    docenteId?: number | undefined;
     fechaInicio?: string | undefined;
     fechaFin?: string | undefined;
     aulaId?: number | undefined;
-    docenteId?: number | undefined;
     estadoReservaId?: number | undefined;
 }, {
     observaciones?: string | null | undefined;
     actividadId?: unknown;
+    docenteId?: unknown;
     fechaInicio?: string | undefined;
     fechaFin?: string | undefined;
     aulaId?: unknown;
-    docenteId?: unknown;
     estadoReservaId?: unknown;
 }>, {
     observaciones?: string | null | undefined;
     actividadId?: number | null | undefined;
+    docenteId?: number | undefined;
     fechaInicio?: string | undefined;
     fechaFin?: string | undefined;
     aulaId?: number | undefined;
-    docenteId?: number | undefined;
     estadoReservaId?: number | undefined;
 }, {
     observaciones?: string | null | undefined;
     actividadId?: unknown;
+    docenteId?: unknown;
     fechaInicio?: string | undefined;
     fechaFin?: string | undefined;
     aulaId?: unknown;
-    docenteId?: unknown;
     estadoReservaId?: unknown;
 }>;
 export declare const reservaAulaQuerySchema: z.ZodObject<{
@@ -130,8 +130,8 @@ export declare const reservaAulaQuerySchema: z.ZodObject<{
     soloActivas: boolean;
     incluirPasadas: boolean;
     actividadId?: number | undefined;
-    aulaId?: number | undefined;
     docenteId?: number | undefined;
+    aulaId?: number | undefined;
     estadoReservaId?: number | undefined;
     fechaDesde?: string | undefined;
     fechaHasta?: string | undefined;
@@ -139,8 +139,8 @@ export declare const reservaAulaQuerySchema: z.ZodObject<{
     page?: unknown;
     limit?: unknown;
     actividadId?: unknown;
-    aulaId?: unknown;
     docenteId?: unknown;
+    aulaId?: unknown;
     estadoReservaId?: unknown;
     fechaDesde?: string | undefined;
     fechaHasta?: string | undefined;
@@ -183,10 +183,10 @@ export declare const createBulkReservasSchema: z.ZodObject<{
         fechaFin: z.ZodString;
         observaciones: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
+        docenteId: number;
         fechaInicio: string;
         fechaFin: string;
         aulaId: number;
-        docenteId: number;
         observaciones?: string | undefined;
         actividadId?: number | undefined;
         estadoReservaId?: number | undefined;
@@ -195,14 +195,14 @@ export declare const createBulkReservasSchema: z.ZodObject<{
         fechaFin: string;
         observaciones?: string | undefined;
         actividadId?: unknown;
-        aulaId?: unknown;
         docenteId?: unknown;
+        aulaId?: unknown;
         estadoReservaId?: unknown;
     }>, {
+        docenteId: number;
         fechaInicio: string;
         fechaFin: string;
         aulaId: number;
-        docenteId: number;
         observaciones?: string | undefined;
         actividadId?: number | undefined;
         estadoReservaId?: number | undefined;
@@ -211,14 +211,14 @@ export declare const createBulkReservasSchema: z.ZodObject<{
         fechaFin: string;
         observaciones?: string | undefined;
         actividadId?: unknown;
-        aulaId?: unknown;
         docenteId?: unknown;
+        aulaId?: unknown;
         estadoReservaId?: unknown;
     }>, {
+        docenteId: number;
         fechaInicio: string;
         fechaFin: string;
         aulaId: number;
-        docenteId: number;
         observaciones?: string | undefined;
         actividadId?: number | undefined;
         estadoReservaId?: number | undefined;
@@ -227,14 +227,14 @@ export declare const createBulkReservasSchema: z.ZodObject<{
         fechaFin: string;
         observaciones?: string | undefined;
         actividadId?: unknown;
-        aulaId?: unknown;
         docenteId?: unknown;
+        aulaId?: unknown;
         estadoReservaId?: unknown;
     }>, {
+        docenteId: number;
         fechaInicio: string;
         fechaFin: string;
         aulaId: number;
-        docenteId: number;
         observaciones?: string | undefined;
         actividadId?: number | undefined;
         estadoReservaId?: number | undefined;
@@ -243,16 +243,16 @@ export declare const createBulkReservasSchema: z.ZodObject<{
         fechaFin: string;
         observaciones?: string | undefined;
         actividadId?: unknown;
-        aulaId?: unknown;
         docenteId?: unknown;
+        aulaId?: unknown;
         estadoReservaId?: unknown;
     }>, "many">;
 }, "strip", z.ZodTypeAny, {
     reservas: {
+        docenteId: number;
         fechaInicio: string;
         fechaFin: string;
         aulaId: number;
-        docenteId: number;
         observaciones?: string | undefined;
         actividadId?: number | undefined;
         estadoReservaId?: number | undefined;
@@ -263,8 +263,8 @@ export declare const createBulkReservasSchema: z.ZodObject<{
         fechaFin: string;
         observaciones?: string | undefined;
         actividadId?: unknown;
-        aulaId?: unknown;
         docenteId?: unknown;
+        aulaId?: unknown;
         estadoReservaId?: unknown;
     }[];
 }>;
@@ -302,10 +302,10 @@ export declare const createRecurringReservaSchema: z.ZodEffects<z.ZodObject<{
         maxOcurrencias?: number | undefined;
     }>;
 }, "strip", z.ZodTypeAny, {
+    docenteId: number;
     fechaInicio: string;
     fechaFin: string;
     aulaId: number;
-    docenteId: number;
     recurrencia: {
         tipo: "DIARIO" | "SEMANAL" | "MENSUAL";
         fechaHasta: string;
@@ -327,13 +327,13 @@ export declare const createRecurringReservaSchema: z.ZodEffects<z.ZodObject<{
     };
     observaciones?: string | undefined;
     actividadId?: unknown;
-    aulaId?: unknown;
     docenteId?: unknown;
+    aulaId?: unknown;
 }>, {
+    docenteId: number;
     fechaInicio: string;
     fechaFin: string;
     aulaId: number;
-    docenteId: number;
     recurrencia: {
         tipo: "DIARIO" | "SEMANAL" | "MENSUAL";
         fechaHasta: string;
@@ -355,8 +355,8 @@ export declare const createRecurringReservaSchema: z.ZodEffects<z.ZodObject<{
     };
     observaciones?: string | undefined;
     actividadId?: unknown;
-    aulaId?: unknown;
     docenteId?: unknown;
+    aulaId?: unknown;
 }>;
 export declare const reservaSearchSchema: z.ZodObject<{
     search: z.ZodString;

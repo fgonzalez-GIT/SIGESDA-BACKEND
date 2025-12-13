@@ -338,7 +338,7 @@ export class ItemCuotaService {
       esAutomatico: false,
       esEditable: true,
       observaciones: item.observaciones,
-      metadata: item.metadata
+      metadata: item.metadata || undefined
     });
 
     // Recalcular total

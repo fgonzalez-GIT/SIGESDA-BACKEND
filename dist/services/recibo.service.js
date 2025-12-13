@@ -26,10 +26,9 @@ class ReciboService {
             }
             await this.validateReceptorByTipo(data.tipo, receptor);
         }
-        const numero = await this.reciboRepository.getNextNumero();
         await this.validateBusinessRules(data);
-        const recibo = await this.reciboRepository.create({ ...data, numero });
-        logger_1.logger.info(`Recibo creado: ${numero} - ${data.tipo} - $${data.importe} (ID: ${recibo.id})`);
+        const recibo = await this.reciboRepository.create(data);
+        logger_1.logger.info(`Recibo creado: ${recibo.numero} - ${data.tipo} - $${data.importe} (ID: ${recibo.id})`);
         return recibo;
     }
     async getRecibos(query) {
@@ -111,7 +110,6 @@ class ReciboService {
     async createBulkRecibos(data) {
         const errors = [];
         const validRecibos = [];
-        let currentNumber = parseInt(await this.reciboRepository.getNextNumero());
         for (const recibo of data.recibos) {
             try {
                 if (recibo.emisorId) {
@@ -142,9 +140,7 @@ class ReciboService {
                     errors.push(`Validación de negocio: ${error}`);
                     continue;
                 }
-                const numero = currentNumber.toString().padStart(6, '0');
-                validRecibos.push({ ...recibo, numero });
-                currentNumber++;
+                validRecibos.push(recibo);
             }
             catch (error) {
                 errors.push(`Error validando recibo: ${error}`);

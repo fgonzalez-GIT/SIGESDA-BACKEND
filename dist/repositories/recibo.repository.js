@@ -490,22 +490,6 @@ class ReciboRepository {
                 });
         }
     }
-    async getNextNumero() {
-        const lastRecibo = await this.prisma.recibo.findFirst({
-            select: {
-                numero: true
-            },
-            orderBy: {
-                numero: 'desc'
-            }
-        });
-        if (!lastRecibo) {
-            return '000001';
-        }
-        const currentNumber = parseInt(lastRecibo.numero);
-        const nextNumber = currentNumber + 1;
-        return nextNumber.toString().padStart(6, '0');
-    }
     async getVencidos() {
         const now = new Date();
         return this.prisma.recibo.findMany({

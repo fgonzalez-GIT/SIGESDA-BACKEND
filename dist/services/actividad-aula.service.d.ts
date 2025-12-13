@@ -226,18 +226,7 @@ export declare class ActividadAulaService {
     verificarDisponibilidad(data: VerificarDisponibilidadDto): Promise<DisponibilidadResponse>;
     sugerirAulasParaActividad(actividadId: number, criterios?: any): Promise<any[]>;
     asignarMultiplesAulas(data: AsignarMultiplesAulasDto): Promise<{
-        asignacionesCreadas: {
-            observaciones: string | null;
-            fechaDesasignacion: Date | null;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            fechaAsignacion: Date;
-            actividadId: number;
-            activa: boolean;
-            aulaId: number;
-            prioridad: number | null;
-        }[];
+        asignacionesCreadas: any[];
         errores: {
             aulaId: number;
             error: any;
@@ -272,18 +261,7 @@ export declare class ActividadAulaService {
                 activa: boolean;
             };
         };
-        nuevaAsignacion: {
-            observaciones: string | null;
-            fechaDesasignacion: Date | null;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            fechaAsignacion: Date;
-            actividadId: number;
-            activa: boolean;
-            aulaId: number;
-            prioridad: number | null;
-        };
+        nuevaAsignacion: actividades_aulas;
     }>;
     getOcupacionAula(aulaId: number): Promise<{
         aula: {

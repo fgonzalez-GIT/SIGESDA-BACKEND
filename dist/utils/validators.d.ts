@@ -418,45 +418,45 @@ export declare const reservaSchemas: {
         fechaFin: z.ZodString;
         observaciones: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
+        docenteId: string;
         fechaInicio: string;
         fechaFin: string;
         aulaId: string;
-        docenteId: string;
         observaciones?: string | undefined;
         actividadId?: string | undefined;
     }, {
+        docenteId: string;
         fechaInicio: string;
         fechaFin: string;
         aulaId: string;
-        docenteId: string;
         observaciones?: string | undefined;
         actividadId?: string | undefined;
     }>, {
+        docenteId: string;
         fechaInicio: string;
         fechaFin: string;
         aulaId: string;
-        docenteId: string;
         observaciones?: string | undefined;
         actividadId?: string | undefined;
     }, {
+        docenteId: string;
         fechaInicio: string;
         fechaFin: string;
         aulaId: string;
-        docenteId: string;
         observaciones?: string | undefined;
         actividadId?: string | undefined;
     }>, {
+        docenteId: string;
         fechaInicio: string;
         fechaFin: string;
         aulaId: string;
-        docenteId: string;
         observaciones?: string | undefined;
         actividadId?: string | undefined;
     }, {
+        docenteId: string;
         fechaInicio: string;
         fechaFin: string;
         aulaId: string;
-        docenteId: string;
         observaciones?: string | undefined;
         actividadId?: string | undefined;
     }>;

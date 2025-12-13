@@ -149,29 +149,29 @@ export declare const verificarConflictoHorarioSchema: z.ZodEffects<z.ZodObject<{
     horaInicio: string;
     horaFin: string;
     actividadId?: number | undefined;
-    aulaId?: string | undefined;
     docenteId?: string | undefined;
+    aulaId?: string | undefined;
 }, {
     diaSemanaId: number;
     horaInicio: string;
     horaFin: string;
     actividadId?: number | undefined;
-    aulaId?: string | undefined;
     docenteId?: string | undefined;
+    aulaId?: string | undefined;
 }>, {
     diaSemanaId: number;
     horaInicio: string;
     horaFin: string;
     actividadId?: number | undefined;
-    aulaId?: string | undefined;
     docenteId?: string | undefined;
+    aulaId?: string | undefined;
 }, {
     diaSemanaId: number;
     horaInicio: string;
     horaFin: string;
     actividadId?: number | undefined;
-    aulaId?: string | undefined;
     docenteId?: string | undefined;
+    aulaId?: string | undefined;
 }>;
 export type CreateHorarioActividadDto = z.infer<typeof createHorarioActividadSchema>;
 export type UpdateHorarioActividadDto = z.infer<typeof updateHorarioActividadSchema>;
