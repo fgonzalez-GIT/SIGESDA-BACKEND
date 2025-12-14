@@ -199,38 +199,73 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ---
 
-## ⏸️ FASE 3: Motor de Reglas de Descuentos (4-5 días) - **PENDIENTE 0%**
+## 🔄 FASE 3: Motor de Reglas de Descuentos (4-5 días) - **EN PROGRESO 60%**
+
+### Tasks completadas:
+
+- [x] **3.1** Schema y Migration (2-3 horas) ✅
+  - ✅ ENUM `ModoAplicacionDescuento` (ACUMULATIVO, EXCLUSIVO, MAXIMO, PERSONALIZADO)
+  - ✅ Tabla `reglas_descuentos` (código, nombre, prioridad, condiciones JSONB, formula JSONB)
+  - ✅ Tabla `configuracion_descuentos` (límite global, prioridad de reglas)
+  - ✅ Tabla `aplicaciones_reglas` (log de auditoría)
+  - ✅ Prisma schema actualizado con 3 modelos + relaciones
+  - ✅ Migration aplicada con `db push`
+
+- [x] **3.2** Seed de Reglas Predefinidas (1-2 horas) ✅
+  - ✅ Regla: DESC_CATEGORIA (por categoría socio) - ACTIVA
+  - ✅ Regla: DESC_FAMILIAR (por relación familiar) - ACTIVA
+  - ✅ Regla: DESC_MULTIPLES_ACTIVIDADES (2 act = 10%, 3+ = 20%) - INACTIVA
+  - ✅ Regla: DESC_ANTIGUEDAD (1% por año, máx 15%) - INACTIVA
+  - ✅ Configuración global default (límite 80%)
+  - **Archivo:** `prisma/seed-reglas-descuentos.ts`
+  - **Estado:** 4 reglas creadas (2 activas, 2 inactivas)
+
+- [x] **3.3** Engine de Evaluación (6-8 horas) ✅
+  - ✅ Clase `MotorReglasDescuentos` (900+ líneas)
+  - ✅ Evaluadores de condiciones:
+    - `evaluarCondicionCategoria()` - Verifica categoría de socio
+    - `evaluarCondicionFamiliar()` - Verifica relaciones familiares activas
+    - `evaluarCondicionActividades()` - Cuenta participaciones activas
+    - `evaluarCondicionAntiguedad()` - Calcula meses como socio
+  - ✅ Calculadores de fórmulas:
+    - `porcentaje_fijo` - Descuento fijo hardcoded
+    - `porcentaje_desde_bd` - Lee de tabla (ej: categorias_socios.descuento)
+    - `escalado` - Descuento según rangos (2-3 act = 10%, 3+ = 20%)
+    - `personalizado` - Ejecuta función custom
+  - ✅ Resolución de conflictos por modo:
+    - ACUMULATIVO: suma todos los descuentos
+    - EXCLUSIVO: solo aplica el mayor
+    - MAXIMO: hasta límite de la regla
+    - PERSONALIZADO: lógica específica
+  - ✅ Funciones personalizadas:
+    - `calcularMaximoDescuentoFamiliar()` - Obtiene máximo descuento de relaciones
+    - `calcularDescuentoPorAntiguedad()` - 1% por año, máx 15%
+  - ✅ Creación de items de descuento (monto negativo)
+  - **Archivo:** `src/services/motor-reglas-descuentos.service.ts`
 
 ### Tasks pendientes:
 
-- [ ] **3.1** Diseño de tablas: `reglas_descuento`, `condiciones_regla`
-  - Tipos de reglas (familiar, actividades, antigüedad, etc.)
-  - Condiciones compuestas (AND/OR)
-  - Prioridad y acumulación
+- [ ] **3.4** Integración con Generación de Cuotas (4-6 horas)
+  - Modificar `CuotaService.generarCuotas()`
+  - Aplicar motor de reglas después de crear ítems base
+  - Crear ItemsCuota de descuento (monto negativo)
+  - Registrar aplicaciones en log de auditoría
+  - Actualizar cálculo de totales
 
-- [ ] **3.2** Engine de evaluación de reglas
-  - Evaluador de condiciones
-  - Calculador de descuentos
-  - Sistema de prioridades
+- [ ] **3.5** Tests del Motor (4-6 horas)
+  - Tests unitarios de evaluadores
+  - Tests de calculadores de descuentos
+  - Tests de resolución de conflictos
+  - Tests de integración end-to-end
+  - Tests de casos complejos (múltiples reglas)
 
-- [ ] **3.3** Integración con generación de cuotas
-  - Aplicación automática de reglas
-  - Log de descuentos aplicados
-  - Trazabilidad completa
+**Archivos creados:**
+- ✅ Migration SQL (tablas + ENUM + configuración default)
+- ✅ Prisma schema actualizado (3 modelos nuevos)
+- ✅ `prisma/seed-reglas-descuentos.ts` (seed de 4 reglas)
+- ✅ `src/services/motor-reglas-descuentos.service.ts` (motor completo)
 
-- [ ] **3.4** UI de administración de reglas
-  - CRUD de reglas
-  - Preview de impacto
-  - Activación/desactivación
-
-- [ ] **3.5** Tests del motor de reglas
-  - Tests unitarios de evaluador
-  - Tests de casos complejos
-  - Tests de performance
-
-**Documentos a crear:**
-- `docs/FASE3_MOTOR_REGLAS.md`
-- `docs/EJEMPLOS_REGLAS_DESCUENTO.md`
+**Total completado:** ~10-13 horas / 17-25 horas (~60%)
 
 ---
 

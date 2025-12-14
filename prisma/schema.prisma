@@ -250,19 +250,20 @@ model ConfiguracionSistema {
 }
 
 model Cuota {
-  id               Int            @id @default(autoincrement())
-  reciboId         Int            @unique
-  mes              Int
-  anio             Int
-  montoBase        Decimal?       @db.Decimal(8, 2)
-  montoActividades Decimal?       @default(0) @db.Decimal(8, 2)
-  montoTotal       Decimal        @db.Decimal(8, 2)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  categoriaId      Int
-  categoria        CategoriaSocio @relation(fields: [categoriaId], references: [id])
-  recibo           Recibo         @relation(fields: [reciboId], references: [id], onDelete: Cascade)
-  items            ItemCuota[]
+  id                    Int                 @id @default(autoincrement())
+  reciboId              Int                 @unique
+  mes                   Int
+  anio                  Int
+  montoBase             Decimal?            @db.Decimal(8, 2)
+  montoActividades      Decimal?            @default(0) @db.Decimal(8, 2)
+  montoTotal            Decimal             @db.Decimal(8, 2)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  categoriaId           Int
+  categoria             CategoriaSocio      @relation(fields: [categoriaId], references: [id])
+  recibo                Recibo              @relation(fields: [reciboId], references: [id], onDelete: Cascade)
+  items                 ItemCuota[]
+  aplicacionesReglas    AplicacionRegla[]
 
   @@index([categoriaId])
   @@index([mes, anio])
@@ -315,21 +316,22 @@ model TipoItemCuota {
 
 /// Ítems individuales que componen una cuota (base, actividades, descuentos, etc.)
 model ItemCuota {
-  id             Int           @id @default(autoincrement())
-  cuotaId        Int           @map("cuota_id")
-  tipoItemId     Int           @map("tipo_item_id")
-  concepto       String
-  monto          Decimal       @db.Decimal(10, 2)
-  cantidad       Decimal       @default(1) @db.Decimal(8, 2)
-  porcentaje     Decimal?      @db.Decimal(5, 2)
-  esAutomatico   Boolean       @default(true) @map("es_automatico")
-  esEditable     Boolean       @default(false) @map("es_editable")
-  observaciones  String?
-  metadata       Json?
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
-  cuota          Cuota         @relation(fields: [cuotaId], references: [id], onDelete: Cascade)
-  tipoItem       TipoItemCuota @relation(fields: [tipoItemId], references: [id], onDelete: Restrict)
+  id                  Int                 @id @default(autoincrement())
+  cuotaId             Int                 @map("cuota_id")
+  tipoItemId          Int                 @map("tipo_item_id")
+  concepto            String
+  monto               Decimal             @db.Decimal(10, 2)
+  cantidad            Decimal             @default(1) @db.Decimal(8, 2)
+  porcentaje          Decimal?            @db.Decimal(5, 2)
+  esAutomatico        Boolean             @default(true) @map("es_automatico")
+  esEditable          Boolean             @default(false) @map("es_editable")
+  observaciones       String?
+  metadata            Json?
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  cuota               Cuota               @relation(fields: [cuotaId], references: [id], onDelete: Cascade)
+  tipoItem            TipoItemCuota       @relation(fields: [tipoItemId], references: [id], onDelete: Restrict)
+  aplicacionesReglas  AplicacionRegla[]
 
   @@index([cuotaId])
   @@index([tipoItemId])
@@ -815,4 +817,73 @@ enum TipoActividad {
   CORO
   CLASE_CANTO
   CLASE_INSTRUMENTO
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FASE 3: Motor de Reglas de Descuentos
+// ══════════════════════════════════════════════════════════════════════
+
+enum ModoAplicacionDescuento {
+  ACUMULATIVO
+  EXCLUSIVO
+  MAXIMO
+  PERSONALIZADO
+}
+
+/// Reglas configurables de descuentos para cuotas
+model ReglaDescuento {
+  id                    Int                        @id @default(autoincrement())
+  codigo                String                     @unique @db.VarChar(100)
+  nombre                String                     @db.VarChar(200)
+  descripcion           String?
+  prioridad             Int                        @default(0)
+  modoAplicacion        ModoAplicacionDescuento    @map("modo_aplicacion")
+  maxDescuento          Decimal?                   @map("max_descuento") @db.Decimal(5, 2)
+  condiciones           Json
+  formula               Json
+  activa                Boolean                    @default(true)
+  aplicarABase          Boolean                    @default(true) @map("aplicar_a_base")
+  aplicarAActividades   Boolean                    @default(true) @map("aplicar_a_actividades")
+  createdAt             DateTime                   @default(now()) @map("created_at")
+  updatedAt             DateTime                   @updatedAt @map("updated_at")
+  aplicaciones          AplicacionRegla[]
+
+  @@index([codigo])
+  @@index([prioridad])
+  @@index([activa])
+  @@map("reglas_descuentos")
+}
+
+/// Configuración global del sistema de descuentos
+model ConfiguracionDescuentos {
+  id                            Int      @id @default(autoincrement())
+  limiteDescuentoTotal          Decimal  @default(80.00) @map("limite_descuento_total") @db.Decimal(5, 2)
+  aplicarDescuentosABase        Boolean  @default(true) @map("aplicar_descuentos_a_base")
+  aplicarDescuentosAActividades Boolean  @default(true) @map("aplicar_descuentos_a_actividades")
+  prioridadReglas               Json     @default("[]") @map("prioridad_reglas")
+  activa                        Boolean  @default(true)
+  createdAt                     DateTime @default(now()) @map("created_at")
+  updatedAt                     DateTime @updatedAt @map("updated_at")
+
+  @@map("configuracion_descuentos")
+}
+
+/// Log de auditoría de aplicaciones de reglas de descuento
+model AplicacionRegla {
+  id                 Int             @id @default(autoincrement())
+  cuotaId            Int             @map("cuota_id")
+  reglaId            Int             @map("regla_id")
+  itemCuotaId        Int?            @map("item_cuota_id")
+  porcentajeAplicado Decimal         @map("porcentaje_aplicado") @db.Decimal(5, 2)
+  montoDescuento     Decimal         @map("monto_descuento") @db.Decimal(10, 2)
+  metadata           Json?
+  createdAt          DateTime        @default(now()) @map("created_at")
+  cuota              Cuota           @relation(fields: [cuotaId], references: [id], onDelete: Cascade)
+  regla              ReglaDescuento  @relation(fields: [reglaId], references: [id], onDelete: Restrict)
+  itemCuota          ItemCuota?      @relation(fields: [itemCuotaId], references: [id], onDelete: SetNull)
+
+  @@index([cuotaId])
+  @@index([reglaId])
+  @@index([itemCuotaId])
+  @@map("aplicaciones_reglas")
 }
