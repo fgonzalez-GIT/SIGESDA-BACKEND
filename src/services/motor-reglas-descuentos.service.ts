@@ -280,7 +280,7 @@ export class MotorReglasDescuentos {
   ): Promise<boolean> {
     const count = await this.prisma.participacion_actividades.count({
       where: {
-        socioId: personaId,
+        personaId: personaId,
         activa: true
       }
     });
@@ -425,7 +425,7 @@ export class MotorReglasDescuentos {
   ): Promise<number> {
     const count = await this.prisma.participacion_actividades.count({
       where: {
-        socioId: personaId,
+        personaId: personaId,
         activa: true
       }
     });

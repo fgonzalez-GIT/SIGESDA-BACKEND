@@ -224,6 +224,67 @@ export class CuotaController {
     }
   }
 
+  /**
+   * ========================================================================
+   * NUEVO ENDPOINT: Generación de cuotas con sistema de ítems + motor de reglas
+   * ========================================================================
+   *
+   * Reemplaza el endpoint legacy /generar con un enfoque moderno que:
+   * - Genera cuotas usando el sistema de ítems configurables (FASE 2)
+   * - Integra el motor de reglas de descuentos (FASE 3)
+   * - Retorna estadísticas de descuentos aplicados
+   * - Provee auditoría completa de aplicación de reglas
+   *
+   * Ruta sugerida: POST /api/cuotas/generar-v2
+   */
+  async generarCuotasConItems(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validatedData = generarCuotasSchema.parse(req.body);
+
+      logger.info(`[CONTROLLER] Iniciando generación de cuotas V2 - ${validatedData.mes}/${validatedData.anio}`);
+
+      const result = await this.cuotaService.generarCuotasConItems(validatedData);
+
+      const response: ApiResponse = {
+        success: true,
+        message: `Generación de cuotas V2 completada: ${result.generated} cuotas creadas con sistema de ítems`,
+        data: {
+          generated: result.generated,
+          errors: result.errors,
+          cuotas: result.cuotas,
+          descuentos: result.resumenDescuentos
+        },
+        meta: {
+          periodo: `${validatedData.mes}/${validatedData.anio}`,
+          totalGeneradas: result.generated,
+          errores: result.errors.length,
+          aplicarDescuentos: validatedData.aplicarDescuentos || true,
+          // Estadísticas de descuentos (si aplicó)
+          ...(result.resumenDescuentos && {
+            sociosConDescuento: result.resumenDescuentos.totalSociosConDescuento,
+            montoTotalDescuentos: result.resumenDescuentos.montoTotalDescuentos,
+            reglasUtilizadas: Object.keys(result.resumenDescuentos.reglasAplicadas).length
+          })
+        }
+      };
+
+      // Retornar 207 Multi-Status si hubo errores parciales
+      const statusCode = result.errors.length > 0 ? 207 : HttpStatus.CREATED;
+
+      logger.info(
+        `[CONTROLLER] Generación completada - ${result.generated} cuotas creadas, ` +
+        `${result.errors.length} errores${
+          result.resumenDescuentos ? `, ${result.resumenDescuentos.totalSociosConDescuento} con descuentos` : ''
+        }`
+      );
+
+      res.status(statusCode).json(response);
+    } catch (error) {
+      logger.error('[CONTROLLER] Error en generación de cuotas V2:', error);
+      next(error);
+    }
+  }
+
   async calcularMontoCuota(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validatedData = calcularCuotaSchema.parse(req.body);

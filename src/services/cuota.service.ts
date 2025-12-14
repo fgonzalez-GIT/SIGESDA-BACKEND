@@ -4,6 +4,8 @@ import { CuotaRepository } from '@/repositories/cuota.repository';
 import { ReciboRepository } from '@/repositories/recibo.repository';
 import { PersonaRepository } from '@/repositories/persona.repository';
 import { ConfiguracionRepository } from '@/repositories/configuracion.repository';
+import { TipoItemCuotaRepository } from '@/repositories/tipo-item-cuota.repository';
+import { ItemCuotaRepository } from '@/repositories/item-cuota.repository';
 import {
   CreateCuotaDto,
   UpdateCuotaDto,
@@ -19,6 +21,7 @@ import {
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
 import { hasActiveTipo } from '@/utils/persona.helper';
+import { MotorReglasDescuentos } from './motor-reglas-descuentos.service';
 
 export class CuotaService {
   constructor(
@@ -493,5 +496,302 @@ export class CuotaService {
       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
     return meses[mes - 1] || 'Mes inválido';
+  }
+
+  /**
+   * ========================================================================
+   * NUEVO MÉTODO: Generación de Cuotas con Sistema de Ítems + Motor de Reglas
+   * ========================================================================
+   *
+   * Reemplaza el método legacy generarCuotas() con un enfoque moderno que:
+   * - Usa el sistema de ítems configurables
+   * - Integra el motor de reglas de descuentos
+   * - Registra auditoría de aplicaciones de reglas
+   * - Permite flexibilidad total en la configuración
+   *
+   * @param data - Parámetros de generación (mes, año, categorías, descuentos)
+   * @returns Resultado de generación con cuotas creadas y errores
+   */
+  async generarCuotasConItems(data: GenerarCuotasDto): Promise<{
+    generated: number;
+    errors: string[];
+    cuotas: any[];
+    resumenDescuentos?: any;
+  }> {
+    const errors: string[] = [];
+    const cuotasCreadas: any[] = [];
+
+    // Repositorios necesarios
+    const tipoItemRepo = new TipoItemCuotaRepository();
+    const itemRepo = new ItemCuotaRepository();
+    const motorDescuentos = new MotorReglasDescuentos();
+
+    logger.info(`[GENERACIÓN CUOTAS] Iniciando generación con items - ${data.mes}/${data.anio}`);
+
+    try {
+      // ====================================================================
+      // PASO 1: Obtener socios para generar cuotas
+      // ====================================================================
+      const sociosPorGenerar = await this.cuotaRepository.getCuotasPorGenerar(
+        data.mes,
+        data.anio,
+        data.categoriaIds
+      );
+
+      if (sociosPorGenerar.length === 0) {
+        logger.warn('[GENERACIÓN CUOTAS] No hay socios pendientes para generar cuotas');
+        return {
+          generated: 0,
+          errors: ['No hay socios pendientes para generar cuotas en este período'],
+          cuotas: []
+        };
+      }
+
+      logger.info(`[GENERACIÓN CUOTAS] ${sociosPorGenerar.length} socios a procesar`);
+
+      // ====================================================================
+      // PASO 2: Obtener tipos de ítems necesarios
+      // ====================================================================
+      const tipoCuotaBase = await tipoItemRepo.findByCodigo('CUOTA_BASE_SOCIO');
+      const tipoActividad = await tipoItemRepo.findByCodigo('ACTIVIDAD_INDIVIDUAL');
+
+      if (!tipoCuotaBase) {
+        throw new Error('Tipo de ítem CUOTA_BASE_SOCIO no encontrado. Ejecutar seed: npx tsx prisma/seed-items-catalogos.ts');
+      }
+
+      if (!tipoActividad) {
+        logger.warn('[GENERACIÓN CUOTAS] Tipo de ítem ACTIVIDAD_INDIVIDUAL no encontrado. Actividades no se incluirán.');
+      }
+
+      // ====================================================================
+      // PASO 3: Procesar cada socio
+      // ====================================================================
+      let descuentosGlobales = {
+        totalSociosConDescuento: 0,
+        montoTotalDescuentos: 0,
+        reglasAplicadas: {} as Record<string, number>
+      };
+
+      for (const socio of sociosPorGenerar) {
+        try {
+          await this.prisma.$transaction(async (tx) => {
+            // ============================================================
+            // 3.1: Crear recibo (número auto-generado por DB sequence)
+            // ============================================================
+            const recibo = await tx.recibo.create({
+              data: {
+                tipo: TipoRecibo.CUOTA,
+                receptorId: socio.id,
+                importe: 0, // Se actualizará al final
+                concepto: `Cuota ${this.getNombreMes(data.mes)} ${data.anio}`,
+                fechaVencimiento: this.calcularFechaVencimiento(data.mes, data.anio),
+                observaciones: data.observaciones
+              }
+            });
+
+            logger.debug(`[GENERACIÓN CUOTAS] Recibo ${recibo.numero} creado para socio ${socio.numeroSocio}`);
+
+            // ============================================================
+            // 3.2: Crear cuota (montos se calcularán desde items)
+            // ============================================================
+            const cuota = await tx.cuota.create({
+              data: {
+                reciboId: recibo.id,
+                categoria: socio.categoria,
+                mes: data.mes,
+                anio: data.anio,
+                montoBase: 0, // Legacy, se mantendrá para compatibilidad
+                montoActividades: 0,
+                montoTotal: 0 // Se calculará automáticamente desde items
+              }
+            });
+
+            logger.debug(`[GENERACIÓN CUOTAS] Cuota ID ${cuota.id} creada`);
+
+            // ============================================================
+            // 3.3: Crear ítem BASE (cuota mensual según categoría)
+            // ============================================================
+            const montoBaseSocio = socio.categoriaSocio?.montoCuota || 0;
+
+            await tx.itemCuota.create({
+              data: {
+                cuotaId: cuota.id,
+                tipoItemId: tipoCuotaBase.id,
+                concepto: `Cuota base ${socio.categoria}`,
+                monto: montoBaseSocio,
+                cantidad: 1,
+                esAutomatico: true,
+                esEditable: false,
+                metadata: {
+                  categoriaId: socio.categoriaId,
+                  categoriaCodigo: socio.categoria
+                }
+              }
+            });
+
+            logger.debug(`[GENERACIÓN CUOTAS] Ítem base creado: $${montoBaseSocio}`);
+
+            // ============================================================
+            // 3.4: Crear ítems de ACTIVIDADES (si tiene participaciones)
+            // ============================================================
+            let montoActividades = 0;
+
+            if (tipoActividad) {
+              const participaciones = await tx.participacionActividad.findMany({
+                where: {
+                  personaId: socio.id,
+                  activa: true,
+                  actividad: {
+                    estado: { in: ['EN_CURSO', 'PROXIMAMENTE'] }
+                  }
+                },
+                include: {
+                  actividad: true
+                }
+              });
+
+              for (const participacion of participaciones) {
+                const costoActividad = participacion.precioEspecial || participacion.actividad.costo || 0;
+
+                await tx.itemCuota.create({
+                  data: {
+                    cuotaId: cuota.id,
+                    tipoItemId: tipoActividad.id,
+                    concepto: participacion.actividad.nombre,
+                    monto: costoActividad,
+                    cantidad: 1,
+                    esAutomatico: true,
+                    esEditable: false,
+                    metadata: {
+                      actividadId: participacion.actividadId,
+                      participacionId: participacion.id,
+                      precioEspecial: participacion.precioEspecial !== null
+                    }
+                  }
+                });
+
+                montoActividades += costoActividad;
+              }
+
+              logger.debug(`[GENERACIÓN CUOTAS] ${participaciones.length} actividades agregadas: $${montoActividades}`);
+            }
+
+            // ============================================================
+            // 3.5: INTEGRACIÓN CON MOTOR DE REGLAS DE DESCUENTOS
+            // ============================================================
+            if (data.aplicarDescuentos) {
+              try {
+                const resultadoDescuentos = await motorDescuentos.aplicarReglas({
+                  socioId: socio.id,
+                  categoriaId: socio.categoriaId,
+                  cuotaId: cuota.id,
+                  mes: data.mes,
+                  anio: data.anio
+                }, tx);
+
+                // Actualizar estadísticas globales
+                if (resultadoDescuentos.items.length > 0) {
+                  descuentosGlobales.totalSociosConDescuento++;
+                  descuentosGlobales.montoTotalDescuentos += resultadoDescuentos.totalDescuentoAplicado;
+
+                  // Contar reglas aplicadas
+                  resultadoDescuentos.reglasAplicadas.forEach((regla: any) => {
+                    if (!descuentosGlobales.reglasAplicadas[regla.codigo]) {
+                      descuentosGlobales.reglasAplicadas[regla.codigo] = 0;
+                    }
+                    descuentosGlobales.reglasAplicadas[regla.codigo]++;
+                  });
+                }
+
+                logger.debug(
+                  `[GENERACIÓN CUOTAS] Descuentos aplicados: ${resultadoDescuentos.items.length} ítems, ` +
+                  `total descuento: $${resultadoDescuentos.totalDescuentoAplicado.toFixed(2)}`
+                );
+
+              } catch (errorDescuento) {
+                logger.error(`[GENERACIÓN CUOTAS] Error aplicando descuentos para socio ${socio.numeroSocio}:`, errorDescuento);
+                // No fallar la transacción, solo log del error
+              }
+            }
+
+            // ============================================================
+            // 3.6: Recalcular total de la cuota desde items
+            // ============================================================
+            const totalItems = await tx.itemCuota.aggregate({
+              where: { cuotaId: cuota.id },
+              _sum: { monto: true }
+            });
+
+            const montoTotal = totalItems._sum.monto || 0;
+
+            // Actualizar cuota con totales
+            await tx.cuota.update({
+              where: { id: cuota.id },
+              data: {
+                montoBase: montoBaseSocio,
+                montoActividades,
+                montoTotal
+              }
+            });
+
+            // Actualizar recibo con importe final
+            await tx.recibo.update({
+              where: { id: recibo.id },
+              data: { importe: montoTotal }
+            });
+
+            logger.info(
+              `[GENERACIÓN CUOTAS] ✅ Cuota generada para ${socio.nombre} ${socio.apellido} (${socio.numeroSocio}) - ` +
+              `Base: $${montoBaseSocio}, Actividades: $${montoActividades}, Total: $${montoTotal}`
+            );
+
+            cuotasCreadas.push({
+              cuotaId: cuota.id,
+              reciboId: recibo.id,
+              reciboNumero: recibo.numero,
+              socioId: socio.id,
+              socioNumero: socio.numeroSocio,
+              socioNombre: `${socio.nombre} ${socio.apellido}`,
+              categoria: socio.categoria,
+              montoBase: montoBaseSocio,
+              montoActividades,
+              montoTotal,
+              descuentoAplicado: data.aplicarDescuentos
+            });
+
+          }); // Fin de transacción
+
+        } catch (error: any) {
+          const errorMsg = `Error generando cuota para ${socio.nombre} ${socio.apellido} (${socio.numeroSocio}): ${error.message}`;
+          errors.push(errorMsg);
+          logger.error(`[GENERACIÓN CUOTAS] ${errorMsg}`);
+        }
+      } // Fin de loop de socios
+
+      // ====================================================================
+      // PASO 4: Resumen final
+      // ====================================================================
+      logger.info(
+        `[GENERACIÓN CUOTAS] ✅ Completada - ${cuotasCreadas.length} cuotas creadas, ${errors.length} errores`
+      );
+
+      if (data.aplicarDescuentos && descuentosGlobales.totalSociosConDescuento > 0) {
+        logger.info(
+          `[GENERACIÓN CUOTAS] 📊 Descuentos aplicados: ${descuentosGlobales.totalSociosConDescuento} socios, ` +
+          `monto total: $${descuentosGlobales.montoTotalDescuentos.toFixed(2)}`
+        );
+      }
+
+      return {
+        generated: cuotasCreadas.length,
+        errors,
+        cuotas: cuotasCreadas,
+        resumenDescuentos: data.aplicarDescuentos ? descuentosGlobales : undefined
+      };
+
+    } catch (error: any) {
+      logger.error('[GENERACIÓN CUOTAS] Error fatal en generación:', error);
+      throw new Error(`Error generando cuotas: ${error.message}`);
+    }
   }
 }

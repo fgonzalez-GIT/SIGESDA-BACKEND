@@ -199,7 +199,7 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ---
 
-## 🔄 FASE 3: Motor de Reglas de Descuentos (4-5 días) - **EN PROGRESO 60%**
+## 🔄 FASE 3: Motor de Reglas de Descuentos (4-5 días) - **EN PROGRESO 80%**
 
 ### Tasks completadas:
 
@@ -245,12 +245,23 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ### Tasks pendientes:
 
-- [ ] **3.4** Integración con Generación de Cuotas (4-6 horas)
-  - Modificar `CuotaService.generarCuotas()`
-  - Aplicar motor de reglas después de crear ítems base
-  - Crear ItemsCuota de descuento (monto negativo)
-  - Registrar aplicaciones en log de auditoría
-  - Actualizar cálculo de totales
+- [x] **3.4** Integración con Generación de Cuotas (4-6 horas) ✅
+  - ✅ Nuevo método `CuotaService.generarCuotasConItems()` (290+ líneas)
+  - ✅ Integración completa con motor de reglas de descuentos
+  - ✅ Creación de ítems base (CUOTA_BASE_SOCIO) por categoría
+  - ✅ Creación de ítems de actividades (ACTIVIDAD_INDIVIDUAL)
+  - ✅ Aplicación automática de motor de reglas (si `aplicarDescuentos = true`)
+  - ✅ Registro de auditoría en tabla `aplicaciones_reglas`
+  - ✅ Recálculo automático de totales desde items
+  - ✅ Transacciones atómicas por socio
+  - ✅ Estadísticas de descuentos en respuesta
+  - ✅ Nuevo endpoint `POST /api/cuotas/generar-v2`
+  - ✅ Controller method `generarCuotasConItems()` con logging completo
+  - **Archivos modificados:**
+    - `src/services/cuota.service.ts` (nuevo método + imports)
+    - `src/controllers/cuota.controller.ts` (nuevo endpoint handler)
+    - `src/routes/cuota.routes.ts` (nueva ruta POST /generar-v2)
+    - `src/services/motor-reglas-descuentos.service.ts` (fix: personaId)
 
 - [ ] **3.5** Tests del Motor (4-6 horas)
   - Tests unitarios de evaluadores
@@ -259,13 +270,16 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
   - Tests de integración end-to-end
   - Tests de casos complejos (múltiples reglas)
 
-**Archivos creados:**
+**Archivos creados/modificados:**
 - ✅ Migration SQL (tablas + ENUM + configuración default)
 - ✅ Prisma schema actualizado (3 modelos nuevos)
 - ✅ `prisma/seed-reglas-descuentos.ts` (seed de 4 reglas)
-- ✅ `src/services/motor-reglas-descuentos.service.ts` (motor completo)
+- ✅ `src/services/motor-reglas-descuentos.service.ts` (motor completo, 900+ líneas)
+- ✅ `src/services/cuota.service.ts` (método generarCuotasConItems, 290+ líneas)
+- ✅ `src/controllers/cuota.controller.ts` (endpoint generarCuotasConItems)
+- ✅ `src/routes/cuota.routes.ts` (ruta POST /generar-v2)
 
-**Total completado:** ~10-13 horas / 17-25 horas (~60%)
+**Total completado:** ~14-19 horas / 17-25 horas (~80%)
 
 ---
 

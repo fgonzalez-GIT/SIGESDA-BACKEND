@@ -40,6 +40,8 @@ router.get('/periodos/disponibles', cuotaController.getPeriodosDisponibles.bind(
 
 // Generation and calculation routes
 router.post('/generar/masiva', cuotaController.generarCuotas.bind(cuotaController));
+// NUEVO: Generación V2 con sistema de ítems + motor de reglas de descuentos (FASE 2 + FASE 3)
+router.post('/generar-v2', cuotaController.generarCuotasConItems.bind(cuotaController));
 router.post('/calcular/monto', cuotaController.calcularMontoCuota.bind(cuotaController));
 router.post('/recalcular/periodo', cuotaController.recalcularCuotas.bind(cuotaController));
 
