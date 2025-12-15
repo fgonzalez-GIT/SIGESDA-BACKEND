@@ -32,6 +32,7 @@ import itemCuotaRoutes from './item-cuota.routes';
 import ajusteCuotaRoutes from './ajuste-cuota.routes';
 import historialCuotaRoutes from './historial-cuota.routes';
 import exencionCuotaRoutes from './exencion-cuota.routes';
+import reportesCuotaRoutes from './reportes-cuota.routes';
 
 const router = Router();
 
@@ -78,6 +79,7 @@ router.use('/items-cuota', itemCuotaRoutes); // Rutas para operaciones individua
 router.use('/ajustes-cuota', ajusteCuotaRoutes); // FASE 4: Ajustes manuales a cuotas
 router.use('/exenciones-cuota', exencionCuotaRoutes); // FASE 4: Exenciones temporales
 router.use('/historial-cuota', historialCuotaRoutes); // FASE 4: Historial de cambios en cuotas
+router.use('/reportes/cuotas', reportesCuotaRoutes); // FASE 4: Reportes y estadísticas de cuotas
 router.use('/medios-pago', medioPagoRoutes);
 router.use('/categorias-socios', categoriaSocioRouter);
 
