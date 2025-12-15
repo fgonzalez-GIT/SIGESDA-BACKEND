@@ -308,14 +308,28 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ---
 
-## ⏸️ FASE 4: Funcionalidades Pendientes (5-6 días) - **PENDIENTE 0%**
+## 🚧 FASE 4: Funcionalidades Pendientes (5-6 días) - **EN PROGRESO 20%**
+
+### Tasks completadas:
+
+- [x] **4.1** Ajustes manuales por socio ✅
+  - ✅ Tabla `ajustes_cuota_socio` y `historial_ajustes_cuota`
+  - ✅ 3 ENUMs: TipoAjusteCuota, ScopeAjusteCuota, AccionHistorialCuota
+  - ✅ Migration con rollback script
+  - ✅ Repository layer (AjusteCuotaRepository, HistorialAjusteCuotaRepository)
+  - ✅ Service layer con validaciones de negocio y tracking automático
+  - ✅ DTOs con validaciones Zod
+  - ✅ Controller con 13 endpoints
+  - ✅ Routes integradas en main router
+  - ✅ Funcionalidades:
+    - CRUD completo de ajustes
+    - Cálculo de ajustes (preview sin aplicar)
+    - Soft delete (activar/desactivar)
+    - Hard delete con auditoría
+    - Historial automático de cambios
+    - Estadísticas por tipo/scope
 
 ### Tasks pendientes:
-
-- [ ] **4.1** Ajustes manuales por socio
-  - Tabla `ajustes_cuota_socio`
-  - CRUD de ajustes
-  - Historial de modificaciones
 
 - [ ] **4.2** Exenciones temporales
   - Sistema de exenciones con fecha inicio/fin

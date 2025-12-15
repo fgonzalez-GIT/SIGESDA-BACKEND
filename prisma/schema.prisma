@@ -261,9 +261,10 @@ model Cuota {
   updatedAt             DateTime            @updatedAt
   categoriaId           Int
   categoria             CategoriaSocio      @relation(fields: [categoriaId], references: [id])
-  recibo                Recibo              @relation(fields: [reciboId], references: [id], onDelete: Cascade)
+  recibo                Recibo                  @relation(fields: [reciboId], references: [id], onDelete: Cascade)
   items                 ItemCuota[]
   aplicacionesReglas    AplicacionRegla[]
+  historial             HistorialAjusteCuota[]
 
   @@index([categoriaId])
   @@index([mes, anio])
@@ -451,6 +452,8 @@ model Persona {
   reservasCanceladas        reserva_aulas[]             @relation("ReservaCanceladaPor")
   reserva_aulas             reserva_aulas[]             @relation("ReservaDocente")
   secciones_actividades     secciones_actividades[]     @relation("DocenteSeccion")
+  ajustesCuota              AjusteCuotaSocio[]
+  historialCuotas           HistorialAjusteCuota[]
 
   @@index([categoriaId])
   @@index([activo])
@@ -886,4 +889,84 @@ model AplicacionRegla {
   @@index([reglaId])
   @@index([itemCuotaId])
   @@map("aplicaciones_reglas")
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FASE 4: Funcionalidades Pendientes - Ajustes Manuales
+// ══════════════════════════════════════════════════════════════════════
+
+enum TipoAjusteCuota {
+  DESCUENTO_FIJO
+  DESCUENTO_PORCENTAJE
+  RECARGO_FIJO
+  RECARGO_PORCENTAJE
+  MONTO_FIJO_TOTAL
+}
+
+enum ScopeAjusteCuota {
+  TODOS_ITEMS
+  SOLO_BASE
+  SOLO_ACTIVIDADES
+  ITEMS_ESPECIFICOS
+}
+
+enum AccionHistorialCuota {
+  CREAR_AJUSTE
+  MODIFICAR_AJUSTE
+  ELIMINAR_AJUSTE
+  APLICAR_AJUSTE_MANUAL
+  RECALCULAR_CUOTA
+  REGENERAR_CUOTA
+}
+
+/// Ajustes manuales configurables por socio para cuotas
+/// Permite definir ajustes permanentes o temporales que se aplican automáticamente
+model AjusteCuotaSocio {
+  id              Int                     @id @default(autoincrement())
+  personaId       Int                     @map("persona_id")
+  tipoAjuste      TipoAjusteCuota        @map("tipo_ajuste")
+  valor           Decimal                 @db.Decimal(10, 2)
+  concepto        String                  @db.VarChar(200)
+  fechaInicio     DateTime                @map("fecha_inicio")
+  fechaFin        DateTime?               @map("fecha_fin")
+  activo          Boolean                 @default(true)
+  motivo          String?
+  observaciones   String?
+  aplicaA         ScopeAjusteCuota       @default(TODOS_ITEMS) @map("aplica_a")
+  itemsAfectados  Json?                   @map("items_afectados")
+  aprobadoPor     String?                 @map("aprobado_por") @db.VarChar(100)
+  createdAt       DateTime                @default(now()) @map("created_at")
+  updatedAt       DateTime                @updatedAt @map("updated_at")
+  persona         Persona                 @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  historial       HistorialAjusteCuota[]
+
+  @@index([personaId])
+  @@index([activo])
+  @@index([fechaInicio, fechaFin])
+  @@map("ajustes_cuota_socio")
+}
+
+/// Historial completo de cambios y modificaciones en cuotas
+/// Registro de auditoría para tracking de todas las operaciones
+model HistorialAjusteCuota {
+  id              Int                   @id @default(autoincrement())
+  ajusteId        Int?                  @map("ajuste_id")
+  cuotaId         Int?                  @map("cuota_id")
+  personaId       Int                   @map("persona_id")
+  accion          AccionHistorialCuota
+  datosPrevios    Json?                 @map("datos_previos")
+  datosNuevos     Json                  @map("datos_nuevos")
+  usuario         String?               @db.VarChar(100)
+  motivoCambio    String?               @map("motivo_cambio")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  ajuste          AjusteCuotaSocio?     @relation(fields: [ajusteId], references: [id], onDelete: Cascade)
+  cuota           Cuota?                @relation(fields: [cuotaId], references: [id], onDelete: Cascade)
+  persona         Persona               @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@index([ajusteId])
+  @@index([cuotaId])
+  @@index([personaId])
+  @@index([accion])
+  @@index([createdAt])
+  @@map("historial_ajustes_cuota")
 }

@@ -29,6 +29,8 @@ import tipoContactoRoutes from './tipo-contacto.routes';
 import categoriaItemRoutes from './categoria-item.routes';
 import tipoItemCuotaRoutes from './tipo-item-cuota.routes';
 import itemCuotaRoutes from './item-cuota.routes';
+import ajusteCuotaRoutes from './ajuste-cuota.routes';
+import historialCuotaRoutes from './historial-cuota.routes';
 
 const router = Router();
 
@@ -72,6 +74,8 @@ router.use('/reservas', reservaAulaRoutes);
 router.use('/recibos', reciboRoutes);
 router.use('/cuotas', cuotaRoutes);
 router.use('/items-cuota', itemCuotaRoutes); // Rutas para operaciones individuales de ítems
+router.use('/ajustes-cuota', ajusteCuotaRoutes); // FASE 4: Ajustes manuales a cuotas
+router.use('/historial-cuota', historialCuotaRoutes); // FASE 4: Historial de cambios en cuotas
 router.use('/medios-pago', medioPagoRoutes);
 router.use('/categorias-socios', categoriaSocioRouter);
 
