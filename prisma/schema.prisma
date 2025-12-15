@@ -454,6 +454,7 @@ model Persona {
   secciones_actividades     secciones_actividades[]     @relation("DocenteSeccion")
   ajustesCuota              AjusteCuotaSocio[]
   historialCuotas           HistorialAjusteCuota[]
+  exencionesCuota           ExencionCuota[]
 
   @@index([categoriaId])
   @@index([activo])
@@ -917,6 +918,10 @@ enum AccionHistorialCuota {
   APLICAR_AJUSTE_MANUAL
   RECALCULAR_CUOTA
   REGENERAR_CUOTA
+  CREAR_EXENCION
+  MODIFICAR_EXENCION
+  ELIMINAR_EXENCION
+  APLICAR_EXENCION
 }
 
 /// Ajustes manuales configurables por socio para cuotas
@@ -952,6 +957,7 @@ model HistorialAjusteCuota {
   id              Int                   @id @default(autoincrement())
   ajusteId        Int?                  @map("ajuste_id")
   cuotaId         Int?                  @map("cuota_id")
+  exencionId      Int?                  @map("exencion_id")
   personaId       Int                   @map("persona_id")
   accion          AccionHistorialCuota
   datosPrevios    Json?                 @map("datos_previos")
@@ -961,12 +967,77 @@ model HistorialAjusteCuota {
   createdAt       DateTime              @default(now()) @map("created_at")
   ajuste          AjusteCuotaSocio?     @relation(fields: [ajusteId], references: [id], onDelete: Cascade)
   cuota           Cuota?                @relation(fields: [cuotaId], references: [id], onDelete: Cascade)
+  exencion        ExencionCuota?        @relation(fields: [exencionId], references: [id], onDelete: Cascade)
   persona         Persona               @relation(fields: [personaId], references: [id], onDelete: Cascade)
 
   @@index([ajusteId])
   @@index([cuotaId])
+  @@index([exencionId])
   @@index([personaId])
   @@index([accion])
   @@index([createdAt])
   @@map("historial_ajustes_cuota")
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FASE 4: Task 4.2 - Exenciones Temporales
+// ══════════════════════════════════════════════════════════════════════
+
+enum TipoExencion {
+  TOTAL
+  PARCIAL
+}
+
+enum MotivoExencion {
+  BECA
+  SOCIO_FUNDADOR
+  SOCIO_HONORARIO
+  SITUACION_ECONOMICA
+  SITUACION_SALUD
+  INTERCAMBIO_SERVICIOS
+  PROMOCION
+  FAMILIAR_DOCENTE
+  OTRO
+}
+
+enum EstadoExencion {
+  PENDIENTE_APROBACION
+  APROBADA
+  RECHAZADA
+  VIGENTE
+  VENCIDA
+  REVOCADA
+}
+
+/// Exenciones temporales de cuotas para socios
+/// Permite eximir total o parcialmente del pago de cuotas por períodos específicos
+model ExencionCuota {
+  id                    Int                     @id @default(autoincrement())
+  personaId             Int                     @map("persona_id")
+  tipoExencion          TipoExencion           @map("tipo_exencion")
+  motivoExencion        MotivoExencion         @map("motivo_exencion")
+  estado                EstadoExencion         @default(PENDIENTE_APROBACION)
+  porcentajeExencion    Decimal                @default(100) @map("porcentaje_exencion") @db.Decimal(5, 2)
+  fechaInicio           DateTime               @map("fecha_inicio")
+  fechaFin              DateTime?              @map("fecha_fin")
+  descripcion           String                 @db.VarChar(500)
+  justificacion         String?
+  documentacionAdjunta  String?                @map("documentacion_adjunta") @db.VarChar(255)
+  solicitadoPor         String?                @map("solicitado_por") @db.VarChar(100)
+  fechaSolicitud        DateTime               @default(now()) @map("fecha_solicitud")
+  aprobadoPor           String?                @map("aprobado_por") @db.VarChar(100)
+  fechaAprobacion       DateTime?              @map("fecha_aprobacion")
+  observaciones         String?
+  activa                Boolean                @default(true)
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  persona               Persona                @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  historial             HistorialAjusteCuota[]
+
+  @@index([personaId])
+  @@index([estado])
+  @@index([activa])
+  @@index([fechaInicio, fechaFin])
+  @@index([motivoExencion])
+  @@map("exenciones_cuota")
 }

@@ -308,11 +308,11 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ---
 
-## 🚧 FASE 4: Funcionalidades Pendientes (5-6 días) - **EN PROGRESO 20%**
+## 🚧 FASE 4: Funcionalidades Pendientes (5-6 días) - **EN PROGRESO 40%**
 
 ### Tasks completadas:
 
-- [x] **4.1** Ajustes manuales por socio ✅
+- [x] **4.1** Ajustes manuales por socio ✅ (51 tests - 100%)
   - ✅ Tabla `ajustes_cuota_socio` y `historial_ajustes_cuota`
   - ✅ 3 ENUMs: TipoAjusteCuota, ScopeAjusteCuota, AccionHistorialCuota
   - ✅ Migration con rollback script
@@ -329,27 +329,39 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
     - Historial automático de cambios
     - Estadísticas por tipo/scope
 
+- [x] **4.2** Exenciones temporales ✅ (41 tests - 100%)
+  - ✅ Tabla `exenciones_cuota`
+  - ✅ 3 nuevos ENUMs: TipoExencion, MotivoExencion, EstadoExencion
+  - ✅ 4 nuevos valores en AccionHistorialCuota enum
+  - ✅ Migration con rollback script
+  - ✅ Repository layer (ExencionCuotaRepository)
+  - ✅ Service layer con workflow de aprobación
+  - ✅ DTOs con validaciones Zod
+  - ✅ Controller con 14 endpoints
+  - ✅ Routes integradas en main router
+  - ✅ Funcionalidades:
+    - Sistema de solicitud → aprobación/rechazo
+    - Exenciones totales (100%) o parciales (0-100%)
+    - 9 motivos de exención predefinidos
+    - Workflow con 6 estados
+    - Check exención para período específico
+    - Auto-expiración de exenciones vencidas
+    - Historial automático de cambios
+    - Estadísticas por estado/tipo/motivo
+
 ### Tasks pendientes:
 
-- [ ] **4.2** Exenciones temporales
-  - Sistema de exenciones con fecha inicio/fin
-  - Motivo y aprobación
-  - Reportes de exenciones
-
 - [ ] **4.3** Recálculo y regeneración
-  - Endpoint para recalcular cuota
+  - Endpoint para recalcular cuota existente
   - Regenerar cuotas con nuevos parámetros
   - Comparación antes/después
+  - Preview de cambios antes de aplicar
 
-- [ ] **4.4** Historial de cambios
-  - Tabla de auditoría
-  - Tracking de modificaciones
-  - Consulta de versiones anteriores
-
-- [ ] **4.5** Reportes y estadísticas
+- [ ] **4.4** Reportes y estadísticas
   - Dashboard de cuotas generadas
   - Reportes por categoría/período
   - Análisis de descuentos aplicados
+  - Reporte de exenciones vigentes
 
 **Documentos a crear:**
 - `docs/FASE4_FUNCIONALIDADES.md`
