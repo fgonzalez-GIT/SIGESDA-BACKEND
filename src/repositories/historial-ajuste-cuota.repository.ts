@@ -321,7 +321,11 @@ export class HistorialAjusteCuotaRepository {
       ELIMINAR_AJUSTE: 0,
       APLICAR_AJUSTE_MANUAL: 0,
       RECALCULAR_CUOTA: 0,
-      REGENERAR_CUOTA: 0
+      REGENERAR_CUOTA: 0,
+      CREAR_EXENCION: 0,
+      MODIFICAR_EXENCION: 0,
+      ELIMINAR_EXENCION: 0,
+      APLICAR_EXENCION: 0
     };
 
     historial.forEach(h => {

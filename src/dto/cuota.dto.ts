@@ -277,3 +277,72 @@ export const reporteCuotasSchema = z.object({
 });
 
 export type ReporteCuotasDto = z.infer<typeof reporteCuotasSchema>;
+
+// ══════════════════════════════════════════════════════════════════════
+// FASE 4 - Task 4.3: Recálculo y Regeneración de Cuotas
+// ══════════════════════════════════════════════════════════════════════
+
+/**
+ * DTO para recalcular una cuota existente
+ * Aplica ajustes manuales y exenciones vigentes a una cuota ya generada
+ */
+export const recalcularCuotaSchema = z.object({
+  cuotaId: z.number().int().positive('El ID de cuota debe ser un número positivo'),
+  aplicarAjustes: z.boolean().default(true),
+  aplicarExenciones: z.boolean().default(true),
+  aplicarDescuentos: z.boolean().default(true),
+  usuario: z.string().max(100).optional()
+});
+
+export type RecalcularCuotaDto = z.infer<typeof recalcularCuotaSchema>;
+
+/**
+ * DTO para regenerar cuotas de un período
+ * Elimina y recrea cuotas aplicando configuración actual
+ */
+export const regenerarCuotasSchema = z.object({
+  mes: z.number().int().min(1, 'El mes debe ser entre 1 y 12').max(12, 'El mes debe ser entre 1 y 12'),
+  anio: z.number().int().min(2020, 'El año debe ser 2020 o posterior').max(2030, 'El año no puede ser mayor a 2030'),
+  categoriaId: z.number().int().positive().optional(),
+  personaId: z.number().int().positive().optional(),
+  aplicarAjustes: z.boolean().default(true),
+  aplicarExenciones: z.boolean().default(true),
+  aplicarDescuentos: z.boolean().default(true),
+  confirmarRegeneracion: z.boolean().refine(val => val === true, {
+    message: 'Debe confirmar la regeneración de cuotas'
+  })
+});
+
+export type RegenerarCuotasDto = z.infer<typeof regenerarCuotasSchema>;
+
+/**
+ * DTO para preview de recálculo/regeneración
+ * Muestra cómo quedarían las cuotas sin aplicar cambios
+ */
+export const previewRecalculoSchema = z.object({
+  cuotaId: z.number().int().positive().optional(),
+  mes: z.number().int().min(1).max(12).optional(),
+  anio: z.number().int().min(2020).max(2030).optional(),
+  categoriaId: z.number().int().positive().optional(),
+  personaId: z.number().int().positive().optional(),
+  aplicarAjustes: z.boolean().default(true),
+  aplicarExenciones: z.boolean().default(true),
+  aplicarDescuentos: z.boolean().default(true)
+}).refine(
+  data => data.cuotaId || (data.mes && data.anio),
+  {
+    message: 'Debe proporcionar cuotaId o (mes + anio)',
+    path: ['cuotaId']
+  }
+);
+
+export type PreviewRecalculoDto = z.infer<typeof previewRecalculoSchema>;
+
+/**
+ * DTO para comparar estado antes/después del recálculo
+ */
+export const compararCuotaSchema = z.object({
+  cuotaId: z.number().int().positive('El ID de cuota debe ser un número positivo')
+});
+
+export type CompararCuotaDto = z.infer<typeof compararCuotaSchema>;

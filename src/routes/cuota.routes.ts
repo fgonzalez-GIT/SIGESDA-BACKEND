@@ -45,6 +45,12 @@ router.post('/generar-v2', cuotaController.generarCuotasConItems.bind(cuotaContr
 router.post('/calcular/monto', cuotaController.calcularMontoCuota.bind(cuotaController));
 router.post('/recalcular/periodo', cuotaController.recalcularCuotas.bind(cuotaController));
 
+// FASE 4 - Task 4.3: Recálculo y Regeneración de Cuotas
+router.post('/regenerar', cuotaController.regenerarCuotasDelPeriodo.bind(cuotaController));
+router.post('/preview-recalculo', cuotaController.previewRecalculoCuotas.bind(cuotaController));
+router.post('/:id/recalcular', cuotaController.recalcularCuotaById.bind(cuotaController));
+router.get('/:id/comparar', cuotaController.compararCuotaConRecalculo.bind(cuotaController));
+
 // Bulk operations
 router.delete('/bulk/eliminar', cuotaController.deleteBulkCuotas.bind(cuotaController));
 

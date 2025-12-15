@@ -16,7 +16,11 @@ import {
   DeleteBulkCuotasDto,
   CalcularCuotaDto,
   RecalcularCuotasDto,
-  ReporteCuotasDto
+  ReporteCuotasDto,
+  RecalcularCuotaDto,
+  RegenerarCuotasDto,
+  PreviewRecalculoDto,
+  CompararCuotaDto
 } from '@/dto/cuota.dto';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
@@ -28,7 +32,9 @@ export class CuotaService {
     private cuotaRepository: CuotaRepository,
     private reciboRepository: ReciboRepository,
     private personaRepository: PersonaRepository,
-    private configuracionRepository: ConfiguracionRepository
+    private configuracionRepository: ConfiguracionRepository,
+    private ajusteService?: any, // Will be AjusteCuotaService
+    private exencionService?: any // Will be ExencionCuotaService
   ) {}
 
   private get prisma() {
@@ -793,5 +799,647 @@ export class CuotaService {
       logger.error('[GENERACIÓN CUOTAS] Error fatal en generación:', error);
       throw new Error(`Error generando cuotas: ${error.message}`);
     }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // FASE 4 - Task 4.3: Recálculo y Regeneración de Cuotas
+  // ══════════════════════════════════════════════════════════════════════
+
+  /**
+   * Recalculate an existing cuota with current adjustments/exemptions
+   *
+   * Applies:
+   * - Manual adjustments (AjusteCuotaSocio)
+   * - Temporary exemptions (ExencionCuota)
+   * - Discount rules (MotorReglasDescuentos)
+   *
+   * Returns comparison between original and recalculated amounts
+   */
+  async recalcularCuota(data: RecalcularCuotaDto): Promise<{
+    cuotaOriginal: any;
+    cuotaRecalculada: any;
+    cambios: {
+      montoBase: { antes: number; despues: number; diferencia: number };
+      montoActividades: { antes: number; despues: number; diferencia: number };
+      montoTotal: { antes: number; despues: number; diferencia: number };
+      ajustesAplicados: any[];
+      exencionesAplicadas: any[];
+    };
+  }> {
+    // Get existing cuota
+    const cuota = await this.cuotaRepository.findById(data.cuotaId);
+    if (!cuota) {
+      throw new Error(`Cuota con ID ${data.cuotaId} no encontrada`);
+    }
+
+    // Prevent recalculation of paid cuotas
+    if (cuota.recibo.estado === 'PAGADO') {
+      throw new Error('No se puede recalcular una cuota que ya fue pagada');
+    }
+
+    logger.info(`[RECALCULAR CUOTA] Iniciando recálculo de cuota ID ${data.cuotaId}`);
+
+    // Store original values
+    const montoBaseOriginal = Number(cuota.montoBase);
+    const montoActividadesOriginal = Number(cuota.montoActividades);
+    const montoTotalOriginal = Number(cuota.montoTotal);
+
+    // ====================================================================
+    // STEP 1: Recalculate base monto (from categoria)
+    // ====================================================================
+    const categoriaId = await this.getCategoriaIdByCodigo(cuota.categoria);
+    let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
+
+    // ====================================================================
+    // STEP 2: Recalculate activities monto
+    // ====================================================================
+    const montoActividades = await this.calcularCostoActividades(
+      cuota.recibo.receptorId.toString(),
+      cuota.mes,
+      cuota.anio
+    ).then(result => result.total);
+
+    // ====================================================================
+    // STEP 3: Calculate subtotal before adjustments
+    // ====================================================================
+    let subtotal = montoBase + montoActividades;
+
+    // ====================================================================
+    // STEP 4: Apply manual adjustments
+    // ====================================================================
+    const ajustesAplicados: any[] = [];
+    if (data.aplicarAjustes && this.ajusteService) {
+      const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+      const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(
+        cuota.recibo.receptorId,
+        fechaCuota
+      );
+
+      if (ajustes.length > 0) {
+        const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, subtotal);
+        subtotal = resultadoAjustes.montoFinal;
+        ajustesAplicados.push(...resultadoAjustes.ajustes);
+
+        logger.debug(
+          `[RECALCULAR CUOTA] ${ajustes.length} ajustes aplicados, ` +
+          `ajuste total: $${resultadoAjustes.totalAjuste.toFixed(2)}`
+        );
+      }
+    }
+
+    // ====================================================================
+    // STEP 5: Apply exemptions
+    // ====================================================================
+    const exencionesAplicadas: any[] = [];
+    if (data.aplicarExenciones && this.exencionService) {
+      const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+      const exencionCheck = await this.exencionService.checkExencionParaPeriodo(
+        cuota.recibo.receptorId,
+        fechaCuota
+      );
+
+      if (exencionCheck.tieneExencion) {
+        const montoExencion = (subtotal * exencionCheck.porcentaje) / 100;
+        subtotal = subtotal - montoExencion;
+
+        exencionesAplicadas.push({
+          exencionId: exencionCheck.exencion?.id,
+          tipoExencion: exencionCheck.exencion?.tipoExencion,
+          motivoExencion: exencionCheck.exencion?.motivoExencion,
+          porcentaje: exencionCheck.porcentaje,
+          montoExencion
+        });
+
+        logger.debug(
+          `[RECALCULAR CUOTA] Exención aplicada: ${exencionCheck.porcentaje}%, ` +
+          `descuento: $${montoExencion.toFixed(2)}`
+        );
+      }
+    }
+
+    // ====================================================================
+    // STEP 6: Apply discount rules
+    // ====================================================================
+    if (data.aplicarDescuentos) {
+      // Discount rules would be applied here via MotorReglasDescuentos
+      // For now, using the existing calcularDescuentos method
+      const descuentos = await this.calcularDescuentos(
+        categoriaId,
+        montoBase,
+        cuota.recibo.receptorId
+      );
+      subtotal = Math.max(0, subtotal - descuentos.total);
+    }
+
+    const montoTotalRecalculado = Math.max(0, subtotal);
+
+    // ====================================================================
+    // STEP 7: Update cuota if confirmed (not preview)
+    // ====================================================================
+    const cambiosDiferencia = {
+      montoBase: {
+        antes: montoBaseOriginal,
+        despues: montoBase,
+        diferencia: montoBase - montoBaseOriginal
+      },
+      montoActividades: {
+        antes: montoActividadesOriginal,
+        despues: montoActividades,
+        diferencia: montoActividades - montoActividadesOriginal
+      },
+      montoTotal: {
+        antes: montoTotalOriginal,
+        despues: montoTotalRecalculado,
+        diferencia: montoTotalRecalculado - montoTotalOriginal
+      },
+      ajustesAplicados,
+      exencionesAplicadas
+    };
+
+    // Only update if there are actual changes
+    if (Math.abs(cambiosDiferencia.montoTotal.diferencia) > 0.01) {
+      await this.prisma.$transaction(async (tx) => {
+        // Update cuota
+        await tx.cuota.update({
+          where: { id: data.cuotaId },
+          data: {
+            montoBase,
+            montoActividades,
+            montoTotal: montoTotalRecalculado
+          }
+        });
+
+        // Update recibo
+        await tx.recibo.update({
+          where: { id: cuota.reciboId },
+          data: {
+            importe: montoTotalRecalculado
+          }
+        });
+
+        // Create history entry if HistorialAjusteCuotaRepository is available
+        if (this.ajusteService) {
+          try {
+            await tx.historialAjusteCuota.create({
+              data: {
+                personaId: cuota.recibo.receptorId,
+                accion: 'RECALCULAR_CUOTA',
+                datosPrevios: {
+                  cuotaId: cuota.id,
+                  montoBase: montoBaseOriginal,
+                  montoActividades: montoActividadesOriginal,
+                  montoTotal: montoTotalOriginal
+                },
+                datosNuevos: {
+                  cuotaId: cuota.id,
+                  montoBase,
+                  montoActividades,
+                  montoTotal: montoTotalRecalculado
+                },
+                usuario: data.usuario || 'SISTEMA',
+                motivoCambio: `Recálculo automático - ${ajustesAplicados.length} ajustes, ${exencionesAplicadas.length} exenciones`
+              }
+            });
+          } catch (histError) {
+            logger.warn(`[RECALCULAR CUOTA] No se pudo crear entrada de historial: ${histError}`);
+          }
+        }
+      });
+
+      logger.info(
+        `[RECALCULAR CUOTA] ✅ Cuota ${data.cuotaId} recalculada - ` +
+        `Antes: $${montoTotalOriginal.toFixed(2)}, Después: $${montoTotalRecalculado.toFixed(2)}, ` +
+        `Diferencia: $${cambiosDiferencia.montoTotal.diferencia.toFixed(2)}`
+      );
+    } else {
+      logger.info(`[RECALCULAR CUOTA] Sin cambios para cuota ${data.cuotaId}`);
+    }
+
+    return {
+      cuotaOriginal: {
+        id: cuota.id,
+        montoBase: montoBaseOriginal,
+        montoActividades: montoActividadesOriginal,
+        montoTotal: montoTotalOriginal
+      },
+      cuotaRecalculada: {
+        id: cuota.id,
+        montoBase,
+        montoActividades,
+        montoTotal: montoTotalRecalculado
+      },
+      cambios: cambiosDiferencia
+    };
+  }
+
+  /**
+   * Regenerate cuotas for a period (delete and recreate)
+   *
+   * WARNING: This deletes existing cuotas for the period!
+   * Use with caution and only for unpaid cuotas.
+   */
+  async regenerarCuotas(data: RegenerarCuotasDto): Promise<{
+    eliminadas: number;
+    generadas: number;
+    cuotas: any[];
+  }> {
+    logger.info(`[REGENERAR CUOTAS] Iniciando regeneración - ${data.mes}/${data.anio}`);
+
+    // ====================================================================
+    // STEP 1: Find existing cuotas for the period
+    // ====================================================================
+    const cuotasExistentes = await this.cuotaRepository.findByPeriodo(
+      data.mes,
+      data.anio,
+      data.categoriaId ? await this.getCategoriaCodigoByCategoriaId(data.categoriaId) : undefined
+    );
+
+    // Filter by personaId if specified
+    let cuotasPorEliminar = cuotasExistentes;
+    if (data.personaId) {
+      cuotasPorEliminar = cuotasExistentes.filter(c => c.recibo.receptorId === data.personaId);
+    }
+
+    // ====================================================================
+    // STEP 2: Validate that all cuotas can be deleted
+    // ====================================================================
+    const cuotasPagadas = cuotasPorEliminar.filter(c => c.recibo.estado === 'PAGADO');
+    if (cuotasPagadas.length > 0) {
+      throw new Error(
+        `No se pueden regenerar cuotas pagadas. ${cuotasPagadas.length} cuotas del período ya están pagadas.`
+      );
+    }
+
+    // ====================================================================
+    // STEP 3: Delete existing cuotas (within transaction)
+    // ====================================================================
+    let cuotasGeneradas: any[] = [];
+    const cuotasEliminadas = cuotasPorEliminar.length;
+
+    await this.prisma.$transaction(async (tx) => {
+      // Delete cuotas and their recibos
+      for (const cuota of cuotasPorEliminar) {
+        await tx.cuota.delete({
+          where: { id: cuota.id }
+        });
+
+        await tx.recibo.delete({
+          where: { id: cuota.reciboId }
+        });
+
+        logger.debug(`[REGENERAR CUOTAS] Cuota ${cuota.id} y recibo ${cuota.recibo.numero} eliminados`);
+      }
+
+      // Create history entry
+      if (this.ajusteService) {
+        try {
+          await tx.historialAjusteCuota.create({
+            data: {
+              personaId: data.personaId || null,
+              accion: 'REGENERAR_CUOTA',
+              datosPrevios: {
+                periodo: `${data.mes}/${data.anio}`,
+                cuotasEliminadas,
+                categoriaId: data.categoriaId,
+                personaId: data.personaId
+              },
+              datosNuevos: {
+                confirmado: true
+              },
+              usuario: 'SISTEMA',
+              motivoCambio: 'Regeneración de cuotas del período'
+            }
+          });
+        } catch (histError) {
+          logger.warn(`[REGENERAR CUOTAS] No se pudo crear entrada de historial: ${histError}`);
+        }
+      }
+    });
+
+    logger.info(`[REGENERAR CUOTAS] ${cuotasEliminadas} cuotas eliminadas`);
+
+    // ====================================================================
+    // STEP 4: Generate new cuotas
+    // ====================================================================
+    const generarResult = await this.generarCuotasConItems({
+      mes: data.mes,
+      anio: data.anio,
+      categoriaIds: data.categoriaId ? [data.categoriaId] : undefined,
+      incluirInactivos: false,
+      aplicarDescuentos: data.aplicarDescuentos,
+      observaciones: 'Cuotas regeneradas automáticamente'
+    });
+
+    cuotasGeneradas = generarResult.cuotas;
+
+    logger.info(
+      `[REGENERAR CUOTAS] ✅ Regeneración completada - ` +
+      `${cuotasEliminadas} eliminadas, ${generarResult.generated} generadas`
+    );
+
+    return {
+      eliminadas: cuotasEliminadas,
+      generadas: generarResult.generated,
+      cuotas: cuotasGeneradas
+    };
+  }
+
+  /**
+   * Preview recalculation without applying changes
+   *
+   * Shows how cuotas would look after recalculation
+   */
+  async previewRecalculo(data: PreviewRecalculoDto): Promise<{
+    cuotas: any[];
+    cambios: any[];
+    resumen: {
+      totalCuotas: number;
+      conCambios: number;
+      sinCambios: number;
+      totalAjuste: number;
+    };
+  }> {
+    let cuotas: any[] = [];
+    const cambios: any[] = [];
+
+    // ====================================================================
+    // OPTION A: Single cuota recalculation preview
+    // ====================================================================
+    if (data.cuotaId) {
+      const cuota = await this.cuotaRepository.findById(data.cuotaId);
+      if (!cuota) {
+        throw new Error(`Cuota con ID ${data.cuotaId} no encontrada`);
+      }
+
+      cuotas = [cuota];
+    }
+    // ====================================================================
+    // OPTION B: Period-based recalculation preview
+    // ====================================================================
+    else if (data.mes && data.anio) {
+      cuotas = await this.cuotaRepository.findByPeriodo(
+        data.mes,
+        data.anio,
+        data.categoriaId ? await this.getCategoriaCodigoByCategoriaId(data.categoriaId) : undefined
+      );
+
+      // Filter by personaId if specified
+      if (data.personaId) {
+        cuotas = cuotas.filter(c => c.recibo.receptorId === data.personaId);
+      }
+    } else {
+      throw new Error('Debe proporcionar cuotaId o (mes + anio)');
+    }
+
+    // ====================================================================
+    // Calculate preview for each cuota
+    // ====================================================================
+    let conCambios = 0;
+    let totalAjuste = 0;
+
+    for (const cuota of cuotas) {
+      // Skip paid cuotas
+      if (cuota.recibo.estado === 'PAGADO') {
+        continue;
+      }
+
+      const montoOriginal = Number(cuota.montoTotal);
+
+      // Simulate recalculation (without actually updating)
+      const categoriaId = await this.getCategoriaIdByCodigo(cuota.categoria);
+      let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
+
+      const montoActividades = await this.calcularCostoActividades(
+        cuota.recibo.receptorId.toString(),
+        cuota.mes,
+        cuota.anio
+      ).then(result => result.total);
+
+      let subtotal = montoBase + montoActividades;
+
+      // Apply adjustments
+      const ajustesAplicados: any[] = [];
+      if (data.aplicarAjustes && this.ajusteService) {
+        const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+        const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(
+          cuota.recibo.receptorId,
+          fechaCuota
+        );
+
+        if (ajustes.length > 0) {
+          const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, subtotal);
+          subtotal = resultadoAjustes.montoFinal;
+          ajustesAplicados.push(...resultadoAjustes.ajustes);
+        }
+      }
+
+      // Apply exemptions
+      const exencionesAplicadas: any[] = [];
+      if (data.aplicarExenciones && this.exencionService) {
+        const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+        const exencionCheck = await this.exencionService.checkExencionParaPeriodo(
+          cuota.recibo.receptorId,
+          fechaCuota
+        );
+
+        if (exencionCheck.tieneExencion) {
+          const montoExencion = (subtotal * exencionCheck.porcentaje) / 100;
+          subtotal = subtotal - montoExencion;
+          exencionesAplicadas.push({
+            porcentaje: exencionCheck.porcentaje,
+            montoExencion
+          });
+        }
+      }
+
+      // Apply discounts
+      if (data.aplicarDescuentos) {
+        const descuentos = await this.calcularDescuentos(
+          categoriaId,
+          montoBase,
+          cuota.recibo.receptorId
+        );
+        subtotal = Math.max(0, subtotal - descuentos.total);
+      }
+
+      const montoRecalculado = Math.max(0, subtotal);
+      const diferencia = montoRecalculado - montoOriginal;
+
+      if (Math.abs(diferencia) > 0.01) {
+        conCambios++;
+        totalAjuste += diferencia;
+      }
+
+      cambios.push({
+        cuotaId: cuota.id,
+        reciboNumero: cuota.recibo.numero,
+        socioId: cuota.recibo.receptorId,
+        categoria: cuota.categoria,
+        periodo: `${cuota.mes}/${cuota.anio}`,
+        montoActual: montoOriginal,
+        montoRecalculado,
+        diferencia,
+        ajustesAplicados,
+        exencionesAplicadas,
+        tieneCambios: Math.abs(diferencia) > 0.01
+      });
+    }
+
+    logger.info(
+      `[PREVIEW RECALCULO] ${cambios.length} cuotas analizadas - ` +
+      `${conCambios} con cambios, ajuste total: $${totalAjuste.toFixed(2)}`
+    );
+
+    return {
+      cuotas: cambios,
+      cambios: cambios.filter(c => c.tieneCambios),
+      resumen: {
+        totalCuotas: cambios.length,
+        conCambios,
+        sinCambios: cambios.length - conCambios,
+        totalAjuste
+      }
+    };
+  }
+
+  /**
+   * Compare current cuota state with recalculated state
+   *
+   * Similar to recalcularCuota but doesn't update, only shows comparison
+   */
+  async compararCuota(cuotaId: number): Promise<{
+    actual: any;
+    recalculada: any;
+    diferencias: any;
+  }> {
+    const cuota = await this.cuotaRepository.findById(cuotaId);
+    if (!cuota) {
+      throw new Error(`Cuota con ID ${cuotaId} no encontrada`);
+    }
+
+    logger.info(`[COMPARAR CUOTA] Comparando cuota ID ${cuotaId}`);
+
+    // Get current state
+    const actual = {
+      id: cuota.id,
+      reciboNumero: cuota.recibo.numero,
+      categoria: cuota.categoria,
+      periodo: `${cuota.mes}/${cuota.anio}`,
+      montoBase: Number(cuota.montoBase),
+      montoActividades: Number(cuota.montoActividades),
+      montoTotal: Number(cuota.montoTotal),
+      estadoRecibo: cuota.recibo.estado
+    };
+
+    // Calculate recalculated state
+    const categoriaId = await this.getCategoriaIdByCodigo(cuota.categoria);
+    const montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
+
+    const montoActividades = await this.calcularCostoActividades(
+      cuota.recibo.receptorId.toString(),
+      cuota.mes,
+      cuota.anio
+    ).then(result => result.total);
+
+    let subtotal = montoBase + montoActividades;
+
+    // Check for adjustments
+    const ajustesInfo: any[] = [];
+    if (this.ajusteService) {
+      const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+      const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(
+        cuota.recibo.receptorId,
+        fechaCuota
+      );
+
+      if (ajustes.length > 0) {
+        const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, subtotal);
+        subtotal = resultadoAjustes.montoFinal;
+        ajustesInfo.push(...resultadoAjustes.ajustes);
+      }
+    }
+
+    // Check for exemptions
+    const exencionesInfo: any[] = [];
+    if (this.exencionService) {
+      const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+      const exencionCheck = await this.exencionService.checkExencionParaPeriodo(
+        cuota.recibo.receptorId,
+        fechaCuota
+      );
+
+      if (exencionCheck.tieneExencion) {
+        const montoExencion = (subtotal * exencionCheck.porcentaje) / 100;
+        subtotal = subtotal - montoExencion;
+        exencionesInfo.push({
+          porcentaje: exencionCheck.porcentaje,
+          montoExencion,
+          tipo: exencionCheck.exencion?.tipoExencion,
+          motivo: exencionCheck.exencion?.motivoExencion
+        });
+      }
+    }
+
+    const montoTotalRecalculado = Math.max(0, subtotal);
+
+    const recalculada = {
+      id: cuota.id,
+      montoBase,
+      montoActividades,
+      montoTotal: montoTotalRecalculado,
+      ajustesAplicados: ajustesInfo,
+      exencionesAplicadas: exencionesInfo
+    };
+
+    const diferencias = {
+      montoBase: montoBase - actual.montoBase,
+      montoActividades: montoActividades - actual.montoActividades,
+      montoTotal: montoTotalRecalculado - actual.montoTotal,
+      esSignificativo: Math.abs(montoTotalRecalculado - actual.montoTotal) > 0.01,
+      porcentajeDiferencia: actual.montoTotal > 0
+        ? ((montoTotalRecalculado - actual.montoTotal) / actual.montoTotal) * 100
+        : 0
+    };
+
+    logger.info(
+      `[COMPARAR CUOTA] Comparación completada - ` +
+      `Actual: $${actual.montoTotal.toFixed(2)}, ` +
+      `Recalculada: $${montoTotalRecalculado.toFixed(2)}, ` +
+      `Diferencia: $${diferencias.montoTotal.toFixed(2)}`
+    );
+
+    return {
+      actual,
+      recalculada,
+      diferencias
+    };
+  }
+
+  // ====================================================================
+  // Helper methods for Task 4.3
+  // ====================================================================
+
+  private async getCategoriaIdByCodigo(codigo: string): Promise<number> {
+    const categoria = await this.prisma.categoriaSocio.findFirst({
+      where: { codigo }
+    });
+
+    if (!categoria) {
+      throw new Error(`Categoría con código ${codigo} no encontrada`);
+    }
+
+    return categoria.id;
+  }
+
+  private async getCategoriaCodigoByCategoriaId(categoriaId: number): Promise<string> {
+    const categoria = await this.prisma.categoriaSocio.findUnique({
+      where: { id: categoriaId }
+    });
+
+    if (!categoria) {
+      throw new Error(`Categoría con ID ${categoriaId} no encontrada`);
+    }
+
+    return categoria.codigo;
   }
 }

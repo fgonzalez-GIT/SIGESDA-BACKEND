@@ -11,7 +11,11 @@ import {
   deleteBulkCuotasSchema,
   calcularCuotaSchema,
   recalcularCuotasSchema,
-  reporteCuotasSchema
+  reporteCuotasSchema,
+  recalcularCuotaSchema,
+  regenerarCuotasSchema,
+  previewRecalculoSchema,
+  compararCuotaSchema
 } from '@/dto/cuota.dto';
 import { ApiResponse } from '@/types/interfaces';
 import { HttpStatus } from '@/types/enums';
@@ -597,6 +601,153 @@ export class CuotaController {
 
       res.status(HttpStatus.OK).json(response);
     } catch (error) {
+      next(error);
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // FASE 4 - Task 4.3: Recálculo y Regeneración de Cuotas
+  // ══════════════════════════════════════════════════════════════════════
+
+  /**
+   * POST /api/cuotas/:id/recalcular
+   * Recalculate a single cuota with current adjustments/exemptions
+   */
+  async recalcularCuotaById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const cuotaId = parseInt(req.params.id);
+      const body = req.body || {};
+
+      const validatedData = recalcularCuotaSchema.parse({
+        cuotaId,
+        aplicarAjustes: body.aplicarAjustes ?? true,
+        aplicarExenciones: body.aplicarExenciones ?? true,
+        aplicarDescuentos: body.aplicarDescuentos ?? true,
+        usuario: body.usuario
+      });
+
+      logger.info(`[CONTROLLER] Recalculando cuota ID ${cuotaId}`);
+
+      const result = await this.cuotaService.recalcularCuota(validatedData);
+
+      const response: ApiResponse = {
+        success: true,
+        message: result.cambios.montoTotal.diferencia !== 0
+          ? `Cuota recalculada con éxito. Cambio: $${result.cambios.montoTotal.diferencia.toFixed(2)}`
+          : 'Cuota recalculada sin cambios en el monto',
+        data: result,
+        meta: {
+          cuotaId,
+          cambioMontoTotal: result.cambios.montoTotal.diferencia,
+          ajustesAplicados: result.cambios.ajustesAplicados.length,
+          exencionesAplicadas: result.cambios.exencionesAplicadas.length
+        }
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      logger.error('[CONTROLLER] Error recalculando cuota:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/cuotas/regenerar
+   * Regenerate cuotas for a period (delete and recreate)
+   */
+  async regenerarCuotasDelPeriodo(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validatedData = regenerarCuotasSchema.parse(req.body);
+
+      logger.info(`[CONTROLLER] Regenerando cuotas - ${validatedData.mes}/${validatedData.anio}`);
+
+      const result = await this.cuotaService.regenerarCuotas(validatedData);
+
+      const response: ApiResponse = {
+        success: true,
+        message: `${result.generadas} cuotas regeneradas exitosamente (${result.eliminadas} eliminadas)`,
+        data: result,
+        meta: {
+          periodo: `${validatedData.mes}/${validatedData.anio}`,
+          categoriaId: validatedData.categoriaId,
+          personaId: validatedData.personaId,
+          eliminadas: result.eliminadas,
+          generadas: result.generadas
+        }
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      logger.error('[CONTROLLER] Error regenerando cuotas:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/cuotas/preview-recalculo
+   * Preview recalculation without applying changes
+   */
+  async previewRecalculoCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validatedData = previewRecalculoSchema.parse(req.body);
+
+      logger.info(`[CONTROLLER] Preview de recálculo - cuotaId: ${validatedData.cuotaId}, periodo: ${validatedData.mes}/${validatedData.anio}`);
+
+      const result = await this.cuotaService.previewRecalculo(validatedData);
+
+      const response: ApiResponse = {
+        success: true,
+        message: `Preview completado: ${result.resumen.conCambios} cuotas con cambios de ${result.resumen.totalCuotas} analizadas`,
+        data: result,
+        meta: {
+          cuotaId: validatedData.cuotaId,
+          periodo: validatedData.mes && validatedData.anio ? `${validatedData.mes}/${validatedData.anio}` : null,
+          categoriaId: validatedData.categoriaId,
+          personaId: validatedData.personaId,
+          ...result.resumen
+        }
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      logger.error('[CONTROLLER] Error en preview de recálculo:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/cuotas/:id/comparar
+   * Compare current cuota state with recalculated state
+   */
+  async compararCuotaConRecalculo(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const cuotaId = parseInt(req.params.id);
+
+      const validatedData = compararCuotaSchema.parse({ cuotaId });
+
+      logger.info(`[CONTROLLER] Comparando cuota ID ${cuotaId}`);
+
+      const result = await this.cuotaService.compararCuota(cuotaId);
+
+      const response: ApiResponse = {
+        success: true,
+        message: result.diferencias.esSignificativo
+          ? `Diferencia significativa encontrada: $${result.diferencias.montoTotal.toFixed(2)} (${result.diferencias.porcentajeDiferencia.toFixed(2)}%)`
+          : 'Sin diferencias significativas',
+        data: result,
+        meta: {
+          cuotaId,
+          esSignificativo: result.diferencias.esSignificativo,
+          diferenciaMonto: result.diferencias.montoTotal,
+          diferenciaPorcentaje: result.diferencias.porcentajeDiferencia,
+          ajustesDisponibles: result.recalculada.ajustesAplicados.length,
+          exencionesDisponibles: result.recalculada.exencionesAplicadas.length
+        }
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      logger.error('[CONTROLLER] Error comparando cuota:', error);
       next(error);
     }
   }
