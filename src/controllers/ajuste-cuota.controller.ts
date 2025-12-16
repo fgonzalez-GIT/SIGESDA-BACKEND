@@ -21,8 +21,77 @@ export class AjusteCuotaController {
   ) {}
 
   /**
-   * POST /api/ajustes-cuota
-   * Create a new manual adjustment
+   * @swagger
+   * /api/ajustes-cuota:
+   *   post:
+   *     summary: Crear ajuste manual a cuota ⭐ FASE 4
+   *     description: |
+   *       Crea un ajuste manual (descuento o recargo) que se aplicará a las cuotas de un socio.
+   *       **Tipos de ajuste**:
+   *       - DESCUENTO_FIJO: Monto fijo a descontar
+   *       - DESCUENTO_PORCENTAJE: Porcentaje a descontar (0-100)
+   *       - RECARGO_FIJO: Monto fijo a sumar
+   *       - RECARGO_PORCENTAJE: Porcentaje a sumar
+   *       **Rango de fechas**: Permite aplicar ajuste solo en un período específico
+   *     tags: [Ajustes Manuales]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - personaId
+   *               - tipoAjuste
+   *               - valor
+   *               - concepto
+   *             properties:
+   *               personaId:
+   *                 type: integer
+   *                 description: ID del socio
+   *               tipoAjuste:
+   *                 type: string
+   *                 enum: [DESCUENTO_FIJO, DESCUENTO_PORCENTAJE, RECARGO_FIJO, RECARGO_PORCENTAJE]
+   *                 description: Tipo de ajuste a aplicar
+   *               valor:
+   *                 type: number
+   *                 description: Valor del ajuste (monto o porcentaje según tipo)
+   *                 example: 500
+   *               concepto:
+   *                 type: string
+   *                 description: Descripción/motivo del ajuste
+   *                 example: "Descuento por situación económica familiar"
+   *               fechaInicio:
+   *                 type: string
+   *                 format: date
+   *                 description: Fecha inicio de aplicación (opcional, default = hoy)
+   *               fechaFin:
+   *                 type: string
+   *                 format: date
+   *                 description: Fecha fin de aplicación (opcional, sin límite si no se especifica)
+   *               activo:
+   *                 type: boolean
+   *                 default: true
+   *                 description: Si el ajuste está activo
+   *               usuario:
+   *                 type: string
+   *                 description: Usuario que crea el ajuste (para auditoría)
+   *     responses:
+   *       201:
+   *         description: Ajuste creado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       $ref: '#/components/schemas/AjusteCuota'
+   *       400:
+   *         description: Datos inválidos
+   *       404:
+   *         description: Persona no encontrada
    */
   async createAjuste(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -78,8 +147,43 @@ export class AjusteCuotaController {
   }
 
   /**
-   * GET /api/ajustes-cuota
-   * Get all adjustments with optional filters
+   * @swagger
+   * /api/ajustes-cuota:
+   *   get:
+   *     summary: Obtener ajustes con filtros ⭐ FASE 4
+   *     description: Lista todos los ajustes manuales con filtros opcionales (persona, activo, tipo)
+   *     tags: [Ajustes Manuales]
+   *     parameters:
+   *       - in: query
+   *         name: personaId
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por socio específico
+   *       - in: query
+   *         name: activo
+   *         schema:
+   *           type: boolean
+   *         description: Filtrar solo ajustes activos/inactivos
+   *       - in: query
+   *         name: tipoAjuste
+   *         schema:
+   *           type: string
+   *           enum: [DESCUENTO_FIJO, DESCUENTO_PORCENTAJE, RECARGO_FIJO, RECARGO_PORCENTAJE]
+   *         description: Filtrar por tipo de ajuste
+   *     responses:
+   *       200:
+   *         description: Lista de ajustes obtenida
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/AjusteCuota'
    */
   async getAjustes(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

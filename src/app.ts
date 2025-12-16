@@ -7,6 +7,7 @@ import { errorHandler, notFoundHandler } from '@/middleware/error.middleware';
 import { ApiResponse } from '@/types/interfaces';
 import { HttpStatus } from '@/types/enums';
 import DatabaseService from '@/config/database';
+import { setupSwagger } from '@/config/swagger';
 
 // Import routes
 import routes from '@/routes';
@@ -84,17 +85,22 @@ app.get('/', (req: Request, res: Response) => {
     data: {
       name: 'SIGESDA Backend API',
       description: 'Sistema de Gestión de Asociación Musical',
-      version: '1.0.0',
-      documentation: '/api/docs', // Future Swagger documentation
+      version: '2.0.0',
+      documentation: '/api-docs',
       endpoints: {
         health: '/health',
-        api: '/api'
+        api: '/api',
+        docs: '/api-docs',
+        docsJson: '/api-docs.json'
       }
     }
   };
 
   res.status(HttpStatus.OK).json(response);
 });
+
+// Setup Swagger documentation
+setupSwagger(app);
 
 // API routes
 app.use('/api', routes);

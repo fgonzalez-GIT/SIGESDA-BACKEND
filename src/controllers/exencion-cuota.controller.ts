@@ -19,8 +19,80 @@ export class ExencionCuotaController {
   constructor(private service: ExencionCuotaService) {}
 
   /**
-   * POST /api/exenciones-cuota
-   * Create a new exemption
+   * @swagger
+   * /api/exenciones-cuota:
+   *   post:
+   *     summary: Solicitar exención de cuota ⭐ FASE 4
+   *     description: |
+   *       Crea una solicitud de exención temporal de pago de cuota.
+   *       **Estado inicial**: PENDIENTE_APROBACION
+   *       **Tipos de exención**:
+   *       - TOTAL: 100% de exención
+   *       - PARCIAL: Porcentaje personalizado (0-100%)
+   *       **Motivos**: BECA, SOCIO_FUNDADOR, SITUACION_ECONOMICA, SITUACION_SALUD, etc.
+   *       **Workflow**: Requiere aprobación posterior con endpoint /aprobar
+   *     tags: [Exenciones]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - personaId
+   *               - tipoExencion
+   *               - motivoExencion
+   *               - fechaInicio
+   *             properties:
+   *               personaId:
+   *                 type: integer
+   *                 description: ID del socio
+   *               tipoExencion:
+   *                 type: string
+   *                 enum: [TOTAL, PARCIAL]
+   *                 description: Tipo de exención
+   *               motivoExencion:
+   *                 type: string
+   *                 enum: [BECA, SOCIO_FUNDADOR, SOCIO_HONORARIO, SITUACION_ECONOMICA, SITUACION_SALUD, INTERCAMBIO_SERVICIOS, PROMOCION, FAMILIAR_DOCENTE, OTRO]
+   *                 description: Motivo de la exención
+   *               porcentajeExencion:
+   *                 type: number
+   *                 minimum: 0
+   *                 maximum: 100
+   *                 description: Porcentaje (requerido si tipoExencion=PARCIAL, 100 si TOTAL)
+   *                 example: 50
+   *               fechaInicio:
+   *                 type: string
+   *                 format: date
+   *                 description: Fecha inicio de vigencia
+   *               fechaFin:
+   *                 type: string
+   *                 format: date
+   *                 description: Fecha fin de vigencia (opcional, sin límite si no se especifica)
+   *               observaciones:
+   *                 type: string
+   *                 description: Observaciones adicionales
+   *               usuario:
+   *                 type: string
+   *                 description: Usuario que solicita (auditoría)
+   *     responses:
+   *       201:
+   *         description: Exención solicitada exitosamente (PENDIENTE_APROBACION)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       $ref: '#/components/schemas/ExencionCuota'
+   *       400:
+   *         description: Datos inválidos
+   *       404:
+   *         description: Persona no encontrada
+   *       409:
+   *         description: Ya existe exención activa para el período
    */
   async createExencion(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

@@ -29,8 +29,96 @@ export class ReportesCuotaController {
   constructor(private reportesService: ReportesCuotaService) {}
 
   /**
-   * GET /api/reportes/cuotas/dashboard
-   * Dashboard general de cuotas con métricas clave
+   * @swagger
+   * /api/reportes/cuotas/dashboard:
+   *   get:
+   *     summary: Dashboard general de cuotas ⭐ FASE 4
+   *     description: |
+   *       Retorna métricas clave del sistema de cuotas para un período específico:
+   *       - Totales: cuotas generadas, pagadas, pendientes, vencidas
+   *       - Montos: recaudado, pendiente, vencido
+   *       - Promedios: monto por cuota, descuentos aplicados
+   *       - Gráficos: Evolución temporal, distribución por estado
+   *     tags: [Reportes]
+   *     parameters:
+   *       - in: query
+   *         name: mes
+   *         required: true
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 12
+   *         description: Mes del reporte
+   *         example: 12
+   *       - in: query
+   *         name: anio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *           minimum: 2020
+   *         description: Año del reporte
+   *         example: 2025
+   *       - in: query
+   *         name: categoriaId
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por categoría de socio (opcional)
+   *     responses:
+   *       200:
+   *         description: Dashboard generado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         periodo:
+   *                           type: object
+   *                           properties:
+   *                             mes:
+   *                               type: integer
+   *                             anio:
+   *                               type: integer
+   *                             displayName:
+   *                               type: string
+   *                               example: "Diciembre 2025"
+   *                         totales:
+   *                           type: object
+   *                           properties:
+   *                             cuotasGeneradas:
+   *                               type: integer
+   *                             cuotasPagadas:
+   *                               type: integer
+   *                             cuotasPendientes:
+   *                               type: integer
+   *                             cuotasVencidas:
+   *                               type: integer
+   *                         montos:
+   *                           type: object
+   *                           properties:
+   *                             totalRecaudado:
+   *                               type: number
+   *                             totalPendiente:
+   *                               type: number
+   *                             totalVencido:
+   *                               type: number
+   *                             montoPromedio:
+   *                               type: number
+   *                         descuentos:
+   *                           type: object
+   *                           properties:
+   *                             totalDescuentosAplicados:
+   *                               type: number
+   *                             sociosConDescuento:
+   *                               type: integer
+   *                             porcentajePromedio:
+   *                               type: number
+   *       400:
+   *         description: Parámetros inválidos
    */
   async getDashboard(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -50,8 +138,32 @@ export class ReportesCuotaController {
   }
 
   /**
-   * GET /api/reportes/cuotas/categoria
-   * Reporte de cuotas agrupado por categoría de socio
+   * @swagger
+   * /api/reportes/cuotas/categoria:
+   *   get:
+   *     summary: Reporte por categoría de socio ⭐ FASE 4
+   *     description: Agrupa cuotas y estadísticas por categoría de socio (SOCIO_ACTIVO, SOCIO_MENOR, etc.)
+   *     tags: [Reportes]
+   *     parameters:
+   *       - in: query
+   *         name: mes
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         example: 12
+   *       - in: query
+   *         name: anio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         example: 2025
+   *     responses:
+   *       200:
+   *         description: Reporte generado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
    */
   async getReportePorCategoria(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -71,8 +183,43 @@ export class ReportesCuotaController {
   }
 
   /**
-   * GET /api/reportes/cuotas/descuentos
-   * Análisis de descuentos aplicados (ajustes + reglas + exenciones)
+   * @swagger
+   * /api/reportes/cuotas/descuentos:
+   *   get:
+   *     summary: Análisis de descuentos aplicados ⭐ FASE 4
+   *     description: |
+   *       Análisis detallado de todos los descuentos aplicados:
+   *       - Ajustes manuales (fijos y porcentuales)
+   *       - Reglas automáticas de descuento
+   *       - Exenciones temporales
+   *       Útil para auditoría y análisis de impacto financiero.
+   *     tags: [Reportes]
+   *     parameters:
+   *       - in: query
+   *         name: mes
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         example: 12
+   *       - in: query
+   *         name: anio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         example: 2025
+   *       - in: query
+   *         name: tipoDescuento
+   *         schema:
+   *           type: string
+   *           enum: [AJUSTES, REGLAS, EXENCIONES, TODOS]
+   *         description: Filtrar por tipo de descuento
+   *     responses:
+   *       200:
+   *         description: Análisis generado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
    */
   async getAnalisisDescuentos(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -92,8 +239,30 @@ export class ReportesCuotaController {
   }
 
   /**
-   * GET /api/reportes/cuotas/exenciones
-   * Reporte de exenciones vigentes y su impacto
+   * @swagger
+   * /api/reportes/cuotas/exenciones:
+   *   get:
+   *     summary: Reporte de exenciones vigentes ⭐ FASE 4
+   *     description: Lista todas las exenciones activas y su impacto financiero en el período
+   *     tags: [Reportes]
+   *     parameters:
+   *       - in: query
+   *         name: mes
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: anio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Reporte generado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
    */
   async getReporteExenciones(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -113,8 +282,40 @@ export class ReportesCuotaController {
   }
 
   /**
-   * GET /api/reportes/cuotas/comparativo
-   * Reporte comparativo entre dos períodos
+   * @swagger
+   * /api/reportes/cuotas/comparativo:
+   *   get:
+   *     summary: Reporte comparativo entre períodos ⭐ FASE 4
+   *     description: Compara métricas entre dos períodos (ej. Diciembre 2024 vs Diciembre 2025)
+   *     tags: [Reportes]
+   *     parameters:
+   *       - in: query
+   *         name: mesPeriodo1
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: anioPeriodo1
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: mesPeriodo2
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: anioPeriodo2
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Comparativo generado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
    */
   async getReporteComparativo(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -134,8 +335,44 @@ export class ReportesCuotaController {
   }
 
   /**
-   * GET /api/reportes/cuotas/recaudacion
-   * Estadísticas de recaudación y morosidad
+   * @swagger
+   * /api/reportes/cuotas/recaudacion:
+   *   get:
+   *     summary: Estadísticas de recaudación y morosidad ⭐ FASE 4
+   *     description: |
+   *       Análisis de recaudación y pagos:
+   *       - Tasa de morosidad
+   *       - Evolución de pagos
+   *       - Proyecciones de recaudación
+   *     tags: [Reportes]
+   *     parameters:
+   *       - in: query
+   *         name: mesInicio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: anioInicio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: mesFin
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: anioFin
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Estadísticas generadas exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
    */
   async getEstadisticasRecaudacion(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -155,8 +392,47 @@ export class ReportesCuotaController {
   }
 
   /**
-   * POST /api/reportes/cuotas/exportar
-   * Exportar reporte en formato especificado (json, excel, pdf, csv)
+   * @swagger
+   * /api/reportes/cuotas/exportar:
+   *   post:
+   *     summary: Exportar reporte en formato específico ⭐ FASE 4
+   *     description: |
+   *       Exporta cualquier tipo de reporte en el formato solicitado.
+   *       **Formatos soportados**: JSON (otros en desarrollo: Excel, PDF, CSV)
+   *     tags: [Reportes]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - tipoReporte
+   *               - formato
+   *             properties:
+   *               tipoReporte:
+   *                 type: string
+   *                 enum: [dashboard, categoria, descuentos, exenciones, comparativo, recaudacion]
+   *                 description: Tipo de reporte a exportar
+   *               formato:
+   *                 type: string
+   *                 enum: [json, excel, pdf, csv]
+   *                 description: Formato de exportación
+   *                 default: json
+   *               parametros:
+   *                 type: object
+   *                 description: Parámetros específicos del reporte
+   *     responses:
+   *       200:
+   *         description: Reporte exportado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *       501:
+   *         description: Formato no implementado
+   *       400:
+   *         description: Tipo de reporte inválido
    */
   async exportarReporte(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

@@ -24,6 +24,60 @@ import { logger } from '@/utils/logger';
 export class CuotaController {
   constructor(private cuotaService: CuotaService) {}
 
+  /**
+   * @swagger
+   * /api/cuotas:
+   *   post:
+   *     summary: Crear una nueva cuota
+   *     description: Crea una cuota individual para un socio en un período específico
+   *     tags: [Cuotas]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - reciboId
+   *               - categoriaId
+   *               - mes
+   *               - anio
+   *             properties:
+   *               reciboId:
+   *                 type: integer
+   *                 description: ID del recibo asociado
+   *               categoriaId:
+   *                 type: integer
+   *                 description: ID de la categoría del socio
+   *               mes:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 12
+   *                 description: Mes de la cuota (1-12)
+   *               anio:
+   *                 type: integer
+   *                 minimum: 2020
+   *                 description: Año de la cuota
+   *               montoBase:
+   *                 type: number
+   *                 description: Monto base de la cuota
+   *               montoActividades:
+   *                 type: number
+   *                 description: Monto por actividades adicionales
+   *     responses:
+   *       201:
+   *         description: Cuota creada exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *       400:
+   *         description: Datos inválidos
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   async createCuota(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validatedData = createCuotaSchema.parse(req.body);
@@ -41,6 +95,69 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas:
+   *   get:
+   *     summary: Obtener lista de cuotas con paginación
+   *     description: Retorna lista paginada de cuotas con filtros opcionales
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *         description: Número de página
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 20
+   *         description: Elementos por página
+   *       - in: query
+   *         name: mes
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 12
+   *         description: Filtrar por mes
+   *       - in: query
+   *         name: anio
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por año
+   *       - in: query
+   *         name: categoria
+   *         schema:
+   *           type: string
+   *         description: Filtrar por categoría de socio
+   *     responses:
+   *       200:
+   *         description: Lista de cuotas obtenida exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/Cuota'
+   *                     meta:
+   *                       type: object
+   *                       properties:
+   *                         page:
+   *                           type: integer
+   *                         limit:
+   *                           type: integer
+   *                         total:
+   *                           type: integer
+   *                         totalPages:
+   *                           type: integer
+   */
   async getCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const query = cuotaQuerySchema.parse(req.query);
@@ -63,6 +180,39 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/{id}:
+   *   get:
+   *     summary: Obtener cuota por ID
+   *     description: Retorna los detalles completos de una cuota específica incluyendo ítems y descuentos aplicados
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID de la cuota
+   *     responses:
+   *       200:
+   *         description: Cuota encontrada
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       $ref: '#/components/schemas/Cuota'
+   *       404:
+   *         description: Cuota no encontrada
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   async getCuotaById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
@@ -229,17 +379,95 @@ export class CuotaController {
   }
 
   /**
-   * ========================================================================
-   * NUEVO ENDPOINT: Generación de cuotas con sistema de ítems + motor de reglas
-   * ========================================================================
-   *
-   * Reemplaza el endpoint legacy /generar con un enfoque moderno que:
-   * - Genera cuotas usando el sistema de ítems configurables (FASE 2)
-   * - Integra el motor de reglas de descuentos (FASE 3)
-   * - Retorna estadísticas de descuentos aplicados
-   * - Provee auditoría completa de aplicación de reglas
-   *
-   * Ruta sugerida: POST /api/cuotas/generar-v2
+   * @swagger
+   * /api/cuotas/generar-v2:
+   *   post:
+   *     summary: Generar cuotas con sistema de ítems + motor de descuentos (V2) ⭐
+   *     description: |
+   *       **NUEVO ENDPOINT** que reemplaza /generar con enfoque moderno:
+   *       - Genera cuotas usando sistema de ítems configurables (FASE 2)
+   *       - Integra motor de reglas de descuentos (FASE 3)
+   *       - Aplica ajustes manuales y exenciones automáticamente
+   *       - Retorna estadísticas detalladas de descuentos aplicados
+   *       - Provee auditoría completa de reglas aplicadas
+   *     tags: [Cuotas]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - mes
+   *               - anio
+   *             properties:
+   *               mes:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 12
+   *                 description: Mes para el que se generan las cuotas
+   *                 example: 12
+   *               anio:
+   *                 type: integer
+   *                 minimum: 2020
+   *                 description: Año para el que se generan las cuotas
+   *                 example: 2025
+   *               categorias:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 description: Categorías de socios a incluir (opcional, todas por defecto)
+   *                 example: ["SOCIO_ACTIVO", "SOCIO_MENOR"]
+   *               aplicarDescuentos:
+   *                 type: boolean
+   *                 default: true
+   *                 description: Aplicar motor de reglas de descuentos
+   *               incluirInactivos:
+   *                 type: boolean
+   *                 default: false
+   *                 description: Incluir socios inactivos en la generación
+   *     responses:
+   *       201:
+   *         description: Cuotas generadas exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         generated:
+   *                           type: integer
+   *                           description: Número de cuotas generadas
+   *                         errors:
+   *                           type: array
+   *                           items:
+   *                             type: object
+   *                         cuotas:
+   *                           type: array
+   *                           items:
+   *                             $ref: '#/components/schemas/Cuota'
+   *                         descuentos:
+   *                           type: object
+   *                           description: Resumen de descuentos aplicados
+   *                           properties:
+   *                             totalSociosConDescuento:
+   *                               type: integer
+   *                             montoTotalDescuentos:
+   *                               type: number
+   *                             reglasAplicadas:
+   *                               type: object
+   *       207:
+   *         description: Generación parcial (algunas cuotas fallaron)
+   *       400:
+   *         description: Datos de entrada inválidos
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   async generarCuotasConItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -486,6 +714,70 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/dashboard:
+   *   get:
+   *     summary: Dashboard de cuotas del mes actual
+   *     description: |
+   *       Retorna un resumen ejecutivo con métricas clave del mes actual:
+   *       - Primeras 10 cuotas pendientes
+   *       - Primeras 10 cuotas vencidas
+   *       - Resumen mensual (totales, montos, estadísticas)
+   *       **Uso**: Pantalla principal del módulo de cuotas.
+   *     tags: [Cuotas]
+   *     responses:
+   *       200:
+   *         description: Dashboard obtenido exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         pendientes:
+   *                           type: array
+   *                           maxItems: 10
+   *                           items:
+   *                             $ref: '#/components/schemas/Cuota'
+   *                         vencidas:
+   *                           type: array
+   *                           maxItems: 10
+   *                           items:
+   *                             $ref: '#/components/schemas/Cuota'
+   *                         resumenMesActual:
+   *                           type: object
+   *                           properties:
+   *                             totalCuotas:
+   *                               type: integer
+   *                             montosTotal:
+   *                               type: number
+   *                             pagadas:
+   *                               type: integer
+   *                             pendientes:
+   *                               type: integer
+   *                             vencidas:
+   *                               type: integer
+   *                     meta:
+   *                       type: object
+   *                       properties:
+   *                         pendientesCount:
+   *                           type: integer
+   *                           description: Total de cuotas pendientes
+   *                         vencidasCount:
+   *                           type: integer
+   *                           description: Total de cuotas vencidas
+   *                         mesActual:
+   *                           type: string
+   *                           example: "12/2025"
+   *                         timestamp:
+   *                           type: string
+   *                           format: date-time
+   */
   // Dashboard endpoint para cuotas
   async getDashboard(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -610,8 +902,92 @@ export class CuotaController {
   // ══════════════════════════════════════════════════════════════════════
 
   /**
-   * POST /api/cuotas/:id/recalcular
-   * Recalculate a single cuota with current adjustments/exemptions
+   * @swagger
+   * /api/cuotas/{id}/recalcular:
+   *   post:
+   *     summary: Recalcular cuota individual ⭐ FASE 4
+   *     description: |
+   *       Recalcula una cuota existente aplicando ajustes, exenciones y descuentos actuales.
+   *       Útil cuando se agregan/modifican ajustes manuales o exenciones después de generar la cuota.
+   *       **Validación**: No permite recalcular cuotas ya pagadas.
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID de la cuota a recalcular
+   *     requestBody:
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               aplicarAjustes:
+   *                 type: boolean
+   *                 default: true
+   *                 description: Aplicar ajustes manuales del socio
+   *               aplicarExenciones:
+   *                 type: boolean
+   *                 default: true
+   *                 description: Aplicar exenciones vigentes
+   *               aplicarDescuentos:
+   *                 type: boolean
+   *                 default: true
+   *                 description: Aplicar reglas de descuento automáticas
+   *               usuario:
+   *                 type: string
+   *                 description: Usuario que ejecuta el recálculo (para auditoría)
+   *     responses:
+   *       200:
+   *         description: Cuota recalculada exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         cuota:
+   *                           $ref: '#/components/schemas/Cuota'
+   *                         cambios:
+   *                           type: object
+   *                           description: Detalle de cambios aplicados
+   *                           properties:
+   *                             montoBase:
+   *                               type: object
+   *                               properties:
+   *                                 anterior:
+   *                                   type: number
+   *                                 nuevo:
+   *                                   type: number
+   *                                 diferencia:
+   *                                   type: number
+   *                             montoTotal:
+   *                               type: object
+   *                               properties:
+   *                                 anterior:
+   *                                   type: number
+   *                                 nuevo:
+   *                                   type: number
+   *                                 diferencia:
+   *                                   type: number
+   *                             ajustesAplicados:
+   *                               type: array
+   *                               items:
+   *                                 type: object
+   *                             exencionesAplicadas:
+   *                               type: array
+   *                               items:
+   *                                 type: object
+   *       400:
+   *         description: Cuota no puede ser recalculada (ej. ya pagada)
+   *       404:
+   *         description: Cuota no encontrada
    */
   async recalcularCuotaById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -652,8 +1028,77 @@ export class CuotaController {
   }
 
   /**
-   * POST /api/cuotas/regenerar
-   * Regenerate cuotas for a period (delete and recreate)
+   * @swagger
+   * /api/cuotas/regenerar:
+   *   post:
+   *     summary: Regenerar cuotas de un período ⭐ FASE 4
+   *     description: |
+   *       Elimina y regenera cuotas de un período completo o filtrado.
+   *       **Casos de uso**: Cambios masivos en configuración, corrección de errores de generación.
+   *       **Validación**: No permite regenerar cuotas pagadas (protección de datos).
+   *       **Puede filtrar por**: categoría, persona, o período completo.
+   *     tags: [Cuotas]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - mes
+   *               - anio
+   *             properties:
+   *               mes:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 12
+   *                 description: Mes a regenerar
+   *                 example: 12
+   *               anio:
+   *                 type: integer
+   *                 minimum: 2020
+   *                 description: Año a regenerar
+   *                 example: 2025
+   *               categoriaId:
+   *                 type: integer
+   *                 description: Regenerar solo cuotas de esta categoría (opcional)
+   *               personaId:
+   *                 type: integer
+   *                 description: Regenerar solo cuotas de esta persona (opcional)
+   *               forzar:
+   *                 type: boolean
+   *                 default: false
+   *                 description: Forzar regeneración incluso si hay advertencias
+   *               usuario:
+   *                 type: string
+   *                 description: Usuario que ejecuta la regeneración (auditoría)
+   *     responses:
+   *       200:
+   *         description: Cuotas regeneradas exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         eliminadas:
+   *                           type: integer
+   *                           description: Número de cuotas eliminadas
+   *                         generadas:
+   *                           type: integer
+   *                           description: Número de cuotas regeneradas
+   *                         advertencias:
+   *                           type: array
+   *                           items:
+   *                             type: string
+   *       400:
+   *         description: Período contiene cuotas pagadas o datos inválidos
+   *       409:
+   *         description: Conflicto - operación no permitida
    */
   async regenerarCuotasDelPeriodo(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -684,8 +1129,87 @@ export class CuotaController {
   }
 
   /**
-   * POST /api/cuotas/preview-recalculo
-   * Preview recalculation without applying changes
+   * @swagger
+   * /api/cuotas/preview-recalculo:
+   *   post:
+   *     summary: Preview de recálculo (sin aplicar cambios) ⭐ FASE 4
+   *     description: |
+   *       Simula el recálculo de una o más cuotas SIN aplicar cambios a la base de datos.
+   *       Permite visualizar el impacto antes de ejecutar un recálculo real.
+   *       **Modos de operación**:
+   *       - Individual: Por cuotaId
+   *       - Masivo por período: mes + anio
+   *       - Filtrado: Por categoría o persona
+   *     tags: [Cuotas]
+   *     requestBody:
+   *       required: false
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               cuotaId:
+   *                 type: integer
+   *                 description: ID de cuota individual para preview
+   *               mes:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 12
+   *                 description: Mes para preview masivo
+   *               anio:
+   *                 type: integer
+   *                 minimum: 2020
+   *                 description: Año para preview masivo
+   *               categoriaId:
+   *                 type: integer
+   *                 description: Filtrar por categoría
+   *               personaId:
+   *                 type: integer
+   *                 description: Filtrar por persona
+   *     responses:
+   *       200:
+   *         description: Preview completado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         resumen:
+   *                           type: object
+   *                           properties:
+   *                             totalCuotas:
+   *                               type: integer
+   *                               description: Total de cuotas analizadas
+   *                             conCambios:
+   *                               type: integer
+   *                               description: Cuotas que tendrían cambios
+   *                             sinCambios:
+   *                               type: integer
+   *                               description: Cuotas que permanecen igual
+   *                             montoTotalCambios:
+   *                               type: number
+   *                               description: Diferencia total en montos
+   *                         cuotas:
+   *                           type: array
+   *                           description: Detalle de cada cuota con cambios
+   *                           items:
+   *                             type: object
+   *                             properties:
+   *                               cuotaId:
+   *                                 type: integer
+   *                               actual:
+   *                                 type: object
+   *                               recalculada:
+   *                                 type: object
+   *                               diferencias:
+   *                                 type: object
+   *       400:
+   *         description: Parámetros inválidos
    */
   async previewRecalculoCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -716,8 +1240,80 @@ export class CuotaController {
   }
 
   /**
-   * GET /api/cuotas/:id/comparar
-   * Compare current cuota state with recalculated state
+   * @swagger
+   * /api/cuotas/{id}/comparar:
+   *   get:
+   *     summary: Comparar cuota actual vs recalculada ⭐ FASE 4
+   *     description: |
+   *       Compara el estado actual de una cuota con cómo quedaría si se recalculara ahora.
+   *       **Útil para**: Detectar diferencias antes de aplicar recálculo, auditoría de cambios.
+   *       **No modifica datos**: Solo lectura y comparación.
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID de la cuota a comparar
+   *     responses:
+   *       200:
+   *         description: Comparación completada
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         actual:
+   *                           type: object
+   *                           description: Estado actual de la cuota
+   *                           properties:
+   *                             montoBase:
+   *                               type: number
+   *                             montoTotal:
+   *                               type: number
+   *                             ajustes:
+   *                               type: array
+   *                               items:
+   *                                 type: object
+   *                         recalculada:
+   *                           type: object
+   *                           description: Como quedaría si se recalcula
+   *                           properties:
+   *                             montoBase:
+   *                               type: number
+   *                             montoTotal:
+   *                               type: number
+   *                             ajustesAplicados:
+   *                               type: array
+   *                               items:
+   *                                 type: object
+   *                             exencionesAplicadas:
+   *                               type: array
+   *                               items:
+   *                                 type: object
+   *                         diferencias:
+   *                           type: object
+   *                           properties:
+   *                             esSignificativo:
+   *                               type: boolean
+   *                               description: Si la diferencia supera umbral (5%)
+   *                             montoBase:
+   *                               type: number
+   *                               description: Diferencia en monto base
+   *                             montoTotal:
+   *                               type: number
+   *                               description: Diferencia en monto total
+   *                             porcentajeDiferencia:
+   *                               type: number
+   *                               description: Porcentaje de diferencia
+   *       404:
+   *         description: Cuota no encontrada
    */
   async compararCuotaConRecalculo(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
