@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reporteCuotasSchema = exports.recalcularCuotasSchema = exports.deleteBulkCuotasSchema = exports.cuotaStatsSchema = exports.cuotaSearchSchema = exports.calcularCuotaSchema = exports.cuotaQuerySchema = exports.generarCuotasSchema = exports.updateCuotaSchema = exports.createCuotaSchema = void 0;
+exports.compararCuotaSchema = exports.previewRecalculoSchema = exports.regenerarCuotasSchema = exports.recalcularCuotaSchema = exports.reporteCuotasSchema = exports.recalcularCuotasSchema = exports.deleteBulkCuotasSchema = exports.cuotaStatsSchema = exports.cuotaSearchSchema = exports.calcularCuotaSchema = exports.cuotaQuerySchema = exports.generarCuotasSchema = exports.updateCuotaSchema = exports.createCuotaSchema = void 0;
 const zod_1 = require("zod");
 exports.createCuotaSchema = zod_1.z.object({
     reciboId: zod_1.z.number().int().positive('ID de recibo inválido'),
@@ -211,5 +211,40 @@ exports.reporteCuotasSchema = zod_1.z.object({
         .transform(val => val === 'true')
         .optional()
         .default('true')
+});
+exports.recalcularCuotaSchema = zod_1.z.object({
+    cuotaId: zod_1.z.number().int().positive('El ID de cuota debe ser un número positivo'),
+    aplicarAjustes: zod_1.z.boolean().default(true),
+    aplicarExenciones: zod_1.z.boolean().default(true),
+    aplicarDescuentos: zod_1.z.boolean().default(true),
+    usuario: zod_1.z.string().max(100).optional()
+});
+exports.regenerarCuotasSchema = zod_1.z.object({
+    mes: zod_1.z.number().int().min(1, 'El mes debe ser entre 1 y 12').max(12, 'El mes debe ser entre 1 y 12'),
+    anio: zod_1.z.number().int().min(2020, 'El año debe ser 2020 o posterior').max(2030, 'El año no puede ser mayor a 2030'),
+    categoriaId: zod_1.z.number().int().positive().optional(),
+    personaId: zod_1.z.number().int().positive().optional(),
+    aplicarAjustes: zod_1.z.boolean().default(true),
+    aplicarExenciones: zod_1.z.boolean().default(true),
+    aplicarDescuentos: zod_1.z.boolean().default(true),
+    confirmarRegeneracion: zod_1.z.boolean().refine(val => val === true, {
+        message: 'Debe confirmar la regeneración de cuotas'
+    })
+});
+exports.previewRecalculoSchema = zod_1.z.object({
+    cuotaId: zod_1.z.number().int().positive().optional(),
+    mes: zod_1.z.number().int().min(1).max(12).optional(),
+    anio: zod_1.z.number().int().min(2020).max(2030).optional(),
+    categoriaId: zod_1.z.number().int().positive().optional(),
+    personaId: zod_1.z.number().int().positive().optional(),
+    aplicarAjustes: zod_1.z.boolean().default(true),
+    aplicarExenciones: zod_1.z.boolean().default(true),
+    aplicarDescuentos: zod_1.z.boolean().default(true)
+}).refine(data => data.cuotaId || (data.mes && data.anio), {
+    message: 'Debe proporcionar cuotaId o (mes + anio)',
+    path: ['cuotaId']
+});
+exports.compararCuotaSchema = zod_1.z.object({
+    cuotaId: zod_1.z.number().int().positive('El ID de cuota debe ser un número positivo')
 });
 //# sourceMappingURL=cuota.dto.js.map

@@ -11,6 +11,7 @@ const logger_1 = require("@/utils/logger");
 const error_middleware_1 = require("@/middleware/error.middleware");
 const enums_1 = require("@/types/enums");
 const database_1 = __importDefault(require("@/config/database"));
+const swagger_1 = require("@/config/swagger");
 const routes_1 = __importDefault(require("@/routes"));
 const app = (0, express_1.default)();
 app.use((0, helmet_1.default)());
@@ -66,16 +67,19 @@ app.get('/', (req, res) => {
         data: {
             name: 'SIGESDA Backend API',
             description: 'Sistema de Gestión de Asociación Musical',
-            version: '1.0.0',
-            documentation: '/api/docs',
+            version: '2.0.0',
+            documentation: '/api-docs',
             endpoints: {
                 health: '/health',
-                api: '/api'
+                api: '/api',
+                docs: '/api-docs',
+                docsJson: '/api-docs.json'
             }
         }
     };
     res.status(enums_1.HttpStatus.OK).json(response);
 });
+(0, swagger_1.setupSwagger)(app);
 app.use('/api', routes_1.default);
 app.use(error_middleware_1.notFoundHandler);
 app.use(error_middleware_1.errorHandler);

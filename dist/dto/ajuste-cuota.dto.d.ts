@@ -1,0 +1,302 @@
+import { z } from 'zod';
+export declare const TipoAjusteCuotaEnum: z.ZodEnum<["DESCUENTO_FIJO", "DESCUENTO_PORCENTAJE", "RECARGO_FIJO", "RECARGO_PORCENTAJE", "MONTO_FIJO_TOTAL"]>;
+export declare const ScopeAjusteCuotaEnum: z.ZodEnum<["TODOS_ITEMS", "SOLO_BASE", "SOLO_ACTIVIDADES", "ITEMS_ESPECIFICOS"]>;
+export declare const AccionHistorialCuotaEnum: z.ZodEnum<["CREAR_AJUSTE", "MODIFICAR_AJUSTE", "ELIMINAR_AJUSTE", "APLICAR_AJUSTE_MANUAL", "RECALCULAR_CUOTA", "REGENERAR_CUOTA"]>;
+export declare const createAjusteCuotaSchema: z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodObject<{
+    personaId: z.ZodNumber;
+    tipoAjuste: z.ZodEnum<["DESCUENTO_FIJO", "DESCUENTO_PORCENTAJE", "RECARGO_FIJO", "RECARGO_PORCENTAJE", "MONTO_FIJO_TOTAL"]>;
+    valor: z.ZodNumber;
+    concepto: z.ZodString;
+    fechaInicio: z.ZodDate;
+    fechaFin: z.ZodNullable<z.ZodOptional<z.ZodDate>>;
+    activo: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+    motivo: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    observaciones: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    aplicaA: z.ZodDefault<z.ZodOptional<z.ZodEnum<["TODOS_ITEMS", "SOLO_BASE", "SOLO_ACTIVIDADES", "ITEMS_ESPECIFICOS"]>>>;
+    itemsAfectados: z.ZodNullable<z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>>;
+    aprobadoPor: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+}, "strip", z.ZodTypeAny, {
+    activo: boolean;
+    valor: number;
+    personaId: number;
+    fechaInicio: Date;
+    concepto: string;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    aplicaA: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS";
+    observaciones?: string | null | undefined;
+    fechaFin?: Date | null | undefined;
+    aprobadoPor?: string | null | undefined;
+    motivo?: string | null | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}, {
+    valor: number;
+    personaId: number;
+    fechaInicio: Date;
+    concepto: string;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    fechaFin?: Date | null | undefined;
+    aprobadoPor?: string | null | undefined;
+    motivo?: string | null | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}>, {
+    activo: boolean;
+    valor: number;
+    personaId: number;
+    fechaInicio: Date;
+    concepto: string;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    aplicaA: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS";
+    observaciones?: string | null | undefined;
+    fechaFin?: Date | null | undefined;
+    aprobadoPor?: string | null | undefined;
+    motivo?: string | null | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}, {
+    valor: number;
+    personaId: number;
+    fechaInicio: Date;
+    concepto: string;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    fechaFin?: Date | null | undefined;
+    aprobadoPor?: string | null | undefined;
+    motivo?: string | null | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}>, {
+    activo: boolean;
+    valor: number;
+    personaId: number;
+    fechaInicio: Date;
+    concepto: string;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    aplicaA: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS";
+    observaciones?: string | null | undefined;
+    fechaFin?: Date | null | undefined;
+    aprobadoPor?: string | null | undefined;
+    motivo?: string | null | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}, {
+    valor: number;
+    personaId: number;
+    fechaInicio: Date;
+    concepto: string;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    fechaFin?: Date | null | undefined;
+    aprobadoPor?: string | null | undefined;
+    motivo?: string | null | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}>, {
+    activo: boolean;
+    valor: number;
+    personaId: number;
+    fechaInicio: Date;
+    concepto: string;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    aplicaA: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS";
+    observaciones?: string | null | undefined;
+    fechaFin?: Date | null | undefined;
+    aprobadoPor?: string | null | undefined;
+    motivo?: string | null | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}, {
+    valor: number;
+    personaId: number;
+    fechaInicio: Date;
+    concepto: string;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    fechaFin?: Date | null | undefined;
+    aprobadoPor?: string | null | undefined;
+    motivo?: string | null | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}>;
+export type CreateAjusteCuotaDto = z.infer<typeof createAjusteCuotaSchema>;
+export declare const createHistorialAjusteCuotaSchema: z.ZodEffects<z.ZodObject<{
+    ajusteId: z.ZodNullable<z.ZodOptional<z.ZodNumber>>;
+    cuotaId: z.ZodNullable<z.ZodOptional<z.ZodNumber>>;
+    personaId: z.ZodNumber;
+    accion: z.ZodEnum<["CREAR_AJUSTE", "MODIFICAR_AJUSTE", "ELIMINAR_AJUSTE", "APLICAR_AJUSTE_MANUAL", "RECALCULAR_CUOTA", "REGENERAR_CUOTA"]>;
+    datosPrevios: z.ZodNullable<z.ZodOptional<z.ZodAny>>;
+    datosNuevos: z.ZodAny;
+    usuario: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    motivoCambio: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+}, "strip", z.ZodTypeAny, {
+    personaId: number;
+    accion: "CREAR_AJUSTE" | "MODIFICAR_AJUSTE" | "ELIMINAR_AJUSTE" | "APLICAR_AJUSTE_MANUAL" | "RECALCULAR_CUOTA" | "REGENERAR_CUOTA";
+    ajusteId?: number | null | undefined;
+    cuotaId?: number | null | undefined;
+    datosPrevios?: any;
+    datosNuevos?: any;
+    usuario?: string | null | undefined;
+    motivoCambio?: string | null | undefined;
+}, {
+    personaId: number;
+    accion: "CREAR_AJUSTE" | "MODIFICAR_AJUSTE" | "ELIMINAR_AJUSTE" | "APLICAR_AJUSTE_MANUAL" | "RECALCULAR_CUOTA" | "REGENERAR_CUOTA";
+    ajusteId?: number | null | undefined;
+    cuotaId?: number | null | undefined;
+    datosPrevios?: any;
+    datosNuevos?: any;
+    usuario?: string | null | undefined;
+    motivoCambio?: string | null | undefined;
+}>, {
+    personaId: number;
+    accion: "CREAR_AJUSTE" | "MODIFICAR_AJUSTE" | "ELIMINAR_AJUSTE" | "APLICAR_AJUSTE_MANUAL" | "RECALCULAR_CUOTA" | "REGENERAR_CUOTA";
+    ajusteId?: number | null | undefined;
+    cuotaId?: number | null | undefined;
+    datosPrevios?: any;
+    datosNuevos?: any;
+    usuario?: string | null | undefined;
+    motivoCambio?: string | null | undefined;
+}, {
+    personaId: number;
+    accion: "CREAR_AJUSTE" | "MODIFICAR_AJUSTE" | "ELIMINAR_AJUSTE" | "APLICAR_AJUSTE_MANUAL" | "RECALCULAR_CUOTA" | "REGENERAR_CUOTA";
+    ajusteId?: number | null | undefined;
+    cuotaId?: number | null | undefined;
+    datosPrevios?: any;
+    datosNuevos?: any;
+    usuario?: string | null | undefined;
+    motivoCambio?: string | null | undefined;
+}>;
+export type CreateHistorialAjusteCuotaDto = z.infer<typeof createHistorialAjusteCuotaSchema>;
+export declare const updateAjusteCuotaSchema: z.ZodEffects<z.ZodObject<{
+    tipoAjuste: z.ZodOptional<z.ZodEnum<["DESCUENTO_FIJO", "DESCUENTO_PORCENTAJE", "RECARGO_FIJO", "RECARGO_PORCENTAJE", "MONTO_FIJO_TOTAL"]>>;
+    valor: z.ZodOptional<z.ZodNumber>;
+    concepto: z.ZodOptional<z.ZodString>;
+    fechaInicio: z.ZodOptional<z.ZodDate>;
+    fechaFin: z.ZodNullable<z.ZodOptional<z.ZodDate>>;
+    activo: z.ZodOptional<z.ZodBoolean>;
+    motivo: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    observaciones: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    aplicaA: z.ZodOptional<z.ZodEnum<["TODOS_ITEMS", "SOLO_BASE", "SOLO_ACTIVIDADES", "ITEMS_ESPECIFICOS"]>>;
+    itemsAfectados: z.ZodNullable<z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>>;
+    aprobadoPor: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+}, "strip", z.ZodTypeAny, {
+    observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    valor?: number | undefined;
+    fechaInicio?: Date | undefined;
+    fechaFin?: Date | null | undefined;
+    concepto?: string | undefined;
+    aprobadoPor?: string | null | undefined;
+    tipoAjuste?: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL" | undefined;
+    motivo?: string | null | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}, {
+    observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    valor?: number | undefined;
+    fechaInicio?: Date | undefined;
+    fechaFin?: Date | null | undefined;
+    concepto?: string | undefined;
+    aprobadoPor?: string | null | undefined;
+    tipoAjuste?: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL" | undefined;
+    motivo?: string | null | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}>, {
+    observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    valor?: number | undefined;
+    fechaInicio?: Date | undefined;
+    fechaFin?: Date | null | undefined;
+    concepto?: string | undefined;
+    aprobadoPor?: string | null | undefined;
+    tipoAjuste?: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL" | undefined;
+    motivo?: string | null | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}, {
+    observaciones?: string | null | undefined;
+    activo?: boolean | undefined;
+    valor?: number | undefined;
+    fechaInicio?: Date | undefined;
+    fechaFin?: Date | null | undefined;
+    concepto?: string | undefined;
+    aprobadoPor?: string | null | undefined;
+    tipoAjuste?: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL" | undefined;
+    motivo?: string | null | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    itemsAfectados?: number[] | null | undefined;
+}>;
+export type UpdateAjusteCuotaDto = z.infer<typeof updateAjusteCuotaSchema>;
+export declare const queryAjusteCuotaSchema: z.ZodObject<{
+    personaId: z.ZodOptional<z.ZodNumber>;
+    tipoAjuste: z.ZodOptional<z.ZodEnum<["DESCUENTO_FIJO", "DESCUENTO_PORCENTAJE", "RECARGO_FIJO", "RECARGO_PORCENTAJE", "MONTO_FIJO_TOTAL"]>>;
+    activo: z.ZodOptional<z.ZodBoolean>;
+    aplicaA: z.ZodOptional<z.ZodEnum<["TODOS_ITEMS", "SOLO_BASE", "SOLO_ACTIVIDADES", "ITEMS_ESPECIFICOS"]>>;
+    fechaDesde: z.ZodOptional<z.ZodDate>;
+    fechaHasta: z.ZodOptional<z.ZodDate>;
+}, "strip", z.ZodTypeAny, {
+    activo?: boolean | undefined;
+    personaId?: number | undefined;
+    tipoAjuste?: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL" | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    fechaDesde?: Date | undefined;
+    fechaHasta?: Date | undefined;
+}, {
+    activo?: boolean | undefined;
+    personaId?: number | undefined;
+    tipoAjuste?: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL" | undefined;
+    aplicaA?: "TODOS_ITEMS" | "SOLO_BASE" | "SOLO_ACTIVIDADES" | "ITEMS_ESPECIFICOS" | undefined;
+    fechaDesde?: Date | undefined;
+    fechaHasta?: Date | undefined;
+}>;
+export type QueryAjusteCuotaDto = z.infer<typeof queryAjusteCuotaSchema>;
+export declare const queryHistorialAjusteCuotaSchema: z.ZodObject<{
+    accion: z.ZodOptional<z.ZodEnum<["CREAR_AJUSTE", "MODIFICAR_AJUSTE", "ELIMINAR_AJUSTE", "APLICAR_AJUSTE_MANUAL", "RECALCULAR_CUOTA", "REGENERAR_CUOTA"]>>;
+    personaId: z.ZodOptional<z.ZodNumber>;
+    cuotaId: z.ZodOptional<z.ZodNumber>;
+    ajusteId: z.ZodOptional<z.ZodNumber>;
+    fechaDesde: z.ZodOptional<z.ZodDate>;
+    fechaHasta: z.ZodOptional<z.ZodDate>;
+    limit: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+    offset: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+}, "strip", z.ZodTypeAny, {
+    limit: number;
+    offset: number;
+    personaId?: number | undefined;
+    ajusteId?: number | undefined;
+    cuotaId?: number | undefined;
+    accion?: "CREAR_AJUSTE" | "MODIFICAR_AJUSTE" | "ELIMINAR_AJUSTE" | "APLICAR_AJUSTE_MANUAL" | "RECALCULAR_CUOTA" | "REGENERAR_CUOTA" | undefined;
+    fechaDesde?: Date | undefined;
+    fechaHasta?: Date | undefined;
+}, {
+    limit?: number | undefined;
+    personaId?: number | undefined;
+    ajusteId?: number | undefined;
+    cuotaId?: number | undefined;
+    accion?: "CREAR_AJUSTE" | "MODIFICAR_AJUSTE" | "ELIMINAR_AJUSTE" | "APLICAR_AJUSTE_MANUAL" | "RECALCULAR_CUOTA" | "REGENERAR_CUOTA" | undefined;
+    fechaDesde?: Date | undefined;
+    fechaHasta?: Date | undefined;
+    offset?: number | undefined;
+}>;
+export type QueryHistorialAjusteCuotaDto = z.infer<typeof queryHistorialAjusteCuotaSchema>;
+export declare const aplicarAjusteACuotaSchema: z.ZodObject<{
+    cuotaId: z.ZodNumber;
+    ajusteId: z.ZodNumber;
+    usuario: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    motivoCambio: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+}, "strip", z.ZodTypeAny, {
+    ajusteId: number;
+    cuotaId: number;
+    usuario?: string | null | undefined;
+    motivoCambio?: string | null | undefined;
+}, {
+    ajusteId: number;
+    cuotaId: number;
+    usuario?: string | null | undefined;
+    motivoCambio?: string | null | undefined;
+}>;
+export type AplicarAjusteACuotaDto = z.infer<typeof aplicarAjusteACuotaSchema>;
+//# sourceMappingURL=ajuste-cuota.dto.d.ts.map

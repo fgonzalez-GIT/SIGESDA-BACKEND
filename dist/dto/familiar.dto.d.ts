@@ -315,13 +315,13 @@ export declare const familiarSearchSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     search: string;
     includeInactivos: boolean;
-    searchBy: "nombre" | "dni" | "email" | "all";
+    searchBy: "email" | "nombre" | "dni" | "all";
     parentesco?: "OTRO" | "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | "ESPOSA" | "ESPOSO" | undefined;
 }, {
     search: string;
     parentesco?: "OTRO" | "HIJO" | "HIJA" | "CONYUGE" | "PADRE" | "MADRE" | "HERMANO" | "HERMANA" | "ABUELO" | "ABUELA" | "NIETO" | "NIETA" | "TIO" | "TIA" | "SOBRINO" | "SOBRINA" | "PRIMO" | "PRIMA" | "ESPOSA" | "ESPOSO" | undefined;
     includeInactivos?: boolean | undefined;
-    searchBy?: "nombre" | "dni" | "email" | "all" | undefined;
+    searchBy?: "email" | "nombre" | "dni" | "all" | undefined;
 }>;
 export type CreateFamiliarDto = z.infer<typeof createFamiliarSchema>;
 export type UpdateFamiliarDto = z.infer<typeof updateFamiliarSchema>;

@@ -193,9 +193,9 @@ export declare class ActividadService {
     }>;
     getDocentesByActividad(actividadId: number): Promise<({
         personas: {
+            email: string | null;
             nombre: string;
             apellido: string;
-            email: string | null;
             telefono: string | null;
             tipos: ({
                 especialidad: {
@@ -278,9 +278,9 @@ export declare class ActividadService {
     }[]>;
     getParticipantes(actividadId: number): Promise<({
         personas: {
+            email: string | null;
             nombre: string;
             apellido: string;
-            email: string | null;
             telefono: string | null;
             tipos: ({
                 categoria: {

@@ -12,6 +12,7 @@ export declare class CuotaController {
     updateCuota(req: Request, res: Response, next: NextFunction): Promise<void>;
     deleteCuota(req: Request, res: Response, next: NextFunction): Promise<void>;
     generarCuotas(req: Request, res: Response, next: NextFunction): Promise<void>;
+    generarCuotasConItems(req: Request, res: Response, next: NextFunction): Promise<void>;
     calcularMontoCuota(req: Request, res: Response, next: NextFunction): Promise<void>;
     searchCuotas(req: Request, res: Response, next: NextFunction): Promise<void>;
     getStatistics(req: Request, res: Response, next: NextFunction): Promise<void>;
@@ -24,6 +25,10 @@ export declare class CuotaController {
     getDashboard(req: Request, res: Response, next: NextFunction): Promise<void>;
     getPeriodosDisponibles(req: Request, res: Response, next: NextFunction): Promise<void>;
     validarGeneracionCuotas(req: Request, res: Response, next: NextFunction): Promise<void>;
+    recalcularCuotaById(req: Request, res: Response, next: NextFunction): Promise<void>;
+    regenerarCuotasDelPeriodo(req: Request, res: Response, next: NextFunction): Promise<void>;
+    previewRecalculoCuotas(req: Request, res: Response, next: NextFunction): Promise<void>;
+    compararCuotaConRecalculo(req: Request, res: Response, next: NextFunction): Promise<void>;
     private getNombreMes;
 }
 //# sourceMappingURL=cuota.controller.d.ts.map

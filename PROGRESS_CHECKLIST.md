@@ -162,11 +162,15 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ### Tasks pendientes:
 
-- [ ] **2.4** Migración de datos existentes (legacy → ítems) - **OPCIONAL**
-  - Convertir cuotas con `montoBase` y `montoActividades` a sistema de ítems
-  - Script de migración con transacciones
-  - Rollback seguro
-  - **Nota**: Puede hacerse después de validar infraestructura
+- [x] **2.4** Migración de datos existentes (legacy → ítems) - ✅ **COMPLETADA** (2025-12-17)
+  - Scripts creados:
+    - `scripts/migrate-cuotas-to-items.ts` (con dry-run mode)
+    - `scripts/validate-migration-cuotas-items.ts`
+    - `scripts/rollback-migration-cuotas-items.ts`
+  - Migración de schema: Campos legacy ahora nullable
+  - **Resultado**: 12/12 cuotas migradas (100% éxito)
+  - **Validación**: ✅ Todas las validaciones pasaron
+  - **Commit**: feat(fase2): Task 2.4 - Migration complete
 
 - [x] **2.8** Tests de integración
   - **Archivo**: `tests/fase2-items-integration.ts`

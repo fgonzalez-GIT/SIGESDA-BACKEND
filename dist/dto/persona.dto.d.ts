@@ -113,8 +113,8 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         principal: boolean;
         observaciones?: string | undefined;
     }[];
-    observaciones?: string | undefined;
     email?: string | undefined;
+    observaciones?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -123,8 +123,8 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
     nombre: string;
     apellido: string;
     dni: string;
-    observaciones?: string | undefined;
     email?: string | undefined;
+    observaciones?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -173,8 +173,8 @@ export declare const createPersonaSchema: z.ZodEffects<z.ZodObject<{
         principal: boolean;
         observaciones?: string | undefined;
     }[];
-    observaciones?: string | undefined;
     email?: string | undefined;
+    observaciones?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -274,6 +274,7 @@ export declare const updatePersonaSchema: z.ZodObject<{
         principal?: boolean | undefined;
     }>, "many">>;
 }, "strip", z.ZodTypeAny, {
+    email?: string | null | undefined;
     observaciones?: string | null | undefined;
     activo?: boolean | undefined;
     fechaBaja?: string | null | undefined;
@@ -281,7 +282,6 @@ export declare const updatePersonaSchema: z.ZodObject<{
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
-    email?: string | null | undefined;
     telefono?: string | null | undefined;
     direccion?: string | null | undefined;
     fechaNacimiento?: string | null | undefined;
@@ -307,6 +307,7 @@ export declare const updatePersonaSchema: z.ZodObject<{
         observaciones?: string | undefined;
     }[] | undefined;
 }, {
+    email?: string | null | undefined;
     observaciones?: string | null | undefined;
     activo?: boolean | undefined;
     fechaBaja?: string | null | undefined;
@@ -314,7 +315,6 @@ export declare const updatePersonaSchema: z.ZodObject<{
     nombre?: string | undefined;
     apellido?: string | undefined;
     dni?: string | undefined;
-    email?: string | null | undefined;
     telefono?: string | null | undefined;
     direccion?: string | null | undefined;
     fechaNacimiento?: string | null | undefined;
@@ -394,10 +394,10 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     apellido: string;
     dni: string;
     tipo: "SOCIO";
+    email?: string | undefined;
     observaciones?: string | undefined;
     numeroSocio?: number | undefined;
     fechaIngreso?: string | undefined;
-    email?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -408,10 +408,10 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     apellido: string;
     dni: string;
     tipo: "SOCIO";
+    email?: string | undefined;
     observaciones?: string | undefined;
     numeroSocio?: number | undefined;
     fechaIngreso?: string | undefined;
-    email?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -432,8 +432,8 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     apellido: string;
     dni: string;
     tipo: "NO_SOCIO";
-    observaciones?: string | undefined;
     email?: string | undefined;
+    observaciones?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -443,8 +443,8 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     apellido: string;
     dni: string;
     tipo: "NO_SOCIO";
-    observaciones?: string | undefined;
     email?: string | undefined;
+    observaciones?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -468,9 +468,9 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     dni: string;
     tipo: "DOCENTE";
     especialidad: string;
+    email?: string | undefined;
     observaciones?: string | undefined;
     honorariosPorHora?: number | undefined;
-    email?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -481,9 +481,9 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     dni: string;
     tipo: "DOCENTE";
     especialidad: string;
+    email?: string | undefined;
     observaciones?: string | undefined;
     honorariosPorHora?: number | undefined;
-    email?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -508,8 +508,8 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     apellido: string;
     dni: string;
     tipo: "PROVEEDOR";
-    observaciones?: string | undefined;
     email?: string | undefined;
+    observaciones?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -521,8 +521,8 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     apellido: string;
     dni: string;
     tipo: "PROVEEDOR";
-    observaciones?: string | undefined;
     email?: string | undefined;
+    observaciones?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -533,10 +533,10 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     apellido: string;
     dni: string;
     tipo: "SOCIO";
+    email?: string | undefined;
     observaciones?: string | undefined;
     numeroSocio?: number | undefined;
     fechaIngreso?: string | undefined;
-    email?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -546,8 +546,8 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     apellido: string;
     dni: string;
     tipo: "NO_SOCIO";
-    observaciones?: string | undefined;
     email?: string | undefined;
+    observaciones?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -558,9 +558,9 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     dni: string;
     tipo: "DOCENTE";
     especialidad: string;
+    email?: string | undefined;
     observaciones?: string | undefined;
     honorariosPorHora?: number | undefined;
-    email?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;
@@ -572,8 +572,8 @@ export declare const createPersonaLegacySchema: z.ZodEffects<z.ZodDiscriminatedU
     apellido: string;
     dni: string;
     tipo: "PROVEEDOR";
-    observaciones?: string | undefined;
     email?: string | undefined;
+    observaciones?: string | undefined;
     telefono?: string | undefined;
     direccion?: string | undefined;
     fechaNacimiento?: string | undefined;

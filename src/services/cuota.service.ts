@@ -26,6 +26,16 @@ import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
 import { hasActiveTipo } from '@/utils/persona.helper';
 import { MotorReglasDescuentos } from './motor-reglas-descuentos.service';
+import {
+  getNombreMes,
+  calcularFechaVencimiento
+} from '@/utils/date.helper';
+import {
+  getCategoriaIdByCodigo,
+  getCategoriaCodigoByCategoriaId
+} from '@/utils/categoria.helper';
+import { validateReciboPagado, validateCanDeleteRecibo } from '@/utils/recibo.helper';
+import { DIA_VENCIMIENTO_CUOTA } from '@/constants/cuota.constants';
 
 export class CuotaService {
   constructor(
@@ -121,9 +131,7 @@ export class CuotaService {
     }
 
     // Validar que el recibo asociado no esté pagado
-    if (existingCuota.recibo.estado === 'PAGADO') {
-      throw new Error(`No se puede modificar una cuota de un recibo pagado`);
-    }
+    validateReciboPagado(existingCuota.recibo, 'modificar');
 
     // Si se cambia algún monto, recalcular el total
     if (data.montoBase !== undefined || data.montoActividades !== undefined) {
@@ -155,15 +163,8 @@ export class CuotaService {
       throw new Error(`Cuota con ID ${id} no encontrada`);
     }
 
-    // Validar que el recibo asociado no esté pagado
-    if (existingCuota.recibo.estado === 'PAGADO') {
-      throw new Error(`No se puede eliminar una cuota de un recibo pagado`);
-    }
-
-    // Validar que el recibo no tenga medios de pago
-    if (existingCuota.recibo.mediosPago && existingCuota.recibo.mediosPago.length > 0) {
-      throw new Error(`No se puede eliminar una cuota que tiene medios de pago registrados`);
-    }
+    // Validar que el recibo se puede eliminar (no pagado, sin medios de pago)
+    validateCanDeleteRecibo(existingCuota.recibo);
 
     const deletedCuota = await this.cuotaRepository.delete(id);
 
@@ -210,8 +211,8 @@ export class CuotaService {
           tipo: TipoRecibo.CUOTA,
           receptorId: socio.id,
           importe: montoCuota.montoTotal,
-          concepto: `Cuota ${this.getNombreMes(data.mes)} ${data.anio} - ${socio.categoria}`,
-          fechaVencimiento: this.calcularFechaVencimiento(data.mes, data.anio),
+          concepto: `Cuota ${getNombreMes(data.mes)} ${data.anio} - ${socio.categoria}`,
+          fechaVencimiento: calcularFechaVencimiento(data.mes, data.anio),
           observaciones: data.observaciones
         });
 
@@ -417,7 +418,7 @@ export class CuotaService {
       periodo: {
         mes: data.mes,
         anio: data.anio,
-        nombreMes: this.getNombreMes(data.mes)
+        nombreMes: getNombreMes(data.mes)
       },
       formato: data.formato,
       generadoEn: new Date().toISOString()
@@ -488,20 +489,6 @@ export class CuotaService {
     }
 
     return { total, detalle: descuentos };
-  }
-
-  private calcularFechaVencimiento(mes: number, anio: number): Date {
-    // Vencimiento el día 15 del siguiente mes
-    const fechaVencimiento = new Date(anio, mes, 15); // mes siguiente (0-indexed)
-    return fechaVencimiento;
-  }
-
-  private getNombreMes(mes: number): string {
-    const meses = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    return meses[mes - 1] || 'Mes inválido';
   }
 
   /**
@@ -589,8 +576,8 @@ export class CuotaService {
                 tipo: TipoRecibo.CUOTA,
                 receptorId: socio.id,
                 importe: 0, // Se actualizará al final
-                concepto: `Cuota ${this.getNombreMes(data.mes)} ${data.anio}`,
-                fechaVencimiento: this.calcularFechaVencimiento(data.mes, data.anio),
+                concepto: `Cuota ${getNombreMes(data.mes)} ${data.anio}`,
+                fechaVencimiento: calcularFechaVencimiento(data.mes, data.anio),
                 observaciones: data.observaciones
               }
             });
@@ -833,9 +820,7 @@ export class CuotaService {
     }
 
     // Prevent recalculation of paid cuotas
-    if (cuota.recibo.estado === 'PAGADO') {
-      throw new Error('No se puede recalcular una cuota que ya fue pagada');
-    }
+    validateReciboPagado(cuota.recibo, 'recalcular');
 
     logger.info(`[RECALCULAR CUOTA] Iniciando recálculo de cuota ID ${data.cuotaId}`);
 
@@ -847,7 +832,7 @@ export class CuotaService {
     // ====================================================================
     // STEP 1: Recalculate base monto (from categoria)
     // ====================================================================
-    const categoriaId = await this.getCategoriaIdByCodigo(cuota.categoria);
+    const categoriaId = await getCategoriaIdByCodigo(cuota.categoria, this.prisma);
     let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
 
     // ====================================================================
@@ -1051,7 +1036,7 @@ export class CuotaService {
     const cuotasExistentes = await this.cuotaRepository.findByPeriodo(
       data.mes,
       data.anio,
-      data.categoriaId ? await this.getCategoriaCodigoByCategoriaId(data.categoriaId) : undefined
+      data.categoriaId ? await getCategoriaCodigoByCategoriaId(data.categoriaId, this.prisma) : undefined
     );
 
     // Filter by personaId if specified
@@ -1180,7 +1165,7 @@ export class CuotaService {
       cuotas = await this.cuotaRepository.findByPeriodo(
         data.mes,
         data.anio,
-        data.categoriaId ? await this.getCategoriaCodigoByCategoriaId(data.categoriaId) : undefined
+        data.categoriaId ? await getCategoriaCodigoByCategoriaId(data.categoriaId, this.prisma) : undefined
       );
 
       // Filter by personaId if specified
@@ -1206,7 +1191,7 @@ export class CuotaService {
       const montoOriginal = Number(cuota.montoTotal);
 
       // Simulate recalculation (without actually updating)
-      const categoriaId = await this.getCategoriaIdByCodigo(cuota.categoria);
+      const categoriaId = await getCategoriaIdByCodigo(cuota.categoria, this.prisma);
       let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
 
       const montoActividades = await this.calcularCostoActividades(
@@ -1332,7 +1317,7 @@ export class CuotaService {
     };
 
     // Calculate recalculated state
-    const categoriaId = await this.getCategoriaIdByCodigo(cuota.categoria);
+    const categoriaId = await getCategoriaIdByCodigo(cuota.categoria, this.prisma);
     const montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
 
     const montoActividades = await this.calcularCostoActividades(
@@ -1415,31 +1400,4 @@ export class CuotaService {
     };
   }
 
-  // ====================================================================
-  // Helper methods for Task 4.3
-  // ====================================================================
-
-  private async getCategoriaIdByCodigo(codigo: string): Promise<number> {
-    const categoria = await this.prisma.categoriaSocio.findFirst({
-      where: { codigo }
-    });
-
-    if (!categoria) {
-      throw new Error(`Categoría con código ${codigo} no encontrada`);
-    }
-
-    return categoria.id;
-  }
-
-  private async getCategoriaCodigoByCategoriaId(categoriaId: number): Promise<string> {
-    const categoria = await this.prisma.categoriaSocio.findUnique({
-      where: { id: categoriaId }
-    });
-
-    if (!categoria) {
-      throw new Error(`Categoría con ID ${categoriaId} no encontrada`);
-    }
-
-    return categoria.codigo;
-  }
 }

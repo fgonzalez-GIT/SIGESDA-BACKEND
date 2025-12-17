@@ -10,6 +10,8 @@ import {
   QueryAjusteCuotaDto,
   AplicarAjusteACuotaDto
 } from '@/dto/ajuste-cuota.dto';
+import { validateFechaRange } from '@/utils/date.helper';
+import { validatePorcentaje } from '@/utils/validation.helper';
 
 /**
  * Service for managing manual adjustments to cuotas
@@ -47,16 +49,11 @@ export class AjusteCuotaService {
     }
 
     // Validate dates
-    if (data.fechaFin && data.fechaFin < data.fechaInicio) {
-      throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
-    }
+    validateFechaRange(data.fechaInicio, data.fechaFin);
 
     // Validate percentage values
-    if (
-      (data.tipoAjuste === 'DESCUENTO_PORCENTAJE' || data.tipoAjuste === 'RECARGO_PORCENTAJE') &&
-      data.valor > 100
-    ) {
-      throw new Error('El porcentaje no puede exceder 100%');
+    if (data.tipoAjuste === 'DESCUENTO_PORCENTAJE' || data.tipoAjuste === 'RECARGO_PORCENTAJE') {
+      validatePorcentaje(data.valor);
     }
 
     // Validate items for ITEMS_ESPECIFICOS scope
@@ -116,19 +113,14 @@ export class AjusteCuotaService {
     const fechaInicio = data.fechaInicio || ajusteActual.fechaInicio;
     const fechaFin = data.fechaFin !== undefined ? data.fechaFin : ajusteActual.fechaFin;
 
-    if (fechaFin && fechaFin < fechaInicio) {
-      throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
-    }
+    validateFechaRange(fechaInicio, fechaFin);
 
     // Validate percentage if changing tipo or valor
     const tipoAjuste = data.tipoAjuste || ajusteActual.tipoAjuste;
     const valor = data.valor || Number(ajusteActual.valor);
 
-    if (
-      (tipoAjuste === 'DESCUENTO_PORCENTAJE' || tipoAjuste === 'RECARGO_PORCENTAJE') &&
-      valor > 100
-    ) {
-      throw new Error('El porcentaje no puede exceder 100%');
+    if (tipoAjuste === 'DESCUENTO_PORCENTAJE' || tipoAjuste === 'RECARGO_PORCENTAJE') {
+      validatePorcentaje(valor);
     }
 
     // Update ajuste within transaction

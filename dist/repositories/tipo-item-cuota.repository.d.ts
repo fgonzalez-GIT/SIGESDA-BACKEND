@@ -49,9 +49,9 @@ export declare class TipoItemCuotaRepository {
             createdAt: Date;
             updatedAt: Date;
             concepto: string;
+            cuotaId: number;
             cantidad: Prisma.Decimal;
             monto: Prisma.Decimal;
-            cuotaId: number;
             tipoItemId: number;
             porcentaje: Prisma.Decimal | null;
             esAutomatico: boolean;

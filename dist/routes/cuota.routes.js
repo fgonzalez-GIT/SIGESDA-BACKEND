@@ -31,8 +31,13 @@ router.get('/pendientes/listado', cuotaController.getPendientes.bind(cuotaContro
 router.get('/vencidas/listado', cuotaController.getVencidas.bind(cuotaController));
 router.get('/periodos/disponibles', cuotaController.getPeriodosDisponibles.bind(cuotaController));
 router.post('/generar/masiva', cuotaController.generarCuotas.bind(cuotaController));
+router.post('/generar-v2', cuotaController.generarCuotasConItems.bind(cuotaController));
 router.post('/calcular/monto', cuotaController.calcularMontoCuota.bind(cuotaController));
 router.post('/recalcular/periodo', cuotaController.recalcularCuotas.bind(cuotaController));
+router.post('/regenerar', cuotaController.regenerarCuotasDelPeriodo.bind(cuotaController));
+router.post('/preview-recalculo', cuotaController.previewRecalculoCuotas.bind(cuotaController));
+router.post('/:id/recalcular', cuotaController.recalcularCuotaById.bind(cuotaController));
+router.get('/:id/comparar', cuotaController.compararCuotaConRecalculo.bind(cuotaController));
 router.delete('/bulk/eliminar', cuotaController.deleteBulkCuotas.bind(cuotaController));
 router.get('/reporte/:mes/:anio', cuotaController.generarReporte.bind(cuotaController));
 router.get('/resumen/:mes/:anio', cuotaController.getResumenMensual.bind(cuotaController));

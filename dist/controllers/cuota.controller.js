@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CuotaController = void 0;
 const cuota_dto_1 = require("@/dto/cuota.dto");
 const enums_1 = require("@/types/enums");
+const logger_1 = require("@/utils/logger");
 class CuotaController {
     constructor(cuotaService) {
         this.cuotaService = cuotaService;
@@ -178,6 +179,42 @@ class CuotaController {
             res.status(statusCode).json(response);
         }
         catch (error) {
+            next(error);
+        }
+    }
+    async generarCuotasConItems(req, res, next) {
+        try {
+            const validatedData = cuota_dto_1.generarCuotasSchema.parse(req.body);
+            logger_1.logger.info(`[CONTROLLER] Iniciando generación de cuotas V2 - ${validatedData.mes}/${validatedData.anio}`);
+            const result = await this.cuotaService.generarCuotasConItems(validatedData);
+            const response = {
+                success: true,
+                message: `Generación de cuotas V2 completada: ${result.generated} cuotas creadas con sistema de ítems`,
+                data: {
+                    generated: result.generated,
+                    errors: result.errors,
+                    cuotas: result.cuotas,
+                    descuentos: result.resumenDescuentos
+                },
+                meta: {
+                    periodo: `${validatedData.mes}/${validatedData.anio}`,
+                    totalGeneradas: result.generated,
+                    errores: result.errors.length,
+                    aplicarDescuentos: validatedData.aplicarDescuentos || true,
+                    ...(result.resumenDescuentos && {
+                        sociosConDescuento: result.resumenDescuentos.totalSociosConDescuento,
+                        montoTotalDescuentos: result.resumenDescuentos.montoTotalDescuentos,
+                        reglasUtilizadas: Object.keys(result.resumenDescuentos.reglasAplicadas).length
+                    })
+                }
+            };
+            const statusCode = result.errors.length > 0 ? 207 : enums_1.HttpStatus.CREATED;
+            logger_1.logger.info(`[CONTROLLER] Generación completada - ${result.generated} cuotas creadas, ` +
+                `${result.errors.length} errores${result.resumenDescuentos ? `, ${result.resumenDescuentos.totalSociosConDescuento} con descuentos` : ''}`);
+            res.status(statusCode).json(response);
+        }
+        catch (error) {
+            logger_1.logger.error('[CONTROLLER] Error en generación de cuotas V2:', error);
             next(error);
         }
     }
@@ -445,6 +482,115 @@ class CuotaController {
             res.status(enums_1.HttpStatus.OK).json(response);
         }
         catch (error) {
+            next(error);
+        }
+    }
+    async recalcularCuotaById(req, res, next) {
+        try {
+            const cuotaId = parseInt(req.params.id);
+            const body = req.body || {};
+            const validatedData = cuota_dto_1.recalcularCuotaSchema.parse({
+                cuotaId,
+                aplicarAjustes: body.aplicarAjustes ?? true,
+                aplicarExenciones: body.aplicarExenciones ?? true,
+                aplicarDescuentos: body.aplicarDescuentos ?? true,
+                usuario: body.usuario
+            });
+            logger_1.logger.info(`[CONTROLLER] Recalculando cuota ID ${cuotaId}`);
+            const result = await this.cuotaService.recalcularCuota(validatedData);
+            const response = {
+                success: true,
+                message: result.cambios.montoTotal.diferencia !== 0
+                    ? `Cuota recalculada con éxito. Cambio: $${result.cambios.montoTotal.diferencia.toFixed(2)}`
+                    : 'Cuota recalculada sin cambios en el monto',
+                data: result,
+                meta: {
+                    cuotaId,
+                    cambioMontoTotal: result.cambios.montoTotal.diferencia,
+                    ajustesAplicados: result.cambios.ajustesAplicados.length,
+                    exencionesAplicadas: result.cambios.exencionesAplicadas.length
+                }
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            logger_1.logger.error('[CONTROLLER] Error recalculando cuota:', error);
+            next(error);
+        }
+    }
+    async regenerarCuotasDelPeriodo(req, res, next) {
+        try {
+            const validatedData = cuota_dto_1.regenerarCuotasSchema.parse(req.body);
+            logger_1.logger.info(`[CONTROLLER] Regenerando cuotas - ${validatedData.mes}/${validatedData.anio}`);
+            const result = await this.cuotaService.regenerarCuotas(validatedData);
+            const response = {
+                success: true,
+                message: `${result.generadas} cuotas regeneradas exitosamente (${result.eliminadas} eliminadas)`,
+                data: result,
+                meta: {
+                    periodo: `${validatedData.mes}/${validatedData.anio}`,
+                    categoriaId: validatedData.categoriaId,
+                    personaId: validatedData.personaId,
+                    eliminadas: result.eliminadas,
+                    generadas: result.generadas
+                }
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            logger_1.logger.error('[CONTROLLER] Error regenerando cuotas:', error);
+            next(error);
+        }
+    }
+    async previewRecalculoCuotas(req, res, next) {
+        try {
+            const validatedData = cuota_dto_1.previewRecalculoSchema.parse(req.body);
+            logger_1.logger.info(`[CONTROLLER] Preview de recálculo - cuotaId: ${validatedData.cuotaId}, periodo: ${validatedData.mes}/${validatedData.anio}`);
+            const result = await this.cuotaService.previewRecalculo(validatedData);
+            const response = {
+                success: true,
+                message: `Preview completado: ${result.resumen.conCambios} cuotas con cambios de ${result.resumen.totalCuotas} analizadas`,
+                data: result,
+                meta: {
+                    cuotaId: validatedData.cuotaId,
+                    periodo: validatedData.mes && validatedData.anio ? `${validatedData.mes}/${validatedData.anio}` : null,
+                    categoriaId: validatedData.categoriaId,
+                    personaId: validatedData.personaId,
+                    ...result.resumen
+                }
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            logger_1.logger.error('[CONTROLLER] Error en preview de recálculo:', error);
+            next(error);
+        }
+    }
+    async compararCuotaConRecalculo(req, res, next) {
+        try {
+            const cuotaId = parseInt(req.params.id);
+            const validatedData = cuota_dto_1.compararCuotaSchema.parse({ cuotaId });
+            logger_1.logger.info(`[CONTROLLER] Comparando cuota ID ${cuotaId}`);
+            const result = await this.cuotaService.compararCuota(cuotaId);
+            const response = {
+                success: true,
+                message: result.diferencias.esSignificativo
+                    ? `Diferencia significativa encontrada: $${result.diferencias.montoTotal.toFixed(2)} (${result.diferencias.porcentajeDiferencia.toFixed(2)}%)`
+                    : 'Sin diferencias significativas',
+                data: result,
+                meta: {
+                    cuotaId,
+                    esSignificativo: result.diferencias.esSignificativo,
+                    diferenciaMonto: result.diferencias.montoTotal,
+                    diferenciaPorcentaje: result.diferencias.porcentajeDiferencia,
+                    ajustesDisponibles: result.recalculada.ajustesAplicados.length,
+                    exencionesDisponibles: result.recalculada.exencionesAplicadas.length
+                }
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            logger_1.logger.error('[CONTROLLER] Error comparando cuota:', error);
             next(error);
         }
     }

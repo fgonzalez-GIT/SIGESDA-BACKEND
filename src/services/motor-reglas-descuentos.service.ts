@@ -7,6 +7,8 @@
 
 import { PrismaClient, ReglaDescuento, ModoAplicacionDescuento } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { calcularMesesEntreFechas, calcularAniosEntreFechas } from '@/utils/date.helper';
+import { MAX_ANIOS_ANTIGUEDAD_DESCUENTO } from '@/constants/descuentos.constants';
 
 const prisma = new PrismaClient();
 
@@ -312,7 +314,7 @@ export class MotorReglasDescuentos {
 
     const fechaIngreso = new Date(personaTipo.fechaIngreso);
     const ahora = new Date();
-    const mesesAntiguedad = this.calcularMesesEntreFechas(fechaIngreso, ahora);
+    const mesesAntiguedad = calcularMesesEntreFechas(fechaIngreso, ahora);
 
     const mesesMinimo = condiciones.mesesMinimo || 0;
 
@@ -507,10 +509,10 @@ export class MotorReglasDescuentos {
 
     const fechaIngreso = new Date(personaTipo.fechaIngreso);
     const ahora = new Date();
-    const anios = this.calcularAniosEntreFechas(fechaIngreso, ahora);
+    const anios = calcularAniosEntreFechas(fechaIngreso, ahora);
 
-    // 1% por año, máximo 15%
-    return Math.min(anios, 15);
+    // 1% por año, máximo según constante
+    return Math.min(anios, MAX_ANIOS_ANTIGUEDAD_DESCUENTO);
   }
 
   /**
@@ -736,19 +738,6 @@ export class MotorReglasDescuentos {
     };
   }
 
-  // ══════════════════════════════════════════════════════════════════════
-  // HELPERS
-  // ══════════════════════════════════════════════════════════════════════
-
-  private calcularMesesEntreFechas(fecha1: Date, fecha2: Date): number {
-    const diff = fecha2.getTime() - fecha1.getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24 * 30));
-  }
-
-  private calcularAniosEntreFechas(fecha1: Date, fecha2: Date): number {
-    const diff = fecha2.getTime() - fecha1.getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365));
-  }
 }
 
 export default MotorReglasDescuentos;

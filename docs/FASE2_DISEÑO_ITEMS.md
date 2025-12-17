@@ -1398,12 +1398,27 @@ testItemsSystem()
 - [ ] Ejecutar seed (`npx tsx prisma/seed-tipos-items.ts`)
 - [ ] Verificar tipos creados en DB
 
-### Task 2.4: Migración de Datos Legacy
+### Task 2.4: Migración de Datos Legacy ✅ COMPLETADA (2025-12-17)
 
-- [ ] Crear script `scripts/migrate-cuotas-to-items.ts`
-- [ ] Ejecutar en DB de testing
-- [ ] Validar migración correcta
-- [ ] Documentar proceso
+- [x] Crear script `scripts/migrate-cuotas-to-items.ts`
+- [x] Crear script `scripts/validate-migration-cuotas-items.ts`
+- [x] Crear script `scripts/rollback-migration-cuotas-items.ts`
+- [x] Crear migración de schema para hacer campos legacy nullable
+- [x] Ejecutar dry-run de migración
+- [x] Ejecutar migración real en DB
+- [x] Validar migración correcta
+- [x] Documentar proceso
+
+**Resultados de Migración** (2025-12-17):
+- **Cuotas migradas**: 12/12 (100% éxito)
+- **Ítems creados**: 12 (todos con `tipoItemId: CUOTA_BASE_SOCIO`)
+- **Validación**: ✅ Todas las validaciones pasaron
+  - No hay cuotas legacy pendientes
+  - Integridad de montos correcta (montoTotal = suma de ítems)
+  - No hay ítems huérfanos
+  - Todos los ítems tienen tipo válido
+- **Metadata**: Cada ítem migrado incluye `metadata.migratedFrom` para rastreabilidad
+- **Rollback**: Script de rollback disponible para emergencias
 
 ### Task 2.5: Repository Layer
 
@@ -1457,6 +1472,6 @@ Una vez completada Fase 2, se iniciará **Fase 3: Motor de Reglas de Descuentos*
 ---
 
 **Documento creado**: 2025-12-13
-**Última actualización**: 2025-12-13
+**Última actualización**: 2025-12-17 (Task 2.4 completada)
 **Autor**: Claude Code
-**Versión**: 1.0
+**Versión**: 1.1

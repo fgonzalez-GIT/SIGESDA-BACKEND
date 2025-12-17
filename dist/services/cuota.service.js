@@ -2,15 +2,23 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CuotaService = void 0;
 const client_1 = require("@prisma/client");
+const tipo_item_cuota_repository_1 = require("@/repositories/tipo-item-cuota.repository");
+const item_cuota_repository_1 = require("@/repositories/item-cuota.repository");
 const logger_1 = require("@/utils/logger");
 const database_1 = require("@/config/database");
 const persona_helper_1 = require("@/utils/persona.helper");
+const motor_reglas_descuentos_service_1 = require("./motor-reglas-descuentos.service");
+const date_helper_1 = require("@/utils/date.helper");
+const categoria_helper_1 = require("@/utils/categoria.helper");
+const recibo_helper_1 = require("@/utils/recibo.helper");
 class CuotaService {
-    constructor(cuotaRepository, reciboRepository, personaRepository, configuracionRepository) {
+    constructor(cuotaRepository, reciboRepository, personaRepository, configuracionRepository, ajusteService, exencionService) {
         this.cuotaRepository = cuotaRepository;
         this.reciboRepository = reciboRepository;
         this.personaRepository = personaRepository;
         this.configuracionRepository = configuracionRepository;
+        this.ajusteService = ajusteService;
+        this.exencionService = exencionService;
     }
     get prisma() {
         return database_1.prisma;
@@ -68,9 +76,7 @@ class CuotaService {
         if (!existingCuota) {
             throw new Error(`Cuota con ID ${id} no encontrada`);
         }
-        if (existingCuota.recibo.estado === 'PAGADO') {
-            throw new Error(`No se puede modificar una cuota de un recibo pagado`);
-        }
+        (0, recibo_helper_1.validateReciboPagado)(existingCuota.recibo, 'modificar');
         if (data.montoBase !== undefined || data.montoActividades !== undefined) {
             const nuevoMontoBase = data.montoBase ?? parseFloat(existingCuota.montoBase.toString());
             const nuevoMontoActividades = data.montoActividades ?? parseFloat(existingCuota.montoActividades.toString());
@@ -91,12 +97,7 @@ class CuotaService {
         if (!existingCuota) {
             throw new Error(`Cuota con ID ${id} no encontrada`);
         }
-        if (existingCuota.recibo.estado === 'PAGADO') {
-            throw new Error(`No se puede eliminar una cuota de un recibo pagado`);
-        }
-        if (existingCuota.recibo.mediosPago && existingCuota.recibo.mediosPago.length > 0) {
-            throw new Error(`No se puede eliminar una cuota que tiene medios de pago registrados`);
-        }
+        (0, recibo_helper_1.validateCanDeleteRecibo)(existingCuota.recibo);
         const deletedCuota = await this.cuotaRepository.delete(id);
         logger_1.logger.info(`Cuota eliminada: ${existingCuota.categoria} ${existingCuota.mes}/${existingCuota.anio} (ID: ${id})`);
         return deletedCuota;
@@ -127,8 +128,8 @@ class CuotaService {
                     tipo: client_1.TipoRecibo.CUOTA,
                     receptorId: socio.id,
                     importe: montoCuota.montoTotal,
-                    concepto: `Cuota ${this.getNombreMes(data.mes)} ${data.anio} - ${socio.categoria}`,
-                    fechaVencimiento: this.calcularFechaVencimiento(data.mes, data.anio),
+                    concepto: `Cuota ${(0, date_helper_1.getNombreMes)(data.mes)} ${data.anio} - ${socio.categoria}`,
+                    fechaVencimiento: (0, date_helper_1.calcularFechaVencimiento)(data.mes, data.anio),
                     observaciones: data.observaciones
                 });
                 const cuota = await this.cuotaRepository.create({
@@ -282,7 +283,7 @@ class CuotaService {
             periodo: {
                 mes: data.mes,
                 anio: data.anio,
-                nombreMes: this.getNombreMes(data.mes)
+                nombreMes: (0, date_helper_1.getNombreMes)(data.mes)
             },
             formato: data.formato,
             generadoEn: new Date().toISOString()
@@ -331,16 +332,562 @@ class CuotaService {
         }
         return { total, detalle: descuentos };
     }
-    calcularFechaVencimiento(mes, anio) {
-        const fechaVencimiento = new Date(anio, mes, 15);
-        return fechaVencimiento;
+    async generarCuotasConItems(data) {
+        const errors = [];
+        const cuotasCreadas = [];
+        const tipoItemRepo = new tipo_item_cuota_repository_1.TipoItemCuotaRepository();
+        const itemRepo = new item_cuota_repository_1.ItemCuotaRepository();
+        const motorDescuentos = new motor_reglas_descuentos_service_1.MotorReglasDescuentos();
+        logger_1.logger.info(`[GENERACIÓN CUOTAS] Iniciando generación con items - ${data.mes}/${data.anio}`);
+        try {
+            const sociosPorGenerar = await this.cuotaRepository.getCuotasPorGenerar(data.mes, data.anio, data.categoriaIds);
+            if (sociosPorGenerar.length === 0) {
+                logger_1.logger.warn('[GENERACIÓN CUOTAS] No hay socios pendientes para generar cuotas');
+                return {
+                    generated: 0,
+                    errors: ['No hay socios pendientes para generar cuotas en este período'],
+                    cuotas: []
+                };
+            }
+            logger_1.logger.info(`[GENERACIÓN CUOTAS] ${sociosPorGenerar.length} socios a procesar`);
+            const tipoCuotaBase = await tipoItemRepo.findByCodigo('CUOTA_BASE_SOCIO');
+            const tipoActividad = await tipoItemRepo.findByCodigo('ACTIVIDAD_INDIVIDUAL');
+            if (!tipoCuotaBase) {
+                throw new Error('Tipo de ítem CUOTA_BASE_SOCIO no encontrado. Ejecutar seed: npx tsx prisma/seed-items-catalogos.ts');
+            }
+            if (!tipoActividad) {
+                logger_1.logger.warn('[GENERACIÓN CUOTAS] Tipo de ítem ACTIVIDAD_INDIVIDUAL no encontrado. Actividades no se incluirán.');
+            }
+            let descuentosGlobales = {
+                totalSociosConDescuento: 0,
+                montoTotalDescuentos: 0,
+                reglasAplicadas: {}
+            };
+            for (const socio of sociosPorGenerar) {
+                try {
+                    await this.prisma.$transaction(async (tx) => {
+                        const recibo = await tx.recibo.create({
+                            data: {
+                                tipo: client_1.TipoRecibo.CUOTA,
+                                receptorId: socio.id,
+                                importe: 0,
+                                concepto: `Cuota ${(0, date_helper_1.getNombreMes)(data.mes)} ${data.anio}`,
+                                fechaVencimiento: (0, date_helper_1.calcularFechaVencimiento)(data.mes, data.anio),
+                                observaciones: data.observaciones
+                            }
+                        });
+                        logger_1.logger.debug(`[GENERACIÓN CUOTAS] Recibo ${recibo.numero} creado para socio ${socio.numeroSocio}`);
+                        const cuota = await tx.cuota.create({
+                            data: {
+                                reciboId: recibo.id,
+                                categoria: socio.categoria,
+                                mes: data.mes,
+                                anio: data.anio,
+                                montoBase: 0,
+                                montoActividades: 0,
+                                montoTotal: 0
+                            }
+                        });
+                        logger_1.logger.debug(`[GENERACIÓN CUOTAS] Cuota ID ${cuota.id} creada`);
+                        const montoBaseSocio = socio.categoriaSocio?.montoCuota || 0;
+                        await tx.itemCuota.create({
+                            data: {
+                                cuotaId: cuota.id,
+                                tipoItemId: tipoCuotaBase.id,
+                                concepto: `Cuota base ${socio.categoria}`,
+                                monto: montoBaseSocio,
+                                cantidad: 1,
+                                esAutomatico: true,
+                                esEditable: false,
+                                metadata: {
+                                    categoriaId: socio.categoriaId,
+                                    categoriaCodigo: socio.categoria
+                                }
+                            }
+                        });
+                        logger_1.logger.debug(`[GENERACIÓN CUOTAS] Ítem base creado: $${montoBaseSocio}`);
+                        let montoActividades = 0;
+                        if (tipoActividad) {
+                            const participaciones = await tx.participacionActividad.findMany({
+                                where: {
+                                    personaId: socio.id,
+                                    activa: true,
+                                    actividad: {
+                                        estado: { in: ['EN_CURSO', 'PROXIMAMENTE'] }
+                                    }
+                                },
+                                include: {
+                                    actividad: true
+                                }
+                            });
+                            for (const participacion of participaciones) {
+                                const costoActividad = participacion.precioEspecial || participacion.actividad.costo || 0;
+                                await tx.itemCuota.create({
+                                    data: {
+                                        cuotaId: cuota.id,
+                                        tipoItemId: tipoActividad.id,
+                                        concepto: participacion.actividad.nombre,
+                                        monto: costoActividad,
+                                        cantidad: 1,
+                                        esAutomatico: true,
+                                        esEditable: false,
+                                        metadata: {
+                                            actividadId: participacion.actividadId,
+                                            participacionId: participacion.id,
+                                            precioEspecial: participacion.precioEspecial !== null
+                                        }
+                                    }
+                                });
+                                montoActividades += costoActividad;
+                            }
+                            logger_1.logger.debug(`[GENERACIÓN CUOTAS] ${participaciones.length} actividades agregadas: $${montoActividades}`);
+                        }
+                        if (data.aplicarDescuentos) {
+                            try {
+                                const resultadoDescuentos = await motorDescuentos.aplicarReglas({
+                                    socioId: socio.id,
+                                    categoriaId: socio.categoriaId,
+                                    cuotaId: cuota.id,
+                                    mes: data.mes,
+                                    anio: data.anio
+                                }, tx);
+                                if (resultadoDescuentos.items.length > 0) {
+                                    descuentosGlobales.totalSociosConDescuento++;
+                                    descuentosGlobales.montoTotalDescuentos += resultadoDescuentos.totalDescuentoAplicado;
+                                    resultadoDescuentos.reglasAplicadas.forEach((regla) => {
+                                        if (!descuentosGlobales.reglasAplicadas[regla.codigo]) {
+                                            descuentosGlobales.reglasAplicadas[regla.codigo] = 0;
+                                        }
+                                        descuentosGlobales.reglasAplicadas[regla.codigo]++;
+                                    });
+                                }
+                                logger_1.logger.debug(`[GENERACIÓN CUOTAS] Descuentos aplicados: ${resultadoDescuentos.items.length} ítems, ` +
+                                    `total descuento: $${resultadoDescuentos.totalDescuentoAplicado.toFixed(2)}`);
+                            }
+                            catch (errorDescuento) {
+                                logger_1.logger.error(`[GENERACIÓN CUOTAS] Error aplicando descuentos para socio ${socio.numeroSocio}:`, errorDescuento);
+                            }
+                        }
+                        const totalItems = await tx.itemCuota.aggregate({
+                            where: { cuotaId: cuota.id },
+                            _sum: { monto: true }
+                        });
+                        const montoTotal = totalItems._sum.monto || 0;
+                        await tx.cuota.update({
+                            where: { id: cuota.id },
+                            data: {
+                                montoBase: montoBaseSocio,
+                                montoActividades,
+                                montoTotal
+                            }
+                        });
+                        await tx.recibo.update({
+                            where: { id: recibo.id },
+                            data: { importe: montoTotal }
+                        });
+                        logger_1.logger.info(`[GENERACIÓN CUOTAS] ✅ Cuota generada para ${socio.nombre} ${socio.apellido} (${socio.numeroSocio}) - ` +
+                            `Base: $${montoBaseSocio}, Actividades: $${montoActividades}, Total: $${montoTotal}`);
+                        cuotasCreadas.push({
+                            cuotaId: cuota.id,
+                            reciboId: recibo.id,
+                            reciboNumero: recibo.numero,
+                            socioId: socio.id,
+                            socioNumero: socio.numeroSocio,
+                            socioNombre: `${socio.nombre} ${socio.apellido}`,
+                            categoria: socio.categoria,
+                            montoBase: montoBaseSocio,
+                            montoActividades,
+                            montoTotal,
+                            descuentoAplicado: data.aplicarDescuentos
+                        });
+                    });
+                }
+                catch (error) {
+                    const errorMsg = `Error generando cuota para ${socio.nombre} ${socio.apellido} (${socio.numeroSocio}): ${error.message}`;
+                    errors.push(errorMsg);
+                    logger_1.logger.error(`[GENERACIÓN CUOTAS] ${errorMsg}`);
+                }
+            }
+            logger_1.logger.info(`[GENERACIÓN CUOTAS] ✅ Completada - ${cuotasCreadas.length} cuotas creadas, ${errors.length} errores`);
+            if (data.aplicarDescuentos && descuentosGlobales.totalSociosConDescuento > 0) {
+                logger_1.logger.info(`[GENERACIÓN CUOTAS] 📊 Descuentos aplicados: ${descuentosGlobales.totalSociosConDescuento} socios, ` +
+                    `monto total: $${descuentosGlobales.montoTotalDescuentos.toFixed(2)}`);
+            }
+            return {
+                generated: cuotasCreadas.length,
+                errors,
+                cuotas: cuotasCreadas,
+                resumenDescuentos: data.aplicarDescuentos ? descuentosGlobales : undefined
+            };
+        }
+        catch (error) {
+            logger_1.logger.error('[GENERACIÓN CUOTAS] Error fatal en generación:', error);
+            throw new Error(`Error generando cuotas: ${error.message}`);
+        }
     }
-    getNombreMes(mes) {
-        const meses = [
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-        ];
-        return meses[mes - 1] || 'Mes inválido';
+    async recalcularCuota(data) {
+        const cuota = await this.cuotaRepository.findById(data.cuotaId);
+        if (!cuota) {
+            throw new Error(`Cuota con ID ${data.cuotaId} no encontrada`);
+        }
+        (0, recibo_helper_1.validateReciboPagado)(cuota.recibo, 'recalcular');
+        logger_1.logger.info(`[RECALCULAR CUOTA] Iniciando recálculo de cuota ID ${data.cuotaId}`);
+        const montoBaseOriginal = Number(cuota.montoBase);
+        const montoActividadesOriginal = Number(cuota.montoActividades);
+        const montoTotalOriginal = Number(cuota.montoTotal);
+        const categoriaId = await (0, categoria_helper_1.getCategoriaIdByCodigo)(cuota.categoria, this.prisma);
+        let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
+        const montoActividades = await this.calcularCostoActividades(cuota.recibo.receptorId.toString(), cuota.mes, cuota.anio).then(result => result.total);
+        let subtotal = montoBase + montoActividades;
+        const ajustesAplicados = [];
+        if (data.aplicarAjustes && this.ajusteService) {
+            const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+            const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(cuota.recibo.receptorId, fechaCuota);
+            if (ajustes.length > 0) {
+                const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, subtotal);
+                subtotal = resultadoAjustes.montoFinal;
+                ajustesAplicados.push(...resultadoAjustes.ajustes);
+                logger_1.logger.debug(`[RECALCULAR CUOTA] ${ajustes.length} ajustes aplicados, ` +
+                    `ajuste total: $${resultadoAjustes.totalAjuste.toFixed(2)}`);
+            }
+        }
+        const exencionesAplicadas = [];
+        if (data.aplicarExenciones && this.exencionService) {
+            const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+            const exencionCheck = await this.exencionService.checkExencionParaPeriodo(cuota.recibo.receptorId, fechaCuota);
+            if (exencionCheck.tieneExencion) {
+                const montoExencion = (subtotal * exencionCheck.porcentaje) / 100;
+                subtotal = subtotal - montoExencion;
+                exencionesAplicadas.push({
+                    exencionId: exencionCheck.exencion?.id,
+                    tipoExencion: exencionCheck.exencion?.tipoExencion,
+                    motivoExencion: exencionCheck.exencion?.motivoExencion,
+                    porcentaje: exencionCheck.porcentaje,
+                    montoExencion
+                });
+                logger_1.logger.debug(`[RECALCULAR CUOTA] Exención aplicada: ${exencionCheck.porcentaje}%, ` +
+                    `descuento: $${montoExencion.toFixed(2)}`);
+            }
+        }
+        if (data.aplicarDescuentos) {
+            const descuentos = await this.calcularDescuentos(categoriaId, montoBase, cuota.recibo.receptorId);
+            subtotal = Math.max(0, subtotal - descuentos.total);
+        }
+        const montoTotalRecalculado = Math.max(0, subtotal);
+        const cambiosDiferencia = {
+            montoBase: {
+                antes: montoBaseOriginal,
+                despues: montoBase,
+                diferencia: montoBase - montoBaseOriginal
+            },
+            montoActividades: {
+                antes: montoActividadesOriginal,
+                despues: montoActividades,
+                diferencia: montoActividades - montoActividadesOriginal
+            },
+            montoTotal: {
+                antes: montoTotalOriginal,
+                despues: montoTotalRecalculado,
+                diferencia: montoTotalRecalculado - montoTotalOriginal
+            },
+            ajustesAplicados,
+            exencionesAplicadas
+        };
+        if (Math.abs(cambiosDiferencia.montoTotal.diferencia) > 0.01) {
+            await this.prisma.$transaction(async (tx) => {
+                await tx.cuota.update({
+                    where: { id: data.cuotaId },
+                    data: {
+                        montoBase,
+                        montoActividades,
+                        montoTotal: montoTotalRecalculado
+                    }
+                });
+                await tx.recibo.update({
+                    where: { id: cuota.reciboId },
+                    data: {
+                        importe: montoTotalRecalculado
+                    }
+                });
+                if (this.ajusteService) {
+                    try {
+                        await tx.historialAjusteCuota.create({
+                            data: {
+                                personaId: cuota.recibo.receptorId,
+                                accion: 'RECALCULAR_CUOTA',
+                                datosPrevios: {
+                                    cuotaId: cuota.id,
+                                    montoBase: montoBaseOriginal,
+                                    montoActividades: montoActividadesOriginal,
+                                    montoTotal: montoTotalOriginal
+                                },
+                                datosNuevos: {
+                                    cuotaId: cuota.id,
+                                    montoBase,
+                                    montoActividades,
+                                    montoTotal: montoTotalRecalculado
+                                },
+                                usuario: data.usuario || 'SISTEMA',
+                                motivoCambio: `Recálculo automático - ${ajustesAplicados.length} ajustes, ${exencionesAplicadas.length} exenciones`
+                            }
+                        });
+                    }
+                    catch (histError) {
+                        logger_1.logger.warn(`[RECALCULAR CUOTA] No se pudo crear entrada de historial: ${histError}`);
+                    }
+                }
+            });
+            logger_1.logger.info(`[RECALCULAR CUOTA] ✅ Cuota ${data.cuotaId} recalculada - ` +
+                `Antes: $${montoTotalOriginal.toFixed(2)}, Después: $${montoTotalRecalculado.toFixed(2)}, ` +
+                `Diferencia: $${cambiosDiferencia.montoTotal.diferencia.toFixed(2)}`);
+        }
+        else {
+            logger_1.logger.info(`[RECALCULAR CUOTA] Sin cambios para cuota ${data.cuotaId}`);
+        }
+        return {
+            cuotaOriginal: {
+                id: cuota.id,
+                montoBase: montoBaseOriginal,
+                montoActividades: montoActividadesOriginal,
+                montoTotal: montoTotalOriginal
+            },
+            cuotaRecalculada: {
+                id: cuota.id,
+                montoBase,
+                montoActividades,
+                montoTotal: montoTotalRecalculado
+            },
+            cambios: cambiosDiferencia
+        };
+    }
+    async regenerarCuotas(data) {
+        logger_1.logger.info(`[REGENERAR CUOTAS] Iniciando regeneración - ${data.mes}/${data.anio}`);
+        const cuotasExistentes = await this.cuotaRepository.findByPeriodo(data.mes, data.anio, data.categoriaId ? await (0, categoria_helper_1.getCategoriaCodigoByCategoriaId)(data.categoriaId, this.prisma) : undefined);
+        let cuotasPorEliminar = cuotasExistentes;
+        if (data.personaId) {
+            cuotasPorEliminar = cuotasExistentes.filter(c => c.recibo.receptorId === data.personaId);
+        }
+        const cuotasPagadas = cuotasPorEliminar.filter(c => c.recibo.estado === 'PAGADO');
+        if (cuotasPagadas.length > 0) {
+            throw new Error(`No se pueden regenerar cuotas pagadas. ${cuotasPagadas.length} cuotas del período ya están pagadas.`);
+        }
+        let cuotasGeneradas = [];
+        const cuotasEliminadas = cuotasPorEliminar.length;
+        await this.prisma.$transaction(async (tx) => {
+            for (const cuota of cuotasPorEliminar) {
+                await tx.cuota.delete({
+                    where: { id: cuota.id }
+                });
+                await tx.recibo.delete({
+                    where: { id: cuota.reciboId }
+                });
+                logger_1.logger.debug(`[REGENERAR CUOTAS] Cuota ${cuota.id} y recibo ${cuota.recibo.numero} eliminados`);
+            }
+            if (this.ajusteService) {
+                try {
+                    await tx.historialAjusteCuota.create({
+                        data: {
+                            personaId: data.personaId || null,
+                            accion: 'REGENERAR_CUOTA',
+                            datosPrevios: {
+                                periodo: `${data.mes}/${data.anio}`,
+                                cuotasEliminadas,
+                                categoriaId: data.categoriaId,
+                                personaId: data.personaId
+                            },
+                            datosNuevos: {
+                                confirmado: true
+                            },
+                            usuario: 'SISTEMA',
+                            motivoCambio: 'Regeneración de cuotas del período'
+                        }
+                    });
+                }
+                catch (histError) {
+                    logger_1.logger.warn(`[REGENERAR CUOTAS] No se pudo crear entrada de historial: ${histError}`);
+                }
+            }
+        });
+        logger_1.logger.info(`[REGENERAR CUOTAS] ${cuotasEliminadas} cuotas eliminadas`);
+        const generarResult = await this.generarCuotasConItems({
+            mes: data.mes,
+            anio: data.anio,
+            categoriaIds: data.categoriaId ? [data.categoriaId] : undefined,
+            incluirInactivos: false,
+            aplicarDescuentos: data.aplicarDescuentos,
+            observaciones: 'Cuotas regeneradas automáticamente'
+        });
+        cuotasGeneradas = generarResult.cuotas;
+        logger_1.logger.info(`[REGENERAR CUOTAS] ✅ Regeneración completada - ` +
+            `${cuotasEliminadas} eliminadas, ${generarResult.generated} generadas`);
+        return {
+            eliminadas: cuotasEliminadas,
+            generadas: generarResult.generated,
+            cuotas: cuotasGeneradas
+        };
+    }
+    async previewRecalculo(data) {
+        let cuotas = [];
+        const cambios = [];
+        if (data.cuotaId) {
+            const cuota = await this.cuotaRepository.findById(data.cuotaId);
+            if (!cuota) {
+                throw new Error(`Cuota con ID ${data.cuotaId} no encontrada`);
+            }
+            cuotas = [cuota];
+        }
+        else if (data.mes && data.anio) {
+            cuotas = await this.cuotaRepository.findByPeriodo(data.mes, data.anio, data.categoriaId ? await (0, categoria_helper_1.getCategoriaCodigoByCategoriaId)(data.categoriaId, this.prisma) : undefined);
+            if (data.personaId) {
+                cuotas = cuotas.filter(c => c.recibo.receptorId === data.personaId);
+            }
+        }
+        else {
+            throw new Error('Debe proporcionar cuotaId o (mes + anio)');
+        }
+        let conCambios = 0;
+        let totalAjuste = 0;
+        for (const cuota of cuotas) {
+            if (cuota.recibo.estado === 'PAGADO') {
+                continue;
+            }
+            const montoOriginal = Number(cuota.montoTotal);
+            const categoriaId = await (0, categoria_helper_1.getCategoriaIdByCodigo)(cuota.categoria, this.prisma);
+            let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
+            const montoActividades = await this.calcularCostoActividades(cuota.recibo.receptorId.toString(), cuota.mes, cuota.anio).then(result => result.total);
+            let subtotal = montoBase + montoActividades;
+            const ajustesAplicados = [];
+            if (data.aplicarAjustes && this.ajusteService) {
+                const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+                const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(cuota.recibo.receptorId, fechaCuota);
+                if (ajustes.length > 0) {
+                    const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, subtotal);
+                    subtotal = resultadoAjustes.montoFinal;
+                    ajustesAplicados.push(...resultadoAjustes.ajustes);
+                }
+            }
+            const exencionesAplicadas = [];
+            if (data.aplicarExenciones && this.exencionService) {
+                const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+                const exencionCheck = await this.exencionService.checkExencionParaPeriodo(cuota.recibo.receptorId, fechaCuota);
+                if (exencionCheck.tieneExencion) {
+                    const montoExencion = (subtotal * exencionCheck.porcentaje) / 100;
+                    subtotal = subtotal - montoExencion;
+                    exencionesAplicadas.push({
+                        porcentaje: exencionCheck.porcentaje,
+                        montoExencion
+                    });
+                }
+            }
+            if (data.aplicarDescuentos) {
+                const descuentos = await this.calcularDescuentos(categoriaId, montoBase, cuota.recibo.receptorId);
+                subtotal = Math.max(0, subtotal - descuentos.total);
+            }
+            const montoRecalculado = Math.max(0, subtotal);
+            const diferencia = montoRecalculado - montoOriginal;
+            if (Math.abs(diferencia) > 0.01) {
+                conCambios++;
+                totalAjuste += diferencia;
+            }
+            cambios.push({
+                cuotaId: cuota.id,
+                reciboNumero: cuota.recibo.numero,
+                socioId: cuota.recibo.receptorId,
+                categoria: cuota.categoria,
+                periodo: `${cuota.mes}/${cuota.anio}`,
+                montoActual: montoOriginal,
+                montoRecalculado,
+                diferencia,
+                ajustesAplicados,
+                exencionesAplicadas,
+                tieneCambios: Math.abs(diferencia) > 0.01
+            });
+        }
+        logger_1.logger.info(`[PREVIEW RECALCULO] ${cambios.length} cuotas analizadas - ` +
+            `${conCambios} con cambios, ajuste total: $${totalAjuste.toFixed(2)}`);
+        return {
+            cuotas: cambios,
+            cambios: cambios.filter(c => c.tieneCambios),
+            resumen: {
+                totalCuotas: cambios.length,
+                conCambios,
+                sinCambios: cambios.length - conCambios,
+                totalAjuste
+            }
+        };
+    }
+    async compararCuota(cuotaId) {
+        const cuota = await this.cuotaRepository.findById(cuotaId);
+        if (!cuota) {
+            throw new Error(`Cuota con ID ${cuotaId} no encontrada`);
+        }
+        logger_1.logger.info(`[COMPARAR CUOTA] Comparando cuota ID ${cuotaId}`);
+        const actual = {
+            id: cuota.id,
+            reciboNumero: cuota.recibo.numero,
+            categoria: cuota.categoria,
+            periodo: `${cuota.mes}/${cuota.anio}`,
+            montoBase: Number(cuota.montoBase),
+            montoActividades: Number(cuota.montoActividades),
+            montoTotal: Number(cuota.montoTotal),
+            estadoRecibo: cuota.recibo.estado
+        };
+        const categoriaId = await (0, categoria_helper_1.getCategoriaIdByCodigo)(cuota.categoria, this.prisma);
+        const montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
+        const montoActividades = await this.calcularCostoActividades(cuota.recibo.receptorId.toString(), cuota.mes, cuota.anio).then(result => result.total);
+        let subtotal = montoBase + montoActividades;
+        const ajustesInfo = [];
+        if (this.ajusteService) {
+            const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+            const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(cuota.recibo.receptorId, fechaCuota);
+            if (ajustes.length > 0) {
+                const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, subtotal);
+                subtotal = resultadoAjustes.montoFinal;
+                ajustesInfo.push(...resultadoAjustes.ajustes);
+            }
+        }
+        const exencionesInfo = [];
+        if (this.exencionService) {
+            const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
+            const exencionCheck = await this.exencionService.checkExencionParaPeriodo(cuota.recibo.receptorId, fechaCuota);
+            if (exencionCheck.tieneExencion) {
+                const montoExencion = (subtotal * exencionCheck.porcentaje) / 100;
+                subtotal = subtotal - montoExencion;
+                exencionesInfo.push({
+                    porcentaje: exencionCheck.porcentaje,
+                    montoExencion,
+                    tipo: exencionCheck.exencion?.tipoExencion,
+                    motivo: exencionCheck.exencion?.motivoExencion
+                });
+            }
+        }
+        const montoTotalRecalculado = Math.max(0, subtotal);
+        const recalculada = {
+            id: cuota.id,
+            montoBase,
+            montoActividades,
+            montoTotal: montoTotalRecalculado,
+            ajustesAplicados: ajustesInfo,
+            exencionesAplicadas: exencionesInfo
+        };
+        const diferencias = {
+            montoBase: montoBase - actual.montoBase,
+            montoActividades: montoActividades - actual.montoActividades,
+            montoTotal: montoTotalRecalculado - actual.montoTotal,
+            esSignificativo: Math.abs(montoTotalRecalculado - actual.montoTotal) > 0.01,
+            porcentajeDiferencia: actual.montoTotal > 0
+                ? ((montoTotalRecalculado - actual.montoTotal) / actual.montoTotal) * 100
+                : 0
+        };
+        logger_1.logger.info(`[COMPARAR CUOTA] Comparación completada - ` +
+            `Actual: $${actual.montoTotal.toFixed(2)}, ` +
+            `Recalculada: $${montoTotalRecalculado.toFixed(2)}, ` +
+            `Diferencia: $${diferencias.montoTotal.toFixed(2)}`);
+        return {
+            actual,
+            recalculada,
+            diferencias
+        };
     }
 }
 exports.CuotaService = CuotaService;

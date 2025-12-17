@@ -280,4 +280,108 @@ export declare const reporteCuotasSchema: z.ZodObject<{
     incluirEstadisticas?: string | undefined;
 }>;
 export type ReporteCuotasDto = z.infer<typeof reporteCuotasSchema>;
+export declare const recalcularCuotaSchema: z.ZodObject<{
+    cuotaId: z.ZodNumber;
+    aplicarAjustes: z.ZodDefault<z.ZodBoolean>;
+    aplicarExenciones: z.ZodDefault<z.ZodBoolean>;
+    aplicarDescuentos: z.ZodDefault<z.ZodBoolean>;
+    usuario: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    cuotaId: number;
+    aplicarDescuentos: boolean;
+    aplicarAjustes: boolean;
+    aplicarExenciones: boolean;
+    usuario?: string | undefined;
+}, {
+    cuotaId: number;
+    usuario?: string | undefined;
+    aplicarDescuentos?: boolean | undefined;
+    aplicarAjustes?: boolean | undefined;
+    aplicarExenciones?: boolean | undefined;
+}>;
+export type RecalcularCuotaDto = z.infer<typeof recalcularCuotaSchema>;
+export declare const regenerarCuotasSchema: z.ZodObject<{
+    mes: z.ZodNumber;
+    anio: z.ZodNumber;
+    categoriaId: z.ZodOptional<z.ZodNumber>;
+    personaId: z.ZodOptional<z.ZodNumber>;
+    aplicarAjustes: z.ZodDefault<z.ZodBoolean>;
+    aplicarExenciones: z.ZodDefault<z.ZodBoolean>;
+    aplicarDescuentos: z.ZodDefault<z.ZodBoolean>;
+    confirmarRegeneracion: z.ZodEffects<z.ZodBoolean, boolean, boolean>;
+}, "strip", z.ZodTypeAny, {
+    mes: number;
+    anio: number;
+    aplicarDescuentos: boolean;
+    aplicarAjustes: boolean;
+    aplicarExenciones: boolean;
+    confirmarRegeneracion: boolean;
+    categoriaId?: number | undefined;
+    personaId?: number | undefined;
+}, {
+    mes: number;
+    anio: number;
+    confirmarRegeneracion: boolean;
+    categoriaId?: number | undefined;
+    personaId?: number | undefined;
+    aplicarDescuentos?: boolean | undefined;
+    aplicarAjustes?: boolean | undefined;
+    aplicarExenciones?: boolean | undefined;
+}>;
+export type RegenerarCuotasDto = z.infer<typeof regenerarCuotasSchema>;
+export declare const previewRecalculoSchema: z.ZodEffects<z.ZodObject<{
+    cuotaId: z.ZodOptional<z.ZodNumber>;
+    mes: z.ZodOptional<z.ZodNumber>;
+    anio: z.ZodOptional<z.ZodNumber>;
+    categoriaId: z.ZodOptional<z.ZodNumber>;
+    personaId: z.ZodOptional<z.ZodNumber>;
+    aplicarAjustes: z.ZodDefault<z.ZodBoolean>;
+    aplicarExenciones: z.ZodDefault<z.ZodBoolean>;
+    aplicarDescuentos: z.ZodDefault<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    aplicarDescuentos: boolean;
+    aplicarAjustes: boolean;
+    aplicarExenciones: boolean;
+    categoriaId?: number | undefined;
+    personaId?: number | undefined;
+    cuotaId?: number | undefined;
+    mes?: number | undefined;
+    anio?: number | undefined;
+}, {
+    categoriaId?: number | undefined;
+    personaId?: number | undefined;
+    cuotaId?: number | undefined;
+    mes?: number | undefined;
+    anio?: number | undefined;
+    aplicarDescuentos?: boolean | undefined;
+    aplicarAjustes?: boolean | undefined;
+    aplicarExenciones?: boolean | undefined;
+}>, {
+    aplicarDescuentos: boolean;
+    aplicarAjustes: boolean;
+    aplicarExenciones: boolean;
+    categoriaId?: number | undefined;
+    personaId?: number | undefined;
+    cuotaId?: number | undefined;
+    mes?: number | undefined;
+    anio?: number | undefined;
+}, {
+    categoriaId?: number | undefined;
+    personaId?: number | undefined;
+    cuotaId?: number | undefined;
+    mes?: number | undefined;
+    anio?: number | undefined;
+    aplicarDescuentos?: boolean | undefined;
+    aplicarAjustes?: boolean | undefined;
+    aplicarExenciones?: boolean | undefined;
+}>;
+export type PreviewRecalculoDto = z.infer<typeof previewRecalculoSchema>;
+export declare const compararCuotaSchema: z.ZodObject<{
+    cuotaId: z.ZodNumber;
+}, "strip", z.ZodTypeAny, {
+    cuotaId: number;
+}, {
+    cuotaId: number;
+}>;
+export type CompararCuotaDto = z.infer<typeof compararCuotaSchema>;
 //# sourceMappingURL=cuota.dto.d.ts.map

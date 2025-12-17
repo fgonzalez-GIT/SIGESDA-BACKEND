@@ -196,17 +196,17 @@ export declare const addManualItemSchema: z.ZodObject<{
     observaciones: z.ZodOptional<z.ZodString>;
     metadata: z.ZodOptional<z.ZodAny>;
 }, "strip", z.ZodTypeAny, {
+    cuotaId: number;
     cantidad: number;
     monto: number;
-    cuotaId: number;
     tipoItemCodigo: string;
     observaciones?: string | undefined;
     concepto?: string | undefined;
     porcentaje?: number | undefined;
     metadata?: any;
 }, {
-    monto: number;
     cuotaId: number;
+    monto: number;
     tipoItemCodigo: string;
     observaciones?: string | undefined;
     concepto?: string | undefined;
