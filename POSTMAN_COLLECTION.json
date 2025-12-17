@@ -1,0 +1,539 @@
+{
+  "info": {
+    "name": "SIGESDA Backend API",
+    "_postman_id": "sigesda-backend-api-v1",
+    "description": "Colección completa de endpoints del sistema SIGESDA Backend - Sistema de Gestión de Asociación Musical\n\n**Versión:** 1.0\n**Fecha:** 2025-12-17\n**Base URL:** http://localhost:8000\n\n**Características:**\n- 70+ endpoints documentados\n- Ejemplos de request/response\n- Tests automatizados\n- Variables de entorno\n\n**Módulos incluidos:**\n- Personas/Socios\n- Cuotas y Recibos\n- Ajustes Manuales\n- Exenciones\n- Items de Cuota\n- Catálogos\n- Reportes\n- Actividades\n- Relaciones Familiares",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "personaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "cuotaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "ajusteId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "exencionId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Info",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Personas/Socios",
+      "item": [
+        {
+          "name": "Listar Personas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/personas?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "personas"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "20"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Persona (Socio)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"dni\": \"12345678\",\n  \"fechaNacimiento\": \"1990-05-15\",\n  \"email\": \"juan.perez@email.com\",\n  \"telefono\": \"1234567890\",\n  \"direccion\": \"Calle Falsa 123\",\n  \"tipos\": [\n    {\n      \"tipoPersonaCodigo\": \"SOCIO\",\n      \"categoriaSocioCodigo\": \"ADULTO_GENERAL\",\n      \"activo\": true\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/personas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "personas"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Persona por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/personas/{{personaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "personas", "{{personaId}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Persona",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan.perez.updated@email.com\",\n  \"telefono\": \"9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/personas/{{personaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "personas", "{{personaId}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Persona (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/personas/{{personaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "personas", "{{personaId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cuotas",
+      "item": [
+        {
+          "name": "Generar Cuotas del Mes",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mes\": 12,\n  \"anio\": 2025,\n  \"aplicarDescuentos\": true,\n  \"aplicarAjustes\": true,\n  \"aplicarExenciones\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cuotas/generar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cuotas", "generar"]
+            }
+          }
+        },
+        {
+          "name": "Listar Cuotas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cuotas?mes=12&anio=2025",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cuotas"],
+              "query": [
+                {"key": "mes", "value": "12"},
+                {"key": "anio", "value": "2025"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Cuota por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cuotas/{{cuotaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cuotas", "{{cuotaId}}"]
+            }
+          }
+        },
+        {
+          "name": "Recalcular Cuota",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cuotaId\": {{cuotaId}},\n  \"aplicarAjustes\": true,\n  \"aplicarExenciones\": true,\n  \"aplicarDescuentos\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cuotas/recalcular",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cuotas", "recalcular"]
+            }
+          }
+        },
+        {
+          "name": "Preview Recálculo",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mes\": 12,\n  \"anio\": 2025,\n  \"aplicarAjustes\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cuotas/preview-recalculo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cuotas", "preview-recalculo"]
+            }
+          }
+        },
+        {
+          "name": "Comparar Cuota",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cuotaId\": {{cuotaId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cuotas/comparar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cuotas", "comparar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ajustes Manuales",
+      "item": [
+        {
+          "name": "Crear Ajuste",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personaId\": {{personaId}},\n  \"tipoAjuste\": \"DESCUENTO_PORCENTAJE\",\n  \"valor\": 30,\n  \"concepto\": \"Descuento por situación especial\",\n  \"fechaInicio\": \"2025-12-01\",\n  \"fechaFin\": \"2026-06-30\",\n  \"motivo\": \"Aprobado por comisión directiva\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ajustes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ajustes"]
+            }
+          }
+        },
+        {
+          "name": "Listar Ajustes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ajustes?activo=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ajustes"],
+              "query": [{"key": "activo", "value": "true"}]
+            }
+          }
+        },
+        {
+          "name": "Obtener Ajuste por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ajustes/{{ajusteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ajustes", "{{ajusteId}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Ajuste",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valor\": 40,\n  \"fechaFin\": \"2026-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ajustes/{{ajusteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ajustes", "{{ajusteId}}"]
+            }
+          }
+        },
+        {
+          "name": "Desactivar Ajuste",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ajustes/{{ajusteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ajustes", "{{ajusteId}}"]
+            }
+          }
+        },
+        {
+          "name": "Estadísticas de Ajustes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ajustes/estadisticas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ajustes", "estadisticas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exenciones",
+      "item": [
+        {
+          "name": "Crear Exención",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personaId\": {{personaId}},\n  \"tipoExencion\": \"EXENCION_PARCIAL\",\n  \"porcentaje\": 75,\n  \"motivoExencion\": \"Dificultades económicas\",\n  \"fechaInicio\": \"2025-12-01\",\n  \"fechaFin\": \"2026-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/exenciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exenciones"]
+            }
+          }
+        },
+        {
+          "name": "Listar Exenciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/exenciones?activa=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exenciones"],
+              "query": [{"key": "activa", "value": "true"}]
+            }
+          }
+        },
+        {
+          "name": "Aprobar Exención",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aprobarObservaciones\": \"Aprobado por comisión directiva\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/exenciones/{{exencionId}}/aprobar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exenciones", "{{exencionId}}", "aprobar"]
+            }
+          }
+        },
+        {
+          "name": "Activar Exención",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/exenciones/{{exencionId}}/activar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exenciones", "{{exencionId}}", "activar"]
+            }
+          }
+        },
+        {
+          "name": "Rechazar Exención",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivoRechazo\": \"Documentación insuficiente\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/exenciones/{{exencionId}}/rechazar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exenciones", "{{exencionId}}", "rechazar"]
+            }
+          }
+        },
+        {
+          "name": "Revocar Exención",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivoRevocacion\": \"Situación económica mejoró\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/exenciones/{{exencionId}}/revocar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exenciones", "{{exencionId}}", "revocar"]
+            }
+          }
+        },
+        {
+          "name": "Verificar Exención Vigente",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personaId\": {{personaId}},\n  \"fecha\": \"2025-12-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/exenciones/check",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exenciones", "check"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reportes",
+      "item": [
+        {
+          "name": "Dashboard General",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/cuotas/dashboard?mes=12&anio=2025",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "cuotas", "dashboard"],
+              "query": [
+                {"key": "mes", "value": "12"},
+                {"key": "anio", "value": "2025"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reporte por Categoría",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/cuotas/por-categoria?mes=12&anio=2025",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "cuotas", "por-categoria"],
+              "query": [
+                {"key": "mes", "value": "12"},
+                {"key": "anio", "value": "2025"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reporte de Morosidad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/cuotas/morosidad",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "cuotas", "morosidad"]
+            }
+          }
+        },
+        {
+          "name": "Cobranza Mensual",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/cuotas/cobranza-mensual?anio=2025",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reportes", "cuotas", "cobranza-mensual"],
+              "query": [{"key": "anio", "value": "2025"}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catálogos",
+      "item": [
+        {
+          "name": "Tipos de Items Cuota",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/catalogos/tipos-items-cuota",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "catalogos", "tipos-items-cuota"]
+            }
+          }
+        },
+        {
+          "name": "Categorías de Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/catalogos/categorias-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "catalogos", "categorias-items"]
+            }
+          }
+        },
+        {
+          "name": "Categorías de Socios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/catalogos/categorias-socios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "catalogos", "categorias-socios"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
