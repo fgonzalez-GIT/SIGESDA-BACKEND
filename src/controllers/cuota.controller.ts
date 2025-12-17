@@ -238,6 +238,34 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/recibo/{reciboId}:
+   *   get:
+   *     summary: Obtener cuota por ID de recibo
+   *     description: Busca la cuota asociada a un recibo específico
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: reciboId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Cuota encontrada
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       $ref: '#/components/schemas/Cuota'
+   *       404:
+   *         description: Cuota no encontrada para el recibo
+   */
   async getCuotaByReciboId(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { reciboId } = req.params;
@@ -263,6 +291,65 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/periodo/{mes}/{anio}:
+   *   get:
+   *     summary: Obtener cuotas por período
+   *     description: Retorna todas las cuotas de un mes/año específico
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: mes
+   *         required: true
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 12
+   *       - in: path
+   *         name: anio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 20
+   *       - in: query
+   *         name: categoriaId
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por categoría
+   *     responses:
+   *       200:
+   *         description: Cuotas del período
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/Cuota'
+   *                     meta:
+   *                       type: object
+   *                       properties:
+   *                         total:
+   *                           type: integer
+   *                         page:
+   *                           type: integer
+   *                         totalPages:
+   *                           type: integer
+   */
   async getCuotasPorPeriodo(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { mes, anio } = req.params;
@@ -290,6 +377,49 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/socio/{socioId}:
+   *   get:
+   *     summary: Obtener cuotas de un socio
+   *     description: Retorna todas las cuotas de un socio específico
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: socioId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 20
+   *       - in: query
+   *         name: anio
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por año
+   *     responses:
+   *       200:
+   *         description: Cuotas del socio
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/Cuota'
+   */
   async getCuotasBySocio(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { socioId } = req.params;
@@ -315,6 +445,48 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/{id}:
+   *   put:
+   *     summary: Actualizar una cuota existente
+   *     description: Modifica los datos de una cuota (montos, estado, etc.)
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID de la cuota
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               montoBase:
+   *                 type: number
+   *                 description: Nuevo monto base
+   *               montoActividades:
+   *                 type: number
+   *                 description: Nuevo monto de actividades
+   *               montoTotal:
+   *                 type: number
+   *                 description: Nuevo monto total
+   *     responses:
+   *       200:
+   *         description: Cuota actualizada exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *       404:
+   *         description: Cuota no encontrada
+   *       400:
+   *         description: Datos inválidos
+   */
   async updateCuota(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
@@ -333,6 +505,32 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/{id}:
+   *   delete:
+   *     summary: Eliminar una cuota
+   *     description: Elimina una cuota del sistema (solo si no está pagada)
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID de la cuota a eliminar
+   *     responses:
+   *       200:
+   *         description: Cuota eliminada exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *       404:
+   *         description: Cuota no encontrada
+   *       409:
+   *         description: No se puede eliminar (cuota pagada)
+   */
   async deleteCuota(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
@@ -350,6 +548,44 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/generar/masiva:
+   *   post:
+   *     summary: Generar cuotas masivamente (LEGACY)
+   *     description: |
+   *       **DEPRECATED**: Use /generar-v2 en su lugar.
+   *       Genera cuotas para todos los socios activos de un período.
+   *       No incluye sistema de ítems ni motor de reglas.
+   *     tags: [Cuotas]
+   *     deprecated: true
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - mes
+   *               - anio
+   *             properties:
+   *               mes:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 12
+   *               anio:
+   *                 type: integer
+   *                 minimum: 2020
+   *               categorias:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *     responses:
+   *       201:
+   *         description: Cuotas generadas
+   *       207:
+   *         description: Generación parcial (algunos errores)
+   */
   async generarCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validatedData = generarCuotasSchema.parse(req.body);
@@ -517,6 +753,55 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/calcular/monto:
+   *   post:
+   *     summary: Calcular monto de cuota (preview)
+   *     description: Calcula el monto de una cuota sin crearla en la base de datos
+   *     tags: [Cuotas]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - categoriaId
+   *               - mes
+   *               - anio
+   *             properties:
+   *               categoriaId:
+   *                 type: integer
+   *               mes:
+   *                 type: integer
+   *               anio:
+   *                 type: integer
+   *               personaId:
+   *                 type: integer
+   *                 description: Para calcular con actividades del socio
+   *     responses:
+   *       200:
+   *         description: Monto calculado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         montoBase:
+   *                           type: number
+   *                         montoActividades:
+   *                           type: number
+   *                         montoTotal:
+   *                           type: number
+   *                         desglose:
+   *                           type: object
+   */
   async calcularMontoCuota(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validatedData = calcularCuotaSchema.parse(req.body);
@@ -537,6 +822,75 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/search/avanzada:
+   *   get:
+   *     summary: Búsqueda avanzada de cuotas
+   *     description: Permite búsqueda con múltiples filtros combinados
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: query
+   *         name: mes
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 12
+   *         description: Filtrar por mes
+   *       - in: query
+   *         name: anio
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por año
+   *       - in: query
+   *         name: categoriaId
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por categoría
+   *       - in: query
+   *         name: montoMin
+   *         schema:
+   *           type: number
+   *         description: Monto mínimo
+   *       - in: query
+   *         name: montoMax
+   *         schema:
+   *           type: number
+   *         description: Monto máximo
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 20
+   *     responses:
+   *       200:
+   *         description: Resultados de búsqueda
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/Cuota'
+   *                     meta:
+   *                       type: object
+   *                       properties:
+   *                         total:
+   *                           type: integer
+   *                         page:
+   *                           type: integer
+   *                         totalPages:
+   *                           type: integer
+   */
   async searchCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const searchData = cuotaSearchSchema.parse(req.query);
@@ -558,6 +912,46 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/stats/resumen:
+   *   get:
+   *     summary: Estadísticas generales de cuotas
+   *     description: Retorna métricas agregadas del sistema de cuotas
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: query
+   *         name: mes
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por mes (opcional)
+   *       - in: query
+   *         name: anio
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por año (opcional)
+   *     responses:
+   *       200:
+   *         description: Estadísticas obtenidas
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         totalCuotas:
+   *                           type: integer
+   *                         montoTotal:
+   *                           type: number
+   *                         promedio:
+   *                           type: number
+   *                         porEstado:
+   *                           type: object
+   */
   async getStatistics(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const statsData = cuotaStatsSchema.parse(req.query);
@@ -591,6 +985,37 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/vencidas/listado:
+   *   get:
+   *     summary: Listar cuotas vencidas
+   *     description: Retorna todas las cuotas con estado VENCIDA
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 20
+   *       - in: query
+   *         name: diasVencimiento
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por días de vencimiento (mayor a X días)
+   *     responses:
+   *       200:
+   *         description: Lista de cuotas vencidas
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   */
   async getVencidas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const cuotas = await this.cuotaService.getVencidas();
@@ -610,6 +1035,40 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/pendientes/listado:
+   *   get:
+   *     summary: Listar cuotas pendientes de pago
+   *     description: Retorna todas las cuotas con estado PENDIENTE
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 20
+   *       - in: query
+   *         name: mes
+   *         schema:
+   *           type: integer
+   *       - in: query
+   *         name: anio
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Lista de cuotas pendientes
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   */
   async getPendientes(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const cuotas = await this.cuotaService.getPendientes();
@@ -629,6 +1088,45 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/bulk/eliminar:
+   *   delete:
+   *     summary: Eliminar múltiples cuotas
+   *     description: Elimina varias cuotas por sus IDs (solo no pagadas)
+   *     tags: [Cuotas]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - ids
+   *             properties:
+   *               ids:
+   *                 type: array
+   *                 items:
+   *                   type: integer
+   *                 description: Array de IDs de cuotas a eliminar
+   *     responses:
+   *       200:
+   *         description: Cuotas eliminadas
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         eliminadas:
+   *                           type: integer
+   *                         errors:
+   *                           type: array
+   */
   async deleteBulkCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validatedData = deleteBulkCuotasSchema.parse(req.body);
@@ -646,6 +1144,53 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/recalcular/periodo:
+   *   post:
+   *     summary: Recalcular cuotas de un período
+   *     description: Recalcula todas las cuotas de un mes/año específico
+   *     tags: [Cuotas]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - mes
+   *               - anio
+   *             properties:
+   *               mes:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 12
+   *               anio:
+   *                 type: integer
+   *               aplicarAjustes:
+   *                 type: boolean
+   *                 default: true
+   *               aplicarExenciones:
+   *                 type: boolean
+   *                 default: true
+   *     responses:
+   *       200:
+   *         description: Cuotas recalculadas exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         recalculadas:
+   *                           type: integer
+   *                         errors:
+   *                           type: array
+   */
   async recalcularCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validatedData = recalcularCuotasSchema.parse(req.body);
@@ -673,6 +1218,52 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/resumen/{mes}/{anio}:
+   *   get:
+   *     summary: Obtener resumen mensual de cuotas
+   *     description: Retorna resumen con totales y estadísticas del período
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: mes
+   *         required: true
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 12
+   *       - in: path
+   *         name: anio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Resumen obtenido
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         periodo:
+   *                           type: string
+   *                         totalCuotas:
+   *                           type: integer
+   *                         montoTotal:
+   *                           type: number
+   *                         pagadas:
+   *                           type: integer
+   *                         pendientes:
+   *                           type: integer
+   *                         vencidas:
+   *                           type: integer
+   */
   async getResumenMensual(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { mes, anio } = req.params;
@@ -693,6 +1284,32 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/reporte/{mes}/{anio}:
+   *   get:
+   *     summary: Generar reporte de cuotas del período
+   *     description: Retorna reporte detallado de cuotas de un mes/año
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: mes
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: path
+   *         name: anio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Reporte generado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   */
   async generarReporte(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const validatedData = reporteCuotasSchema.parse({ ...req.params, ...req.query });
@@ -812,6 +1429,38 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/periodos/disponibles:
+   *   get:
+   *     summary: Obtener períodos disponibles
+   *     description: Retorna lista de períodos (mes/año) con cuotas generadas
+   *     tags: [Cuotas]
+   *     responses:
+   *       200:
+   *         description: Lista de períodos
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           mes:
+   *                             type: integer
+   *                           anio:
+   *                             type: integer
+   *                           totalCuotas:
+   *                             type: integer
+   *                           displayName:
+   *                             type: string
+   *                             example: "Diciembre 2025"
+   */
   // Endpoint para obtener períodos disponibles
   async getPeriodosDisponibles(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -852,6 +1501,46 @@ export class CuotaController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/cuotas/validar/{mes}/{anio}/generacion:
+   *   get:
+   *     summary: Validar si se pueden generar cuotas
+   *     description: Verifica prerequisitos antes de generar cuotas del período
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: path
+   *         name: mes
+   *         required: true
+   *         schema:
+   *           type: integer
+   *       - in: path
+   *         name: anio
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Validación completada
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         puedeGenerar:
+   *                           type: boolean
+   *                         razon:
+   *                           type: string
+   *                         advertencias:
+   *                           type: array
+   *                           items:
+   *                             type: string
+   */
   // Endpoint para validar si se pueden generar cuotas
   async validarGeneracionCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
