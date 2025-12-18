@@ -84,7 +84,12 @@ export class CuotaBatchService {
     // PASO 2: Pre-cargar todas las categorías (1 query)
     // ═══════════════════════════════════════════════════════════════════════
 
-    const categoriaIds = [...new Set(sociosPorGenerar.map(s => s.categoriaId))];
+    const categoriaIds = [...new Set(
+      sociosPorGenerar
+        .map(s => s.tipos[0]?.categoriaId)
+        .filter((id): id is number => id !== null && id !== undefined)
+    )];
+
     const categorias = await prisma.categoriaSocio.findMany({
       where: { id: { in: categoriaIds } }
     });
@@ -135,7 +140,13 @@ export class CuotaBatchService {
 
     for (const socio of sociosPorGenerar) {
       try {
-        const montoBase = montosPorCategoria.get(socio.categoriaId) || 0;
+        const categoriaId = socio.tipos[0]?.categoriaId;
+        if (!categoriaId) {
+          logger.warn(`[BATCH] Socio ${socio.id} sin categoría, omitiendo`);
+          continue;
+        }
+
+        const montoBase = montosPorCategoria.get(categoriaId) || 0;
         const participacionesSocio = participacionesPorPersona.get(socio.id) || [];
 
         let montoActividades = 0;
@@ -147,7 +158,7 @@ export class CuotaBatchService {
         }
 
         const montoTotal = montoBase + montoActividades;
-        const categoria = categoriasMap.get(socio.categoriaId);
+        const categoria = categoriasMap.get(categoriaId);
 
         recibosData.push({
           tipo: TipoRecibo.CUOTA,
@@ -161,7 +172,7 @@ export class CuotaBatchService {
 
         sociosInfo.push({
           socioId: socio.id,
-          categoriaId: socio.categoriaId,
+          categoriaId,
           montoBase,
           montoActividades,
           montoTotal
@@ -177,6 +188,22 @@ export class CuotaBatchService {
     // ═══════════════════════════════════════════════════════════════════════
     // PASO 6: Inserción en batch con transacción única (~6 queries)
     // ═══════════════════════════════════════════════════════════════════════
+
+    logger.info(`[BATCH] Preparados ${recibosData.length} recibos y ${sociosInfo.length} socios info para inserción`);
+
+    if (recibosData.length === 0) {
+      logger.warn('[BATCH] No hay recibos para procesar');
+      return {
+        generated: 0,
+        errors: errors.length > 0 ? errors : ['No hay datos para procesar'],
+        cuotas: [],
+        performance: {
+          sociosProcesados: sociosPorGenerar.length,
+          tiempoTotal: Date.now() - startTime,
+          queriesEjecutados: queriesCount
+        }
+      };
+    }
 
     let cuotasCreadas: any[] = [];
 

@@ -9,7 +9,7 @@ import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
 import { CuotaRepository } from '@/repositories/cuota.repository';
 import { ItemCuotaRepository } from '@/repositories/item-cuota.repository';
-import { HistorialCuotaRepository } from '@/repositories/historial-cuota.repository';
+import { HistorialAjusteCuotaRepository } from '@/repositories/historial-ajuste-cuota.repository';
 
 /**
  * AjusteMasivoService
@@ -25,16 +25,16 @@ import { HistorialCuotaRepository } from '@/repositories/historial-cuota.reposit
 export class AjusteMasivoService {
   private cuotaRepository: CuotaRepository;
   private itemCuotaRepository: ItemCuotaRepository;
-  private historialRepository: HistorialCuotaRepository;
+  private historialRepository: HistorialAjusteCuotaRepository;
 
   constructor(
     cuotaRepository?: CuotaRepository,
     itemCuotaRepository?: ItemCuotaRepository,
-    historialRepository?: HistorialCuotaRepository
+    historialRepository?: HistorialAjusteCuotaRepository
   ) {
     this.cuotaRepository = cuotaRepository || new CuotaRepository();
     this.itemCuotaRepository = itemCuotaRepository || new ItemCuotaRepository();
-    this.historialRepository = historialRepository || new HistorialCuotaRepository();
+    this.historialRepository = historialRepository || new HistorialAjusteCuotaRepository(prisma);
   }
 
   private get prisma() {
