@@ -346,3 +346,256 @@ export const compararCuotaSchema = z.object({
 });
 
 export type CompararCuotaDto = z.infer<typeof compararCuotaSchema>;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 5: DTOs PARA SIMULADOR DE CUOTAS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * DTO para simular generación de cuotas sin persistir en BD
+ * Útil para preview antes de generar
+ */
+export const simularGeneracionSchema = z.object({
+  mes: z.number().int().min(1, 'El mes debe ser entre 1 y 12').max(12, 'El mes debe ser entre 1 y 12'),
+  anio: z.number().int().min(2020, 'El año debe ser 2020 o posterior').max(2030, 'El año no puede ser mayor a 2030'),
+  categoriaIds: z.array(z.number().int().positive('ID de categoría inválido')).optional(),
+  socioIds: z.array(z.number().int().positive('ID de socio inválido')).optional(),
+  aplicarDescuentos: z.boolean().default(true),
+  aplicarAjustes: z.boolean().default(true),
+  aplicarExenciones: z.boolean().default(true),
+  incluirInactivos: z.boolean().default(false)
+}).refine(
+  data => !data.categoriaIds || data.categoriaIds.length > 0,
+  {
+    message: 'Si proporciona categorías, debe incluir al menos una',
+    path: ['categoriaIds']
+  }
+).refine(
+  data => !data.socioIds || data.socioIds.length > 0,
+  {
+    message: 'Si proporciona socios, debe incluir al menos uno',
+    path: ['socioIds']
+  }
+);
+
+export type SimularGeneracionDto = z.infer<typeof simularGeneracionSchema>;
+
+/**
+ * DTO para simular cambios en reglas de descuento
+ * Permite ver impacto antes de modificar reglas
+ */
+export const simularReglaDescuentoSchema = z.object({
+  mes: z.number().int().min(1).max(12),
+  anio: z.number().int().min(2020).max(2030),
+  reglasModificadas: z.array(z.object({
+    reglaId: z.number().int().positive().optional(),
+    tipo: z.enum(['ANTIGUEDAD', 'FAMILIAR', 'CATEGORIA', 'COMBINADA']),
+    porcentaje: z.number().min(0, 'El porcentaje debe ser entre 0 y 100').max(100, 'El porcentaje debe ser entre 0 y 100'),
+    condiciones: z.record(z.any()),
+    activa: z.boolean().default(true)
+  })),
+  reglasNuevas: z.array(z.object({
+    codigo: z.string().min(3, 'El código debe tener al menos 3 caracteres'),
+    nombre: z.string().min(5, 'El nombre debe tener al menos 5 caracteres'),
+    tipo: z.enum(['ANTIGUEDAD', 'FAMILIAR', 'CATEGORIA', 'COMBINADA']),
+    porcentaje: z.number().min(0).max(100),
+    condiciones: z.record(z.any()),
+    activa: z.boolean().default(true)
+  })).optional(),
+  socioIds: z.array(z.number().int().positive()).optional(),
+  categoriaIds: z.array(z.number().int().positive()).optional()
+});
+
+export type SimularReglaDescuentoDto = z.infer<typeof simularReglaDescuentoSchema>;
+
+/**
+ * DTO para comparar diferentes escenarios de generación
+ * Permite evaluar múltiples configuraciones y elegir la mejor
+ */
+export const compararEscenariosSchema = z.object({
+  mes: z.number().int().min(1).max(12),
+  anio: z.number().int().min(2020).max(2030),
+  escenarios: z.array(z.object({
+    nombre: z.string().min(3, 'El nombre del escenario debe tener al menos 3 caracteres'),
+    descripcion: z.string().max(200, 'La descripción no puede exceder 200 caracteres').optional(),
+    aplicarDescuentos: z.boolean().default(true),
+    aplicarAjustes: z.boolean().default(true),
+    aplicarExenciones: z.boolean().default(true),
+    porcentajeDescuentoGlobal: z.number().min(0).max(100).optional(),
+    montoFijoDescuento: z.number().min(0).optional()
+  })).min(2, 'Debe proporcionar al menos 2 escenarios para comparar').max(5, 'No se pueden comparar más de 5 escenarios'),
+  socioIds: z.array(z.number().int().positive()).optional(),
+  categoriaIds: z.array(z.number().int().positive()).optional()
+});
+
+export type CompararEscenariosDto = z.infer<typeof compararEscenariosSchema>;
+
+/**
+ * DTO para simulación de impacto masivo
+ * Calcula el impacto económico de cambios en reglas/configuración
+ */
+export const simularImpactoMasivoSchema = z.object({
+  mes: z.number().int().min(1).max(12),
+  anio: z.number().int().min(2020).max(2030),
+  cambios: z.object({
+    nuevosMontosPorCategoria: z.record(z.string(), z.number().positive()).optional(),
+    nuevasPorcentajesDescuento: z.record(z.string(), z.number().min(0).max(100)).optional(),
+    ajusteGlobalPorcentaje: z.number().min(-50).max(50).optional(),
+    ajusteGlobalMonto: z.number().optional()
+  }),
+  incluirProyeccion: z.boolean().default(false),
+  mesesProyeccion: z.number().int().min(1).max(12).optional()
+});
+
+export type SimularImpactoMasivoDto = z.infer<typeof simularImpactoMasivoSchema>;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 5: DTOs PARA AJUSTE MASIVO DE CUOTAS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * DTO para aplicar ajuste masivo a múltiples cuotas
+ * Permite modificar múltiples ítems de cuotas en batch
+ */
+export const ajusteMasivoSchema = z.object({
+  // Filtros para seleccionar cuotas
+  filtros: z.object({
+    mes: z.number().int().min(1).max(12).optional(),
+    anio: z.number().int().min(2020).max(2030).optional(),
+    categoriaIds: z.array(z.number().int().positive()).optional(),
+    socioIds: z.array(z.number().int().positive()).optional(),
+    estadoCuota: z.enum(['PENDIENTE', 'PAGADO', 'VENCIDO', 'ANULADO']).optional()
+  }),
+  // Tipo de ajuste a aplicar
+  tipoAjuste: z.enum(['DESCUENTO_PORCENTAJE', 'DESCUENTO_FIJO', 'RECARGO_PORCENTAJE', 'RECARGO_FIJO', 'MONTO_FIJO_TOTAL']),
+  // Valor del ajuste
+  valor: z.number().min(0, 'El valor debe ser mayor o igual a 0'),
+  // Motivo del ajuste (obligatorio para auditoría)
+  motivo: z.string().min(10, 'El motivo debe tener al menos 10 caracteres').max(200, 'El motivo no puede exceder 200 caracteres'),
+  // Aplicar solo si coincide con condiciones
+  condiciones: z.object({
+    montoMinimo: z.number().min(0).optional(),
+    montoMaximo: z.number().min(0).optional(),
+    soloConDescuentos: z.boolean().optional(),
+    soloSinExenciones: z.boolean().optional()
+  }).optional(),
+  // Modo de aplicación
+  modo: z.enum(['PREVIEW', 'APLICAR']).default('PREVIEW'),
+  // Confirmación explícita (requerida para APLICAR)
+  confirmarAplicacion: z.boolean().optional()
+}).refine(
+  data => data.tipoAjuste !== 'DESCUENTO_PORCENTAJE' || data.valor <= 100,
+  {
+    message: 'El porcentaje de descuento no puede exceder 100%',
+    path: ['valor']
+  }
+).refine(
+  data => data.tipoAjuste !== 'RECARGO_PORCENTAJE' || data.valor <= 100,
+  {
+    message: 'El porcentaje de recargo no puede exceder 100%',
+    path: ['valor']
+  }
+).refine(
+  data => data.modo !== 'APLICAR' || data.confirmarAplicacion === true,
+  {
+    message: 'Debe confirmar la aplicación del ajuste masivo',
+    path: ['confirmarAplicacion']
+  }
+);
+
+export type AjusteMasivoDto = z.infer<typeof ajusteMasivoSchema>;
+
+/**
+ * DTO para modificar múltiples ítems de cuotas
+ * Permite actualizar conceptos, montos, etc. en batch
+ */
+export const modificarItemsMasivoSchema = z.object({
+  // Filtros para seleccionar ítems
+  filtros: z.object({
+    mes: z.number().int().min(1).max(12).optional(),
+    anio: z.number().int().min(2020).max(2030).optional(),
+    categoriaItemId: z.number().int().positive().optional(),
+    tipoItemId: z.number().int().positive().optional(),
+    conceptoContiene: z.string().min(3).optional()
+  }),
+  // Modificaciones a aplicar
+  modificaciones: z.object({
+    nuevoConcepto: z.string().min(3).max(100).optional(),
+    nuevoMonto: z.number().min(0).optional(),
+    nuevoPorcentaje: z.number().min(0).max(100).optional(),
+    multiplicarMonto: z.number().min(0.1).max(10).optional()
+  }),
+  // Motivo de la modificación
+  motivo: z.string().min(10).max(200),
+  // Modo de aplicación
+  modo: z.enum(['PREVIEW', 'APLICAR']).default('PREVIEW'),
+  // Confirmación
+  confirmarModificacion: z.boolean().optional()
+}).refine(
+  data => Object.keys(data.modificaciones).length > 0,
+  {
+    message: 'Debe especificar al menos una modificación',
+    path: ['modificaciones']
+  }
+).refine(
+  data => data.modo !== 'APLICAR' || data.confirmarModificacion === true,
+  {
+    message: 'Debe confirmar la modificación masiva',
+    path: ['confirmarModificacion']
+  }
+);
+
+export type ModificarItemsMasivoDto = z.infer<typeof modificarItemsMasivoSchema>;
+
+/**
+ * DTO para aplicar descuento global a todas las cuotas de un período
+ */
+export const descuentoGlobalSchema = z.object({
+  mes: z.number().int().min(1).max(12),
+  anio: z.number().int().min(2020).max(2030),
+  // Tipo de descuento
+  tipoDescuento: z.enum(['PORCENTAJE', 'MONTO_FIJO']),
+  // Valor del descuento
+  valor: z.number().min(0),
+  // Motivo del descuento global
+  motivo: z.string().min(10).max(200),
+  // Filtros opcionales
+  filtros: z.object({
+    categoriaIds: z.array(z.number().int().positive()).optional(),
+    socioIds: z.array(z.number().int().positive()).optional(),
+    montoMinimo: z.number().min(0).optional()
+  }).optional(),
+  // Modo
+  modo: z.enum(['PREVIEW', 'APLICAR']).default('PREVIEW'),
+  // Confirmación
+  confirmarDescuento: z.boolean().optional()
+}).refine(
+  data => data.tipoDescuento !== 'PORCENTAJE' || data.valor <= 100,
+  {
+    message: 'El porcentaje de descuento no puede exceder 100%',
+    path: ['valor']
+  }
+).refine(
+  data => data.modo !== 'APLICAR' || data.confirmarDescuento === true,
+  {
+    message: 'Debe confirmar el descuento global',
+    path: ['confirmarDescuento']
+  }
+);
+
+export type DescuentoGlobalDto = z.infer<typeof descuentoGlobalSchema>;
+
+/**
+ * DTO para validar cambios antes de aplicar ajustes masivos
+ * Retorna advertencias y validaciones
+ */
+export const validarAjusteMasivoSchema = z.object({
+  cuotasAfectadas: z.number().int().min(0),
+  montoTotalOriginal: z.number().min(0),
+  montoTotalNuevo: z.number().min(0),
+  impactoEconomico: z.number(),
+  advertencias: z.array(z.string()),
+  errores: z.array(z.string())
+});
+
+export type ValidarAjusteMasivoDto = z.infer<typeof validarAjusteMasivoSchema>;

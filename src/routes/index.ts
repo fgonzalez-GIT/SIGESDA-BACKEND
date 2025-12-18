@@ -33,6 +33,8 @@ import ajusteCuotaRoutes from './ajuste-cuota.routes';
 import historialCuotaRoutes from './historial-cuota.routes';
 import exencionCuotaRoutes from './exencion-cuota.routes';
 import reportesCuotaRoutes from './reportes-cuota.routes';
+import simuladorCuotaRoutes from './simulador-cuota.routes';
+import ajusteMasivoRoutes from './ajuste-masivo.routes';
 
 const router = Router();
 
@@ -77,9 +79,11 @@ router.use('/recibos', reciboRoutes);
 router.use('/cuotas', cuotaRoutes);
 router.use('/items-cuota', itemCuotaRoutes); // Rutas para operaciones individuales de ítems
 router.use('/ajustes-cuota', ajusteCuotaRoutes); // FASE 4: Ajustes manuales a cuotas
+router.use('/ajustes', ajusteMasivoRoutes); // FASE 5: Ajustes masivos de cuotas
 router.use('/exenciones-cuota', exencionCuotaRoutes); // FASE 4: Exenciones temporales
 router.use('/historial-cuota', historialCuotaRoutes); // FASE 4: Historial de cambios en cuotas
 router.use('/reportes/cuotas', reportesCuotaRoutes); // FASE 4: Reportes y estadísticas de cuotas
+router.use('/simulador/cuotas', simuladorCuotaRoutes); // FASE 5: Simulador de impacto de cuotas
 router.use('/medios-pago', medioPagoRoutes);
 router.use('/categorias-socios', categoriaSocioRouter);
 

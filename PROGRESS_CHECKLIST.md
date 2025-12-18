@@ -458,19 +458,64 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ---
 
-## ⏸️ FASE 5: Herramientas de Ajuste y Simulación (4-5 días) - **PENDIENTE 0%**
+## 🔄 FASE 5: Herramientas de Ajuste y Simulación (4-5 días) - **EN PROGRESO 50%** 🚀
+
+### Tasks completadas:
+
+- [x] **5.1** Simulador de impacto - ✅ **COMPLETADA** (2025-12-17)
+  - Preview de cuotas antes de generar (sin persistir en BD)
+  - Simulación de cambios en reglas de descuento
+  - Comparación de múltiples escenarios
+  - Simulación de impacto masivo con proyección
+  - **Archivos creados:**
+    - `src/dto/cuota.dto.ts` (+100 líneas de DTOs de simulación)
+    - `src/services/simulador-cuota.service.ts` (850 líneas)
+    - `src/controllers/simulador-cuota.controller.ts` (150 líneas)
+    - `src/routes/simulador-cuota.routes.ts` (85 líneas)
+    - `docs/SIMULADOR_CUOTAS.md` (700 líneas de documentación)
+    - `tests/simulador/test-simulador-basic.sh` (script de testing)
+  - **Archivos modificados:**
+    - `src/routes/index.ts` (mount /api/simulador/cuotas)
+  - **Endpoints agregados:**
+    - `GET /api/simulador/cuotas/health`
+    - `POST /api/simulador/cuotas/generacion`
+    - `POST /api/simulador/cuotas/reglas`
+    - `POST /api/simulador/cuotas/escenarios`
+    - `POST /api/simulador/cuotas/impacto-masivo`
+  - **Características:**
+    - ✅ Preview sin persistir en BD
+    - ✅ Comparación hasta 5 escenarios
+    - ✅ Proyección a futuro (1-12 meses)
+    - ✅ Cálculo de impacto económico
+    - ✅ Recomendaciones automáticas
+
+- [x] **5.2** Herramienta de ajuste masivo - ✅ **COMPLETADA** (2025-12-17)
+  - Modificación de múltiples cuotas en batch
+  - Aplicación de descuentos globales
+  - Validación de cambios con advertencias
+  - Modificación masiva de ítems
+  - **Archivos creados:**
+    - `src/dto/cuota.dto.ts` (+150 líneas de DTOs de ajuste masivo)
+    - `src/services/ajuste-masivo.service.ts` (750 líneas)
+    - `src/controllers/ajuste-masivo.controller.ts` (140 líneas)
+    - `src/routes/ajuste-masivo.routes.ts` (75 líneas)
+    - `tests/ajuste-masivo/test-ajuste-masivo-basic.sh` (script de testing)
+  - **Archivos modificados:**
+    - `src/routes/index.ts` (mount /api/ajustes)
+  - **Endpoints agregados:**
+    - `GET /api/ajustes/masivo/health`
+    - `POST /api/ajustes/masivo`
+    - `POST /api/ajustes/modificar-items`
+    - `POST /api/ajustes/descuento-global`
+  - **Características:**
+    - ✅ Modo PREVIEW (sin persistir) + modo APLICAR (con confirmación)
+    - ✅ 5 tipos de ajuste (descuento/recargo porcentaje/fijo, monto fijo)
+    - ✅ Filtros avanzados (mes/año/categoría/socios/estado/monto)
+    - ✅ Validaciones y advertencias automáticas
+    - ✅ Auditoría completa (historial de cambios)
+    - ✅ Transacciones atómicas
 
 ### Tasks pendientes:
-
-- [ ] **5.1** Simulador de impacto
-  - Preview de cuotas antes de generar
-  - Simulación de cambios en reglas
-  - Comparación de escenarios
-
-- [ ] **5.2** Herramienta de ajuste masivo
-  - Modificación de múltiples ítems
-  - Aplicación de descuentos globales
-  - Validación de cambios
 
 - [ ] **5.3** Rollback de generación
   - Deshacer generación masiva
@@ -482,8 +527,8 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
   - Desglose detallado de ítems
   - Explicación de descuentos
 
-**Documentos a crear:**
-- `docs/FASE5_SIMULACION.md`
+**Documentos creados:**
+- ✅ `docs/SIMULADOR_CUOTAS.md` (documentación completa del simulador)
 
 ---
 
