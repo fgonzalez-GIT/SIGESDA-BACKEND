@@ -458,7 +458,7 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 
 ---
 
-## 🔄 FASE 5: Herramientas de Ajuste y Simulación (4-5 días) - **EN PROGRESO 50%** 🚀
+## ✅ FASE 5: Herramientas de Ajuste y Simulación (4-5 días) - **COMPLETADA 100%** ✅
 
 ### Tasks completadas:
 
@@ -515,17 +515,61 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
     - ✅ Auditoría completa (historial de cambios)
     - ✅ Transacciones atómicas
 
-### Tasks pendientes:
+- [x] **5.3** Rollback de generación - ✅ **COMPLETADA** (2025-12-17)
+  - Deshacer generación masiva de cuotas
+  - Restaurar estado anterior con backups
+  - Validación de integridad y bloqueos
+  - Rollback individual de cuotas
+  - **Archivos creados:**
+    - `src/dto/cuota.dto.ts` (+80 líneas de DTOs de rollback)
+    - `src/services/rollback-cuota.service.ts` (600 líneas)
+    - `src/controllers/rollback-cuota.controller.ts` (145 líneas)
+    - `src/routes/rollback-cuota.routes.ts` (85 líneas)
+    - `backups/rollback-cuotas/.gitkeep` (directorio de backups)
+  - **Archivos modificados:**
+    - `src/routes/index.ts` (mount /api/rollback/cuotas)
+  - **Endpoints agregados:**
+    - `GET /api/rollback/cuotas/health`
+    - `POST /api/rollback/cuotas/validar`
+    - `POST /api/rollback/cuotas/generacion`
+    - `POST /api/rollback/cuotas/:id`
+  - **Características:**
+    - ✅ Modo PREVIEW + APLICAR con confirmación
+    - ✅ Backup automático antes de eliminar
+    - ✅ Validación de cuotas pagadas (bloquea eliminación)
+    - ✅ Clasificación automática (eliminables vs bloqueadas)
+    - ✅ Rollback masivo por período
+    - ✅ Rollback individual por cuota
+    - ✅ Transacciones atómicas (todo o nada)
+    - ✅ Auditoría completa con motivo obligatorio
 
-- [ ] **5.3** Rollback de generación
-  - Deshacer generación masiva
-  - Restaurar estado anterior
-  - Validación de integridad
-
-- [ ] **5.4** Preview en UI
-  - Vista previa para socios
-  - Desglose detallado de ítems
-  - Explicación de descuentos
+- [x] **5.4** Preview en UI - ✅ **COMPLETADA** (2025-12-17)
+  - Vista previa detallada de cuotas para UI
+  - Desglose de ítems con explicaciones
+  - Formato human-readable
+  - Múltiples formatos (COMPLETO, RESUMIDO, SIMPLE)
+  - **Archivos creados:**
+    - `src/dto/cuota.dto.ts` (+60 líneas de DTOs de preview)
+    - `src/services/preview-cuota.service.ts` (570 líneas)
+    - `src/controllers/preview-cuota.controller.ts` (120 líneas)
+    - `src/routes/preview-cuota.routes.ts` (110 líneas)
+  - **Archivos modificados:**
+    - `src/routes/index.ts` (mount /api/preview/cuotas)
+    - `src/dto/cuota.dto.ts` (actualizado compararCuotaSchema)
+  - **Endpoints agregados:**
+    - `GET /api/preview/cuotas/health`
+    - `POST /api/preview/cuotas` (preview individual)
+    - `POST /api/preview/cuotas/socio` (preview de socio)
+    - `POST /api/preview/cuotas/comparar` (comparación antes/después)
+  - **Características:**
+    - ✅ Preview de cuota existente por ID
+    - ✅ Preview de múltiples cuotas de un socio
+    - ✅ Desglose detallado de ítems con cálculos
+    - ✅ Explicaciones human-readable para UI
+    - ✅ Múltiples formatos de salida (COMPLETO/RESUMIDO/SIMPLE)
+    - ✅ Historial de cambios (opcional)
+    - ✅ Comparación antes/después de modificaciones
+    - ✅ Resumen agrupado por mes
 
 **Documentos creados:**
 - ✅ `docs/SIMULADOR_CUOTAS.md` (documentación completa del simulador)
@@ -671,23 +715,23 @@ Migrar el sistema de cuotas de un modelo rígido (campos fijos) a un sistema fle
 ║ FASE 2: ████████████████████████████████████████ 100% ✅      ║
 ║ FASE 3: ████████████████████████████████████████ 100% ✅      ║
 ║ FASE 4: ████████████████████████████████████████ 100% ✅      ║
-║ FASE 5: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
+║ FASE 5: ████████████████████████████████████████ 100% ✅      ║
 ║ FASE 6: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% ⏸️      ║
 ║ FASE 7: ████████████████████████████████████████ 100% ✅      ║
 ╠════════════════════════════════════════════════════════════════╣
-║ TOTAL:  ██████████████████████████████████████░  88% 🚀      ║
+║ TOTAL:  ████████████████████████████████████████  93% 🚀      ║
 ╚════════════════════════════════════════════════════════════════╝
 
-Fases completadas: 6/8 (Fases 0, 1, 2, 3, 4, 7 - Todas commiteadas) ✅
-Fases pendientes:  FASE 5 y FASE 6 (Simulación y Performance)
+Fases completadas: 7/8 (Fases 0, 1, 2, 3, 4, 5, 7 - Todas commiteadas) ✅
+Fases pendientes:  FASE 6 (Optimización de Performance)
 Tests implementados: 250 tests (F2: 38, F3: 34, F4: 130, F7: 48) - ✅ 48/48 E2E pasando
-Endpoints documentados: 70+ endpoints (Swagger/OpenAPI 3.0) ✅
+Endpoints documentados: 80+ endpoints (Swagger/OpenAPI 3.0) ✅
 Refactoring completado: ✅ Helpers, constantes, código duplicado eliminado (83% reducción)
 Guías de usuario: ✅ 5 guías completas (~2300 líneas)
 Colección Postman: ✅ 70+ endpoints organizados
-Días invertidos:   ~22-24 días
-Días restantes:    ~6-10 días (FASE 5 + FASE 6)
-Próximo paso:      FASE 5 - Simulación y Ajustes Masivos (4-5 días)
+Días invertidos:   ~26-28 días
+Días restantes:    ~3-4 días (FASE 6)
+Próximo paso:      FASE 6 - Optimización de Performance (3-4 días)
 ```
 
 ---

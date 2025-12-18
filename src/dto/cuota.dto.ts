@@ -339,10 +339,24 @@ export const previewRecalculoSchema = z.object({
 export type PreviewRecalculoDto = z.infer<typeof previewRecalculoSchema>;
 
 /**
- * DTO para comparar estado antes/después del recálculo
+ * DTO para comparar cuota antes/después de cambios
+ * Usado tanto para recálculo como para preview de cambios propuestos
  */
 export const compararCuotaSchema = z.object({
-  cuotaId: z.number().int().positive('El ID de cuota debe ser un número positivo')
+  cuotaId: z.number().int().positive('El ID de cuota debe ser un número positivo'),
+  cambiosPropuestos: z.object({
+    nuevoDescuento: z.number().min(0).max(100).optional(),
+    nuevosAjustes: z.array(z.object({
+      tipoItemCuotaId: z.number().int().positive(),
+      monto: z.number(),
+      motivo: z.string().min(10).max(200)
+    })).optional(),
+    nuevasExenciones: z.array(z.object({
+      tipoItemCuotaId: z.number().int().positive(),
+      porcentaje: z.number().min(0).max(100),
+      motivo: z.string().min(10).max(200)
+    })).optional()
+  }).optional() // Opcional para retrocompatibilidad con endpoint de recálculo
 });
 
 export type CompararCuotaDto = z.infer<typeof compararCuotaSchema>;
@@ -599,3 +613,132 @@ export const validarAjusteMasivoSchema = z.object({
 });
 
 export type ValidarAjusteMasivoDto = z.infer<typeof validarAjusteMasivoSchema>;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 5: DTOs PARA ROLLBACK DE GENERACIÓN
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * DTO para hacer rollback de generación masiva de cuotas
+ * Permite deshacer una generación completa con validaciones
+ */
+export const rollbackGeneracionSchema = z.object({
+  // Identificador del período a revertir
+  mes: z.number().int().min(1).max(12),
+  anio: z.number().int().min(2020).max(2030),
+  // Filtros opcionales
+  categoriaIds: z.array(z.number().int().positive()).optional(),
+  socioIds: z.array(z.number().int().positive()).optional(),
+  // Modo de operación
+  modo: z.enum(['PREVIEW', 'APLICAR']).default('PREVIEW'),
+  // Opciones de rollback
+  opciones: z.object({
+    eliminarCuotasPendientes: z.boolean().default(true),
+    eliminarCuotasPagadas: z.boolean().default(false),
+    restaurarRecibos: z.boolean().default(true),
+    crearBackup: z.boolean().default(true)
+  }).optional(),
+  // Confirmación obligatoria
+  confirmarRollback: z.boolean().optional(),
+  // Motivo del rollback (para auditoría)
+  motivo: z.string().min(10, 'El motivo debe tener al menos 10 caracteres').max(200).optional()
+}).refine(
+  data => data.modo !== 'APLICAR' || data.confirmarRollback === true,
+  {
+    message: 'Debe confirmar el rollback para aplicar',
+    path: ['confirmarRollback']
+  }
+).refine(
+  data => data.modo !== 'APLICAR' || data.motivo,
+  {
+    message: 'Debe proporcionar un motivo para el rollback',
+    path: ['motivo']
+  }
+);
+
+export type RollbackGeneracionDto = z.infer<typeof rollbackGeneracionSchema>;
+
+/**
+ * DTO para rollback por ID de cuota específica
+ * Permite deshacer una cuota individual y sus dependencias
+ */
+export const rollbackCuotaSchema = z.object({
+  cuotaId: z.number().int().positive('El ID de cuota debe ser un número positivo'),
+  eliminarItemsAsociados: z.boolean().default(true),
+  eliminarRecibo: z.boolean().default(true),
+  modo: z.enum(['PREVIEW', 'APLICAR']).default('PREVIEW'),
+  confirmarRollback: z.boolean().optional(),
+  motivo: z.string().min(10).max(200).optional()
+}).refine(
+  data => data.modo !== 'APLICAR' || data.confirmarRollback === true,
+  {
+    message: 'Debe confirmar el rollback',
+    path: ['confirmarRollback']
+  }
+);
+
+export type RollbackCuotaDto = z.infer<typeof rollbackCuotaSchema>;
+
+/**
+ * DTO para validar si se puede hacer rollback
+ * Retorna advertencias y bloqueos
+ */
+export const validarRollbackSchema = z.object({
+  mes: z.number().int().min(1).max(12),
+  anio: z.number().int().min(2020).max(2030),
+  categoriaIds: z.array(z.number().int().positive()).optional(),
+  socioIds: z.array(z.number().int().positive()).optional()
+});
+
+export type ValidarRollbackDto = z.infer<typeof validarRollbackSchema>;
+
+// ========================================
+// FASE 5 - Task 5.4: Preview en UI
+// DTOs para vista previa detallada de cuotas
+// ========================================
+
+/**
+ * DTO para solicitar preview de cuota
+ * Puede ser por ID de cuota existente o por datos para generar preview
+ */
+export const previewCuotaSchema = z.object({
+  // Opción 1: Preview de cuota existente
+  cuotaId: z.number().int().positive().optional(),
+
+  // Opción 2: Preview de cuota a generar (simulación)
+  socioId: z.number().int().positive().optional(),
+  mes: z.number().int().min(1).max(12).optional(),
+  anio: z.number().int().min(2020).max(2030).optional(),
+  categoriaId: z.number().int().positive().optional(),
+
+  // Opciones de visualización
+  incluirDetalleItems: z.boolean().default(true),
+  incluirExplicacionDescuentos: z.boolean().default(true),
+  incluirHistorialCambios: z.boolean().default(false),
+  formato: z.enum(['COMPLETO', 'RESUMIDO', 'SIMPLE']).default('COMPLETO')
+}).refine(
+  data => data.cuotaId !== undefined || (data.socioId !== undefined && data.mes !== undefined && data.anio !== undefined),
+  {
+    message: 'Debe proporcionar cuotaId O (socioId + mes + anio)',
+    path: ['cuotaId']
+  }
+);
+
+export type PreviewCuotaDto = z.infer<typeof previewCuotaSchema>;
+
+/**
+ * DTO para preview de cuotas de un socio (múltiples períodos)
+ */
+export const previewCuotasSocioSchema = z.object({
+  socioId: z.number().int().positive('ID de socio debe ser positivo'),
+  mesDesde: z.number().int().min(1).max(12),
+  anioDesde: z.number().int().min(2020).max(2030),
+  mesHasta: z.number().int().min(1).max(12).optional(),
+  anioHasta: z.number().int().min(2020).max(2030).optional(),
+  incluirPagadas: z.boolean().default(false),
+  incluirAnuladas: z.boolean().default(false),
+  formato: z.enum(['COMPLETO', 'RESUMIDO', 'SIMPLE']).default('RESUMIDO')
+});
+
+export type PreviewCuotasSocioDto = z.infer<typeof previewCuotasSocioSchema>;
+
