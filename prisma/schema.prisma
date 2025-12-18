@@ -23,6 +23,8 @@ model actividades {
   participacion_actividades participacion_actividades[]
   reserva_aulas             reserva_aulas[]
   secciones_actividades     secciones_actividades[]
+
+  @@index([activa])
 }
 
 model tipos_actividades {
@@ -268,6 +270,7 @@ model Cuota {
 
   @@index([categoriaId])
   @@index([mes, anio])
+  @@index([categoriaId, mes, anio])
   @@map("cuotas")
 }
 
@@ -336,6 +339,7 @@ model ItemCuota {
 
   @@index([cuotaId])
   @@index([tipoItemId])
+  @@index([cuotaId, tipoItemId])
   @@map("items_cuota")
 }
 
@@ -357,6 +361,8 @@ model Familiar {
   socio                        Persona        @relation("SocioFamiliar", fields: [socioId], references: [id], onDelete: Cascade)
 
   @@unique([socioId, familiarId])
+  @@index([socioId, activo])
+  @@index([familiarId, activo])
   @@index([grupoFamiliarId])
   @@index([activo])
   @@map("familiares")
@@ -481,6 +487,12 @@ model Recibo {
   emisor           Persona?     @relation("ReciboEmisor", fields: [emisorId], references: [id])
   receptor         Persona?     @relation("ReciboReceptor", fields: [receptorId], references: [id])
 
+  @@index([receptorId])
+  @@index([emisorId])
+  @@index([estado])
+  @@index([fecha])
+  @@index([fechaVencimiento])
+  @@index([estado, fechaVencimiento])
   @@map("recibos")
 }
 
@@ -515,6 +527,9 @@ model participacion_actividades {
   personas       Persona     @relation(fields: [personaId], references: [id], onDelete: Cascade)
 
   @@unique([personaId, actividadId])
+  @@index([personaId, activa])
+  @@index([actividadId, activa])
+  @@index([personaId, fechaInicio, fechaFin])
 }
 
 model participaciones_secciones {
@@ -948,6 +963,7 @@ model AjusteCuotaSocio {
   @@index([personaId])
   @@index([activo])
   @@index([fechaInicio, fechaFin])
+  @@index([personaId, activo, fechaInicio])
   @@map("ajustes_cuota_socio")
 }
 
@@ -1039,5 +1055,6 @@ model ExencionCuota {
   @@index([activa])
   @@index([fechaInicio, fechaFin])
   @@index([motivoExencion])
+  @@index([personaId, estado, activa])
   @@map("exenciones_cuota")
 }
