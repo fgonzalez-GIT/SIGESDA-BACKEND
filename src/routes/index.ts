@@ -37,6 +37,7 @@ import simuladorCuotaRoutes from './simulador-cuota.routes';
 import ajusteMasivoRoutes from './ajuste-masivo.routes';
 import rollbackCuotaRoutes from './rollback-cuota.routes';
 import previewCuotaRoutes from './preview-cuota.routes';
+import cuotaBatchRoutes from './cuota-batch.routes';
 
 const router = Router();
 
@@ -88,6 +89,7 @@ router.use('/reportes/cuotas', reportesCuotaRoutes); // FASE 4: Reportes y estad
 router.use('/simulador/cuotas', simuladorCuotaRoutes); // FASE 5: Simulador de impacto de cuotas
 router.use('/rollback/cuotas', rollbackCuotaRoutes); // FASE 5: Rollback de generación de cuotas
 router.use('/preview/cuotas', previewCuotaRoutes); // FASE 5: Preview detallado de cuotas para UI
+router.use('/cuotas/batch', cuotaBatchRoutes); // FASE 6: Operaciones batch optimizadas (30x más rápido)
 router.use('/medios-pago', medioPagoRoutes);
 router.use('/categorias-socios', categoriaSocioRouter);
 
