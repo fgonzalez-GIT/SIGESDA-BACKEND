@@ -8,7 +8,7 @@ import {
 } from '@/dto/catalogos-actividades.dto';
 
 export class EstadosActividadRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   async create(data: CreateEstadoActividadDto) {
     const existing = await this.prisma.estados_actividades.findUnique({
@@ -59,23 +59,13 @@ export class EstadosActividadRepository {
 
     return this.prisma.estados_actividades.findMany({
       where,
-      orderBy,
-      include: {
-        _count: {
-          select: { actividades: true }
-        }
-      }
+      orderBy
     });
   }
 
   async findById(id: number) {
     const estado = await this.prisma.estados_actividades.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { actividades: true }
-        }
-      }
+      where: { id }
     });
 
     if (!estado) {

@@ -1,0 +1,54 @@
+/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+prisma/seed.ts(470,12): error TS2339: Property 'categoriasEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(479,12): error TS2339: Property 'categoriasEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(488,12): error TS2339: Property 'categoriasEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(497,12): error TS2339: Property 'categoriasEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(506,12): error TS2339: Property 'categoriasEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(520,12): error TS2551: Property 'estadoEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'equipamiento'?
+prisma/seed.ts(529,12): error TS2551: Property 'estadoEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'equipamiento'?
+prisma/seed.ts(538,12): error TS2551: Property 'estadoEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'equipamiento'?
+prisma/seed.ts(547,12): error TS2551: Property 'estadoEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'equipamiento'?
+prisma/seed.ts(556,12): error TS2551: Property 'estadoEquipamiento' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'equipamiento'?
+prisma/seed.ts(572,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(584,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(596,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(607,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(618,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(629,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(640,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(651,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(662,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(674,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(685,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(696,9): error TS2353: Object literal may only specify known properties, and 'codigo' does not exist in type '(Without<EquipamientoCreateInput, EquipamientoUncheckedCreateInput> & EquipamientoUncheckedCreateInput) | (Without<...> & EquipamientoCreateInput)'.
+prisma/seed.ts(1386,9): error TS2561: Object literal may only specify known properties, but 'tipoContacto' does not exist in type 'ContactoPersonaCreateManyInput'. Did you mean to write 'tipo_contacto'?
+prisma/seed.ts(1393,9): error TS2561: Object literal may only specify known properties, but 'tipoContacto' does not exist in type 'ContactoPersonaCreateManyInput'. Did you mean to write 'tipo_contacto'?
+prisma/seed.ts(1400,9): error TS2561: Object literal may only specify known properties, but 'tipoContacto' does not exist in type 'ContactoPersonaCreateManyInput'. Did you mean to write 'tipo_contacto'?
+prisma/seed.ts(1413,9): error TS2561: Object literal may only specify known properties, but 'tipoContacto' does not exist in type 'ContactoPersonaCreateManyInput'. Did you mean to write 'tipo_contacto'?
+prisma/seed.ts(1420,9): error TS2561: Object literal may only specify known properties, but 'tipoContacto' does not exist in type 'ContactoPersonaCreateManyInput'. Did you mean to write 'tipo_contacto'?
+prisma/seed.ts(1427,9): error TS2561: Object literal may only specify known properties, but 'tipoContacto' does not exist in type 'ContactoPersonaCreateManyInput'. Did you mean to write 'tipo_contacto'?
+prisma/seed.ts(1497,7): error TS2353: Object literal may only specify known properties, and 'codigoActividad' does not exist in type '(Without<actividadesCreateInput, actividadesUncheckedCreateInput> & actividadesUncheckedCreateInput) | (Without<...> & actividadesCreateInput)'.
+prisma/seed.ts(1513,7): error TS2353: Object literal may only specify known properties, and 'codigoActividad' does not exist in type '(Without<actividadesCreateInput, actividadesUncheckedCreateInput> & actividadesUncheckedCreateInput) | (Without<...> & actividadesCreateInput)'.
+
+    at createTSError (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1895:10
+    at Object.require.extensions.<computed> [as .ts] (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14) {
+  diagnosticCodes: [
+    2339, 2339, 2339, 2339, 2339,
+    2551, 2551, 2551, 2551, 2551,
+    2353, 2353, 2353, 2353, 2353,
+    2353, 2353, 2353, 2353, 2353,
+    2353, 2353, 2561, 2561, 2561,
+    2561, 2561, 2561, 2353, 2353
+  ]
+}

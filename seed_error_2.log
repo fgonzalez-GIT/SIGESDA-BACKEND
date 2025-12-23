@@ -1,0 +1,29 @@
+/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+prisma/seed-items-catalogos.ts(264,11): error TS2322: Type '{ codigo: string; nombre: string; descripcion: string; categoriaItemId: number; esCalculado: boolean; formula: { type: string; source: string; description: string; rules?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { ...; } | { ...; } | null; activo: boolean; orden: number; configurable: boolean; }' is not assignable to type '(Without<TipoItemCuotaUpdateInput, TipoItemCuotaUncheckedUpdateInput> & TipoItemCuotaUncheckedUpdateInput) | (Without<...> & TipoItemCuotaUpdateInput)'.
+  Type '{ codigo: string; nombre: string; descripcion: string; categoriaItemId: number; esCalculado: boolean; formula: { type: string; source: string; description: string; rules?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { ...; } | { ...; } | null; activo: boolean; orden: number; configurable: boolean; }' is not assignable to type 'Without<TipoItemCuotaUpdateInput, TipoItemCuotaUncheckedUpdateInput> & TipoItemCuotaUncheckedUpdateInput'.
+    Type '{ codigo: string; nombre: string; descripcion: string; categoriaItemId: number; esCalculado: boolean; formula: { type: string; source: string; description: string; rules?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { ...; } | { ...; } | null; activo: boolean; orden: number; configurable: boolean; }' is not assignable to type 'TipoItemCuotaUncheckedUpdateInput'.
+      Types of property 'formula' are incompatible.
+        Type '{ type: string; source: string; description: string; rules?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { type: string; rules: { condition: string; descuento: number; }[]; description: string; source?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { ...; } | null' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+          Type 'null' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+prisma/seed-items-catalogos.ts(270,11): error TS2322: Type '{ codigo: string; nombre: string; descripcion: string; categoriaItemId: number; esCalculado: boolean; formula: { type: string; source: string; description: string; rules?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { ...; } | { ...; } | null; activo: boolean; orden: number; configurable: boolean; }' is not assignable to type '(Without<TipoItemCuotaCreateInput, TipoItemCuotaUncheckedCreateInput> & TipoItemCuotaUncheckedCreateInput) | (Without<...> & TipoItemCuotaCreateInput)'.
+  Type '{ codigo: string; nombre: string; descripcion: string; categoriaItemId: number; esCalculado: boolean; formula: { type: string; source: string; description: string; rules?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { ...; } | { ...; } | null; activo: boolean; orden: number; configurable: boolean; }' is not assignable to type 'Without<TipoItemCuotaCreateInput, TipoItemCuotaUncheckedCreateInput> & TipoItemCuotaUncheckedCreateInput'.
+    Type '{ codigo: string; nombre: string; descripcion: string; categoriaItemId: number; esCalculado: boolean; formula: { type: string; source: string; description: string; rules?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { ...; } | { ...; } | null; activo: boolean; orden: number; configurable: boolean; }' is not assignable to type 'TipoItemCuotaUncheckedCreateInput'.
+      Types of property 'formula' are incompatible.
+        Type '{ type: string; source: string; description: string; rules?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { type: string; rules: { condition: string; descuento: number; }[]; description: string; source?: undefined; porcentaje?: undefined; aplicaSi?: undefined; } | { ...; } | null' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+          Type 'null' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+
+    at createTSError (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1895:10
+    at Object.require.extensions.<computed> [as .ts] (/home/francisco/PROYECTOS/SIGESDA/SIGESDA-BACKEND/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14) {
+  diagnosticCodes: [ 2322, 2322 ]
+}

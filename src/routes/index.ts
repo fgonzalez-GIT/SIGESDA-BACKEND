@@ -79,6 +79,7 @@ router.use('/asistencias', asistenciaRoutes);
 router.use('/familiares', familiarRoutes);
 router.use('/reservas', reservaAulaRoutes);
 router.use('/recibos', reciboRoutes);
+router.use('/cuotas/reportes', reportesCuotaRoutes); // Alias para acceso desde /cuotas
 router.use('/cuotas', cuotaRoutes);
 router.use('/items-cuota', itemCuotaRoutes); // Rutas para operaciones individuales de ítems
 router.use('/ajustes-cuota', ajusteCuotaRoutes); // FASE 4: Ajustes manuales a cuotas

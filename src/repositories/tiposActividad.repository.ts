@@ -8,7 +8,7 @@ import {
 } from '@/dto/catalogos-actividades.dto';
 
 export class TiposActividadRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   /**
    * Crear nuevo tipo de actividad
@@ -71,12 +71,7 @@ export class TiposActividadRepository {
 
     return this.prisma.tipos_actividades.findMany({
       where,
-      orderBy,
-      include: {
-        _count: {
-          select: { actividades: true }
-        }
-      }
+      orderBy
     });
   }
 
@@ -85,12 +80,7 @@ export class TiposActividadRepository {
    */
   async findById(id: number) {
     const tipo = await this.prisma.tipos_actividades.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { actividades: true }
-        }
-      }
+      where: { id }
     });
 
     if (!tipo) {
@@ -141,6 +131,9 @@ export class TiposActividadRepository {
     const tipo = await this.findById(id);
 
     // Verificar si tiene actividades activas
+    // TODO: Restaurar esta validación cuando la relación esté implementada en el esquema.
+    // Actualmente 'actividades' usa un enum y no tiene relación con 'tipos_actividades'.
+    /*
     const actividadesActivas = await this.prisma.actividades.count({
       where: {
         tipo_actividad_id: id,
@@ -153,6 +146,7 @@ export class TiposActividadRepository {
         `No se puede desactivar el tipo "${tipo.nombre}" porque tiene ${actividadesActivas} actividad(es) activa(s)`
       );
     }
+    */
 
     // Soft delete
     return this.prisma.tipos_actividades.update({

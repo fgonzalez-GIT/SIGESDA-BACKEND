@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -181,7 +181,7 @@ const tiposItemsDefault = [
     descripcion: 'Bonificación manual por decisión administrativa',
     categoriaCodigo: 'BONIFICACION',
     esCalculado: false,  // Manual, no se calcula automáticamente
-    formula: null,
+    formula: Prisma.DbNull,
     activo: true,
     orden: 40,
     configurable: true

@@ -127,73 +127,70 @@ async function seedTestCuotas() {
     // 3. Crear actividades de prueba
     console.log('🎵 Creando actividades de prueba...');
 
-    const tipoActividad = await prisma.tipos_actividades.findFirst();
-    const categoriaActividad = await prisma.categorias_actividades.findFirst();
-    const estadoActividad = await prisma.estados_actividades.findFirst();
+    // Access enum directly or use literals
+    // TipoActividad: CLASE_INSTRUMENTO, CORO, CLASE_CANTO
 
-    if (!tipoActividad || !categoriaActividad || !estadoActividad) {
-      console.log('⚠️  No hay catálogos de actividades, saltando creación de actividades');
-    } else {
-      const actividades = [
-        { nombre: 'Guitarra Individual', costo: 2500 },
-        { nombre: 'Piano Individual', costo: 3000 },
-        { nombre: 'Violín Individual', costo: 2800 },
-        { nombre: 'Canto Grupal', costo: 1500 }
-      ];
+    const actividades = [
+      { nombre: 'Guitarra Individual', precio: 2500, tipo: 'CLASE_INSTRUMENTO' },
+      { nombre: 'Piano Individual', precio: 3000, tipo: 'CLASE_INSTRUMENTO' },
+      { nombre: 'Violín Individual', precio: 2800, tipo: 'CLASE_INSTRUMENTO' },
+      { nombre: 'Canto Grupal', precio: 1500, tipo: 'CORO' }
+    ];
 
-      for (const act of actividades) {
-        await prisma.actividades.create({
+    for (const act of actividades) {
+      await prisma.actividades.create({
+        data: {
+          nombre: act.nombre,
+          tipo: act.tipo as any, // Cast to any to avoid importing enum complexity here, or string literal works if client generated
+          descripcion: `Actividad de prueba: ${act.nombre}`,
+          capacidadMaxima: 20,
+          precio: act.precio,
+          activa: true
+        }
+      });
+    }
+
+    console.log('✅ 4 actividades creadas\n');
+
+    // 4. Crear participaciones de prueba (20 socios con actividades)
+    console.log('🎯 Creando participaciones en actividades...');
+
+    const actividadesCreadas = await prisma.actividades.findMany({
+      where: {
+        OR: [
+          { nombre: 'Guitarra Individual' },
+          { nombre: 'Piano Individual' },
+          { nombre: 'Violín Individual' },
+          { nombre: 'Canto Grupal' }
+        ]
+      }
+    });
+
+    const sociosParaActividades = sociosCreados.slice(0, 20);
+    let participacionesCreadas = 0;
+
+    for (const socio of sociosParaActividades) {
+      const cantActividades = randomInt(1, 3);
+      const actividadesSeleccionadas = actividadesCreadas
+        .sort(() => 0.5 - Math.random())
+        .slice(0, cantActividades);
+
+      for (const actividad of actividadesSeleccionadas) {
+        await prisma.participacion_actividades.create({
           data: {
-            codigoActividad: `ACT-TEST-${act.nombre.substring(0, 4).toUpperCase()}`,
-            nombre: act.nombre,
-            tipoActividadId: tipoActividad.id,
-            categoriaId: categoriaActividad.id,
-            estadoId: estadoActividad.id,
-            descripcion: `Actividad de prueba: ${act.nombre}`,
-            fechaDesde: new Date('2025-01-01'),
-            capacidadMaxima: 20,
-            costo: act.costo,
+            personaId: socio.id,
+            actividadId: actividad.id,
+            fechaInicio: new Date('2025-01-01'),
+            precioEspecial: Math.random() > 0.7 ? Number(actividad.precio) * 0.9 : null,
             activa: true
           }
         });
+        participacionesCreadas++;
       }
-
-      console.log('✅ 4 actividades creadas\n');
-
-      // 4. Crear participaciones de prueba (20 socios con actividades)
-      console.log('🎯 Creando participaciones en actividades...');
-
-      const actividadesCreadas = await prisma.actividades.findMany({
-        where: {
-          codigoActividad: { startsWith: 'ACT-TEST-' }
-        }
-      });
-
-      const sociosParaActividades = sociosCreados.slice(0, 20);
-      let participacionesCreadas = 0;
-
-      for (const socio of sociosParaActividades) {
-        const cantActividades = randomInt(1, 3);
-        const actividadesSeleccionadas = actividadesCreadas
-          .sort(() => 0.5 - Math.random())
-          .slice(0, cantActividades);
-
-        for (const actividad of actividadesSeleccionadas) {
-          await prisma.participacion_actividades.create({
-            data: {
-              personaId: socio.id,
-              actividadId: actividad.id,
-              fechaInicio: new Date('2025-01-01'),
-              precioEspecial: Math.random() > 0.7 ? Number(actividad.costo) * 0.9 : null,
-              activa: true
-            }
-          });
-          participacionesCreadas++;
-        }
-      }
-
-      console.log(`✅ ${participacionesCreadas} participaciones creadas\n`);
     }
+
+    console.log(`✅ ${participacionesCreadas} participaciones creadas\n`);
+
 
     // 5. Crear relaciones familiares
     console.log('👨‍👩‍👧‍👦 Creando relaciones familiares...');
@@ -243,12 +240,18 @@ async function seedTestCuotas() {
   }
 }
 
-seedTestCuotas()
-  .then(() => {
-    console.log('\n🎉 Seed completado con éxito!');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('\n💥 Error fatal durante el seed:', error);
-    process.exit(1);
-  });
+
+export { seedTestCuotas };
+
+// Ejecutar si es el script principal
+if (require.main === module) {
+  seedTestCuotas()
+    .then(() => {
+      console.log('\n🎉 Seed completado con éxito!');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('\n💥 Error fatal durante el seed:', error);
+      process.exit(1);
+    });
+}

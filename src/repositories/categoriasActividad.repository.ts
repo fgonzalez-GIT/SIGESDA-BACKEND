@@ -8,7 +8,7 @@ import {
 } from '@/dto/catalogos-actividades.dto';
 
 export class CategoriasActividadRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   /**
    * Crear nueva categoría de actividad
@@ -71,12 +71,7 @@ export class CategoriasActividadRepository {
 
     return this.prisma.categorias_actividades.findMany({
       where,
-      orderBy,
-      include: {
-        _count: {
-          select: { actividades: true }
-        }
-      }
+      orderBy
     });
   }
 
@@ -85,12 +80,7 @@ export class CategoriasActividadRepository {
    */
   async findById(id: number) {
     const categoria = await this.prisma.categorias_actividades.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { actividades: true }
-        }
-      }
+      where: { id }
     });
 
     if (!categoria) {

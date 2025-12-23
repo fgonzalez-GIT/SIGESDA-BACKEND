@@ -104,7 +104,7 @@ const configDefault = {
   limiteDescuentoTotal: 80.00,  // Máximo 80% de descuento total
   aplicarDescuentosABase: true,
   aplicarDescuentosAActividades: true,
-  prioridadReglas: [],  // Se llena después de crear las reglas
+  prioridadReglas: [] as number[],  // Se llena después de crear las reglas
   activa: true
 };
 

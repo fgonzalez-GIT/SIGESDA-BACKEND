@@ -4,8 +4,16 @@ import {
   TipoRecibo,
   EstadoRecibo,
   MedioPagoTipo,
-  TipoContacto
+  TipoContacto,
+  TipoExencion,
+  MotivoExencion,
+  EstadoExencion,
+  TipoAjusteCuota,
+  ScopeAjusteCuota
 } from '@prisma/client';
+import { seedItemsCatalogos } from './seed-items-catalogos';
+import { seedReglasDescuentos } from './seed-reglas-descuentos';
+import { seedTestCuotas } from './seed-test-cuotas';
 
 const prisma = new PrismaClient();
 
@@ -64,6 +72,16 @@ async function main() {
   await prisma.tipos_actividades.deleteMany({});
 
   console.log('✅ Limpieza completada\n');
+
+  // ============================================================================
+  // NIVEL 0.5: CATÁLOGOS DE ÍTEMS Y REGLAS (Scripts externos)
+  // ============================================================================
+
+  // Ejecutar seed de items y categorías (catalogos)
+  await seedItemsCatalogos();
+
+  // Ejecutar seed de reglas de descuentos
+  await seedReglasDescuentos();
 
   // ============================================================================
   // NIVEL 0: CATÁLOGOS BASE (Sin dependencias)
@@ -446,116 +464,27 @@ async function main() {
     })
   ]);
 
+  /*
   // ========== Categorías de Equipamiento ==========
-  console.log('  → categorias_equipamiento...');
-  const categoriasEquipamiento = await Promise.all([
-    prisma.categoriasEquipamiento.create({
-      data: {
-        codigo: 'INST_MUS',
-        nombre: 'Instrumentos Musicales',
-        descripcion: 'Pianos, guitarras, violines y otros instrumentos musicales',
-        activo: true,
-        orden: 1
-      }
-    }),
-    prisma.categoriasEquipamiento.create({
-      data: {
-        codigo: 'MOB',
-        nombre: 'Mobiliario',
-        descripcion: 'Sillas, escritorios, atriles, armarios y otros muebles',
-        activo: true,
-        orden: 2
-      }
-    }),
-    prisma.categoriasEquipamiento.create({
-      data: {
-        codigo: 'TEC_AUDIO',
-        nombre: 'Tecnología y Audio',
-        descripcion: 'Sistemas de sonido, micrófonos, consolas, proyectores',
-        activo: true,
-        orden: 3
-      }
-    }),
-    prisma.categoriasEquipamiento.create({
-      data: {
-        codigo: 'INFRAEST',
-        nombre: 'Infraestructura',
-        descripcion: 'Cabinas acústicas, tratamiento acústico, instalaciones fijas',
-        activo: true,
-        orden: 4
-      }
-    }),
-    prisma.categoriasEquipamiento.create({
-      data: {
-        codigo: 'DIDACT',
-        nombre: 'Material Didáctico',
-        descripcion: 'Pizarras musicales, material educativo, recursos pedagógicos',
-        activo: true,
-        orden: 5
-      }
-    })
-  ]);
+  console.log('  → categorias_equipamiento (Modelo no existe en schema)...');
+  // const categoriasEquipamiento = await Promise.all([ ... ]);
+  */
+  const categoriasEquipamiento = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]; // Mock IDs for reference if needed
 
+  /*
   // ========== Estados de Equipamiento ==========
-  console.log('  → estados_equipamientos...');
-  const estadosEquipamiento = await Promise.all([
-    prisma.estadoEquipamiento.create({
-      data: {
-        codigo: 'NUEVO',
-        nombre: 'Nuevo',
-        descripcion: 'Equipamiento nuevo sin uso',
-        activo: true,
-        orden: 1
-      }
-    }),
-    prisma.estadoEquipamiento.create({
-      data: {
-        codigo: 'USADO',
-        nombre: 'Usado',
-        descripcion: 'Equipamiento en buen estado con uso normal',
-        activo: true,
-        orden: 2
-      }
-    }),
-    prisma.estadoEquipamiento.create({
-      data: {
-        codigo: 'EN_REPARACION',
-        nombre: 'En Reparación',
-        descripcion: 'Equipamiento temporalmente fuera de servicio por mantenimiento',
-        activo: true,
-        orden: 3
-      }
-    }),
-    prisma.estadoEquipamiento.create({
-      data: {
-        codigo: 'ROTO',
-        nombre: 'Roto',
-        descripcion: 'Equipamiento averiado, no funcional',
-        activo: true,
-        orden: 4
-      }
-    }),
-    prisma.estadoEquipamiento.create({
-      data: {
-        codigo: 'DADO_DE_BAJA',
-        nombre: 'Dado de Baja',
-        descripcion: 'Equipamiento eliminado del inventario',
-        activo: true,
-        orden: 5
-      }
-    })
-  ]);
+  console.log('  → estados_equipamientos (Modelo no existe en schema)...');
+  // const estadosEquipamiento = await Promise.all([ ... ]);
+  */
+  const estadosEquipamiento = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]; // Mock IDs
 
   // ========== Equipamiento ==========
   console.log('  → equipamientos...');
+  // Schema solo tiene: nombre, descripcion, observaciones, activo
   const equipamientos = await Promise.all([
     prisma.equipamiento.create({
       data: {
-        codigo: 'INST-001',
-        nombre: 'Piano de Cola',
-        categoriaEquipamientoId: categoriasEquipamiento[0].id, // INST_MUS
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 2,
+        nombre: 'Piano de Cola', // 'INST-001'
         descripcion: 'Piano de cola acústico profesional',
         observaciones: 'Requiere afinación periódica',
         activo: true
@@ -563,11 +492,7 @@ async function main() {
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'INST-002',
-        nombre: 'Piano Vertical',
-        categoriaEquipamientoId: categoriasEquipamiento[0].id, // INST_MUS
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 3,
+        nombre: 'Piano Vertical', // 'INST-002'
         descripcion: 'Piano vertical acústico',
         observaciones: 'Requiere afinación periódica',
         activo: true
@@ -575,77 +500,49 @@ async function main() {
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'MOB-001',
-        nombre: 'Sillas',
-        categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 100,
+        nombre: 'Sillas', // 'MOB-001'
         descripcion: 'Sillas estándar para alumnos',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'MOB-002',
-        nombre: 'Atriles',
-        categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 80,
+        nombre: 'Atriles', // 'MOB-002'
         descripcion: 'Atriles de partituras',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'DIDA-001',
-        nombre: 'Pizarra Musical',
-        categoriaEquipamientoId: categoriasEquipamiento[4].id, // DIDACT
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 5,
+        nombre: 'Pizarra Musical', // 'DIDA-001'
         descripcion: 'Pizarra con pentagramas',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'TEC_-001',
-        nombre: 'Sistema de Sonido',
-        categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 3,
+        nombre: 'Sistema de Sonido', // 'TEC_-001'
         descripcion: 'Equipo de audio profesional con amplificadores y altavoces',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'TEC_-002',
-        nombre: 'Proyector',
-        categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 4,
+        nombre: 'Proyector', // 'TEC_-002'
         descripcion: 'Proyector multimedia',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'TEC_-003',
-        nombre: 'Consola de Grabación',
-        categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
-        estadoEquipamientoId: estadosEquipamiento[0].id, // NUEVO
-        cantidad: 1,
+        nombre: 'Consola de Grabación', // 'TEC_-003'
         descripcion: 'Consola digital de grabación multipista',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'TEC_-004',
-        nombre: 'Micrófonos',
-        categoriaEquipamientoId: categoriasEquipamiento[2].id, // TEC_AUDIO
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 15,
+        nombre: 'Micrófonos', // 'TEC_-004'
         descripcion: 'Set de micrófonos profesionales',
         observaciones: '2 unidades en reparación',
         activo: true
@@ -653,33 +550,21 @@ async function main() {
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'INFR-001',
-        nombre: 'Cabina Acústica',
-        categoriaEquipamientoId: categoriasEquipamiento[3].id, // INFRAEST
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 2,
+        nombre: 'Cabina Acústica', // 'INFR-001'
         descripcion: 'Cabina insonorizada para grabación',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'MOB-003',
-        nombre: 'Escritorio',
-        categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 10,
+        nombre: 'Escritorio', // 'MOB-003'
         descripcion: 'Escritorio para docente',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        codigo: 'MOB-004',
-        nombre: 'Armario',
-        categoriaEquipamientoId: categoriasEquipamiento[1].id, // MOB
-        estadoEquipamientoId: estadosEquipamiento[1].id, // USADO
-        cantidad: 8,
+        nombre: 'Armario', // 'MOB-004'
         descripcion: 'Armario para almacenamiento de materiales',
         activo: true
       }
@@ -1365,21 +1250,21 @@ async function main() {
     data: [
       {
         personaId: docente1.id,
-        tipoContacto: TipoContacto.EMAIL,
+        tipo_contacto: TipoContacto.EMAIL,
         valor: 'maria.fernandez@sigesda.com',
         principal: true,
         activo: true
       },
       {
         personaId: docente1.id,
-        tipoContacto: TipoContacto.CELULAR,
+        tipo_contacto: TipoContacto.CELULAR,
         valor: '+54 9 11 5555-1001',
         principal: false,
         activo: true
       },
       {
         personaId: docente1.id,
-        tipoContacto: TipoContacto.WHATSAPP,
+        tipo_contacto: TipoContacto.WHATSAPP,
         valor: '+54 9 11 5555-1001',
         principal: false,
         activo: true
@@ -1392,21 +1277,21 @@ async function main() {
     data: [
       {
         personaId: socio1.id,
-        tipoContacto: TipoContacto.EMAIL,
+        tipo_contacto: TipoContacto.EMAIL,
         valor: 'juan.rodriguez@gmail.com',
         principal: true,
         activo: true
       },
       {
         personaId: socio1.id,
-        tipoContacto: TipoContacto.CELULAR,
+        tipo_contacto: TipoContacto.CELULAR,
         valor: '+54 9 11 6666-2001',
         principal: false,
         activo: true
       },
       {
         personaId: socio1.id,
-        tipoContacto: TipoContacto.TELEFONO,
+        tipo_contacto: TipoContacto.TELEFONO,
         valor: '11-4444-5678',
         principal: false,
         activo: true,
@@ -1474,17 +1359,30 @@ async function main() {
   const categoriaMusica = categoriasCatalogoActividades.find(c => c.codigo === 'MUSICA')!;
   const estadoActiva = estadosCatalogoActividades.find(e => e.codigo === 'ACTIVA')!;
 
+  // Obtener tipos ACTIVIDAD en Enum format (mock translation if needed or use schema)
+  // Schema: tipo TipoActividad (ENUM)
+  // CORO, CLASE_CANTO, CLASE_INSTRUMENTO
+
+  // Note: we are not using 'tipos_actividades' table for the 'actividades' creation because 
+  // the schema uses ENUM. We just use the string literal or imported enum.
+  // We'll import TipoActividad at the top eventually but for now assume it's available or use "CORO" etc.
+
+  // Need to import TipoActividad from client if not already
+  // It is imported at the top of the file!
+
   const actividadCoro = await prisma.actividades.create({
     data: {
-      codigoActividad: 'CORO-2025-01',
+      // codigoActividad: 'CORO-2025-01', // REMOVED: No existe
       nombre: 'Coro Municipal',
-      tipoActividadId: tipoCoro.id,
-      categoriaId: categoriaMusica.id,
-      estadoId: estadoActiva.id,
+      tipo: 'CORO', // Using Enum value literal
+      // categoriaId: categoriaMusica.id, // REMOVED: No existe
+      // estadoId: estadoActiva.id, // REMOVED: No existe
       descripcion: 'Coro de voces mixtas para adultos',
-      fechaDesde: new Date('2025-01-01'),
-      fechaHasta: new Date('2025-12-31'),
-      costo: 2000.00,
+      // fechaDesde: new Date('2025-01-01'), // REMOVED? Wait, check schema Step 26.
+      // Schema Step 26: nombre, tipo, descripcion, precio, duracion, capacidadMaxima, activa
+      // NO fechaDesde/Hasta in Step 26 schema!
+
+      precio: 2000.00, // costo -> precio
       capacidadMaxima: 30,
       activa: true
     }
@@ -1492,15 +1390,15 @@ async function main() {
 
   const actividadPiano = await prisma.actividades.create({
     data: {
-      codigoActividad: 'PIANO-IND-2025-01',
+      // codigoActividad: 'PIANO-IND-2025-01',
       nombre: 'Clase de Piano Individual',
-      tipoActividadId: tipoClaseIndividual.id,
-      categoriaId: categoriaMusica.id,
-      estadoId: estadoActiva.id,
+      tipo: 'CLASE_INSTRUMENTO',
+      // categoriaId: categoriaMusica.id,
+      // estadoId: estadoActiva.id,
       descripcion: 'Clases personalizadas de piano nivel inicial a avanzado',
-      fechaDesde: new Date('2025-01-01'),
-      fechaHasta: new Date('2025-12-31'),
-      costo: 3500.00,
+      // fechaDesde: new Date('2025-01-01'),
+      // fechaHasta: new Date('2025-12-31'),
+      precio: 3500.00,
       capacidadMaxima: 1,
       activa: true
     }
@@ -1809,6 +1707,93 @@ async function main() {
   });
 
   console.log('✅ Pagos insertados\n');
+
+  // ============================================================================
+  // NIVEL 8: GESTIÓN SOCIETARIA Y BENEFICIOS (Comisión, Exenciones, Ajustes)
+  // ============================================================================
+
+  console.log('📁 NIVEL 8: Insertando gestión societaria y beneficios...');
+
+  // ========== ComisionDirectiva ==========
+  console.log('  → ComisionDirectiva...');
+
+  // Presidente: Socio 1 (Juan Rodríguez)
+  await prisma.comisionDirectiva.create({
+    data: {
+      socioId: socio1.id,
+      cargo: 'Presidente',
+      fechaInicio: new Date('2024-01-01'),
+      activo: true
+    }
+  });
+
+  // Tesorera: Socio 2 (Ana López)
+  await prisma.comisionDirectiva.create({
+    data: {
+      socioId: socio2.id,
+      cargo: 'Tesorera',
+      fechaInicio: new Date('2024-01-01'),
+      activo: true
+    }
+  });
+
+  // ========== ExencionCuota ==========
+  console.log('  → ExencionCuota...');
+
+  // Exención Total para Socio 3 (Roberto Pérez) - Socio Honorario
+  await prisma.exencionCuota.create({
+    data: {
+      personaId: socio3.id,
+      tipoExencion: TipoExencion.TOTAL,
+      motivoExencion: MotivoExencion.SOCIO_HONORARIO,
+      estado: EstadoExencion.VIGENTE,
+      porcentajeExencion: 100.00,
+      fechaInicio: new Date('2025-01-01'),
+      fechaFin: new Date('2025-12-31'),
+      descripcion: 'Exención por reconocimiento a trayectoria',
+      activa: true
+    }
+  });
+
+  // Exención Parcial Pendiente para Familiar 1 (Matías) - Beca
+  await prisma.exencionCuota.create({
+    data: {
+      personaId: familiar1.id,
+      tipoExencion: TipoExencion.PARCIAL,
+      motivoExencion: MotivoExencion.BECA,
+      estado: EstadoExencion.PENDIENTE_APROBACION,
+      porcentajeExencion: 50.00,
+      fechaInicio: new Date('2025-03-01'),
+      descripcion: 'Solicitud de beca por mérito académico',
+      activa: true
+    }
+  });
+
+  // ========== AjusteCuotaSocio ==========
+  console.log('  → AjusteCuotaSocio...');
+
+  // Recargo fijo administrativo para Socio 4 (Gabriela)
+  await prisma.ajusteCuotaSocio.create({
+    data: {
+      personaId: socio4.id,
+      tipoAjuste: TipoAjusteCuota.RECARGO_FIJO,
+      valor: 500.00,
+      concepto: 'Gasto administrativo mensual',
+      fechaInicio: new Date('2025-01-01'),
+      activo: true,
+      aplicaA: ScopeAjusteCuota.SOLO_BASE
+    }
+  });
+
+  console.log('✅ Gestión societaria insertada\n');
+
+  // ============================================================================
+  // NIVEL 9: DATOS DE PRUEBA MASIVOS
+  // ============================================================================
+
+  // Ejecutar seed de test masivo (52 socios, actividades, etc.)
+  // Pasamos true para indicar que es parte del flujo principal
+  await seedTestCuotas();
 
   // ============================================================================
   // RESUMEN FINAL
