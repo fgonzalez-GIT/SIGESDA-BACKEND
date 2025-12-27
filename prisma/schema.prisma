@@ -729,22 +729,42 @@ model PersonaTipo {
 }
 
 model ContactoPersona {
-  id            Int          @id @default(autoincrement())
-  personaId     Int          @map("persona_id")
-  tipo_contacto TipoContacto
-  valor         String       @db.VarChar(200)
-  principal     Boolean      @default(false)
-  activo        Boolean      @default(true)
-  observaciones String?      @db.VarChar(500)
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt @map("updated_at")
-  persona       Persona      @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  id              Int                  @id @default(autoincrement())
+  personaId       Int                  @map("persona_id")
+  tipoContactoId  Int                  @map("tipo_contacto_id")
+  valor           String               @db.VarChar(200)
+  principal       Boolean              @default(false)
+  activo          Boolean              @default(true)
+  observaciones   String?              @db.VarChar(500)
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  persona         Persona              @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  tipoContacto    TipoContactoCatalogo @relation(fields: [tipoContactoId], references: [id], onDelete: Restrict)
 
   @@index([personaId])
   @@index([activo])
   @@index([principal])
-  @@index([tipo_contacto])
+  @@index([tipoContactoId])
   @@map("contacto_persona")
+}
+
+model TipoContactoCatalogo {
+  id          Int               @id @default(autoincrement())
+  codigo      String            @unique @db.VarChar(50)
+  nombre      String            @db.VarChar(100)
+  descripcion String?
+  icono       String?           @db.VarChar(50)
+  pattern     String?           @db.VarChar(500)
+  activo      Boolean           @default(true)
+  orden       Int               @default(0)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  contactos   ContactoPersona[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("tipo_contacto_catalogo")
 }
 
 enum EstadoRecibo {
@@ -804,15 +824,6 @@ enum TipoPersona {
   NO_SOCIO
   DOCENTE
   PROVEEDOR
-}
-
-enum TipoContacto {
-  EMAIL
-  TELEFONO
-  CELULAR
-  WHATSAPP
-  TELEGRAM
-  OTRO
 }
 
 enum Genero {

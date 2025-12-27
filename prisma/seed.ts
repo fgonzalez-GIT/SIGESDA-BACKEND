@@ -4,7 +4,6 @@ import {
   TipoRecibo,
   EstadoRecibo,
   MedioPagoTipo,
-  TipoContacto,
   TipoExencion,
   MotivoExencion,
   EstadoExencion,
@@ -14,6 +13,7 @@ import {
 import { seedItemsCatalogos } from './seed-items-catalogos';
 import { seedReglasDescuentos } from './seed-reglas-descuentos';
 import { seedTestCuotas } from './seed-test-cuotas';
+import { seedTiposContacto } from './seed-tipos-contacto';
 
 const prisma = new PrismaClient();
 
@@ -57,6 +57,7 @@ async function main() {
   await prisma.aulaEquipamiento.deleteMany({});
   await prisma.aula.deleteMany({});
   await prisma.configuracionSistema.deleteMany({});
+  await prisma.tipoContactoCatalogo.deleteMany({});
   await prisma.razonSocial.deleteMany({});
   await prisma.especialidadDocente.deleteMany({});
   await prisma.tipoPersonaCatalogo.deleteMany({});
@@ -82,6 +83,9 @@ async function main() {
 
   // Ejecutar seed de reglas de descuentos
   await seedReglasDescuentos();
+
+  // Ejecutar seed de tipos de contacto
+  await seedTiposContacto();
 
   // ============================================================================
   // NIVEL 0: CATÁLOGOS BASE (Sin dependencias)
@@ -1245,26 +1249,36 @@ async function main() {
   // ========== ContactoPersona ==========
   console.log('  → ContactoPersona (Múltiples contactos por persona)...');
 
+  // Obtener IDs de tipos de contacto desde el catálogo
+  const tipoEmail = await prisma.tipoContactoCatalogo.findUnique({ where: { codigo: 'EMAIL' } });
+  const tipoCelular = await prisma.tipoContactoCatalogo.findUnique({ where: { codigo: 'CELULAR' } });
+  const tipoWhatsapp = await prisma.tipoContactoCatalogo.findUnique({ where: { codigo: 'WHATSAPP' } });
+  const tipoTelefono = await prisma.tipoContactoCatalogo.findUnique({ where: { codigo: 'TELEFONO' } });
+
+  if (!tipoEmail || !tipoCelular || !tipoWhatsapp || !tipoTelefono) {
+    throw new Error('❌ Error: Tipos de contacto no encontrados en catálogo. Ejecute seedTiposContacto() primero.');
+  }
+
   // Contactos para María Fernández (docente1)
   await prisma.contactoPersona.createMany({
     data: [
       {
         personaId: docente1.id,
-        tipo_contacto: TipoContacto.EMAIL,
+        tipoContactoId: tipoEmail.id,
         valor: 'maria.fernandez@sigesda.com',
         principal: true,
         activo: true
       },
       {
         personaId: docente1.id,
-        tipo_contacto: TipoContacto.CELULAR,
+        tipoContactoId: tipoCelular.id,
         valor: '+54 9 11 5555-1001',
         principal: false,
         activo: true
       },
       {
         personaId: docente1.id,
-        tipo_contacto: TipoContacto.WHATSAPP,
+        tipoContactoId: tipoWhatsapp.id,
         valor: '+54 9 11 5555-1001',
         principal: false,
         activo: true
@@ -1277,21 +1291,21 @@ async function main() {
     data: [
       {
         personaId: socio1.id,
-        tipo_contacto: TipoContacto.EMAIL,
+        tipoContactoId: tipoEmail.id,
         valor: 'juan.rodriguez@gmail.com',
         principal: true,
         activo: true
       },
       {
         personaId: socio1.id,
-        tipo_contacto: TipoContacto.CELULAR,
+        tipoContactoId: tipoCelular.id,
         valor: '+54 9 11 6666-2001',
         principal: false,
         activo: true
       },
       {
         personaId: socio1.id,
-        tipo_contacto: TipoContacto.TELEFONO,
+        tipoContactoId: tipoTelefono.id,
         valor: '11-4444-5678',
         principal: false,
         activo: true,
