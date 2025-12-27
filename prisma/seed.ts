@@ -14,6 +14,9 @@ import { seedItemsCatalogos } from './seed-items-catalogos';
 import { seedReglasDescuentos } from './seed-reglas-descuentos';
 import { seedTestCuotas } from './seed-test-cuotas';
 import { seedTiposContacto } from './seed-tipos-contacto';
+import { seedActividades } from './seed-actividades';
+import { seedCategoriasEquipamiento } from './seed-categorias-equipamiento';
+import { seedEstadosEquipamiento } from './seed-estados-equipamiento';
 
 const prisma = new PrismaClient();
 
@@ -64,6 +67,8 @@ async function main() {
   await prisma.categoriaSocio.deleteMany({});
   await prisma.tipos_persona.deleteMany({});
   await prisma.equipamiento.deleteMany({});
+  await prisma.estadoEquipamiento.deleteMany({});
+  await prisma.categoriaEquipamiento.deleteMany({});
   await prisma.estadoAula.deleteMany({});
   await prisma.tipoAula.deleteMany({});
   await prisma.roles_docentes.deleteMany({});
@@ -86,6 +91,12 @@ async function main() {
 
   // Ejecutar seed de tipos de contacto
   await seedTiposContacto();
+
+  // Ejecutar seed de categorías de equipamiento
+  await seedCategoriasEquipamiento();
+
+  // Ejecutar seed de estados de equipamiento
+  await seedEstadosEquipamiento();
 
   // ============================================================================
   // NIVEL 0: CATÁLOGOS BASE (Sin dependencias)
@@ -197,6 +208,12 @@ async function main() {
       { codigo: 'DOMINGO', nombre: 'Domingo', orden: 7 }
     ]
   });
+
+  // Obtener IDs de días de semana para uso posterior
+  const diasSemana = await prisma.dias_semana.findMany({ orderBy: { orden: 'asc' } });
+  const lunes = diasSemana.find(d => d.codigo === 'LUNES')!;
+  const martes = diasSemana.find(d => d.codigo === 'MARTES')!;
+  const miercoles = diasSemana.find(d => d.codigo === 'MIERCOLES')!;
 
   // ========== roles_docentes ==========
   console.log('  → roles_docentes...');
@@ -468,27 +485,31 @@ async function main() {
     })
   ]);
 
-  /*
-  // ========== Categorías de Equipamiento ==========
-  console.log('  → categorias_equipamiento (Modelo no existe en schema)...');
-  // const categoriasEquipamiento = await Promise.all([ ... ]);
-  */
-  const categoriasEquipamiento = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]; // Mock IDs for reference if needed
+  // ========== Categorías y Estados de Equipamiento ==========
+  // Obtener categorías y estados insertados por los seeds
+  const catInstrumentos = await prisma.categoriaEquipamiento.findUnique({ where: { codigo: 'INST' } });
+  const catMobiliario = await prisma.categoriaEquipamiento.findUnique({ where: { codigo: 'MOBI' } });
+  const catAudio = await prisma.categoriaEquipamiento.findUnique({ where: { codigo: 'AUDI' } });
+  const catVisual = await prisma.categoriaEquipamiento.findUnique({ where: { codigo: 'VISU' } });
+  const catAcustica = await prisma.categoriaEquipamiento.findUnique({ where: { codigo: 'ACUS' } });
 
-  /*
-  // ========== Estados de Equipamiento ==========
-  console.log('  → estados_equipamientos (Modelo no existe en schema)...');
-  // const estadosEquipamiento = await Promise.all([ ... ]);
-  */
-  const estadosEquipamiento = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]; // Mock IDs
+  const estadoDisponible = await prisma.estadoEquipamiento.findUnique({ where: { codigo: 'DISPONIBLE' } });
+  const estadoMantenimiento = await prisma.estadoEquipamiento.findUnique({ where: { codigo: 'MANTENIMIENTO' } });
+
+  if (!catInstrumentos || !catMobiliario || !catAudio || !catVisual || !catAcustica || !estadoDisponible || !estadoMantenimiento) {
+    throw new Error('❌ Error: Categorías o estados de equipamiento no encontrados. Ejecute seeds primero.');
+  }
 
   // ========== Equipamiento ==========
   console.log('  → equipamientos...');
-  // Schema solo tiene: nombre, descripcion, observaciones, activo
   const equipamientos = await Promise.all([
     prisma.equipamiento.create({
       data: {
-        nombre: 'Piano de Cola', // 'INST-001'
+        codigo: 'INST-001',
+        nombre: 'Piano de Cola',
+        categoriaEquipamientoId: catInstrumentos.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 1,
         descripcion: 'Piano de cola acústico profesional',
         observaciones: 'Requiere afinación periódica',
         activo: true
@@ -496,7 +517,11 @@ async function main() {
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Piano Vertical', // 'INST-002'
+        codigo: 'INST-002',
+        nombre: 'Piano Vertical',
+        categoriaEquipamientoId: catInstrumentos.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 1,
         descripcion: 'Piano vertical acústico',
         observaciones: 'Requiere afinación periódica',
         activo: true
@@ -504,49 +529,77 @@ async function main() {
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Sillas', // 'MOB-001'
+        codigo: 'MOBI-001',
+        nombre: 'Sillas',
+        categoriaEquipamientoId: catMobiliario.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 100,
         descripcion: 'Sillas estándar para alumnos',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Atriles', // 'MOB-002'
+        codigo: 'MOBI-002',
+        nombre: 'Atriles',
+        categoriaEquipamientoId: catMobiliario.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 75,
         descripcion: 'Atriles de partituras',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Pizarra Musical', // 'DIDA-001'
+        codigo: 'VISU-001',
+        nombre: 'Pizarra Musical',
+        categoriaEquipamientoId: catVisual.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 3,
         descripcion: 'Pizarra con pentagramas',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Sistema de Sonido', // 'TEC_-001'
+        codigo: 'AUDI-001',
+        nombre: 'Sistema de Sonido',
+        categoriaEquipamientoId: catAudio.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 2,
         descripcion: 'Equipo de audio profesional con amplificadores y altavoces',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Proyector', // 'TEC_-002'
+        codigo: 'VISU-002',
+        nombre: 'Proyector',
+        categoriaEquipamientoId: catVisual.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 2,
         descripcion: 'Proyector multimedia',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Consola de Grabación', // 'TEC_-003'
+        codigo: 'AUDI-002',
+        nombre: 'Consola de Grabación',
+        categoriaEquipamientoId: catAudio.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 1,
         descripcion: 'Consola digital de grabación multipista',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Micrófonos', // 'TEC_-004'
+        codigo: 'AUDI-003',
+        nombre: 'Micrófonos',
+        categoriaEquipamientoId: catAudio.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 10,
         descripcion: 'Set de micrófonos profesionales',
         observaciones: '2 unidades en reparación',
         activo: true
@@ -554,21 +607,33 @@ async function main() {
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Cabina Acústica', // 'INFR-001'
+        codigo: 'ACUS-001',
+        nombre: 'Cabina Acústica',
+        categoriaEquipamientoId: catAcustica.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 1,
         descripcion: 'Cabina insonorizada para grabación',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Escritorio', // 'MOB-003'
+        codigo: 'MOBI-003',
+        nombre: 'Escritorio',
+        categoriaEquipamientoId: catMobiliario.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 5,
         descripcion: 'Escritorio para docente',
         activo: true
       }
     }),
     prisma.equipamiento.create({
       data: {
-        nombre: 'Armario', // 'MOB-004'
+        codigo: 'MOBI-004',
+        nombre: 'Armario',
+        categoriaEquipamientoId: catMobiliario.id,
+        estadoEquipamientoId: estadoDisponible.id,
+        cantidad: 8,
         descripcion: 'Armario para almacenamiento de materiales',
         activo: true
       }
@@ -1364,59 +1429,21 @@ async function main() {
   console.log('  → actividades...');
 
   // Obtener tipos, categorías y estados de actividades
-  const tiposCatalogoActividades = await prisma.tipos_actividades.findMany();
-  const categoriasCatalogoActividades = await prisma.categorias_actividades.findMany();
-  const estadosCatalogoActividades = await prisma.estados_actividades.findMany();
+  // ========== Actividades (usando FK a catálogos) ==========
+  // Ejecutar seed externo que usa FK en vez de ENUMs
+  await seedActividades();
 
-  const tipoCoro = tiposCatalogoActividades.find(t => t.codigo === 'CORO')!;
-  const tipoClaseIndividual = tiposCatalogoActividades.find(t => t.codigo === 'CLASE_INDIVIDUAL')!;
-  const categoriaMusica = categoriasCatalogoActividades.find(c => c.codigo === 'MUSICA')!;
-  const estadoActiva = estadosCatalogoActividades.find(e => e.codigo === 'ACTIVA')!;
-
-  // Obtener tipos ACTIVIDAD en Enum format (mock translation if needed or use schema)
-  // Schema: tipo TipoActividad (ENUM)
-  // CORO, CLASE_CANTO, CLASE_INSTRUMENTO
-
-  // Note: we are not using 'tipos_actividades' table for the 'actividades' creation because 
-  // the schema uses ENUM. We just use the string literal or imported enum.
-  // We'll import TipoActividad at the top eventually but for now assume it's available or use "CORO" etc.
-
-  // Need to import TipoActividad from client if not already
-  // It is imported at the top of the file!
-
-  const actividadCoro = await prisma.actividades.create({
-    data: {
-      // codigoActividad: 'CORO-2025-01', // REMOVED: No existe
-      nombre: 'Coro Municipal',
-      tipo: 'CORO', // Using Enum value literal
-      // categoriaId: categoriaMusica.id, // REMOVED: No existe
-      // estadoId: estadoActiva.id, // REMOVED: No existe
-      descripcion: 'Coro de voces mixtas para adultos',
-      // fechaDesde: new Date('2025-01-01'), // REMOVED? Wait, check schema Step 26.
-      // Schema Step 26: nombre, tipo, descripcion, precio, duracion, capacidadMaxima, activa
-      // NO fechaDesde/Hasta in Step 26 schema!
-
-      precio: 2000.00, // costo -> precio
-      capacidadMaxima: 30,
-      activa: true
-    }
+  // Obtener las actividades creadas para usar en secciones
+  const actividadCoro = await prisma.actividades.findUnique({
+    where: { codigoActividad: 'ACT-CORO-0001' }
+  });
+  const actividadPiano = await prisma.actividades.findUnique({
+    where: { codigoActividad: 'ACT-CLASE_INDIVIDUAL-0002' }
   });
 
-  const actividadPiano = await prisma.actividades.create({
-    data: {
-      // codigoActividad: 'PIANO-IND-2025-01',
-      nombre: 'Clase de Piano Individual',
-      tipo: 'CLASE_INSTRUMENTO',
-      // categoriaId: categoriaMusica.id,
-      // estadoId: estadoActiva.id,
-      descripcion: 'Clases personalizadas de piano nivel inicial a avanzado',
-      // fechaDesde: new Date('2025-01-01'),
-      // fechaHasta: new Date('2025-12-31'),
-      precio: 3500.00,
-      capacidadMaxima: 1,
-      activa: true
-    }
-  });
+  if (!actividadCoro || !actividadPiano) {
+    throw new Error('Actividades no encontradas después del seed');
+  }
 
   // ========== secciones_actividades ==========
   console.log('  → secciones_actividades...');
@@ -1461,7 +1488,7 @@ async function main() {
     data: [
       {
         seccionId: seccionCoro.id,
-        diaSemana: 'LUNES',
+        diaSemanaId: lunes.id,
         horaInicio: '18:00',
         horaFin: '20:00',
         activo: true,
@@ -1469,7 +1496,7 @@ async function main() {
       },
       {
         seccionId: seccionCoro.id,
-        diaSemana: 'MIERCOLES',
+        diaSemanaId: miercoles.id,
         horaInicio: '18:00',
         horaFin: '20:00',
         activo: true,
@@ -1482,7 +1509,7 @@ async function main() {
   await prisma.horarios_secciones.create({
     data: {
       seccionId: seccionPiano.id,
-      diaSemana: 'MARTES',
+      diaSemanaId: martes.id,
       horaInicio: '15:00',
       horaFin: '16:00',
       activo: true,
@@ -1499,7 +1526,7 @@ async function main() {
       {
         seccionId: seccionCoro.id,
         aulaId: aulas[0].id, // Sala Principal
-        diaSemana: 'LUNES',
+        diaSemanaId: lunes.id,
         horaInicio: '18:00',
         horaFin: '20:00',
         fechaVigencia: new Date('2025-01-01'),
@@ -1509,7 +1536,7 @@ async function main() {
       {
         seccionId: seccionCoro.id,
         aulaId: aulas[0].id, // Sala Principal
-        diaSemana: 'MIERCOLES',
+        diaSemanaId: miercoles.id,
         horaInicio: '18:00',
         horaFin: '20:00',
         fechaVigencia: new Date('2025-01-01'),
@@ -1524,7 +1551,7 @@ async function main() {
     data: {
       seccionId: seccionPiano.id,
       aulaId: aulas[1].id, // Aula 101
-      diaSemana: 'MARTES',
+      diaSemanaId: martes.id,
       horaInicio: '15:00',
       horaFin: '16:00',
       fechaVigencia: new Date('2025-01-01'),

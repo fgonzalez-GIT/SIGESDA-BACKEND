@@ -127,27 +127,40 @@ async function seedTestCuotas() {
     // 3. Crear actividades de prueba
     console.log('🎵 Creando actividades de prueba...');
 
-    // Access enum directly or use literals
-    // TipoActividad: CLASE_INSTRUMENTO, CORO, CLASE_CANTO
+    // Obtener catálogos
+    const tipoClaseIndividual = await prisma.tipos_actividades.findUnique({ where: { codigo: 'CLASE_INDIVIDUAL' } });
+    const tipoCoro = await prisma.tipos_actividades.findUnique({ where: { codigo: 'CORO' } });
+    const categoriaMusica = await prisma.categorias_actividades.findUnique({ where: { codigo: 'MUSICA' } });
+    const estadoActiva = await prisma.estados_actividades.findUnique({ where: { codigo: 'ACTIVA' } });
+
+    if (!tipoClaseIndividual || !tipoCoro || !categoriaMusica || !estadoActiva) {
+      throw new Error('Catálogos no encontrados');
+    }
 
     const actividades = [
-      { nombre: 'Guitarra Individual', precio: 2500, tipo: 'CLASE_INSTRUMENTO' },
-      { nombre: 'Piano Individual', precio: 3000, tipo: 'CLASE_INSTRUMENTO' },
-      { nombre: 'Violín Individual', precio: 2800, tipo: 'CLASE_INSTRUMENTO' },
-      { nombre: 'Canto Grupal', precio: 1500, tipo: 'CORO' }
+      { nombre: 'Guitarra Individual', costo: 2500, tipoId: tipoClaseIndividual.id },
+      { nombre: 'Piano Individual', costo: 3000, tipoId: tipoClaseIndividual.id },
+      { nombre: 'Violín Individual', costo: 2800, tipoId: tipoClaseIndividual.id },
+      { nombre: 'Canto Grupal', costo: 1500, tipoId: tipoCoro.id }
     ];
 
+    let actIndex = 1;
     for (const act of actividades) {
       await prisma.actividades.create({
         data: {
+          codigoActividad: `ACT-TEST-${actIndex.toString().padStart(4, '0')}`,
           nombre: act.nombre,
-          tipo: act.tipo as any, // Cast to any to avoid importing enum complexity here, or string literal works if client generated
+          tipoActividadId: act.tipoId,
+          categoriaId: categoriaMusica.id,
+          estadoId: estadoActiva.id,
           descripcion: `Actividad de prueba: ${act.nombre}`,
           capacidadMaxima: 20,
-          precio: act.precio,
+          fechaDesde: new Date('2025-01-01'),
+          costo: act.costo,
           activa: true
         }
       });
+      actIndex++;
     }
 
     console.log('✅ 4 actividades creadas\n');
@@ -181,7 +194,7 @@ async function seedTestCuotas() {
             personaId: socio.id,
             actividadId: actividad.id,
             fechaInicio: new Date('2025-01-01'),
-            precioEspecial: Math.random() > 0.7 ? Number(actividad.precio) * 0.9 : null,
+            precioEspecial: Math.random() > 0.7 ? Number(actividad.costo) * 0.9 : null,
             activa: true
           }
         });

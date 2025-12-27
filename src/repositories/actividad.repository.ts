@@ -1,10 +1,9 @@
-// @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 import { CreateActividadDto, UpdateActividadDto, QueryActividadesDto } from '@/dto/actividad-v2.dto';
 
 /**
  * Repository para manejo de Actividades V2.0
- * Basado en el nuevo modelo con tablas de catálogos e IDs SERIAL
+ * Usa FK a tablas catálogo (tipos_actividades, categorias_actividades, estados_actividades, dias_semana)
  */
 export class ActividadRepository {
   constructor(private prisma: PrismaClient) {}
@@ -81,34 +80,28 @@ export class ActividadRepository {
   async findAll(query: QueryActividadesDto) {
     const where: any = {};
 
-    // NOTA: Los filtros por tipoActividadId, categoriaId, estadoId están deshabilitados
-    // porque el modelo 'actividades' usa ENUM en lugar de FK a tablas catálogo.
-    // Para habilitar estos filtros, se necesitaría:
-    // 1. Modificar schema.prisma para usar FK en lugar de ENUM, O
-    // 2. Mapear IDs a valores ENUM (ej: tipoActividadId=1 → TipoActividad.CORO)
+    // Filtros por FK a catálogos (ahora habilitados)
+    if (query.tipoActividadId) {
+      where.tipoActividadId = query.tipoActividadId;
+    }
 
-    // if (query.tipoActividadId) {
-    //   // where.tipo = mapTipoActividadIdToEnum(query.tipoActividadId);
-    // }
+    if (query.categoriaId) {
+      where.categoriaId = query.categoriaId;
+    }
 
-    // if (query.categoriaId) {
-    //   // NO existe en modelo actual
-    // }
+    if (query.estadoId) {
+      where.estadoId = query.estadoId;
+    }
 
-    // if (query.estadoId) {
-    //   // NO existe en modelo actual
-    // }
-
-    // Filtro por día de semana
-    // NOTA: También deshabilitado porque horarios_actividades usa ENUM DiaSemana
-    // if (query.diaSemanaId) {
-    //   // where.horarios_actividades = {
-    //   //   some: {
-    //   //     diaSemana: mapDiaSemanaIdToEnum(query.diaSemanaId),
-    //   //     activo: true
-    //   //   }
-    //   // };
-    // }
+    // Filtro por día de semana (ahora usa FK)
+    if (query.diaSemanaId) {
+      where.horarios_actividades = {
+        some: {
+          diaSemanaId: query.diaSemanaId,
+          activo: true
+        }
+      };
+    }
 
     // Filtro por docente
     if (query.docenteId) {
@@ -188,12 +181,18 @@ export class ActividadRepository {
         take: query.limit,
         orderBy,
         include: query.incluirRelaciones ? {
+          tipoActividad: true,
+          categoria: true,
+          estado: true,
           horarios_actividades: {
             orderBy: [
-              { diaSemana: 'asc' },
+              { diaSemanaId: 'asc' },
               { horaInicio: 'asc' }
             ],
-            where: { activo: true }
+            where: { activo: true },
+            include: {
+              diaSemana: true
+            }
           },
           docentes_actividades: {
             include: {
@@ -310,9 +309,25 @@ export class ActividadRepository {
    * Busca una actividad por código
    */
   async findByCodigoActividad(codigo: string) {
-    // NOTA: El modelo actividades NO tiene campo 'codigoActividad'
-    // Este método necesita ser corregido o eliminado
-    throw new Error('findByCodigoActividad: El modelo actividades no tiene campo codigoActividad');
+    return this.prisma.actividades.findUnique({
+      where: { codigoActividad: codigo },
+      include: {
+        tipoActividad: true,
+        categoria: true,
+        estado: true,
+        horarios_actividades: {
+          where: { activo: true },
+          include: { diaSemana: true }
+        },
+        docentes_actividades: {
+          where: { activo: true },
+          include: {
+            personas: true,
+            rolesDocentes: true
+          }
+        }
+      }
+    });
   }
 
   /**
@@ -321,24 +336,32 @@ export class ActividadRepository {
   async update(id: number, data: UpdateActividadDto) {
     const updateData: any = {};
 
-    // Mapear solo campos que existen en el modelo actual
+    // Mapear todos los campos disponibles
+    if (data.codigoActividad) updateData.codigoActividad = data.codigoActividad;
     if (data.nombre) updateData.nombre = data.nombre;
+    if (data.tipoActividadId) updateData.tipoActividadId = data.tipoActividadId;
+    if (data.categoriaId) updateData.categoriaId = data.categoriaId;
+    if (data.estadoId) updateData.estadoId = data.estadoId;
     if (data.descripcion !== undefined) updateData.descripcion = data.descripcion;
     if (data.cupoMaximo !== undefined) updateData.capacidadMaxima = data.cupoMaximo;
-    // NOTA: Los siguientes campos NO existen en el modelo actual:
-    // - codigoActividad, tipoActividadId, categoriaId, estadoId
-    // - fechaDesde, fechaHasta, costo, observaciones
-    // Si se necesitan, hay que agregar al schema.prisma
+    if (data.fechaDesde) updateData.fechaDesde = data.fechaDesde;
+    if (data.fechaHasta !== undefined) updateData.fechaHasta = data.fechaHasta;
+    if (data.costo !== undefined) updateData.costo = data.costo;
+    if (data.observaciones !== undefined) updateData.observaciones = data.observaciones;
 
     return this.prisma.actividades.update({
       where: { id },
       data: updateData,
       include: {
+        tipoActividad: true,
+        categoria: true,
+        estado: true,
         horarios_actividades: {
           orderBy: [
-            { diaSemana: 'asc' },
+            { diaSemanaId: 'asc' },
             { horaInicio: 'asc' }
-          ]
+          ],
+          include: { diaSemana: true }
         },
         docentes_actividades: {
           include: {
@@ -374,9 +397,23 @@ export class ActividadRepository {
    * Cambia el estado de una actividad
    */
   async cambiarEstado(id: number, nuevoEstadoId: number, observaciones?: string) {
-    // NOTA: El modelo actividades NO tiene campos 'estadoId' ni 'observaciones'
-    // Este método necesita ser corregido o eliminado
-    throw new Error('cambiarEstado: El modelo actividades no tiene campo estadoId');
+    const updateData: any = {
+      estadoId: nuevoEstadoId
+    };
+
+    if (observaciones !== undefined) {
+      updateData.observaciones = observaciones;
+    }
+
+    return this.prisma.actividades.update({
+      where: { id },
+      data: updateData,
+      include: {
+        estado: true,
+        tipoActividad: true,
+        categoria: true
+      }
+    });
   }
 
   // ==================== HORARIOS ====================

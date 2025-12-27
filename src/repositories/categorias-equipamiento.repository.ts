@@ -14,7 +14,7 @@ export class CategoriasEquipamientoRepository {
    */
   async create(data: CreateCategoriaEquipamientoDto) {
     // 1. Verificar que el código no exista
-    const existing = await this.prisma.categoriasEquipamiento.findUnique({
+    const existing = await this.prisma.categoriaEquipamiento.findUnique({
       where: { codigo: data.codigo }
     });
 
@@ -25,7 +25,7 @@ export class CategoriasEquipamientoRepository {
     // 2. Si no se proporciona orden, usar el siguiente disponible
     let orden = data.orden;
     if (!orden || orden === 0) {
-      const maxOrden = await this.prisma.categoriasEquipamiento.findFirst({
+      const maxOrden = await this.prisma.categoriaEquipamiento.findFirst({
         select: { orden: true },
         orderBy: { orden: 'desc' }
       });
@@ -33,7 +33,7 @@ export class CategoriasEquipamientoRepository {
     }
 
     // 3. Crear la categoría
-    return this.prisma.categoriasEquipamiento.create({
+    return this.prisma.categoriaEquipamiento.create({
       data: {
         codigo: data.codigo,
         nombre: data.nombre,
@@ -73,7 +73,7 @@ export class CategoriasEquipamientoRepository {
     const orderBy: any = {};
     orderBy[options?.orderBy || 'orden'] = options?.orderDir || 'asc';
 
-    return this.prisma.categoriasEquipamiento.findMany({
+    return this.prisma.categoriaEquipamiento.findMany({
       where,
       orderBy,
       include: {
@@ -88,7 +88,7 @@ export class CategoriasEquipamientoRepository {
    * Obtener por ID
    */
   async findById(id: number) {
-    const categoria = await this.prisma.categoriasEquipamiento.findUnique({
+    const categoria = await this.prisma.categoriaEquipamiento.findUnique({
       where: { id },
       include: {
         _count: {
@@ -108,7 +108,7 @@ export class CategoriasEquipamientoRepository {
    * Obtener por código
    */
   async findByCodigo(codigo: string) {
-    return this.prisma.categoriasEquipamiento.findUnique({
+    return this.prisma.categoriaEquipamiento.findUnique({
       where: { codigo }
     });
   }
@@ -122,7 +122,7 @@ export class CategoriasEquipamientoRepository {
 
     // Si se cambia el código, verificar que no exista
     if (data.codigo) {
-      const existing = await this.prisma.categoriasEquipamiento.findFirst({
+      const existing = await this.prisma.categoriaEquipamiento.findFirst({
         where: {
           codigo: data.codigo,
           id: { not: id }
@@ -134,7 +134,7 @@ export class CategoriasEquipamientoRepository {
       }
     }
 
-    return this.prisma.categoriasEquipamiento.update({
+    return this.prisma.categoriaEquipamiento.update({
       where: { id },
       data: {
         ...(data.codigo && { codigo: data.codigo }),
@@ -168,7 +168,7 @@ export class CategoriasEquipamientoRepository {
     }
 
     // Soft delete
-    return this.prisma.categoriasEquipamiento.update({
+    return this.prisma.categoriaEquipamiento.update({
       where: { id },
       data: { activo: false }
     });
@@ -179,7 +179,7 @@ export class CategoriasEquipamientoRepository {
    */
   async reorder(data: ReorderCategoriaEquipamientoDto) {
     const updates = data.ids.map((id, index) =>
-      this.prisma.categoriasEquipamiento.update({
+      this.prisma.categoriaEquipamiento.update({
         where: { id },
         data: { orden: index + 1 }
       })

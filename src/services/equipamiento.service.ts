@@ -14,7 +14,7 @@ export class EquipamientoService {
    */
   private async generateCodigoEquipamiento(categoriaEquipamientoId: number): Promise<string> {
     // Obtener la categoría para usar su código como prefijo
-    const categoria = await prisma.categoriasEquipamiento.findUnique({
+    const categoria = await prisma.categoriaEquipamiento.findUnique({
       where: { id: categoriaEquipamientoId }
     });
 
@@ -43,7 +43,7 @@ export class EquipamientoService {
 
   async createEquipamiento(data: CreateEquipamientoDto): Promise<Equipamiento> {
     // 1. Validar que la categoría existe y está activa
-    const categoria = await prisma.categoriasEquipamiento.findUnique({
+    const categoria = await prisma.categoriaEquipamiento.findUnique({
       where: { id: data.categoriaEquipamientoId }
     });
 
@@ -136,7 +136,7 @@ export class EquipamientoService {
 
     // 4. Validar categoría si se está cambiando
     if (data.categoriaEquipamientoId && data.categoriaEquipamientoId !== (existingEquipamiento as any).categoriaEquipamientoId) {
-      const categoria = await prisma.categoriasEquipamiento.findUnique({
+      const categoria = await prisma.categoriaEquipamiento.findUnique({
         where: { id: data.categoriaEquipamientoId }
       });
 

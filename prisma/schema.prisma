@@ -9,15 +9,23 @@ datasource db {
 
 model actividades {
   id                        Int                         @id @default(autoincrement())
+  codigoActividad           String                      @unique @map("codigo_actividad") @db.VarChar(50)
   nombre                    String
-  tipo                      TipoActividad
+  tipoActividadId           Int                         @map("tipo_actividad_id")
+  categoriaId               Int                         @map("categoria_id")
+  estadoId                  Int                         @default(2) @map("estado_id")
   descripcion               String?
-  precio                    Decimal                     @default(0) @db.Decimal(8, 2)
-  duracion                  Int?
-  capacidadMaxima           Int?
+  capacidadMaxima           Int?                        @map("capacidad_maxima")
+  fechaDesde                DateTime                    @map("fecha_desde")
+  fechaHasta                DateTime?                   @map("fecha_hasta")
+  costo                     Decimal                     @default(0) @db.Decimal(8, 2)
+  observaciones             String?
   activa                    Boolean                     @default(true)
-  createdAt                 DateTime                    @default(now())
-  updatedAt                 DateTime                    @updatedAt
+  createdAt                 DateTime                    @default(now()) @map("created_at")
+  updatedAt                 DateTime                    @updatedAt @map("updated_at")
+  tipoActividad             tipos_actividades           @relation(fields: [tipoActividadId], references: [id], onDelete: Restrict)
+  categoria                 categorias_actividades      @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  estado                    estados_actividades         @relation(fields: [estadoId], references: [id], onDelete: Restrict)
   docentes_actividades      docentes_actividades[]
   horarios_actividades      horarios_actividades[]
   participacion_actividades participacion_actividades[]
@@ -25,17 +33,23 @@ model actividades {
   secciones_actividades     secciones_actividades[]
 
   @@index([activa])
+  @@index([tipoActividadId])
+  @@index([categoriaId])
+  @@index([estadoId])
+  @@index([codigoActividad])
+  @@index([fechaDesde])
 }
 
 model tipos_actividades {
-  id          Int      @id @default(autoincrement())
-  codigo      String   @unique @db.VarChar(50)
-  nombre      String   @db.VarChar(100)
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
   descripcion String?
-  activo      Boolean  @default(true)
-  orden       Int      @default(0)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  actividades actividades[]
 
   @@index([codigo])
   @@index([activo])
@@ -43,14 +57,15 @@ model tipos_actividades {
 }
 
 model categorias_actividades {
-  id          Int      @id @default(autoincrement())
-  codigo      String   @unique @db.VarChar(50)
-  nombre      String   @db.VarChar(100)
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
   descripcion String?
-  activo      Boolean  @default(true)
-  orden       Int      @default(0)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  actividades actividades[]
 
   @@index([codigo])
   @@index([activo])
@@ -58,14 +73,15 @@ model categorias_actividades {
 }
 
 model estados_actividades {
-  id          Int      @id @default(autoincrement())
-  codigo      String   @unique @db.VarChar(50)
-  nombre      String   @db.VarChar(100)
+  id          Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(50)
+  nombre      String        @db.VarChar(100)
   descripcion String?
-  activo      Boolean  @default(true)
-  orden       Int      @default(0)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  activo      Boolean       @default(true)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  actividades actividades[]
 
   @@index([codigo])
   @@index([activo])
@@ -73,12 +89,15 @@ model estados_actividades {
 }
 
 model dias_semana {
-  id        Int      @id @default(autoincrement())
-  codigo    String   @unique @db.VarChar(50)
-  nombre    String   @db.VarChar(100)
-  orden     Int
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                        Int                          @id @default(autoincrement())
+  codigo                    String                       @unique @db.VarChar(50)
+  nombre                    String                       @db.VarChar(100)
+  orden                     Int
+  createdAt                 DateTime                     @default(now()) @map("created_at")
+  updatedAt                 DateTime                     @updatedAt @map("updated_at")
+  horarios_actividades      horarios_actividades[]
+  horarios_secciones        horarios_secciones[]         @relation("horarios_secciones_diasemana")
+  reservas_aulas_secciones  reservas_aulas_secciones[]   @relation("reservas_aulas_secciones_diasemana")
 
   @@index([codigo])
   @@index([orden])
@@ -176,16 +195,59 @@ model EstadoAula {
   @@map("estados_aulas")
 }
 
-model Equipamiento {
-  id                  Int                @id @default(autoincrement())
-  nombre              String             @unique @db.VarChar(200)
-  descripcion         String?
-  observaciones       String?
-  activo              Boolean            @default(true)
-  createdAt           DateTime           @default(now()) @map("created_at")
-  updatedAt           DateTime           @updatedAt @map("updated_at")
-  aulas_equipamientos AulaEquipamiento[]
+model CategoriaEquipamiento {
+  id            Int             @id @default(autoincrement())
+  codigo        String          @unique @db.VarChar(50)
+  nombre        String          @db.VarChar(100)
+  descripcion   String?
+  activo        Boolean         @default(true)
+  orden         Int             @default(0)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  equipamientos Equipamiento[]
 
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("categorias_equipamiento")
+}
+
+model EstadoEquipamiento {
+  id            Int             @id @default(autoincrement())
+  codigo        String          @unique @db.VarChar(50)
+  nombre        String          @db.VarChar(100)
+  descripcion   String?
+  activo        Boolean         @default(true)
+  orden         Int             @default(0)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  equipamientos Equipamiento[]
+
+  @@index([codigo])
+  @@index([activo])
+  @@index([orden])
+  @@map("estados_equipamiento")
+}
+
+model Equipamiento {
+  id                      Int                      @id @default(autoincrement())
+  codigo                  String                   @unique @db.VarChar(50)
+  nombre                  String                   @unique @db.VarChar(200)
+  categoriaEquipamientoId Int                      @map("categoria_equipamiento_id")
+  estadoEquipamientoId    Int?                     @map("estado_equipamiento_id")
+  cantidad                Int                      @default(1)
+  descripcion             String?
+  observaciones           String?
+  activo                  Boolean                  @default(true)
+  createdAt               DateTime                 @default(now()) @map("created_at")
+  updatedAt               DateTime                 @updatedAt @map("updated_at")
+  categoriaEquipamiento   CategoriaEquipamiento    @relation(fields: [categoriaEquipamientoId], references: [id], onDelete: Restrict)
+  estadoEquipamiento      EstadoEquipamiento?      @relation(fields: [estadoEquipamientoId], references: [id], onDelete: Restrict)
+  aulas_equipamientos     AulaEquipamiento[]
+
+  @@index([codigo])
+  @@index([categoriaEquipamientoId])
+  @@index([estadoEquipamientoId])
   @@index([activo])
   @@map("equipamientos")
 }
@@ -369,17 +431,20 @@ model Familiar {
 }
 
 model horarios_actividades {
-  id          Int         @id @default(autoincrement())
-  actividadId Int
-  diaSemana   DiaSemana
-  horaInicio  String
-  horaFin     String
-  activo      Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime
-  actividades actividades @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  id          Int          @id @default(autoincrement())
+  actividadId Int          @map("actividad_id")
+  diaSemanaId Int          @map("dia_semana_id")
+  horaInicio  DateTime     @map("hora_inicio") @db.Time
+  horaFin     DateTime     @map("hora_fin") @db.Time
+  activo      Boolean      @default(true)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  actividades actividades  @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  diaSemana   dias_semana  @relation(fields: [diaSemanaId], references: [id], onDelete: Restrict)
 
-  @@unique([actividadId, diaSemana, horaInicio])
+  @@unique([actividadId, diaSemanaId, horaInicio])
+  @@index([actividadId])
+  @@index([diaSemanaId])
 }
 
 model docentes_actividades {
@@ -498,18 +563,19 @@ model Recibo {
 
 model horarios_secciones {
   id                    Int                   @id @default(autoincrement())
-  seccionId             Int
-  diaSemana             DiaSemana
-  horaInicio            String
-  horaFin               String
+  seccionId             Int                   @map("seccion_id")
+  diaSemanaId           Int                   @map("dia_semana_id")
+  horaInicio            String                @map("hora_inicio")
+  horaFin               String                @map("hora_fin")
   activo                Boolean               @default(true)
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
   secciones_actividades secciones_actividades @relation(fields: [seccionId], references: [id], onDelete: Cascade)
+  diaSemana             dias_semana           @relation("horarios_secciones_diasemana", fields: [diaSemanaId], references: [id], onDelete: Restrict)
 
   @@index([activo])
-  @@index([diaSemana])
-  @@index([seccionId, diaSemana, horaInicio])
+  @@index([diaSemanaId])
+  @@index([seccionId, diaSemanaId, horaInicio])
 }
 
 model participacion_actividades {
@@ -603,7 +669,7 @@ model reservas_aulas_secciones {
   id                    Int                   @id @default(autoincrement())
   seccionId             Int
   aulaId                Int
-  diaSemana             DiaSemana
+  diaSemanaId           Int
   horaInicio            String
   horaFin               String
   fechaVigencia         DateTime
@@ -613,9 +679,10 @@ model reservas_aulas_secciones {
   updatedAt             DateTime              @updatedAt
   aulas                 Aula                  @relation(fields: [aulaId], references: [id], onDelete: Cascade)
   secciones_actividades secciones_actividades @relation(fields: [seccionId], references: [id], onDelete: Cascade)
+  diaSemana             dias_semana           @relation("reservas_aulas_secciones_diasemana", fields: [diaSemanaId], references: [id], onDelete: Restrict)
 
-  @@unique([seccionId, aulaId, diaSemana, horaInicio])
-  @@index([aulaId, diaSemana, horaInicio])
+  @@unique([seccionId, aulaId, diaSemanaId, horaInicio])
+  @@index([aulaId, diaSemanaId, horaInicio])
   @@index([seccionId])
 }
 
@@ -831,22 +898,6 @@ enum Genero {
   FEMENINO
   NO_BINARIO
   PREFIERO_NO_DECIR
-}
-
-enum DiaSemana {
-  LUNES
-  MARTES
-  MIERCOLES
-  JUEVES
-  VIERNES
-  SABADO
-  DOMINGO
-}
-
-enum TipoActividad {
-  CORO
-  CLASE_CANTO
-  CLASE_INSTRUMENTO
 }
 
 // ══════════════════════════════════════════════════════════════════════
