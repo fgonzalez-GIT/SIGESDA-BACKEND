@@ -101,5 +101,7 @@ export declare class CuotaService {
         recalculada: any;
         diferencias: any;
     }>;
+    private calcularMontosCuota;
+    private aplicarAjustesYExenciones;
 }
 //# sourceMappingURL=cuota.service.d.ts.map

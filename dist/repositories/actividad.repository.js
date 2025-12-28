@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActividadRepository = void 0;
+const time_utils_1 = require("@/utils/time.utils");
 class ActividadRepository {
     constructor(prisma) {
         this.prisma = prisma;
@@ -24,8 +25,8 @@ class ActividadRepository {
                 horarios_actividades: horarios && horarios.length > 0 ? {
                     create: horarios.map(h => ({
                         diaSemanaId: h.diaSemanaId,
-                        horaInicio: h.horaInicio,
-                        horaFin: h.horaFin,
+                        horaInicio: (0, time_utils_1.timeStringToDateTime)(h.horaInicio),
+                        horaFin: (0, time_utils_1.timeStringToDateTime)(h.horaFin),
                         activo: h.activo
                     }))
                 } : undefined,
@@ -39,15 +40,9 @@ class ActividadRepository {
                 } : undefined
             },
             include: {
-                tiposActividades: true,
-                categoriasActividades: true,
-                estadosActividades: true,
                 horarios_actividades: {
-                    include: {
-                        diasSemana: true
-                    },
                     orderBy: [
-                        { diaSemanaId: 'asc' },
+                        { diaSemana: 'asc' },
                         { horaInicio: 'asc' }
                     ]
                 },
@@ -156,18 +151,18 @@ class ActividadRepository {
                 take: query.limit,
                 orderBy,
                 include: query.incluirRelaciones ? {
-                    tiposActividades: true,
-                    categoriasActividades: true,
-                    estadosActividades: true,
+                    tipoActividad: true,
+                    categoria: true,
+                    estado: true,
                     horarios_actividades: {
-                        include: {
-                            diasSemana: true
-                        },
                         orderBy: [
                             { diaSemanaId: 'asc' },
                             { horaInicio: 'asc' }
                         ],
-                        where: { activo: true }
+                        where: { activo: true },
+                        include: {
+                            diaSemana: true
+                        }
                     },
                     docentes_actividades: {
                         include: {
@@ -215,15 +210,9 @@ class ActividadRepository {
         return this.prisma.actividades.findUnique({
             where: { id },
             include: {
-                tiposActividades: true,
-                categoriasActividades: true,
-                estadosActividades: true,
                 horarios_actividades: {
-                    include: {
-                        diasSemana: true
-                    },
                     orderBy: [
-                        { diaSemanaId: 'asc' },
+                        { diaSemana: 'asc' },
                         { horaInicio: 'asc' }
                     ]
                 },
@@ -283,9 +272,20 @@ class ActividadRepository {
         return this.prisma.actividades.findUnique({
             where: { codigoActividad: codigo },
             include: {
-                tiposActividades: true,
-                categoriasActividades: true,
-                estadosActividades: true
+                tipoActividad: true,
+                categoria: true,
+                estado: true,
+                horarios_actividades: {
+                    where: { activo: true },
+                    include: { diaSemana: true }
+                },
+                docentes_actividades: {
+                    where: { activo: true },
+                    include: {
+                        personas: true,
+                        rolesDocentes: true
+                    }
+                }
             }
         });
     }
@@ -303,13 +303,12 @@ class ActividadRepository {
             updateData.estadoId = data.estadoId;
         if (data.descripcion !== undefined)
             updateData.descripcion = data.descripcion;
-        if (data.fechaDesde)
-            updateData.fechaDesde = new Date(data.fechaDesde);
-        if (data.fechaHasta !== undefined) {
-            updateData.fechaHasta = data.fechaHasta ? new Date(data.fechaHasta) : null;
-        }
         if (data.cupoMaximo !== undefined)
             updateData.capacidadMaxima = data.cupoMaximo;
+        if (data.fechaDesde)
+            updateData.fechaDesde = data.fechaDesde;
+        if (data.fechaHasta !== undefined)
+            updateData.fechaHasta = data.fechaHasta;
         if (data.costo !== undefined)
             updateData.costo = data.costo;
         if (data.observaciones !== undefined)
@@ -318,15 +317,15 @@ class ActividadRepository {
             where: { id },
             data: updateData,
             include: {
-                tiposActividades: true,
-                categoriasActividades: true,
-                estadosActividades: true,
+                tipoActividad: true,
+                categoria: true,
+                estado: true,
                 horarios_actividades: {
-                    include: { diasSemana: true },
                     orderBy: [
                         { diaSemanaId: 'asc' },
                         { horaInicio: 'asc' }
-                    ]
+                    ],
+                    include: { diaSemana: true }
                 },
                 docentes_actividades: {
                     include: {
@@ -354,14 +353,19 @@ class ActividadRepository {
         });
     }
     async cambiarEstado(id, nuevoEstadoId, observaciones) {
+        const updateData = {
+            estadoId: nuevoEstadoId
+        };
+        if (observaciones !== undefined) {
+            updateData.observaciones = observaciones;
+        }
         return this.prisma.actividades.update({
             where: { id },
-            data: {
-                estadoId: nuevoEstadoId,
-                observaciones: observaciones || undefined
-            },
+            data: updateData,
             include: {
-                estadosActividades: true
+                estado: true,
+                tipoActividad: true,
+                categoria: true
             }
         });
     }
@@ -370,12 +374,11 @@ class ActividadRepository {
             data: {
                 actividadId,
                 diaSemanaId: horarioData.diaSemanaId,
-                horaInicio: horarioData.horaInicio,
-                horaFin: horarioData.horaFin,
+                horaInicio: (0, time_utils_1.timeStringToDateTime)(horarioData.horaInicio),
+                horaFin: (0, time_utils_1.timeStringToDateTime)(horarioData.horaFin),
                 activo: horarioData.activo !== false
             },
             include: {
-                diasSemana: true,
                 actividades: {
                     select: {
                         id: true,
@@ -391,16 +394,15 @@ class ActividadRepository {
         if (horarioData.diaSemanaId)
             updateData.diaSemanaId = horarioData.diaSemanaId;
         if (horarioData.horaInicio)
-            updateData.horaInicio = horarioData.horaInicio;
+            updateData.horaInicio = (0, time_utils_1.timeStringToDateTime)(horarioData.horaInicio);
         if (horarioData.horaFin)
-            updateData.horaFin = horarioData.horaFin;
+            updateData.horaFin = (0, time_utils_1.timeStringToDateTime)(horarioData.horaFin);
         if (horarioData.activo !== undefined)
             updateData.activo = horarioData.activo;
         return this.prisma.horarios_actividades.update({
             where: { id: horarioId },
             data: updateData,
             include: {
-                diasSemana: true,
                 actividades: {
                     select: {
                         id: true,
@@ -436,7 +438,6 @@ class ActividadRepository {
         return this.prisma.horarios_actividades.findUnique({
             where: { id: horarioId },
             include: {
-                diasSemana: true,
                 actividades: {
                     select: {
                         id: true,

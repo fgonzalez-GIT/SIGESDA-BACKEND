@@ -535,45 +535,20 @@ class CuotaService {
         const montoBaseOriginal = Number(cuota.montoBase);
         const montoActividadesOriginal = Number(cuota.montoActividades);
         const montoTotalOriginal = Number(cuota.montoTotal);
+        const montosCalculados = await this.calcularMontosCuota(cuota);
+        const montoBase = montosCalculados.montoBase;
+        const montoActividades = montosCalculados.montoActividades;
         const categoriaId = await (0, categoria_helper_1.getCategoriaIdByCodigo)(cuota.categoria, this.prisma);
-        let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
-        const montoActividades = await this.calcularCostoActividades(cuota.recibo.receptorId.toString(), cuota.mes, cuota.anio).then(result => result.total);
-        let subtotal = montoBase + montoActividades;
-        const ajustesAplicados = [];
-        if (data.aplicarAjustes && this.ajusteService) {
-            const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
-            const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(cuota.recibo.receptorId, fechaCuota);
-            if (ajustes.length > 0) {
-                const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, subtotal);
-                subtotal = resultadoAjustes.montoFinal;
-                ajustesAplicados.push(...resultadoAjustes.ajustes);
-                logger_1.logger.debug(`[RECALCULAR CUOTA] ${ajustes.length} ajustes aplicados, ` +
-                    `ajuste total: $${resultadoAjustes.totalAjuste.toFixed(2)}`);
-            }
-        }
-        const exencionesAplicadas = [];
-        if (data.aplicarExenciones && this.exencionService) {
-            const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
-            const exencionCheck = await this.exencionService.checkExencionParaPeriodo(cuota.recibo.receptorId, fechaCuota);
-            if (exencionCheck.tieneExencion) {
-                const montoExencion = (subtotal * exencionCheck.porcentaje) / 100;
-                subtotal = subtotal - montoExencion;
-                exencionesAplicadas.push({
-                    exencionId: exencionCheck.exencion?.id,
-                    tipoExencion: exencionCheck.exencion?.tipoExencion,
-                    motivoExencion: exencionCheck.exencion?.motivoExencion,
-                    porcentaje: exencionCheck.porcentaje,
-                    montoExencion
-                });
-                logger_1.logger.debug(`[RECALCULAR CUOTA] Exención aplicada: ${exencionCheck.porcentaje}%, ` +
-                    `descuento: $${montoExencion.toFixed(2)}`);
-            }
-        }
-        if (data.aplicarDescuentos) {
-            const descuentos = await this.calcularDescuentos(categoriaId, montoBase, cuota.recibo.receptorId);
-            subtotal = Math.max(0, subtotal - descuentos.total);
-        }
-        const montoTotalRecalculado = Math.max(0, subtotal);
+        const resultado = await this.aplicarAjustesYExenciones(cuota.recibo.receptorId, cuota.mes, cuota.anio, montosCalculados.subtotal, {
+            aplicarAjustes: data.aplicarAjustes,
+            aplicarExenciones: data.aplicarExenciones,
+            aplicarDescuentos: data.aplicarDescuentos,
+            categoriaId,
+            montoBase
+        });
+        const montoTotalRecalculado = resultado.subtotal;
+        const ajustesAplicados = resultado.ajustesAplicados;
+        const exencionesAplicadas = resultado.exencionesAplicadas;
         const cambiosDiferencia = {
             montoBase: {
                 antes: montoBaseOriginal,
@@ -752,38 +727,20 @@ class CuotaService {
                 continue;
             }
             const montoOriginal = Number(cuota.montoTotal);
+            const montosCalculados = await this.calcularMontosCuota(cuota);
+            const montoBase = montosCalculados.montoBase;
+            const montoActividades = montosCalculados.montoActividades;
             const categoriaId = await (0, categoria_helper_1.getCategoriaIdByCodigo)(cuota.categoria, this.prisma);
-            let montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
-            const montoActividades = await this.calcularCostoActividades(cuota.recibo.receptorId.toString(), cuota.mes, cuota.anio).then(result => result.total);
-            let subtotal = montoBase + montoActividades;
-            const ajustesAplicados = [];
-            if (data.aplicarAjustes && this.ajusteService) {
-                const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
-                const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(cuota.recibo.receptorId, fechaCuota);
-                if (ajustes.length > 0) {
-                    const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, subtotal);
-                    subtotal = resultadoAjustes.montoFinal;
-                    ajustesAplicados.push(...resultadoAjustes.ajustes);
-                }
-            }
-            const exencionesAplicadas = [];
-            if (data.aplicarExenciones && this.exencionService) {
-                const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
-                const exencionCheck = await this.exencionService.checkExencionParaPeriodo(cuota.recibo.receptorId, fechaCuota);
-                if (exencionCheck.tieneExencion) {
-                    const montoExencion = (subtotal * exencionCheck.porcentaje) / 100;
-                    subtotal = subtotal - montoExencion;
-                    exencionesAplicadas.push({
-                        porcentaje: exencionCheck.porcentaje,
-                        montoExencion
-                    });
-                }
-            }
-            if (data.aplicarDescuentos) {
-                const descuentos = await this.calcularDescuentos(categoriaId, montoBase, cuota.recibo.receptorId);
-                subtotal = Math.max(0, subtotal - descuentos.total);
-            }
-            const montoRecalculado = Math.max(0, subtotal);
+            const resultado = await this.aplicarAjustesYExenciones(cuota.recibo.receptorId, cuota.mes, cuota.anio, montosCalculados.subtotal, {
+                aplicarAjustes: data.aplicarAjustes,
+                aplicarExenciones: data.aplicarExenciones,
+                aplicarDescuentos: data.aplicarDescuentos,
+                categoriaId,
+                montoBase
+            });
+            const montoRecalculado = resultado.subtotal;
+            const ajustesAplicados = resultado.ajustesAplicados;
+            const exencionesAplicadas = resultado.exencionesAplicadas;
             const diferencia = montoRecalculado - montoOriginal;
             if (Math.abs(diferencia) > 0.01) {
                 conCambios++;
@@ -832,43 +789,25 @@ class CuotaService {
             montoTotal: Number(cuota.montoTotal),
             estadoRecibo: cuota.recibo.estado
         };
+        const montosCalculados = await this.calcularMontosCuota(cuota);
+        const montoBase = montosCalculados.montoBase;
+        const montoActividades = montosCalculados.montoActividades;
         const categoriaId = await (0, categoria_helper_1.getCategoriaIdByCodigo)(cuota.categoria, this.prisma);
-        const montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
-        const montoActividades = await this.calcularCostoActividades(cuota.recibo.receptorId.toString(), cuota.mes, cuota.anio).then(result => result.total);
-        let subtotal = montoBase + montoActividades;
-        const ajustesInfo = [];
-        if (this.ajusteService) {
-            const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
-            const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(cuota.recibo.receptorId, fechaCuota);
-            if (ajustes.length > 0) {
-                const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, subtotal);
-                subtotal = resultadoAjustes.montoFinal;
-                ajustesInfo.push(...resultadoAjustes.ajustes);
-            }
-        }
-        const exencionesInfo = [];
-        if (this.exencionService) {
-            const fechaCuota = new Date(cuota.anio, cuota.mes - 1, 1);
-            const exencionCheck = await this.exencionService.checkExencionParaPeriodo(cuota.recibo.receptorId, fechaCuota);
-            if (exencionCheck.tieneExencion) {
-                const montoExencion = (subtotal * exencionCheck.porcentaje) / 100;
-                subtotal = subtotal - montoExencion;
-                exencionesInfo.push({
-                    porcentaje: exencionCheck.porcentaje,
-                    montoExencion,
-                    tipo: exencionCheck.exencion?.tipoExencion,
-                    motivo: exencionCheck.exencion?.motivoExencion
-                });
-            }
-        }
-        const montoTotalRecalculado = Math.max(0, subtotal);
+        const resultado = await this.aplicarAjustesYExenciones(cuota.recibo.receptorId, cuota.mes, cuota.anio, montosCalculados.subtotal, {
+            aplicarAjustes: true,
+            aplicarExenciones: true,
+            aplicarDescuentos: false,
+            categoriaId,
+            montoBase
+        });
+        const montoTotalRecalculado = resultado.subtotal;
         const recalculada = {
             id: cuota.id,
             montoBase,
             montoActividades,
             montoTotal: montoTotalRecalculado,
-            ajustesAplicados: ajustesInfo,
-            exencionesAplicadas: exencionesInfo
+            ajustesAplicados: resultado.ajustesAplicados,
+            exencionesAplicadas: resultado.exencionesAplicadas
         };
         const diferencias = {
             montoBase: montoBase - actual.montoBase,
@@ -887,6 +826,59 @@ class CuotaService {
             actual,
             recalculada,
             diferencias
+        };
+    }
+    async calcularMontosCuota(cuota) {
+        const categoriaId = await (0, categoria_helper_1.getCategoriaIdByCodigo)(cuota.categoria, this.prisma);
+        const montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
+        const montoActividades = await this.calcularCostoActividades(cuota.recibo.receptorId.toString(), cuota.mes, cuota.anio).then(result => result.total);
+        const subtotal = montoBase + montoActividades;
+        return {
+            montoBase,
+            montoActividades,
+            subtotal
+        };
+    }
+    async aplicarAjustesYExenciones(receptorId, mes, anio, subtotal, options) {
+        let montoActual = subtotal;
+        const ajustesAplicados = [];
+        const exencionesAplicadas = [];
+        if (options.aplicarAjustes && this.ajusteService) {
+            const fechaCuota = new Date(anio, mes - 1, 1);
+            const ajustes = await this.ajusteService.getAjustesActivosParaPeriodo(receptorId, fechaCuota);
+            if (ajustes.length > 0) {
+                const resultadoAjustes = this.ajusteService.calcularAjustesMultiples(ajustes, montoActual);
+                montoActual = resultadoAjustes.montoFinal;
+                ajustesAplicados.push(...resultadoAjustes.ajustes);
+                logger_1.logger.debug(`[APLICAR AJUSTES] ${ajustes.length} ajustes aplicados, ` +
+                    `ajuste total: $${resultadoAjustes.totalAjuste.toFixed(2)}`);
+            }
+        }
+        if (options.aplicarExenciones && this.exencionService) {
+            const fechaCuota = new Date(anio, mes - 1, 1);
+            const exencionCheck = await this.exencionService.checkExencionParaPeriodo(receptorId, fechaCuota);
+            if (exencionCheck.tieneExencion) {
+                const montoExencion = (montoActual * exencionCheck.porcentaje) / 100;
+                montoActual = montoActual - montoExencion;
+                exencionesAplicadas.push({
+                    exencionId: exencionCheck.exencion?.id,
+                    tipoExencion: exencionCheck.exencion?.tipoExencion,
+                    motivoExencion: exencionCheck.exencion?.motivoExencion,
+                    porcentaje: exencionCheck.porcentaje,
+                    montoExencion
+                });
+                logger_1.logger.debug(`[APLICAR EXENCIONES] Exención aplicada: ${exencionCheck.porcentaje}%, ` +
+                    `descuento: $${montoExencion.toFixed(2)}`);
+            }
+        }
+        if (options.aplicarDescuentos && options.categoriaId && options.montoBase !== undefined) {
+            const descuentos = await this.calcularDescuentos(options.categoriaId, options.montoBase, receptorId);
+            montoActual = Math.max(0, montoActual - descuentos.total);
+        }
+        return {
+            subtotal: Math.max(0, montoActual),
+            ajustesAplicados,
+            exencionesAplicadas
         };
     }
 }

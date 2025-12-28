@@ -46,22 +46,12 @@ class EstadosActividadRepository {
         orderBy[query.orderBy] = query.orderDir;
         return this.prisma.estados_actividades.findMany({
             where,
-            orderBy,
-            include: {
-                _count: {
-                    select: { actividades: true }
-                }
-            }
+            orderBy
         });
     }
     async findById(id) {
         const estado = await this.prisma.estados_actividades.findUnique({
-            where: { id },
-            include: {
-                _count: {
-                    select: { actividades: true }
-                }
-            }
+            where: { id }
         });
         if (!estado) {
             throw new Error(`Estado de actividad con ID ${id} no encontrado`);

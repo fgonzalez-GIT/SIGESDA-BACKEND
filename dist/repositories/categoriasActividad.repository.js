@@ -46,22 +46,12 @@ class CategoriasActividadRepository {
         orderBy[query.orderBy] = query.orderDir;
         return this.prisma.categorias_actividades.findMany({
             where,
-            orderBy,
-            include: {
-                _count: {
-                    select: { actividades: true }
-                }
-            }
+            orderBy
         });
     }
     async findById(id) {
         const categoria = await this.prisma.categorias_actividades.findUnique({
-            where: { id },
-            include: {
-                _count: {
-                    select: { actividades: true }
-                }
-            }
+            where: { id }
         });
         if (!categoria) {
             throw new Error(`Categoría de actividad con ID ${id} no encontrada`);

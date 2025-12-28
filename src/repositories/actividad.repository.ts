@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { CreateActividadDto, UpdateActividadDto, QueryActividadesDto } from '@/dto/actividad-v2.dto';
+import { timeStringToDateTime } from '@/utils/time.utils';
 
 /**
  * Repository para manejo de Actividades V2.0
@@ -33,8 +34,8 @@ export class ActividadRepository {
         horarios_actividades: horarios && horarios.length > 0 ? {
           create: horarios.map(h => ({
             diaSemanaId: h.diaSemanaId,
-            horaInicio: h.horaInicio,
-            horaFin: h.horaFin,
+            horaInicio: timeStringToDateTime(h.horaInicio),
+            horaFin: timeStringToDateTime(h.horaFin),
             activo: h.activo
           }))
         } : undefined,
@@ -52,9 +53,12 @@ export class ActividadRepository {
       include: {
         horarios_actividades: {
           orderBy: [
-            { diaSemana: 'asc' },
+            { diaSemana: { orden: 'asc' } },
             { horaInicio: 'asc' }
-          ]
+          ],
+          include: {
+            diaSemana: true
+          }
         },
         docentes_actividades: {
           include: {
@@ -248,9 +252,12 @@ export class ActividadRepository {
       include: {
         horarios_actividades: {
           orderBy: [
-            { diaSemana: 'asc' },
+            { diaSemana: { orden: 'asc' } },
             { horaInicio: 'asc' }
-          ]
+          ],
+          include: {
+            diaSemana: true
+          }
         },
         docentes_actividades: {
           include: {
@@ -425,9 +432,9 @@ export class ActividadRepository {
     return this.prisma.horarios_actividades.create({
       data: {
         actividadId,
-        diaSemana: horarioData.diaSemana, // ENUM DiaSemana, no diaSemanaId
-        horaInicio: horarioData.horaInicio,
-        horaFin: horarioData.horaFin,
+        diaSemanaId: horarioData.diaSemanaId,
+        horaInicio: timeStringToDateTime(horarioData.horaInicio),
+        horaFin: timeStringToDateTime(horarioData.horaFin),
         activo: horarioData.activo !== false
       },
       include: {
@@ -449,8 +456,8 @@ export class ActividadRepository {
     const updateData: any = {};
 
     if (horarioData.diaSemanaId) updateData.diaSemanaId = horarioData.diaSemanaId;
-    if (horarioData.horaInicio) updateData.horaInicio = horarioData.horaInicio;
-    if (horarioData.horaFin) updateData.horaFin = horarioData.horaFin;
+    if (horarioData.horaInicio) updateData.horaInicio = timeStringToDateTime(horarioData.horaInicio);
+    if (horarioData.horaFin) updateData.horaFin = timeStringToDateTime(horarioData.horaFin);
     if (horarioData.activo !== undefined) updateData.activo = horarioData.activo;
 
     return this.prisma.horarios_actividades.update({
@@ -493,7 +500,7 @@ export class ActividadRepository {
     return this.prisma.horarios_actividades.findMany({
       where: { actividadId },
       include: {
-        diasSemana: true
+        diaSemana: true
       },
       orderBy: [
         { diaSemanaId: 'asc' },

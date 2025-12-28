@@ -13,11 +13,7 @@ export declare class CategoriasActividadService {
         createdAt: Date;
         updatedAt: Date;
     }>;
-    findAll(query: QueryTiposCatalogoDto): Promise<({
-        _count: {
-            actividades: number;
-        };
-    } & {
+    findAll(query: QueryTiposCatalogoDto): Promise<{
         activo: boolean;
         codigo: string;
         nombre: string;
@@ -26,12 +22,8 @@ export declare class CategoriasActividadService {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-    })[]>;
+    }[]>;
     findById(id: number): Promise<{
-        _count: {
-            actividades: number;
-        };
-    } & {
         activo: boolean;
         codigo: string;
         nombre: string;
@@ -65,11 +57,7 @@ export declare class CategoriasActividadService {
         message: string;
         count: number;
     }>;
-    getActivas(): Promise<({
-        _count: {
-            actividades: number;
-        };
-    } & {
+    getActivas(): Promise<{
         activo: boolean;
         codigo: string;
         nombre: string;
@@ -78,6 +66,6 @@ export declare class CategoriasActividadService {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-    })[]>;
+    }[]>;
 }
 //# sourceMappingURL=categoriasActividad.service.d.ts.map

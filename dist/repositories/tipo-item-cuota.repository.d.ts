@@ -52,8 +52,8 @@ export declare class TipoItemCuotaRepository {
             cuotaId: number;
             cantidad: Prisma.Decimal;
             monto: Prisma.Decimal;
-            tipoItemId: number;
             porcentaje: Prisma.Decimal | null;
+            tipoItemId: number;
             esAutomatico: boolean;
             esEditable: boolean;
             metadata: Prisma.JsonValue | null;

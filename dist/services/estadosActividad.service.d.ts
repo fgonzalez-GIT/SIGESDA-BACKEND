@@ -13,11 +13,7 @@ export declare class EstadosActividadService {
         createdAt: Date;
         updatedAt: Date;
     }>;
-    findAll(query: QueryTiposCatalogoDto): Promise<({
-        _count: {
-            actividades: number;
-        };
-    } & {
+    findAll(query: QueryTiposCatalogoDto): Promise<{
         activo: boolean;
         codigo: string;
         nombre: string;
@@ -26,12 +22,8 @@ export declare class EstadosActividadService {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-    })[]>;
+    }[]>;
     findById(id: number): Promise<{
-        _count: {
-            actividades: number;
-        };
-    } & {
         activo: boolean;
         codigo: string;
         nombre: string;
@@ -65,11 +57,7 @@ export declare class EstadosActividadService {
         message: string;
         count: number;
     }>;
-    getActivos(): Promise<({
-        _count: {
-            actividades: number;
-        };
-    } & {
+    getActivos(): Promise<{
         activo: boolean;
         codigo: string;
         nombre: string;
@@ -78,6 +66,6 @@ export declare class EstadosActividadService {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-    })[]>;
+    }[]>;
 }
 //# sourceMappingURL=estadosActividad.service.d.ts.map

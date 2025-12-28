@@ -378,10 +378,1054 @@ export declare const previewRecalculoSchema: z.ZodEffects<z.ZodObject<{
 export type PreviewRecalculoDto = z.infer<typeof previewRecalculoSchema>;
 export declare const compararCuotaSchema: z.ZodObject<{
     cuotaId: z.ZodNumber;
+    cambiosPropuestos: z.ZodOptional<z.ZodObject<{
+        nuevoDescuento: z.ZodOptional<z.ZodNumber>;
+        nuevosAjustes: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            tipoItemCuotaId: z.ZodNumber;
+            monto: z.ZodNumber;
+            motivo: z.ZodString;
+        }, "strip", z.ZodTypeAny, {
+            motivo: string;
+            monto: number;
+            tipoItemCuotaId: number;
+        }, {
+            motivo: string;
+            monto: number;
+            tipoItemCuotaId: number;
+        }>, "many">>;
+        nuevasExenciones: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            tipoItemCuotaId: z.ZodNumber;
+            porcentaje: z.ZodNumber;
+            motivo: z.ZodString;
+        }, "strip", z.ZodTypeAny, {
+            motivo: string;
+            tipoItemCuotaId: number;
+            porcentaje: number;
+        }, {
+            motivo: string;
+            tipoItemCuotaId: number;
+            porcentaje: number;
+        }>, "many">>;
+    }, "strip", z.ZodTypeAny, {
+        nuevoDescuento?: number | undefined;
+        nuevosAjustes?: {
+            motivo: string;
+            monto: number;
+            tipoItemCuotaId: number;
+        }[] | undefined;
+        nuevasExenciones?: {
+            motivo: string;
+            tipoItemCuotaId: number;
+            porcentaje: number;
+        }[] | undefined;
+    }, {
+        nuevoDescuento?: number | undefined;
+        nuevosAjustes?: {
+            motivo: string;
+            monto: number;
+            tipoItemCuotaId: number;
+        }[] | undefined;
+        nuevasExenciones?: {
+            motivo: string;
+            tipoItemCuotaId: number;
+            porcentaje: number;
+        }[] | undefined;
+    }>>;
 }, "strip", z.ZodTypeAny, {
     cuotaId: number;
+    cambiosPropuestos?: {
+        nuevoDescuento?: number | undefined;
+        nuevosAjustes?: {
+            motivo: string;
+            monto: number;
+            tipoItemCuotaId: number;
+        }[] | undefined;
+        nuevasExenciones?: {
+            motivo: string;
+            tipoItemCuotaId: number;
+            porcentaje: number;
+        }[] | undefined;
+    } | undefined;
 }, {
     cuotaId: number;
+    cambiosPropuestos?: {
+        nuevoDescuento?: number | undefined;
+        nuevosAjustes?: {
+            motivo: string;
+            monto: number;
+            tipoItemCuotaId: number;
+        }[] | undefined;
+        nuevasExenciones?: {
+            motivo: string;
+            tipoItemCuotaId: number;
+            porcentaje: number;
+        }[] | undefined;
+    } | undefined;
 }>;
 export type CompararCuotaDto = z.infer<typeof compararCuotaSchema>;
+export declare const simularGeneracionSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
+    mes: z.ZodNumber;
+    anio: z.ZodNumber;
+    categoriaIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+    socioIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+    aplicarDescuentos: z.ZodDefault<z.ZodBoolean>;
+    aplicarAjustes: z.ZodDefault<z.ZodBoolean>;
+    aplicarExenciones: z.ZodDefault<z.ZodBoolean>;
+    incluirInactivos: z.ZodDefault<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    incluirInactivos: boolean;
+    mes: number;
+    anio: number;
+    aplicarDescuentos: boolean;
+    aplicarAjustes: boolean;
+    aplicarExenciones: boolean;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+}, {
+    mes: number;
+    anio: number;
+    incluirInactivos?: boolean | undefined;
+    categoriaIds?: number[] | undefined;
+    aplicarDescuentos?: boolean | undefined;
+    aplicarAjustes?: boolean | undefined;
+    aplicarExenciones?: boolean | undefined;
+    socioIds?: number[] | undefined;
+}>, {
+    incluirInactivos: boolean;
+    mes: number;
+    anio: number;
+    aplicarDescuentos: boolean;
+    aplicarAjustes: boolean;
+    aplicarExenciones: boolean;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+}, {
+    mes: number;
+    anio: number;
+    incluirInactivos?: boolean | undefined;
+    categoriaIds?: number[] | undefined;
+    aplicarDescuentos?: boolean | undefined;
+    aplicarAjustes?: boolean | undefined;
+    aplicarExenciones?: boolean | undefined;
+    socioIds?: number[] | undefined;
+}>, {
+    incluirInactivos: boolean;
+    mes: number;
+    anio: number;
+    aplicarDescuentos: boolean;
+    aplicarAjustes: boolean;
+    aplicarExenciones: boolean;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+}, {
+    mes: number;
+    anio: number;
+    incluirInactivos?: boolean | undefined;
+    categoriaIds?: number[] | undefined;
+    aplicarDescuentos?: boolean | undefined;
+    aplicarAjustes?: boolean | undefined;
+    aplicarExenciones?: boolean | undefined;
+    socioIds?: number[] | undefined;
+}>;
+export type SimularGeneracionDto = z.infer<typeof simularGeneracionSchema>;
+export declare const simularReglaDescuentoSchema: z.ZodObject<{
+    mes: z.ZodNumber;
+    anio: z.ZodNumber;
+    reglasModificadas: z.ZodArray<z.ZodObject<{
+        reglaId: z.ZodOptional<z.ZodNumber>;
+        tipo: z.ZodEnum<["ANTIGUEDAD", "FAMILIAR", "CATEGORIA", "COMBINADA"]>;
+        porcentaje: z.ZodNumber;
+        condiciones: z.ZodRecord<z.ZodString, z.ZodAny>;
+        activa: z.ZodDefault<z.ZodBoolean>;
+    }, "strip", z.ZodTypeAny, {
+        tipo: "FAMILIAR" | "ANTIGUEDAD" | "CATEGORIA" | "COMBINADA";
+        activa: boolean;
+        porcentaje: number;
+        condiciones: Record<string, any>;
+        reglaId?: number | undefined;
+    }, {
+        tipo: "FAMILIAR" | "ANTIGUEDAD" | "CATEGORIA" | "COMBINADA";
+        porcentaje: number;
+        condiciones: Record<string, any>;
+        activa?: boolean | undefined;
+        reglaId?: number | undefined;
+    }>, "many">;
+    reglasNuevas: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        codigo: z.ZodString;
+        nombre: z.ZodString;
+        tipo: z.ZodEnum<["ANTIGUEDAD", "FAMILIAR", "CATEGORIA", "COMBINADA"]>;
+        porcentaje: z.ZodNumber;
+        condiciones: z.ZodRecord<z.ZodString, z.ZodAny>;
+        activa: z.ZodDefault<z.ZodBoolean>;
+    }, "strip", z.ZodTypeAny, {
+        codigo: string;
+        nombre: string;
+        tipo: "FAMILIAR" | "ANTIGUEDAD" | "CATEGORIA" | "COMBINADA";
+        activa: boolean;
+        porcentaje: number;
+        condiciones: Record<string, any>;
+    }, {
+        codigo: string;
+        nombre: string;
+        tipo: "FAMILIAR" | "ANTIGUEDAD" | "CATEGORIA" | "COMBINADA";
+        porcentaje: number;
+        condiciones: Record<string, any>;
+        activa?: boolean | undefined;
+    }>, "many">>;
+    socioIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+    categoriaIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+}, "strip", z.ZodTypeAny, {
+    mes: number;
+    anio: number;
+    reglasModificadas: {
+        tipo: "FAMILIAR" | "ANTIGUEDAD" | "CATEGORIA" | "COMBINADA";
+        activa: boolean;
+        porcentaje: number;
+        condiciones: Record<string, any>;
+        reglaId?: number | undefined;
+    }[];
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+    reglasNuevas?: {
+        codigo: string;
+        nombre: string;
+        tipo: "FAMILIAR" | "ANTIGUEDAD" | "CATEGORIA" | "COMBINADA";
+        activa: boolean;
+        porcentaje: number;
+        condiciones: Record<string, any>;
+    }[] | undefined;
+}, {
+    mes: number;
+    anio: number;
+    reglasModificadas: {
+        tipo: "FAMILIAR" | "ANTIGUEDAD" | "CATEGORIA" | "COMBINADA";
+        porcentaje: number;
+        condiciones: Record<string, any>;
+        activa?: boolean | undefined;
+        reglaId?: number | undefined;
+    }[];
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+    reglasNuevas?: {
+        codigo: string;
+        nombre: string;
+        tipo: "FAMILIAR" | "ANTIGUEDAD" | "CATEGORIA" | "COMBINADA";
+        porcentaje: number;
+        condiciones: Record<string, any>;
+        activa?: boolean | undefined;
+    }[] | undefined;
+}>;
+export type SimularReglaDescuentoDto = z.infer<typeof simularReglaDescuentoSchema>;
+export declare const compararEscenariosSchema: z.ZodObject<{
+    mes: z.ZodNumber;
+    anio: z.ZodNumber;
+    escenarios: z.ZodArray<z.ZodObject<{
+        nombre: z.ZodString;
+        descripcion: z.ZodOptional<z.ZodString>;
+        aplicarDescuentos: z.ZodDefault<z.ZodBoolean>;
+        aplicarAjustes: z.ZodDefault<z.ZodBoolean>;
+        aplicarExenciones: z.ZodDefault<z.ZodBoolean>;
+        porcentajeDescuentoGlobal: z.ZodOptional<z.ZodNumber>;
+        montoFijoDescuento: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        nombre: string;
+        aplicarDescuentos: boolean;
+        aplicarAjustes: boolean;
+        aplicarExenciones: boolean;
+        descripcion?: string | undefined;
+        porcentajeDescuentoGlobal?: number | undefined;
+        montoFijoDescuento?: number | undefined;
+    }, {
+        nombre: string;
+        descripcion?: string | undefined;
+        aplicarDescuentos?: boolean | undefined;
+        aplicarAjustes?: boolean | undefined;
+        aplicarExenciones?: boolean | undefined;
+        porcentajeDescuentoGlobal?: number | undefined;
+        montoFijoDescuento?: number | undefined;
+    }>, "many">;
+    socioIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+    categoriaIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+}, "strip", z.ZodTypeAny, {
+    mes: number;
+    anio: number;
+    escenarios: {
+        nombre: string;
+        aplicarDescuentos: boolean;
+        aplicarAjustes: boolean;
+        aplicarExenciones: boolean;
+        descripcion?: string | undefined;
+        porcentajeDescuentoGlobal?: number | undefined;
+        montoFijoDescuento?: number | undefined;
+    }[];
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+}, {
+    mes: number;
+    anio: number;
+    escenarios: {
+        nombre: string;
+        descripcion?: string | undefined;
+        aplicarDescuentos?: boolean | undefined;
+        aplicarAjustes?: boolean | undefined;
+        aplicarExenciones?: boolean | undefined;
+        porcentajeDescuentoGlobal?: number | undefined;
+        montoFijoDescuento?: number | undefined;
+    }[];
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+}>;
+export type CompararEscenariosDto = z.infer<typeof compararEscenariosSchema>;
+export declare const simularImpactoMasivoSchema: z.ZodObject<{
+    mes: z.ZodNumber;
+    anio: z.ZodNumber;
+    cambios: z.ZodObject<{
+        nuevosMontosPorCategoria: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodNumber>>;
+        nuevasPorcentajesDescuento: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodNumber>>;
+        ajusteGlobalPorcentaje: z.ZodOptional<z.ZodNumber>;
+        ajusteGlobalMonto: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        nuevosMontosPorCategoria?: Record<string, number> | undefined;
+        nuevasPorcentajesDescuento?: Record<string, number> | undefined;
+        ajusteGlobalPorcentaje?: number | undefined;
+        ajusteGlobalMonto?: number | undefined;
+    }, {
+        nuevosMontosPorCategoria?: Record<string, number> | undefined;
+        nuevasPorcentajesDescuento?: Record<string, number> | undefined;
+        ajusteGlobalPorcentaje?: number | undefined;
+        ajusteGlobalMonto?: number | undefined;
+    }>;
+    incluirProyeccion: z.ZodDefault<z.ZodBoolean>;
+    mesesProyeccion: z.ZodOptional<z.ZodNumber>;
+}, "strip", z.ZodTypeAny, {
+    mes: number;
+    anio: number;
+    cambios: {
+        nuevosMontosPorCategoria?: Record<string, number> | undefined;
+        nuevasPorcentajesDescuento?: Record<string, number> | undefined;
+        ajusteGlobalPorcentaje?: number | undefined;
+        ajusteGlobalMonto?: number | undefined;
+    };
+    incluirProyeccion: boolean;
+    mesesProyeccion?: number | undefined;
+}, {
+    mes: number;
+    anio: number;
+    cambios: {
+        nuevosMontosPorCategoria?: Record<string, number> | undefined;
+        nuevasPorcentajesDescuento?: Record<string, number> | undefined;
+        ajusteGlobalPorcentaje?: number | undefined;
+        ajusteGlobalMonto?: number | undefined;
+    };
+    incluirProyeccion?: boolean | undefined;
+    mesesProyeccion?: number | undefined;
+}>;
+export type SimularImpactoMasivoDto = z.infer<typeof simularImpactoMasivoSchema>;
+export declare const ajusteMasivoSchema: z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodObject<{
+    filtros: z.ZodObject<{
+        mes: z.ZodOptional<z.ZodNumber>;
+        anio: z.ZodOptional<z.ZodNumber>;
+        categoriaIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+        socioIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+        estadoCuota: z.ZodOptional<z.ZodEnum<["PENDIENTE", "PAGADO", "VENCIDO", "ANULADO"]>>;
+    }, "strip", z.ZodTypeAny, {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    }, {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    }>;
+    tipoAjuste: z.ZodEnum<["DESCUENTO_PORCENTAJE", "DESCUENTO_FIJO", "RECARGO_PORCENTAJE", "RECARGO_FIJO", "MONTO_FIJO_TOTAL"]>;
+    valor: z.ZodNumber;
+    motivo: z.ZodString;
+    condiciones: z.ZodOptional<z.ZodObject<{
+        montoMinimo: z.ZodOptional<z.ZodNumber>;
+        montoMaximo: z.ZodOptional<z.ZodNumber>;
+        soloConDescuentos: z.ZodOptional<z.ZodBoolean>;
+        soloSinExenciones: z.ZodOptional<z.ZodBoolean>;
+    }, "strip", z.ZodTypeAny, {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    }, {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    }>>;
+    modo: z.ZodDefault<z.ZodEnum<["PREVIEW", "APLICAR"]>>;
+    confirmarAplicacion: z.ZodOptional<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    valor: number;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    };
+    modo: "PREVIEW" | "APLICAR";
+    condiciones?: {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    } | undefined;
+    confirmarAplicacion?: boolean | undefined;
+}, {
+    valor: number;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    };
+    condiciones?: {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    } | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarAplicacion?: boolean | undefined;
+}>, {
+    valor: number;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    };
+    modo: "PREVIEW" | "APLICAR";
+    condiciones?: {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    } | undefined;
+    confirmarAplicacion?: boolean | undefined;
+}, {
+    valor: number;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    };
+    condiciones?: {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    } | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarAplicacion?: boolean | undefined;
+}>, {
+    valor: number;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    };
+    modo: "PREVIEW" | "APLICAR";
+    condiciones?: {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    } | undefined;
+    confirmarAplicacion?: boolean | undefined;
+}, {
+    valor: number;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    };
+    condiciones?: {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    } | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarAplicacion?: boolean | undefined;
+}>, {
+    valor: number;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    };
+    modo: "PREVIEW" | "APLICAR";
+    condiciones?: {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    } | undefined;
+    confirmarAplicacion?: boolean | undefined;
+}, {
+    valor: number;
+    tipoAjuste: "DESCUENTO_FIJO" | "DESCUENTO_PORCENTAJE" | "RECARGO_FIJO" | "RECARGO_PORCENTAJE" | "MONTO_FIJO_TOTAL";
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        estadoCuota?: "PENDIENTE" | "PAGADO" | "VENCIDO" | "ANULADO" | undefined;
+    };
+    condiciones?: {
+        montoMinimo?: number | undefined;
+        montoMaximo?: number | undefined;
+        soloConDescuentos?: boolean | undefined;
+        soloSinExenciones?: boolean | undefined;
+    } | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarAplicacion?: boolean | undefined;
+}>;
+export type AjusteMasivoDto = z.infer<typeof ajusteMasivoSchema>;
+export declare const modificarItemsMasivoSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
+    filtros: z.ZodObject<{
+        mes: z.ZodOptional<z.ZodNumber>;
+        anio: z.ZodOptional<z.ZodNumber>;
+        categoriaItemId: z.ZodOptional<z.ZodNumber>;
+        tipoItemId: z.ZodOptional<z.ZodNumber>;
+        conceptoContiene: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaItemId?: number | undefined;
+        tipoItemId?: number | undefined;
+        conceptoContiene?: string | undefined;
+    }, {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaItemId?: number | undefined;
+        tipoItemId?: number | undefined;
+        conceptoContiene?: string | undefined;
+    }>;
+    modificaciones: z.ZodObject<{
+        nuevoConcepto: z.ZodOptional<z.ZodString>;
+        nuevoMonto: z.ZodOptional<z.ZodNumber>;
+        nuevoPorcentaje: z.ZodOptional<z.ZodNumber>;
+        multiplicarMonto: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        nuevoConcepto?: string | undefined;
+        nuevoMonto?: number | undefined;
+        nuevoPorcentaje?: number | undefined;
+        multiplicarMonto?: number | undefined;
+    }, {
+        nuevoConcepto?: string | undefined;
+        nuevoMonto?: number | undefined;
+        nuevoPorcentaje?: number | undefined;
+        multiplicarMonto?: number | undefined;
+    }>;
+    motivo: z.ZodString;
+    modo: z.ZodDefault<z.ZodEnum<["PREVIEW", "APLICAR"]>>;
+    confirmarModificacion: z.ZodOptional<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaItemId?: number | undefined;
+        tipoItemId?: number | undefined;
+        conceptoContiene?: string | undefined;
+    };
+    modo: "PREVIEW" | "APLICAR";
+    modificaciones: {
+        nuevoConcepto?: string | undefined;
+        nuevoMonto?: number | undefined;
+        nuevoPorcentaje?: number | undefined;
+        multiplicarMonto?: number | undefined;
+    };
+    confirmarModificacion?: boolean | undefined;
+}, {
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaItemId?: number | undefined;
+        tipoItemId?: number | undefined;
+        conceptoContiene?: string | undefined;
+    };
+    modificaciones: {
+        nuevoConcepto?: string | undefined;
+        nuevoMonto?: number | undefined;
+        nuevoPorcentaje?: number | undefined;
+        multiplicarMonto?: number | undefined;
+    };
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarModificacion?: boolean | undefined;
+}>, {
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaItemId?: number | undefined;
+        tipoItemId?: number | undefined;
+        conceptoContiene?: string | undefined;
+    };
+    modo: "PREVIEW" | "APLICAR";
+    modificaciones: {
+        nuevoConcepto?: string | undefined;
+        nuevoMonto?: number | undefined;
+        nuevoPorcentaje?: number | undefined;
+        multiplicarMonto?: number | undefined;
+    };
+    confirmarModificacion?: boolean | undefined;
+}, {
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaItemId?: number | undefined;
+        tipoItemId?: number | undefined;
+        conceptoContiene?: string | undefined;
+    };
+    modificaciones: {
+        nuevoConcepto?: string | undefined;
+        nuevoMonto?: number | undefined;
+        nuevoPorcentaje?: number | undefined;
+        multiplicarMonto?: number | undefined;
+    };
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarModificacion?: boolean | undefined;
+}>, {
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaItemId?: number | undefined;
+        tipoItemId?: number | undefined;
+        conceptoContiene?: string | undefined;
+    };
+    modo: "PREVIEW" | "APLICAR";
+    modificaciones: {
+        nuevoConcepto?: string | undefined;
+        nuevoMonto?: number | undefined;
+        nuevoPorcentaje?: number | undefined;
+        multiplicarMonto?: number | undefined;
+    };
+    confirmarModificacion?: boolean | undefined;
+}, {
+    motivo: string;
+    filtros: {
+        mes?: number | undefined;
+        anio?: number | undefined;
+        categoriaItemId?: number | undefined;
+        tipoItemId?: number | undefined;
+        conceptoContiene?: string | undefined;
+    };
+    modificaciones: {
+        nuevoConcepto?: string | undefined;
+        nuevoMonto?: number | undefined;
+        nuevoPorcentaje?: number | undefined;
+        multiplicarMonto?: number | undefined;
+    };
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarModificacion?: boolean | undefined;
+}>;
+export type ModificarItemsMasivoDto = z.infer<typeof modificarItemsMasivoSchema>;
+export declare const descuentoGlobalSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
+    mes: z.ZodNumber;
+    anio: z.ZodNumber;
+    tipoDescuento: z.ZodEnum<["PORCENTAJE", "MONTO_FIJO"]>;
+    valor: z.ZodNumber;
+    motivo: z.ZodString;
+    filtros: z.ZodOptional<z.ZodObject<{
+        categoriaIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+        socioIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+        montoMinimo: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        montoMinimo?: number | undefined;
+    }, {
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        montoMinimo?: number | undefined;
+    }>>;
+    modo: z.ZodDefault<z.ZodEnum<["PREVIEW", "APLICAR"]>>;
+    confirmarDescuento: z.ZodOptional<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    valor: number;
+    motivo: string;
+    mes: number;
+    anio: number;
+    modo: "PREVIEW" | "APLICAR";
+    tipoDescuento: "PORCENTAJE" | "MONTO_FIJO";
+    filtros?: {
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        montoMinimo?: number | undefined;
+    } | undefined;
+    confirmarDescuento?: boolean | undefined;
+}, {
+    valor: number;
+    motivo: string;
+    mes: number;
+    anio: number;
+    tipoDescuento: "PORCENTAJE" | "MONTO_FIJO";
+    filtros?: {
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        montoMinimo?: number | undefined;
+    } | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarDescuento?: boolean | undefined;
+}>, {
+    valor: number;
+    motivo: string;
+    mes: number;
+    anio: number;
+    modo: "PREVIEW" | "APLICAR";
+    tipoDescuento: "PORCENTAJE" | "MONTO_FIJO";
+    filtros?: {
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        montoMinimo?: number | undefined;
+    } | undefined;
+    confirmarDescuento?: boolean | undefined;
+}, {
+    valor: number;
+    motivo: string;
+    mes: number;
+    anio: number;
+    tipoDescuento: "PORCENTAJE" | "MONTO_FIJO";
+    filtros?: {
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        montoMinimo?: number | undefined;
+    } | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarDescuento?: boolean | undefined;
+}>, {
+    valor: number;
+    motivo: string;
+    mes: number;
+    anio: number;
+    modo: "PREVIEW" | "APLICAR";
+    tipoDescuento: "PORCENTAJE" | "MONTO_FIJO";
+    filtros?: {
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        montoMinimo?: number | undefined;
+    } | undefined;
+    confirmarDescuento?: boolean | undefined;
+}, {
+    valor: number;
+    motivo: string;
+    mes: number;
+    anio: number;
+    tipoDescuento: "PORCENTAJE" | "MONTO_FIJO";
+    filtros?: {
+        categoriaIds?: number[] | undefined;
+        socioIds?: number[] | undefined;
+        montoMinimo?: number | undefined;
+    } | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarDescuento?: boolean | undefined;
+}>;
+export type DescuentoGlobalDto = z.infer<typeof descuentoGlobalSchema>;
+export declare const validarAjusteMasivoSchema: z.ZodObject<{
+    cuotasAfectadas: z.ZodNumber;
+    montoTotalOriginal: z.ZodNumber;
+    montoTotalNuevo: z.ZodNumber;
+    impactoEconomico: z.ZodNumber;
+    advertencias: z.ZodArray<z.ZodString, "many">;
+    errores: z.ZodArray<z.ZodString, "many">;
+}, "strip", z.ZodTypeAny, {
+    cuotasAfectadas: number;
+    montoTotalOriginal: number;
+    montoTotalNuevo: number;
+    impactoEconomico: number;
+    advertencias: string[];
+    errores: string[];
+}, {
+    cuotasAfectadas: number;
+    montoTotalOriginal: number;
+    montoTotalNuevo: number;
+    impactoEconomico: number;
+    advertencias: string[];
+    errores: string[];
+}>;
+export type ValidarAjusteMasivoDto = z.infer<typeof validarAjusteMasivoSchema>;
+export declare const rollbackGeneracionSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
+    mes: z.ZodNumber;
+    anio: z.ZodNumber;
+    categoriaIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+    socioIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+    modo: z.ZodDefault<z.ZodEnum<["PREVIEW", "APLICAR"]>>;
+    opciones: z.ZodOptional<z.ZodObject<{
+        eliminarCuotasPendientes: z.ZodDefault<z.ZodBoolean>;
+        eliminarCuotasPagadas: z.ZodDefault<z.ZodBoolean>;
+        restaurarRecibos: z.ZodDefault<z.ZodBoolean>;
+        crearBackup: z.ZodDefault<z.ZodBoolean>;
+    }, "strip", z.ZodTypeAny, {
+        eliminarCuotasPendientes: boolean;
+        eliminarCuotasPagadas: boolean;
+        restaurarRecibos: boolean;
+        crearBackup: boolean;
+    }, {
+        eliminarCuotasPendientes?: boolean | undefined;
+        eliminarCuotasPagadas?: boolean | undefined;
+        restaurarRecibos?: boolean | undefined;
+        crearBackup?: boolean | undefined;
+    }>>;
+    confirmarRollback: z.ZodOptional<z.ZodBoolean>;
+    motivo: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    mes: number;
+    anio: number;
+    modo: "PREVIEW" | "APLICAR";
+    motivo?: string | undefined;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+    opciones?: {
+        eliminarCuotasPendientes: boolean;
+        eliminarCuotasPagadas: boolean;
+        restaurarRecibos: boolean;
+        crearBackup: boolean;
+    } | undefined;
+    confirmarRollback?: boolean | undefined;
+}, {
+    mes: number;
+    anio: number;
+    motivo?: string | undefined;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    opciones?: {
+        eliminarCuotasPendientes?: boolean | undefined;
+        eliminarCuotasPagadas?: boolean | undefined;
+        restaurarRecibos?: boolean | undefined;
+        crearBackup?: boolean | undefined;
+    } | undefined;
+    confirmarRollback?: boolean | undefined;
+}>, {
+    mes: number;
+    anio: number;
+    modo: "PREVIEW" | "APLICAR";
+    motivo?: string | undefined;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+    opciones?: {
+        eliminarCuotasPendientes: boolean;
+        eliminarCuotasPagadas: boolean;
+        restaurarRecibos: boolean;
+        crearBackup: boolean;
+    } | undefined;
+    confirmarRollback?: boolean | undefined;
+}, {
+    mes: number;
+    anio: number;
+    motivo?: string | undefined;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    opciones?: {
+        eliminarCuotasPendientes?: boolean | undefined;
+        eliminarCuotasPagadas?: boolean | undefined;
+        restaurarRecibos?: boolean | undefined;
+        crearBackup?: boolean | undefined;
+    } | undefined;
+    confirmarRollback?: boolean | undefined;
+}>, {
+    mes: number;
+    anio: number;
+    modo: "PREVIEW" | "APLICAR";
+    motivo?: string | undefined;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+    opciones?: {
+        eliminarCuotasPendientes: boolean;
+        eliminarCuotasPagadas: boolean;
+        restaurarRecibos: boolean;
+        crearBackup: boolean;
+    } | undefined;
+    confirmarRollback?: boolean | undefined;
+}, {
+    mes: number;
+    anio: number;
+    motivo?: string | undefined;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    opciones?: {
+        eliminarCuotasPendientes?: boolean | undefined;
+        eliminarCuotasPagadas?: boolean | undefined;
+        restaurarRecibos?: boolean | undefined;
+        crearBackup?: boolean | undefined;
+    } | undefined;
+    confirmarRollback?: boolean | undefined;
+}>;
+export type RollbackGeneracionDto = z.infer<typeof rollbackGeneracionSchema>;
+export declare const rollbackCuotaSchema: z.ZodEffects<z.ZodObject<{
+    cuotaId: z.ZodNumber;
+    eliminarItemsAsociados: z.ZodDefault<z.ZodBoolean>;
+    eliminarRecibo: z.ZodDefault<z.ZodBoolean>;
+    modo: z.ZodDefault<z.ZodEnum<["PREVIEW", "APLICAR"]>>;
+    confirmarRollback: z.ZodOptional<z.ZodBoolean>;
+    motivo: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    cuotaId: number;
+    modo: "PREVIEW" | "APLICAR";
+    eliminarItemsAsociados: boolean;
+    eliminarRecibo: boolean;
+    motivo?: string | undefined;
+    confirmarRollback?: boolean | undefined;
+}, {
+    cuotaId: number;
+    motivo?: string | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarRollback?: boolean | undefined;
+    eliminarItemsAsociados?: boolean | undefined;
+    eliminarRecibo?: boolean | undefined;
+}>, {
+    cuotaId: number;
+    modo: "PREVIEW" | "APLICAR";
+    eliminarItemsAsociados: boolean;
+    eliminarRecibo: boolean;
+    motivo?: string | undefined;
+    confirmarRollback?: boolean | undefined;
+}, {
+    cuotaId: number;
+    motivo?: string | undefined;
+    modo?: "PREVIEW" | "APLICAR" | undefined;
+    confirmarRollback?: boolean | undefined;
+    eliminarItemsAsociados?: boolean | undefined;
+    eliminarRecibo?: boolean | undefined;
+}>;
+export type RollbackCuotaDto = z.infer<typeof rollbackCuotaSchema>;
+export declare const validarRollbackSchema: z.ZodObject<{
+    mes: z.ZodNumber;
+    anio: z.ZodNumber;
+    categoriaIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+    socioIds: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+}, "strip", z.ZodTypeAny, {
+    mes: number;
+    anio: number;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+}, {
+    mes: number;
+    anio: number;
+    categoriaIds?: number[] | undefined;
+    socioIds?: number[] | undefined;
+}>;
+export type ValidarRollbackDto = z.infer<typeof validarRollbackSchema>;
+export declare const previewCuotaSchema: z.ZodEffects<z.ZodObject<{
+    cuotaId: z.ZodOptional<z.ZodNumber>;
+    socioId: z.ZodOptional<z.ZodNumber>;
+    mes: z.ZodOptional<z.ZodNumber>;
+    anio: z.ZodOptional<z.ZodNumber>;
+    categoriaId: z.ZodOptional<z.ZodNumber>;
+    incluirDetalleItems: z.ZodDefault<z.ZodBoolean>;
+    incluirExplicacionDescuentos: z.ZodDefault<z.ZodBoolean>;
+    incluirHistorialCambios: z.ZodDefault<z.ZodBoolean>;
+    formato: z.ZodDefault<z.ZodEnum<["COMPLETO", "RESUMIDO", "SIMPLE"]>>;
+}, "strip", z.ZodTypeAny, {
+    formato: "COMPLETO" | "RESUMIDO" | "SIMPLE";
+    incluirDetalleItems: boolean;
+    incluirExplicacionDescuentos: boolean;
+    incluirHistorialCambios: boolean;
+    categoriaId?: number | undefined;
+    socioId?: number | undefined;
+    cuotaId?: number | undefined;
+    mes?: number | undefined;
+    anio?: number | undefined;
+}, {
+    categoriaId?: number | undefined;
+    socioId?: number | undefined;
+    cuotaId?: number | undefined;
+    mes?: number | undefined;
+    anio?: number | undefined;
+    formato?: "COMPLETO" | "RESUMIDO" | "SIMPLE" | undefined;
+    incluirDetalleItems?: boolean | undefined;
+    incluirExplicacionDescuentos?: boolean | undefined;
+    incluirHistorialCambios?: boolean | undefined;
+}>, {
+    formato: "COMPLETO" | "RESUMIDO" | "SIMPLE";
+    incluirDetalleItems: boolean;
+    incluirExplicacionDescuentos: boolean;
+    incluirHistorialCambios: boolean;
+    categoriaId?: number | undefined;
+    socioId?: number | undefined;
+    cuotaId?: number | undefined;
+    mes?: number | undefined;
+    anio?: number | undefined;
+}, {
+    categoriaId?: number | undefined;
+    socioId?: number | undefined;
+    cuotaId?: number | undefined;
+    mes?: number | undefined;
+    anio?: number | undefined;
+    formato?: "COMPLETO" | "RESUMIDO" | "SIMPLE" | undefined;
+    incluirDetalleItems?: boolean | undefined;
+    incluirExplicacionDescuentos?: boolean | undefined;
+    incluirHistorialCambios?: boolean | undefined;
+}>;
+export type PreviewCuotaDto = z.infer<typeof previewCuotaSchema>;
+export declare const previewCuotasSocioSchema: z.ZodObject<{
+    socioId: z.ZodNumber;
+    mesDesde: z.ZodNumber;
+    anioDesde: z.ZodNumber;
+    mesHasta: z.ZodOptional<z.ZodNumber>;
+    anioHasta: z.ZodOptional<z.ZodNumber>;
+    incluirPagadas: z.ZodDefault<z.ZodBoolean>;
+    incluirAnuladas: z.ZodDefault<z.ZodBoolean>;
+    formato: z.ZodDefault<z.ZodEnum<["COMPLETO", "RESUMIDO", "SIMPLE"]>>;
+}, "strip", z.ZodTypeAny, {
+    socioId: number;
+    formato: "COMPLETO" | "RESUMIDO" | "SIMPLE";
+    mesDesde: number;
+    anioDesde: number;
+    incluirPagadas: boolean;
+    incluirAnuladas: boolean;
+    mesHasta?: number | undefined;
+    anioHasta?: number | undefined;
+}, {
+    socioId: number;
+    mesDesde: number;
+    anioDesde: number;
+    formato?: "COMPLETO" | "RESUMIDO" | "SIMPLE" | undefined;
+    mesHasta?: number | undefined;
+    anioHasta?: number | undefined;
+    incluirPagadas?: boolean | undefined;
+    incluirAnuladas?: boolean | undefined;
+}>;
+export type PreviewCuotasSocioDto = z.infer<typeof previewCuotasSocioSchema>;
 //# sourceMappingURL=cuota.dto.d.ts.map

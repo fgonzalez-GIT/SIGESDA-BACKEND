@@ -46,22 +46,12 @@ class TiposActividadRepository {
         orderBy[query.orderBy] = query.orderDir;
         return this.prisma.tipos_actividades.findMany({
             where,
-            orderBy,
-            include: {
-                _count: {
-                    select: { actividades: true }
-                }
-            }
+            orderBy
         });
     }
     async findById(id) {
         const tipo = await this.prisma.tipos_actividades.findUnique({
-            where: { id },
-            include: {
-                _count: {
-                    select: { actividades: true }
-                }
-            }
+            where: { id }
         });
         if (!tipo) {
             throw new Error(`Tipo de actividad con ID ${id} no encontrado`);
@@ -94,15 +84,6 @@ class TiposActividadRepository {
     }
     async delete(id) {
         const tipo = await this.findById(id);
-        const actividadesActivas = await this.prisma.actividades.count({
-            where: {
-                tipo_actividad_id: id,
-                estado_id: { in: [1, 2, 3] }
-            }
-        });
-        if (actividadesActivas > 0) {
-            throw new Error(`No se puede desactivar el tipo "${tipo.nombre}" porque tiene ${actividadesActivas} actividad(es) activa(s)`);
-        }
         return this.prisma.tipos_actividades.update({
             where: { id },
             data: { activo: false }

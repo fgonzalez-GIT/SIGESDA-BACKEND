@@ -6,7 +6,7 @@ class CategoriasEquipamientoRepository {
         this.prisma = prisma;
     }
     async create(data) {
-        const existing = await this.prisma.categoriasEquipamiento.findUnique({
+        const existing = await this.prisma.categoriaEquipamiento.findUnique({
             where: { codigo: data.codigo }
         });
         if (existing) {
@@ -14,13 +14,13 @@ class CategoriasEquipamientoRepository {
         }
         let orden = data.orden;
         if (!orden || orden === 0) {
-            const maxOrden = await this.prisma.categoriasEquipamiento.findFirst({
+            const maxOrden = await this.prisma.categoriaEquipamiento.findFirst({
                 select: { orden: true },
                 orderBy: { orden: 'desc' }
             });
             orden = (maxOrden?.orden ?? 0) + 1;
         }
-        return this.prisma.categoriasEquipamiento.create({
+        return this.prisma.categoriaEquipamiento.create({
             data: {
                 codigo: data.codigo,
                 nombre: data.nombre,
@@ -44,7 +44,7 @@ class CategoriasEquipamientoRepository {
         }
         const orderBy = {};
         orderBy[options?.orderBy || 'orden'] = options?.orderDir || 'asc';
-        return this.prisma.categoriasEquipamiento.findMany({
+        return this.prisma.categoriaEquipamiento.findMany({
             where,
             orderBy,
             include: {
@@ -55,7 +55,7 @@ class CategoriasEquipamientoRepository {
         });
     }
     async findById(id) {
-        const categoria = await this.prisma.categoriasEquipamiento.findUnique({
+        const categoria = await this.prisma.categoriaEquipamiento.findUnique({
             where: { id },
             include: {
                 _count: {
@@ -69,14 +69,14 @@ class CategoriasEquipamientoRepository {
         return categoria;
     }
     async findByCodigo(codigo) {
-        return this.prisma.categoriasEquipamiento.findUnique({
+        return this.prisma.categoriaEquipamiento.findUnique({
             where: { codigo }
         });
     }
     async update(id, data) {
         await this.findById(id);
         if (data.codigo) {
-            const existing = await this.prisma.categoriasEquipamiento.findFirst({
+            const existing = await this.prisma.categoriaEquipamiento.findFirst({
                 where: {
                     codigo: data.codigo,
                     id: { not: id }
@@ -86,7 +86,7 @@ class CategoriasEquipamientoRepository {
                 throw new Error(`Ya existe una categoría de equipamiento con código: ${data.codigo}`);
             }
         }
-        return this.prisma.categoriasEquipamiento.update({
+        return this.prisma.categoriaEquipamiento.update({
             where: { id },
             data: {
                 ...(data.codigo && { codigo: data.codigo }),
@@ -108,13 +108,13 @@ class CategoriasEquipamientoRepository {
         if (equipamientosActivos > 0) {
             throw new Error(`No se puede desactivar la categoría "${categoria.nombre}" porque tiene ${equipamientosActivos} equipamiento(s) activo(s)`);
         }
-        return this.prisma.categoriasEquipamiento.update({
+        return this.prisma.categoriaEquipamiento.update({
             where: { id },
             data: { activo: false }
         });
     }
     async reorder(data) {
-        const updates = data.ids.map((id, index) => this.prisma.categoriasEquipamiento.update({
+        const updates = data.ids.map((id, index) => this.prisma.categoriaEquipamiento.update({
             where: { id },
             data: { orden: index + 1 }
         }));

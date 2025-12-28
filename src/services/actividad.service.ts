@@ -3,6 +3,7 @@ import { CreateActividadDto, UpdateActividadDto, QueryActividadesDto } from '@/d
 import { logger } from '@/utils/logger';
 import { NotFoundError, ValidationError, ConflictError } from '@/utils/errors';
 import { PrismaClient } from '@prisma/client';
+import { normalizeTimeToString } from '@/utils/time.utils';
 
 /**
  * Service para manejo de lógica de negocio de Actividades V2.0
@@ -269,9 +270,9 @@ export class ActividadService {
 
     // Convertir horarios existentes al formato esperado para validación
     const horariosParaValidar = horariosExistentes.map(h => ({
-      diaSemanaId: h.diaSemana as any,
-      horaInicio: h.horaInicio,
-      horaFin: h.horaFin
+      diaSemanaId: h.diaSemanaId,
+      horaInicio: normalizeTimeToString(h.horaInicio),
+      horaFin: normalizeTimeToString(h.horaFin)
     }));
 
     // Agregar el nuevo horario a la validación
@@ -304,16 +305,16 @@ export class ActividadService {
       const otrosHorarios = todosLosHorarios
         .filter(h => h.id !== horarioId)
         .map(h => ({
-          diaSemanaId: h.diaSemana ? (typeof h.diaSemana === 'string' ? h.diaSemana : h.diaSemana) : 'LUNES',
-          horaInicio: h.horaInicio,
-          horaFin: h.horaFin
+          diaSemanaId: h.diaSemanaId,
+          horaInicio: normalizeTimeToString(h.horaInicio),
+          horaFin: normalizeTimeToString(h.horaFin)
         }));
 
       // Crear el horario actualizado para validación
       const horarioActualizado = {
-        diaSemanaId: horarioData.diaSemanaId || horarioActual.diaSemana,
-        horaInicio: horarioData.horaInicio || horarioActual.horaInicio,
-        horaFin: horarioData.horaFin || horarioActual.horaFin
+        diaSemanaId: horarioData.diaSemanaId || horarioActual.diaSemanaId,
+        horaInicio: horarioData.horaInicio || normalizeTimeToString(horarioActual.horaInicio),
+        horaFin: horarioData.horaFin || normalizeTimeToString(horarioActual.horaFin)
       };
 
       // Validar

@@ -1,200 +1,160 @@
 import { z } from 'zod';
 declare const horarioSchema: z.ZodEffects<z.ZodObject<{
-    diaSemana: z.ZodNativeEnum<{
-        LUNES: "LUNES";
-        MARTES: "MARTES";
-        MIERCOLES: "MIERCOLES";
-        JUEVES: "JUEVES";
-        VIERNES: "VIERNES";
-        SABADO: "SABADO";
-        DOMINGO: "DOMINGO";
-    }>;
+    diaSemana: z.ZodNativeEnum<any>;
     horaInicio: z.ZodString;
     horaFin: z.ZodString;
     activo: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    activo: boolean;
-    horaInicio: string;
-    horaFin: string;
-    diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
 }, {
-    horaInicio: string;
-    horaFin: string;
-    diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-    activo?: boolean | undefined;
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
 }>, {
-    activo: boolean;
-    horaInicio: string;
-    horaFin: string;
-    diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
 }, {
-    horaInicio: string;
-    horaFin: string;
-    diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-    activo?: boolean | undefined;
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
 }>;
 export declare const createActividadSchema: z.ZodObject<{
     docenteIds: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodString, "many">>>;
     horarios: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodObject<{
-        diaSemana: z.ZodNativeEnum<{
-            LUNES: "LUNES";
-            MARTES: "MARTES";
-            MIERCOLES: "MIERCOLES";
-            JUEVES: "JUEVES";
-            VIERNES: "VIERNES";
-            SABADO: "SABADO";
-            DOMINGO: "DOMINGO";
-        }>;
+        diaSemana: z.ZodNativeEnum<any>;
         horaInicio: z.ZodString;
         horaFin: z.ZodString;
         activo: z.ZodDefault<z.ZodBoolean>;
     }, "strip", z.ZodTypeAny, {
-        activo: boolean;
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
+        [x: string]: any;
+        diaSemana?: unknown;
+        horaInicio?: unknown;
+        horaFin?: unknown;
+        activo?: unknown;
     }, {
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-        activo?: boolean | undefined;
+        [x: string]: any;
+        diaSemana?: unknown;
+        horaInicio?: unknown;
+        horaFin?: unknown;
+        activo?: unknown;
     }>, {
-        activo: boolean;
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
+        [x: string]: any;
+        diaSemana?: unknown;
+        horaInicio?: unknown;
+        horaFin?: unknown;
+        activo?: unknown;
     }, {
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-        activo?: boolean | undefined;
+        [x: string]: any;
+        diaSemana?: unknown;
+        horaInicio?: unknown;
+        horaFin?: unknown;
+        activo?: unknown;
     }>, "many">>>;
     nombre: z.ZodString;
-    tipo: z.ZodNativeEnum<{
-        CORO: "CORO";
-        CLASE_CANTO: "CLASE_CANTO";
-        CLASE_INSTRUMENTO: "CLASE_INSTRUMENTO";
-    }>;
+    tipo: z.ZodNativeEnum<any>;
     descripcion: z.ZodOptional<z.ZodString>;
     precio: z.ZodDefault<z.ZodNumber>;
     duracion: z.ZodOptional<z.ZodNumber>;
     capacidadMaxima: z.ZodOptional<z.ZodNumber>;
     activa: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    nombre: string;
-    tipo: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO";
-    activa: boolean;
-    horarios: {
-        activo: boolean;
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-    }[];
-    precio: number;
-    docenteIds: string[];
-    descripcion?: string | undefined;
-    capacidadMaxima?: number | undefined;
-    duracion?: number | undefined;
+    [x: string]: any;
+    docenteIds?: unknown;
+    horarios?: unknown;
+    nombre?: unknown;
+    tipo?: unknown;
+    descripcion?: unknown;
+    precio?: unknown;
+    duracion?: unknown;
+    capacidadMaxima?: unknown;
+    activa?: unknown;
 }, {
-    nombre: string;
-    tipo: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO";
-    descripcion?: string | undefined;
-    activa?: boolean | undefined;
-    capacidadMaxima?: number | undefined;
-    horarios?: {
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-        activo?: boolean | undefined;
-    }[] | undefined;
-    precio?: number | undefined;
-    duracion?: number | undefined;
-    docenteIds?: string[] | undefined;
+    [x: string]: any;
+    docenteIds?: unknown;
+    horarios?: unknown;
+    nombre?: unknown;
+    tipo?: unknown;
+    descripcion?: unknown;
+    precio?: unknown;
+    duracion?: unknown;
+    capacidadMaxima?: unknown;
+    activa?: unknown;
 }>;
 export declare const updateActividadSchema: z.ZodObject<{
     docenteIds: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     horarios: z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodObject<{
-        diaSemana: z.ZodNativeEnum<{
-            LUNES: "LUNES";
-            MARTES: "MARTES";
-            MIERCOLES: "MIERCOLES";
-            JUEVES: "JUEVES";
-            VIERNES: "VIERNES";
-            SABADO: "SABADO";
-            DOMINGO: "DOMINGO";
-        }>;
+        diaSemana: z.ZodNativeEnum<any>;
         horaInicio: z.ZodString;
         horaFin: z.ZodString;
         activo: z.ZodDefault<z.ZodBoolean>;
     }, "strip", z.ZodTypeAny, {
-        activo: boolean;
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
+        [x: string]: any;
+        diaSemana?: unknown;
+        horaInicio?: unknown;
+        horaFin?: unknown;
+        activo?: unknown;
     }, {
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-        activo?: boolean | undefined;
+        [x: string]: any;
+        diaSemana?: unknown;
+        horaInicio?: unknown;
+        horaFin?: unknown;
+        activo?: unknown;
     }>, {
-        activo: boolean;
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
+        [x: string]: any;
+        diaSemana?: unknown;
+        horaInicio?: unknown;
+        horaFin?: unknown;
+        activo?: unknown;
     }, {
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-        activo?: boolean | undefined;
+        [x: string]: any;
+        diaSemana?: unknown;
+        horaInicio?: unknown;
+        horaFin?: unknown;
+        activo?: unknown;
     }>, "many">>;
     nombre: z.ZodOptional<z.ZodString>;
-    tipo: z.ZodOptional<z.ZodNativeEnum<{
-        CORO: "CORO";
-        CLASE_CANTO: "CLASE_CANTO";
-        CLASE_INSTRUMENTO: "CLASE_INSTRUMENTO";
-    }>>;
+    tipo: z.ZodOptional<z.ZodNativeEnum<any>>;
     descripcion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     precio: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
     duracion: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
     capacidadMaxima: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
     activa: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
 }, "strip", z.ZodTypeAny, {
-    nombre?: string | undefined;
-    descripcion?: string | undefined;
-    tipo?: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO" | undefined;
-    activa?: boolean | undefined;
-    capacidadMaxima?: number | undefined;
-    horarios?: {
-        activo: boolean;
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-    }[] | undefined;
-    precio?: number | undefined;
-    duracion?: number | undefined;
-    docenteIds?: string[] | undefined;
+    [x: string]: any;
+    docenteIds?: unknown;
+    horarios?: unknown;
+    nombre?: unknown;
+    tipo?: unknown;
+    descripcion?: unknown;
+    precio?: unknown;
+    duracion?: unknown;
+    capacidadMaxima?: unknown;
+    activa?: unknown;
 }, {
-    nombre?: string | undefined;
-    descripcion?: string | undefined;
-    tipo?: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO" | undefined;
-    activa?: boolean | undefined;
-    capacidadMaxima?: number | undefined;
-    horarios?: {
-        horaInicio: string;
-        horaFin: string;
-        diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-        activo?: boolean | undefined;
-    }[] | undefined;
-    precio?: number | undefined;
-    duracion?: number | undefined;
-    docenteIds?: string[] | undefined;
+    [x: string]: any;
+    docenteIds?: unknown;
+    horarios?: unknown;
+    nombre?: unknown;
+    tipo?: unknown;
+    descripcion?: unknown;
+    precio?: unknown;
+    duracion?: unknown;
+    capacidadMaxima?: unknown;
+    activa?: unknown;
 }>;
 export declare const actividadQuerySchema: z.ZodObject<{
-    tipo: z.ZodOptional<z.ZodNativeEnum<{
-        CORO: "CORO";
-        CLASE_CANTO: "CLASE_CANTO";
-        CLASE_INSTRUMENTO: "CLASE_INSTRUMENTO";
-    }>>;
+    tipo: z.ZodOptional<z.ZodNativeEnum<any>>;
     activa: z.ZodEffects<z.ZodOptional<z.ZodBoolean>, boolean | undefined, unknown>;
     conDocentes: z.ZodEffects<z.ZodOptional<z.ZodBoolean>, boolean | undefined, unknown>;
     precioDesde: z.ZodEffects<z.ZodOptional<z.ZodNumber>, number | undefined, unknown>;
@@ -203,23 +163,25 @@ export declare const actividadQuerySchema: z.ZodObject<{
     page: z.ZodEffects<z.ZodDefault<z.ZodNumber>, number, unknown>;
     limit: z.ZodEffects<z.ZodDefault<z.ZodNumber>, number, unknown>;
 }, "strip", z.ZodTypeAny, {
-    page: number;
-    limit: number;
-    search?: string | undefined;
-    tipo?: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO" | undefined;
-    activa?: boolean | undefined;
-    conDocentes?: boolean | undefined;
-    precioDesde?: number | undefined;
-    precioHasta?: number | undefined;
-}, {
-    search?: string | undefined;
-    page?: unknown;
-    limit?: unknown;
-    tipo?: "CORO" | "CLASE_CANTO" | "CLASE_INSTRUMENTO" | undefined;
+    [x: string]: any;
+    tipo?: unknown;
     activa?: unknown;
     conDocentes?: unknown;
     precioDesde?: unknown;
     precioHasta?: unknown;
+    search?: unknown;
+    page?: unknown;
+    limit?: unknown;
+}, {
+    [x: string]: any;
+    tipo?: unknown;
+    activa?: unknown;
+    conDocentes?: unknown;
+    precioDesde?: unknown;
+    precioHasta?: unknown;
+    search?: unknown;
+    page?: unknown;
+    limit?: unknown;
 }>;
 export declare const asignarDocenteSchema: z.ZodObject<{
     docenteId: z.ZodString;
@@ -248,85 +210,69 @@ export declare const estadisticasActividadSchema: z.ZodObject<{
     incluirReservas?: boolean | undefined;
 }>;
 export declare const createHorarioSchema: z.ZodEffects<z.ZodObject<{
-    diaSemana: z.ZodNativeEnum<{
-        LUNES: "LUNES";
-        MARTES: "MARTES";
-        MIERCOLES: "MIERCOLES";
-        JUEVES: "JUEVES";
-        VIERNES: "VIERNES";
-        SABADO: "SABADO";
-        DOMINGO: "DOMINGO";
-    }>;
+    diaSemana: z.ZodNativeEnum<any>;
     horaInicio: z.ZodString;
     horaFin: z.ZodString;
     activo: z.ZodDefault<z.ZodBoolean>;
 } & {
     actividadId: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    activo: boolean;
-    actividadId: string;
-    horaInicio: string;
-    horaFin: string;
-    diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
+    actividadId?: unknown;
 }, {
-    actividadId: string;
-    horaInicio: string;
-    horaFin: string;
-    diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-    activo?: boolean | undefined;
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
+    actividadId?: unknown;
 }>, {
-    activo: boolean;
-    actividadId: string;
-    horaInicio: string;
-    horaFin: string;
-    diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
+    actividadId?: unknown;
 }, {
-    actividadId: string;
-    horaInicio: string;
-    horaFin: string;
-    diaSemana: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-    activo?: boolean | undefined;
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
+    actividadId?: unknown;
 }>;
 export declare const updateHorarioSchema: z.ZodObject<{
-    diaSemana: z.ZodOptional<z.ZodNativeEnum<{
-        LUNES: "LUNES";
-        MARTES: "MARTES";
-        MIERCOLES: "MIERCOLES";
-        JUEVES: "JUEVES";
-        VIERNES: "VIERNES";
-        SABADO: "SABADO";
-        DOMINGO: "DOMINGO";
-    }>>;
+    diaSemana: z.ZodOptional<z.ZodNativeEnum<any>>;
     horaInicio: z.ZodOptional<z.ZodString>;
     horaFin: z.ZodOptional<z.ZodString>;
     activo: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
 }, "strip", z.ZodTypeAny, {
-    activo?: boolean | undefined;
-    horaInicio?: string | undefined;
-    horaFin?: string | undefined;
-    diaSemana?: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO" | undefined;
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
 }, {
-    activo?: boolean | undefined;
-    horaInicio?: string | undefined;
-    horaFin?: string | undefined;
-    diaSemana?: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO" | undefined;
+    [x: string]: any;
+    diaSemana?: unknown;
+    horaInicio?: unknown;
+    horaFin?: unknown;
+    activo?: unknown;
 }>;
 export declare const queryPorDiaSchema: z.ZodObject<{
-    dia: z.ZodNativeEnum<{
-        LUNES: "LUNES";
-        MARTES: "MARTES";
-        MIERCOLES: "MIERCOLES";
-        JUEVES: "JUEVES";
-        VIERNES: "VIERNES";
-        SABADO: "SABADO";
-        DOMINGO: "DOMINGO";
-    }>;
+    dia: z.ZodNativeEnum<any>;
     soloActivas: z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown>;
 }, "strip", z.ZodTypeAny, {
-    dia: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
-    soloActivas: boolean;
+    [x: string]: any;
+    dia?: unknown;
+    soloActivas?: unknown;
 }, {
-    dia: "LUNES" | "MARTES" | "MIERCOLES" | "JUEVES" | "VIERNES" | "SABADO" | "DOMINGO";
+    [x: string]: any;
+    dia?: unknown;
     soloActivas?: unknown;
 }>;
 export type HorarioDto = z.infer<typeof horarioSchema>;

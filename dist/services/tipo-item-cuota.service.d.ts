@@ -54,8 +54,8 @@ export declare class TipoItemCuotaService {
             cuotaId: number;
             cantidad: import("@prisma/client/runtime/library").Decimal;
             monto: import("@prisma/client/runtime/library").Decimal;
-            tipoItemId: number;
             porcentaje: import("@prisma/client/runtime/library").Decimal | null;
+            tipoItemId: number;
             esAutomatico: boolean;
             esEditable: boolean;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;

@@ -13,11 +13,7 @@ export declare class TiposActividadRepository {
         createdAt: Date;
         updatedAt: Date;
     }>;
-    findAll(query: QueryTiposCatalogoDto): Promise<({
-        _count: {
-            actividades: number;
-        };
-    } & {
+    findAll(query: QueryTiposCatalogoDto): Promise<{
         activo: boolean;
         codigo: string;
         nombre: string;
@@ -26,12 +22,8 @@ export declare class TiposActividadRepository {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-    })[]>;
+    }[]>;
     findById(id: number): Promise<{
-        _count: {
-            actividades: number;
-        };
-    } & {
         activo: boolean;
         codigo: string;
         nombre: string;

@@ -9,7 +9,7 @@ class EquipamientoService {
         this.equipamientoRepository = equipamientoRepository;
     }
     async generateCodigoEquipamiento(categoriaEquipamientoId) {
-        const categoria = await database_1.prisma.categoriasEquipamiento.findUnique({
+        const categoria = await database_1.prisma.categoriaEquipamiento.findUnique({
             where: { id: categoriaEquipamientoId }
         });
         if (!categoria) {
@@ -27,7 +27,7 @@ class EquipamientoService {
         return `${prefix}-${String(nextNumber).padStart(3, '0')}`;
     }
     async createEquipamiento(data) {
-        const categoria = await database_1.prisma.categoriasEquipamiento.findUnique({
+        const categoria = await database_1.prisma.categoriaEquipamiento.findUnique({
             where: { id: data.categoriaEquipamientoId }
         });
         if (!categoria) {
@@ -93,7 +93,7 @@ class EquipamientoService {
             }
         }
         if (data.categoriaEquipamientoId && data.categoriaEquipamientoId !== existingEquipamiento.categoriaEquipamientoId) {
-            const categoria = await database_1.prisma.categoriasEquipamiento.findUnique({
+            const categoria = await database_1.prisma.categoriaEquipamiento.findUnique({
                 where: { id: data.categoriaEquipamientoId }
             });
             if (!categoria) {

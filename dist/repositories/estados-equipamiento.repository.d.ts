@@ -3,17 +3,79 @@ import { CreateEstadoEquipamientoDto, UpdateEstadoEquipamientoDto, ReorderEstado
 export declare class EstadosEquipamientoRepository {
     private prisma;
     constructor(prisma: PrismaClient);
-    create(data: CreateEstadoEquipamientoDto): Promise<any>;
+    create(data: CreateEstadoEquipamientoDto): Promise<{
+        activo: boolean;
+        codigo: string;
+        nombre: string;
+        descripcion: string | null;
+        orden: number;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
     findAll(options?: {
         includeInactive?: boolean;
         search?: string;
         orderBy?: string;
         orderDir?: 'asc' | 'desc';
-    }): Promise<any>;
-    findById(id: number): Promise<any>;
-    findByCodigo(codigo: string): Promise<any>;
-    update(id: number, data: UpdateEstadoEquipamientoDto): Promise<any>;
-    delete(id: number): Promise<any>;
+    }): Promise<({
+        _count: {
+            equipamientos: number;
+        };
+    } & {
+        activo: boolean;
+        codigo: string;
+        nombre: string;
+        descripcion: string | null;
+        orden: number;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+    })[]>;
+    findById(id: number): Promise<{
+        _count: {
+            equipamientos: number;
+        };
+    } & {
+        activo: boolean;
+        codigo: string;
+        nombre: string;
+        descripcion: string | null;
+        orden: number;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    findByCodigo(codigo: string): Promise<{
+        activo: boolean;
+        codigo: string;
+        nombre: string;
+        descripcion: string | null;
+        orden: number;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+    } | null>;
+    update(id: number, data: UpdateEstadoEquipamientoDto): Promise<{
+        activo: boolean;
+        codigo: string;
+        nombre: string;
+        descripcion: string | null;
+        orden: number;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    delete(id: number): Promise<{
+        activo: boolean;
+        codigo: string;
+        nombre: string;
+        descripcion: string | null;
+        orden: number;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
     reorder(data: ReorderEstadoEquipamientoDto): Promise<{
         message: string;
         count: number;

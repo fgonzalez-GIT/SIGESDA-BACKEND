@@ -5,6 +5,7 @@ const actividad_repository_1 = require("@/repositories/actividad.repository");
 const logger_1 = require("@/utils/logger");
 const errors_1 = require("@/utils/errors");
 const client_1 = require("@prisma/client");
+const time_utils_1 = require("@/utils/time.utils");
 class ActividadService {
     constructor(actividadRepository, prisma) {
         this.actividadRepository = actividadRepository;
@@ -156,9 +157,9 @@ class ActividadService {
         }
         const horariosExistentes = await this.actividadRepository.getHorariosByActividad(actividadId);
         const horariosParaValidar = horariosExistentes.map(h => ({
-            diaSemanaId: h.diaSemana,
-            horaInicio: h.horaInicio,
-            horaFin: h.horaFin
+            diaSemanaId: h.diaSemanaId,
+            horaInicio: (0, time_utils_1.normalizeTimeToString)(h.horaInicio),
+            horaFin: (0, time_utils_1.normalizeTimeToString)(h.horaFin)
         }));
         horariosParaValidar.push(horarioData);
         this.validateHorarios(horariosParaValidar);
@@ -177,14 +178,14 @@ class ActividadService {
             const otrosHorarios = todosLosHorarios
                 .filter(h => h.id !== horarioId)
                 .map(h => ({
-                diaSemanaId: h.diaSemana ? (typeof h.diaSemana === 'string' ? h.diaSemana : h.diaSemana) : 'LUNES',
-                horaInicio: h.horaInicio,
-                horaFin: h.horaFin
+                diaSemanaId: h.diaSemanaId,
+                horaInicio: (0, time_utils_1.normalizeTimeToString)(h.horaInicio),
+                horaFin: (0, time_utils_1.normalizeTimeToString)(h.horaFin)
             }));
             const horarioActualizado = {
-                diaSemanaId: horarioData.diaSemanaId || horarioActual.diaSemana,
-                horaInicio: horarioData.horaInicio || horarioActual.horaInicio,
-                horaFin: horarioData.horaFin || horarioActual.horaFin
+                diaSemanaId: horarioData.diaSemanaId || horarioActual.diaSemanaId,
+                horaInicio: horarioData.horaInicio || (0, time_utils_1.normalizeTimeToString)(horarioActual.horaInicio),
+                horaFin: horarioData.horaFin || (0, time_utils_1.normalizeTimeToString)(horarioActual.horaFin)
             };
             const todosParaValidar = [...otrosHorarios, horarioActualizado];
             this.validateHorarios(todosParaValidar);
