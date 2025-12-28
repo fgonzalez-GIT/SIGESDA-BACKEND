@@ -190,7 +190,7 @@ export async function detectarConflictosHorarios(
     const reservasSecciones = await prisma.reservas_aulas_secciones.findMany({
       where: {
         aulaId,
-        diaSemana: diaSemanaData?.nombre || ''
+        diaSemanaId: horario.diaSemanaId
       },
       include: {
         aulas: {
@@ -217,7 +217,7 @@ export async function detectarConflictosHorarios(
           tipo: 'SECCION',
           id: reservaSeccion.id,
           nombre: reservaSeccion.secciones_actividades.nombre,
-          diaSemana: reservaSeccion.diaSemana,
+          diaSemana: diaSemanaData?.nombre || 'N/A',
           diaSemanaId: horario.diaSemanaId,
           horaInicio: reservaSeccion.horaInicio,
           horaFin: reservaSeccion.horaFin,
