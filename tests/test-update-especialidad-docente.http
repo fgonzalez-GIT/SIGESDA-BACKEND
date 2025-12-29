@@ -1,0 +1,153 @@
+### =======================================================================
+### TEST: Actualizar Especialidad de Docente
+### =======================================================================
+### Fecha: 2025-12-29
+### Propósito: Demostrar el endpoint correcto para actualizar especialidad
+### =======================================================================
+
+@baseUrl = http://localhost:8000/api
+@personaId = 24
+@tipoDocenteId = 27
+
+### PASO 1: Ver estado actual de la persona (con tipos)
+GET {{baseUrl}}/personas/{{personaId}}
+Content-Type: application/json
+
+###
+### RESPUESTA ESPERADA:
+### {
+###   "success": true,
+###   "data": {
+###     "id": 24,
+###     "nombre": "Brisa",
+###     "apellido": "Vento",
+###     "tipos": [
+###       {
+###         "id": 27,  // <-- Este es el tipoDocenteId que necesitamos
+###         "tipoPersonaId": 5,  // DOCENTE
+###         "especialidadId": 6,  // Especialidad actual (GENERAL)
+###         "especialidad": {
+###           "id": 6,
+###           "codigo": "GENERAL",
+###           "nombre": "General"
+###         }
+###       }
+###     ]
+###   }
+### }
+
+### PASO 2: Obtener catálogo de especialidades disponibles
+GET {{baseUrl}}/catalogos/especialidades-docentes
+Content-Type: application/json
+
+###
+### RESPUESTA ESPERADA:
+### {
+###   "success": true,
+###   "data": [
+###     { "id": 1, "codigo": "PIANO", "nombre": "Piano" },
+###     { "id": 2, "codigo": "VIOLIN", "nombre": "Violín" },
+###     { "id": 3, "codigo": "GUITARRA", "nombre": "Guitarra" },
+###     { "id": 4, "codigo": "CANTO", "nombre": "Canto" },
+###     { "id": 5, "codigo": "TEORIA_MUSICAL", "nombre": "Teoría Musical" },
+###     { "id": 6, "codigo": "GENERAL", "nombre": "General" }
+###   ]
+### }
+
+### ❌ INCORRECTO: Endpoint que está usando el frontend actualmente
+### Este endpoint NO actualiza la especialidad porque no incluye el array "tipos"
+PUT {{baseUrl}}/personas/{{personaId}}
+Content-Type: application/json
+
+{
+  "nombre": "Brisa",
+  "apellido": "Vento",
+  "dni": "33000111",
+  "fechaNacimiento": "1970-12-11",
+  "genero": "FEMENINO"
+}
+
+###
+### RESULTADO: ❌ La especialidad NO se actualiza
+### Solo se actualizan los campos demográficos de la tabla "personas"
+
+### ✅ CORRECTO: Endpoint específico para actualizar tipo DOCENTE
+### Este endpoint SÍ actualiza la especialidad directamente
+PUT {{baseUrl}}/personas/{{personaId}}/tipos/{{tipoDocenteId}}
+Content-Type: application/json
+
+{
+  "especialidadId": 3
+}
+
+###
+### RESULTADO: ✅ La especialidad se actualiza correctamente
+### RESPUESTA ESPERADA:
+### {
+###   "success": true,
+###   "message": "Tipo de persona actualizado exitosamente",
+###   "data": {
+###     "id": 27,
+###     "personaId": 24,
+###     "tipoPersonaId": 5,
+###     "especialidadId": 3,  // <-- Actualizado a GUITARRA
+###     "especialidad": {
+###       "id": 3,
+###       "codigo": "GUITARRA",
+###       "nombre": "Guitarra"
+###     }
+###   }
+### }
+
+### PASO 4: Verificar que se actualizó correctamente
+GET {{baseUrl}}/personas/{{personaId}}
+Content-Type: application/json
+
+###
+### RESPUESTA ESPERADA: La especialidad debe mostrar GUITARRA (id: 3)
+
+### =======================================================================
+### ALTERNATIVA: Actualizar usando el endpoint PUT /personas/:id con array tipos completo
+### =======================================================================
+### Esta opción también funciona pero requiere enviar TODOS los tipos
+### (es propenso a errores si se olvida algún tipo)
+
+PUT {{baseUrl}}/personas/{{personaId}}
+Content-Type: application/json
+
+{
+  "nombre": "Brisa",
+  "apellido": "Vento",
+  "dni": "33000111",
+  "fechaNacimiento": "1970-12-11",
+  "genero": "FEMENINO",
+  "tipos": [
+    {
+      "tipoPersonaId": 5,
+      "especialidadId": 4,
+      "activo": true
+    },
+    {
+      "tipoPersonaId": 6,
+      "activo": true
+    }
+  ]
+}
+
+###
+### RESULTADO: ✅ Funciona pero es más complejo y propenso a errores
+### PROBLEMA: Si olvidas incluir un tipo (ej: NO_SOCIO), ese tipo se desactiva
+
+### =======================================================================
+### RESUMEN: ¿Cuál endpoint usar?
+### =======================================================================
+###
+### ✅ RECOMENDADO: PUT /api/personas/:personaId/tipos/:tipoId
+###    - Más simple: solo enviar el campo que se desea actualizar
+###    - Más seguro: no afecta otros tipos de la persona
+###    - Más RESTful: endpoint específico para recurso específico
+###
+### ⚠️ ALTERNATIVA: PUT /api/personas/:personaId (con array tipos completo)
+###    - Más complejo: requiere mantener estado de TODOS los tipos
+###    - Más propenso a errores: puede desactivar tipos accidentalmente
+###    - Útil para actualizaciones masivas de múltiples tipos a la vez
