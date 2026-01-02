@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { CatalogoAdminController } from '@/controllers/catalogo-admin.controller';
 import { CatalogoService } from '@/services/catalogo.service';
 import { CatalogoRepository } from '@/repositories/catalogo.repository';
+import { TipoContactoController } from '@/controllers/tipo-contacto.controller';
+import { TipoContactoService } from '@/services/tipo-contacto.service';
 import { prisma } from '@/config/database';
 
 // IMPORTANTE: Descomentar cuando se implemente autenticación
@@ -13,6 +15,10 @@ const router = Router();
 const catalogoRepository = new CatalogoRepository(prisma);
 const catalogoService = new CatalogoService(catalogoRepository);
 const catalogoAdminController = new CatalogoAdminController(catalogoService);
+
+// Initialize TipoContacto dependencies
+const tipoContactoService = new TipoContactoService(prisma);
+const tipoContactoController = new TipoContactoController(tipoContactoService);
 
 // ======================================================================
 // MIDDLEWARE DE AUTENTICACIÓN Y AUTORIZACIÓN
@@ -100,6 +106,58 @@ router.patch(
 router.delete(
   '/especialidades-docentes/:id',
   catalogoAdminController.deleteEspecialidad.bind(catalogoAdminController)
+);
+
+// ======================================================================
+// RUTAS DE GESTIÓN DE TIPOS DE CONTACTO
+// ======================================================================
+
+// Obtener estadísticas de uso (debe ir antes de /:id)
+router.get(
+  '/tipos-contacto/estadisticas/uso',
+  tipoContactoController.getEstadisticasUso.bind(tipoContactoController)
+);
+
+// Crear nuevo tipo de contacto
+router.post(
+  '/tipos-contacto',
+  tipoContactoController.create.bind(tipoContactoController)
+);
+
+// Listar todos los tipos de contacto
+router.get(
+  '/tipos-contacto',
+  tipoContactoController.findAll.bind(tipoContactoController)
+);
+
+// Obtener un tipo de contacto específico
+router.get(
+  '/tipos-contacto/:id',
+  tipoContactoController.findById.bind(tipoContactoController)
+);
+
+// Actualizar un tipo de contacto
+router.put(
+  '/tipos-contacto/:id',
+  tipoContactoController.update.bind(tipoContactoController)
+);
+
+// Activar un tipo de contacto
+router.post(
+  '/tipos-contacto/:id/activar',
+  tipoContactoController.activate.bind(tipoContactoController)
+);
+
+// Desactivar un tipo de contacto (soft delete)
+router.post(
+  '/tipos-contacto/:id/desactivar',
+  tipoContactoController.deactivate.bind(tipoContactoController)
+);
+
+// Eliminar un tipo de contacto (hard delete)
+router.delete(
+  '/tipos-contacto/:id',
+  tipoContactoController.delete.bind(tipoContactoController)
 );
 
 export default router;
