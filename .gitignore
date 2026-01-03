@@ -1,2 +1,49 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
 .envbackups/
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+seed_error*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Prisma
+prisma/migrations/*/migration.sql.tmp
+
+# Temporary files
+*.tmp
+.temp/
+tmp/
+
+# Lock files (optional - uncomment if not tracking)
+# package-lock.json
+# yarn.lock
