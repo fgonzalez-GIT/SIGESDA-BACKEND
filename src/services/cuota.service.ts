@@ -589,8 +589,8 @@ export class CuotaService {
             // ============================================================
             const cuota = await tx.cuota.create({
               data: {
-                reciboId: recibo.id,
-                categoria: socio.categoria,
+                recibo: { connect: { id: recibo.id } },
+                categoria: { connect: { id: socio.categoria.id } },
                 mes: data.mes,
                 anio: data.anio,
                 montoBase: 0, // Legacy, se mantendrá para compatibilidad
@@ -630,27 +630,29 @@ export class CuotaService {
             let montoActividades = 0;
 
             if (tipoActividad) {
-              const participaciones = await tx.participacionActividad.findMany({
+              const participaciones = await tx.participacion_actividades.findMany({
                 where: {
                   personaId: socio.id,
                   activa: true,
-                  actividad: {
-                    estado: { in: ['EN_CURSO', 'PROXIMAMENTE'] }
+                  actividades: {
+                    estado: {
+                      codigo: { in: ['EN_CURSO', 'PROXIMAMENTE'] }
+                    }
                   }
                 },
                 include: {
-                  actividad: true
+                  actividades: true
                 }
               });
 
               for (const participacion of participaciones) {
-                const costoActividad = participacion.precioEspecial || participacion.actividad.costo || 0;
+                const costoActividad = participacion.precioEspecial || participacion.actividades.costo || 0;
 
                 await tx.itemCuota.create({
                   data: {
                     cuotaId: cuota.id,
                     tipoItemId: tipoActividad.id,
-                    concepto: participacion.actividad.nombre,
+                    concepto: participacion.actividades.nombre,
                     monto: costoActividad,
                     cantidad: 1,
                     esAutomatico: true,

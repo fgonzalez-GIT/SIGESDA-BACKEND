@@ -26,7 +26,18 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         receptor: {
@@ -35,8 +46,19 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true,
-            numeroSocio: true
+            numeroSocio: true,
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         mediosPago: {
@@ -115,7 +137,18 @@ export class ReciboRepository {
               nombre: true,
               apellido: true,
               dni: true,
-              tipo: true
+              tipos: {
+                where: { activo: true },
+                include: {
+                  tipoPersona: {
+                    select: {
+                      id: true,
+                      codigo: true,
+                      nombre: true
+                    }
+                  }
+                }
+              }
             }
           },
           receptor: {
@@ -124,8 +157,19 @@ export class ReciboRepository {
               nombre: true,
               apellido: true,
               dni: true,
-              tipo: true,
-              numeroSocio: true
+              numeroSocio: true,
+              tipos: {
+                where: { activo: true },
+                include: {
+                  tipoPersona: {
+                    select: {
+                      id: true,
+                      codigo: true,
+                      nombre: true
+                    }
+                  }
+                }
+              }
             }
           },
           mediosPago: {
@@ -162,9 +206,20 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true,
             email: true,
-            telefono: true
+            telefono: true,
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         receptor: {
@@ -173,10 +228,21 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true,
             numeroSocio: true,
             email: true,
-            telefono: true
+            telefono: true,
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         mediosPago: {
@@ -201,7 +267,18 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         receptor: {
@@ -210,8 +287,19 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true,
-            numeroSocio: true
+            numeroSocio: true,
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         mediosPago: true
@@ -242,7 +330,18 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         receptor: {
@@ -251,8 +350,19 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true,
-            numeroSocio: true
+            numeroSocio: true,
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         mediosPago: true
@@ -282,7 +392,18 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         receptor: {
@@ -291,8 +412,19 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true,
-            numeroSocio: true
+            numeroSocio: true,
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         mediosPago: true
@@ -317,7 +449,18 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         receptor: {
@@ -326,8 +469,19 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true,
-            numeroSocio: true
+            numeroSocio: true,
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         mediosPago: true
@@ -456,7 +610,18 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         receptor: {
@@ -465,8 +630,19 @@ export class ReciboRepository {
             nombre: true,
             apellido: true,
             dni: true,
-            tipo: true,
-            numeroSocio: true
+            numeroSocio: true,
+            tipos: {
+              where: { activo: true },
+              include: {
+                tipoPersona: {
+                  select: {
+                    id: true,
+                    codigo: true,
+                    nombre: true
+                  }
+                }
+              }
+            }
           }
         },
         mediosPago: true
