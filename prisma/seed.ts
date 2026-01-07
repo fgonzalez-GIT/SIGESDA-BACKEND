@@ -943,6 +943,236 @@ async function main() {
     ]
   });
 
+  // ========== CategoriaItem (Catálogo de categorías de ítems de cuota) ==========
+  console.log('  → CategoriaItem...');
+
+  const categoriaItemBase = await prisma.categoriaItem.upsert({
+    where: { codigo: 'BASE' },
+    update: {},
+    create: {
+      codigo: 'BASE',
+      nombre: 'Cuota Base',
+      descripcion: 'Ítems correspondientes a la cuota base del socio',
+      icono: '💰',
+      color: 'blue',
+      activo: true,
+      orden: 1
+    }
+  });
+
+  const categoriaItemActividad = await prisma.categoriaItem.upsert({
+    where: { codigo: 'ACTIVIDAD' },
+    update: {},
+    create: {
+      codigo: 'ACTIVIDAD',
+      nombre: 'Actividades',
+      descripcion: 'Ítems de participación en actividades',
+      icono: '🎵',
+      color: 'green',
+      activo: true,
+      orden: 2
+    }
+  });
+
+  const categoriaItemDescuento = await prisma.categoriaItem.upsert({
+    where: { codigo: 'DESCUENTO' },
+    update: {},
+    create: {
+      codigo: 'DESCUENTO',
+      nombre: 'Descuentos',
+      descripcion: 'Descuentos y beneficios aplicados',
+      icono: '🎁',
+      color: 'purple',
+      activo: true,
+      orden: 3
+    }
+  });
+
+  const categoriaItemRecargo = await prisma.categoriaItem.upsert({
+    where: { codigo: 'RECARGO' },
+    update: {},
+    create: {
+      codigo: 'RECARGO',
+      nombre: 'Recargos',
+      descripcion: 'Recargos por mora o conceptos adicionales',
+      icono: '⚠️',
+      color: 'red',
+      activo: true,
+      orden: 4
+    }
+  });
+
+  const categoriaItemAjuste = await prisma.categoriaItem.upsert({
+    where: { codigo: 'AJUSTE' },
+    update: {},
+    create: {
+      codigo: 'AJUSTE',
+      nombre: 'Ajustes Manuales',
+      descripcion: 'Ajustes manuales aplicados por administración',
+      icono: '✏️',
+      color: 'orange',
+      activo: true,
+      orden: 5
+    }
+  });
+
+  const categoriaItemOtro = await prisma.categoriaItem.upsert({
+    where: { codigo: 'OTRO' },
+    update: {},
+    create: {
+      codigo: 'OTRO',
+      nombre: 'Otros Conceptos',
+      descripcion: 'Otros ítems no categorizados',
+      icono: '📋',
+      color: 'gray',
+      activo: true,
+      orden: 6
+    }
+  });
+
+  // ========== TipoItemCuota (Catálogo de tipos de ítems) ==========
+  console.log('  → TipoItemCuota...');
+
+  // Tipos de BASE
+  const tipoItemCuotaBaseSocio = await prisma.tipoItemCuota.upsert({
+    where: { codigo: 'CUOTA_BASE_SOCIO' },
+    update: {},
+    create: {
+      codigo: 'CUOTA_BASE_SOCIO',
+      nombre: 'Cuota Base Socio',
+      descripcion: 'Cuota mensual base según categoría del socio',
+      categoriaItemId: categoriaItemBase.id,
+      esCalculado: true,
+      activo: true,
+      orden: 1,
+      configurable: false
+    }
+  });
+
+  // Tipos de ACTIVIDAD
+  const tipoItemActividadIndividual = await prisma.tipoItemCuota.upsert({
+    where: { codigo: 'ACTIVIDAD_INDIVIDUAL' },
+    update: {},
+    create: {
+      codigo: 'ACTIVIDAD_INDIVIDUAL',
+      nombre: 'Actividad Individual',
+      descripcion: 'Participación en actividad de instrucción individual',
+      categoriaItemId: categoriaItemActividad.id,
+      esCalculado: true,
+      activo: true,
+      orden: 10,
+      configurable: true
+    }
+  });
+
+  const tipoItemActividadGrupal = await prisma.tipoItemCuota.upsert({
+    where: { codigo: 'ACTIVIDAD_GRUPAL' },
+    update: {},
+    create: {
+      codigo: 'ACTIVIDAD_GRUPAL',
+      nombre: 'Actividad Grupal',
+      descripcion: 'Participación en actividad grupal (coro, orquesta, etc.)',
+      categoriaItemId: categoriaItemActividad.id,
+      esCalculado: true,
+      activo: true,
+      orden: 11,
+      configurable: true
+    }
+  });
+
+  // Tipos de DESCUENTO
+  const tipoItemDescuentoFamiliar = await prisma.tipoItemCuota.upsert({
+    where: { codigo: 'DESCUENTO_FAMILIAR' },
+    update: {},
+    create: {
+      codigo: 'DESCUENTO_FAMILIAR',
+      nombre: 'Descuento Familiar',
+      descripcion: 'Descuento por tener familiares inscritos',
+      categoriaItemId: categoriaItemDescuento.id,
+      esCalculado: true,
+      activo: true,
+      orden: 20,
+      configurable: true
+    }
+  });
+
+  const tipoItemDescuentoAntiguedad = await prisma.tipoItemCuota.upsert({
+    where: { codigo: 'DESCUENTO_ANTIGUEDAD' },
+    update: {},
+    create: {
+      codigo: 'DESCUENTO_ANTIGUEDAD',
+      nombre: 'Descuento por Antigüedad',
+      descripcion: 'Descuento por años como socio',
+      categoriaItemId: categoriaItemDescuento.id,
+      esCalculado: true,
+      activo: true,
+      orden: 21,
+      configurable: true
+    }
+  });
+
+  const tipoItemDescuentoPagoAnticipado = await prisma.tipoItemCuota.upsert({
+    where: { codigo: 'DESCUENTO_PAGO_ANTICIPADO' },
+    update: {},
+    create: {
+      codigo: 'DESCUENTO_PAGO_ANTICIPADO',
+      nombre: 'Descuento Pago Anticipado',
+      descripcion: 'Descuento por pago antes de vencimiento',
+      categoriaItemId: categoriaItemDescuento.id,
+      esCalculado: true,
+      activo: true,
+      orden: 22,
+      configurable: true
+    }
+  });
+
+  // Tipos de RECARGO
+  const tipoItemRecargoMora = await prisma.tipoItemCuota.upsert({
+    where: { codigo: 'RECARGO_MORA' },
+    update: {},
+    create: {
+      codigo: 'RECARGO_MORA',
+      nombre: 'Recargo por Mora',
+      descripcion: 'Recargo aplicado por pago fuera de término',
+      categoriaItemId: categoriaItemRecargo.id,
+      esCalculado: true,
+      activo: true,
+      orden: 30,
+      configurable: true
+    }
+  });
+
+  // Tipos de AJUSTE
+  const tipoItemAjusteManualDescuento = await prisma.tipoItemCuota.upsert({
+    where: { codigo: 'AJUSTE_MANUAL_DESCUENTO' },
+    update: {},
+    create: {
+      codigo: 'AJUSTE_MANUAL_DESCUENTO',
+      nombre: 'Ajuste Manual - Descuento',
+      descripcion: 'Descuento manual aplicado por administración',
+      categoriaItemId: categoriaItemAjuste.id,
+      esCalculado: false,
+      activo: true,
+      orden: 40,
+      configurable: false
+    }
+  });
+
+  const tipoItemAjusteManualRecargo = await prisma.tipoItemCuota.upsert({
+    where: { codigo: 'AJUSTE_MANUAL_RECARGO' },
+    update: {},
+    create: {
+      codigo: 'AJUSTE_MANUAL_RECARGO',
+      nombre: 'Ajuste Manual - Recargo',
+      descripcion: 'Recargo manual aplicado por administración',
+      categoriaItemId: categoriaItemAjuste.id,
+      esCalculado: false,
+      activo: true,
+      orden: 41,
+      configurable: false
+    }
+  });
+
   console.log('✅ Catálogos V2 insertados\n');
 
   // ============================================================================
@@ -1478,6 +1708,8 @@ async function main() {
   // NIVEL 5: HORARIOS Y AULAS
   // ============================================================================
 
+  // TODO: NIVEL 5 temporalmente comentado - problema con schema de horarios_secciones
+  /*
   console.log('📁 NIVEL 5: Insertando horarios y reservas de aulas...');
 
   // ========== horarios_secciones ==========
@@ -1561,6 +1793,8 @@ async function main() {
   });
 
   console.log('✅ Horarios y aulas insertadas\n');
+  */
+  console.log('⏭️  NIVEL 5 omitido temporalmente (horarios_secciones schema issue)\n');
 
   // ============================================================================
   // NIVEL 6: PARTICIPACIÓN Y DOCENTES
@@ -1694,16 +1928,33 @@ async function main() {
     }
   });
 
-  // Cuota asociada al recibo
+  // Cuota asociada al recibo (V2 con Items)
   await prisma.cuota.create({
     data: {
       reciboId: recibo1.id,
       mes: mesActual,
       anio: anioActual,
-      montoBase: 5000.00,
-      montoActividades: 0.00,
+      montoBase: null,  // V2: ya no se usan estos campos
+      montoActividades: null,  // V2: ya no se usan estos campos
       montoTotal: 5000.00,
-      categoriaId: categoriasSocio[0].id // ACTIVO
+      categoriaId: categoriasSocio[0].id, // ACTIVO
+      items: {
+        create: [
+          {
+            tipoItemId: tipoItemCuotaBaseSocio.id,
+            concepto: `Cuota Base Socio - ${categoriasSocio[0].nombre}`,
+            monto: 5000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              categoriaId: categoriasSocio[0].id,
+              categoriaCodigo: categoriasSocio[0].codigo,
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
+            }
+          }
+        ]
+      }
     }
   });
 
@@ -1735,15 +1986,113 @@ async function main() {
     }
   });
 
-  await prisma.cuota.create({
+  // Cuota con descuento (V2 con Items)
+  const cuota2 = await prisma.cuota.create({
     data: {
       reciboId: recibo2.id,
       mes: mesActual,
       anio: anioActual,
-      montoBase: 5000.00,
-      montoActividades: 0.00,
-      montoTotal: 4000.00, // con descuento
-      categoriaId: categoriasSocio[2].id // ESTUDIANTE
+      montoBase: null,  // V2: ya no se usan estos campos
+      montoActividades: null,  // V2: ya no se usan estos campos
+      montoTotal: 4000.00, // 5000 - 1000 (descuento 20%)
+      categoriaId: categoriasSocio[2].id, // ESTUDIANTE
+      items: {
+        create: [
+          {
+            tipoItemId: tipoItemCuotaBaseSocio.id,
+            concepto: `Cuota Base Socio - ${categoriasSocio[2].nombre}`,
+            monto: 5000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              categoriaId: categoriasSocio[2].id,
+              categoriaCodigo: categoriasSocio[2].codigo,
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
+            }
+          },
+          {
+            tipoItemId: tipoItemDescuentoPagoAnticipado.id,
+            concepto: 'Descuento Pago Anticipado 20%',
+            monto: -1000.00,
+            cantidad: 1,
+            porcentaje: 20.0,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              montoBase: 5000.00,
+              porcentajeAplicado: 20.0,
+              fechaPago: new Date().toISOString(),
+              diasAnticipacion: 10
+            }
+          }
+        ]
+      }
+    }
+  });
+
+  // Recibo vencido para Roberto Pérez (GENERAL) con recargo por mora
+  const mesAnterior = mesActual === 1 ? 12 : mesActual - 1;
+  const anioAnterior = mesActual === 1 ? anioActual - 1 : anioActual;
+  const fechaVencimientoAntigua = new Date(anioAnterior, mesAnterior - 1, 10); // Vencido hace 30 días
+
+  const recibo3 = await prisma.recibo.create({
+    data: {
+      numero: `CUOTA-${anioAnterior}-${mesAnterior.toString().padStart(2, '0')}-1003`,
+      tipo: TipoRecibo.CUOTA,
+      importe: 4400.00, // 4000 + 400 (recargo 10%)
+      fecha: new Date(anioAnterior, mesAnterior - 1, 1),
+      fechaVencimiento: fechaVencimientoAntigua,
+      estado: EstadoRecibo.VENCIDO,
+      concepto: `Cuota mensual ${mesAnterior}/${anioAnterior} - Categoría GENERAL`,
+      observaciones: 'Vencida - Con recargo por mora',
+      receptorId: socio3.id
+    }
+  });
+
+  // Cuota con recargo por mora (V2 con Items)
+  const cuota3 = await prisma.cuota.create({
+    data: {
+      reciboId: recibo3.id,
+      mes: mesAnterior,
+      anio: anioAnterior,
+      montoBase: null,  // V2: ya no se usan estos campos
+      montoActividades: null,  // V2: ya no se usan estos campos
+      montoTotal: 4400.00, // 4000 + 400 (recargo 10%)
+      categoriaId: categoriasSocio[1].id, // GENERAL
+      items: {
+        create: [
+          {
+            tipoItemId: tipoItemCuotaBaseSocio.id,
+            concepto: `Cuota Base Socio - ${categoriasSocio[1].nombre}`,
+            monto: 4000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              categoriaId: categoriasSocio[1].id,
+              categoriaCodigo: categoriasSocio[1].codigo,
+              periodo: `${anioAnterior}-${mesAnterior.toString().padStart(2, '0')}`
+            }
+          },
+          {
+            tipoItemId: tipoItemRecargoMora.id,
+            concepto: 'Recargo por Mora 10% - 30 días vencido',
+            monto: 400.00,
+            cantidad: 1,
+            porcentaje: 10.0,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              montoBase: 4000.00,
+              porcentajeAplicado: 10.0,
+              diasVencido: 30,
+              fechaVencimiento: fechaVencimientoAntigua.toISOString(),
+              fechaCalculo: new Date().toISOString()
+            }
+          }
+        ]
+      }
     }
   });
 
@@ -1782,7 +2131,7 @@ async function main() {
   console.log('  → ExencionCuota...');
 
   // Exención Total para Socio 3 (Roberto Pérez) - Socio Honorario
-  await prisma.exencionCuota.create({
+  const exencion1 = await prisma.exencionCuota.create({
     data: {
       personaId: socio3.id,
       tipoExencion: TipoExencion.TOTAL,
@@ -1797,7 +2146,7 @@ async function main() {
   });
 
   // Exención Parcial Pendiente para Familiar 1 (Matías) - Beca
-  await prisma.exencionCuota.create({
+  const exencion2 = await prisma.exencionCuota.create({
     data: {
       personaId: familiar1.id,
       tipoExencion: TipoExencion.PARCIAL,
@@ -1814,7 +2163,7 @@ async function main() {
   console.log('  → AjusteCuotaSocio...');
 
   // Recargo fijo administrativo para Socio 4 (Gabriela)
-  await prisma.ajusteCuotaSocio.create({
+  const ajuste1 = await prisma.ajusteCuotaSocio.create({
     data: {
       personaId: socio4.id,
       tipoAjuste: TipoAjusteCuota.RECARGO_FIJO,
@@ -1825,6 +2174,152 @@ async function main() {
       aplicaA: ScopeAjusteCuota.SOLO_BASE
     }
   });
+
+  // ========== HistorialAjusteCuota (Auditoría de cambios) ==========
+  console.log('  → HistorialAjusteCuota...');
+
+  // Historial de creación de ajuste1
+  await prisma.historialAjusteCuota.create({
+    data: {
+      ajusteId: ajuste1.id,
+      personaId: socio4.id,
+      accion: 'CREAR_AJUSTE',
+      datosNuevos: {
+        tipoAjuste: ajuste1.tipoAjuste,
+        valor: ajuste1.valor.toString(),
+        concepto: ajuste1.concepto,
+        aplicaA: ajuste1.aplicaA,
+        fechaInicio: ajuste1.fechaInicio?.toISOString()
+      },
+      usuario: 'SEED_SCRIPT',
+      motivoCambio: 'Creación inicial desde seed'
+    }
+  });
+
+  // Historial de creación de exención1 (Total - Socio Honorario)
+  await prisma.historialAjusteCuota.create({
+    data: {
+      exencionId: exencion1.id,
+      personaId: socio3.id,
+      accion: 'CREAR_EXENCION',
+      datosNuevos: {
+        tipoExencion: exencion1.tipoExencion,
+        motivoExencion: exencion1.motivoExencion,
+        estado: exencion1.estado,
+        porcentajeExencion: exencion1.porcentajeExencion.toString(),
+        descripcion: exencion1.descripcion,
+        fechaInicio: exencion1.fechaInicio?.toISOString(),
+        fechaFin: exencion1.fechaFin?.toISOString()
+      },
+      usuario: 'SEED_SCRIPT',
+      motivoCambio: 'Exención por socio honorario - Reconocimiento a trayectoria'
+    }
+  });
+
+  // Historial de creación de exención2 (Parcial - Beca)
+  await prisma.historialAjusteCuota.create({
+    data: {
+      exencionId: exencion2.id,
+      personaId: familiar1.id,
+      accion: 'CREAR_EXENCION',
+      datosNuevos: {
+        tipoExencion: exencion2.tipoExencion,
+        motivoExencion: exencion2.motivoExencion,
+        estado: exencion2.estado,
+        porcentajeExencion: exencion2.porcentajeExencion.toString(),
+        descripcion: exencion2.descripcion,
+        fechaInicio: exencion2.fechaInicio?.toISOString()
+      },
+      usuario: 'SEED_SCRIPT',
+      motivoCambio: 'Solicitud de beca por mérito académico'
+    }
+  });
+
+  // ========== AplicacionRegla (Tarea 2.3: FASE 2) ==========
+  console.log('  → AplicacionRegla...');
+
+  // Paso 1: Obtener reglas de descuento creadas por seed-reglas-descuentos.ts
+  const reglaFamiliar = await prisma.reglaDescuento.findUnique({
+    where: { codigo: 'DESC_FAMILIAR' }
+  });
+
+  const reglaAntiguedad = await prisma.reglaDescuento.findUnique({
+    where: { codigo: 'DESC_ANTIGUEDAD' }
+  });
+
+  // Paso 2: Obtener ítems de descuento de las cuotas
+  const itemDescuentoCuota2 = await prisma.itemCuota.findFirst({
+    where: {
+      cuotaId: cuota2.id,
+      tipoItem: {
+        categoriaItem: {
+          codigo: 'DESCUENTO'
+        }
+      }
+    }
+  });
+
+  // Paso 3: Crear aplicación de regla familiar (Cuota 2)
+  if (reglaFamiliar && itemDescuentoCuota2) {
+    await prisma.aplicacionRegla.create({
+      data: {
+        cuotaId: cuota2.id,
+        reglaId: reglaFamiliar.id,
+        itemCuotaId: itemDescuentoCuota2.id,
+        porcentajeAplicado: 20.0,  // Simulado: el 20% del descuento se atribuye a regla familiar
+        montoDescuento: 1000.00,   // $1000 del descuento total
+        metadata: {
+          tipoAplicacion: 'SIMULADA',
+          nota: 'Descuento aplicado por pago anticipado (simulado como familiar para demo)',
+          familiares: [
+            {
+              personaId: socio1.id,
+              nombreCompleto: 'Juan Pablo Rodríguez',
+              parentesco: 'PADRE',
+              actividadesCompartidas: ['Piano Nivel 1']
+            }
+          ],
+          criterioAplicacion: 'FAMILIAR_INSCRITO_MISMA_ACTIVIDAD',
+          baseCalculo: 5000.00,
+          calculoDetallado: {
+            montoBase: 5000.00,
+            porcentajeRegla: 20.0,
+            montoCalculado: 1000.00
+          }
+        }
+      }
+    });
+  }
+
+  // Paso 4: Crear aplicación de regla de antigüedad (Cuota 3 - simulada)
+  // Nota: Esta es una demostración, ya que cuota3 tiene un recargo, no descuento
+  // En producción, esto se aplicaría a una cuota que realmente tenga ítem de descuento por antigüedad
+  if (reglaAntiguedad) {
+    await prisma.aplicacionRegla.create({
+      data: {
+        cuotaId: cuota3.id,
+        reglaId: reglaAntiguedad.id,
+        itemCuotaId: null,  // No hay ítem de descuento asociado (cuota3 tiene recargo)
+        porcentajeAplicado: 5.0,  // 5% de antigüedad (5 años como socio)
+        montoDescuento: 200.00,   // Simulado: $200 que podría haberse descontado
+        metadata: {
+          tipoAplicacion: 'SIMULADA',
+          nota: 'Regla de antigüedad registrada pero no aplicada (cuota tiene recargo)',
+          aniosAntiguedad: 5,
+          fechaAltaSocio: '2021-01-15',
+          criterioAplicacion: 'ANTIGUEDAD_5_ANIOS',
+          baseCalculo: 4000.00,
+          calculoDetallado: {
+            montoBase: 4000.00,
+            porcentajeRegla: 5.0,
+            montoCalculado: 200.00,
+            aplicado: false,
+            razonNoAplicado: 'Cuota ya tiene recargo por mora'
+          }
+        }
+      }
+    });
+  }
 
   console.log('✅ Gestión societaria insertada\n');
 
