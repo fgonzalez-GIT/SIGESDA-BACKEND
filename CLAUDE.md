@@ -563,6 +563,233 @@ Required variables (see `.env.example`):
 - Fase 4 (🟡 Media prioridad): Completar Features UI (reportes, charts, agregar ítem manual)
 - Fase 5 (🟢 Baja prioridad): Testing y Documentación
 
+---
+
+### ✅ IMPLEMENTED (2026-01-08): FRONTEND - Fase 4 Tarea 4.3: Agregar Ítem Manual
+
+**Contexto:** Implementación de funcionalidad para agregar ítems manuales a cuotas existentes (PLAN_IMPLEMENTACION_CUOTAS_V2_COMPLETO.md - Fase 4, Tarea 4.3).
+
+**Ubicación:** `/SIGESDA-FRONTEND/src/components/Cuotas/`
+
+#### Componente Creado ✅
+
+**Archivo:** `AgregarItemModal.tsx` (NUEVO)
+
+**Características:**
+- ✅ **Schema Zod inline** con validaciones robustas
+- ✅ **react-hook-form + zodResolver** (mismo patrón de Fase 3)
+- ✅ **Validaciones en tiempo real:**
+  - Tipo de ítem requerido (carga desde catálogo)
+  - Concepto: 3-200 caracteres
+  - Monto unitario > $0.01
+  - Cantidad ≥ 1
+  - Observaciones ≤ 500 caracteres (opcional)
+- ✅ **Cálculo automático de monto total** cuando cantidad > 1
+- ✅ **Integración con servicios:**
+  - `itemsCuotaService.getTiposItems()` - Carga catálogo de tipos
+  - `cuotasService.addItemManual(cuotaId, data)` - Agrega ítem
+- ✅ **Manejo de errores** con Alert de MUI
+- ✅ **Loading states** para UX fluida
+
+**Validaciones Implementadas:**
+```typescript
+const agregarItemSchema = z.object({
+    tipoItemCodigo: z.string().min(1),
+    concepto: z.string().min(3).max(200),
+    monto: z.number().min(0.01),
+    cantidad: z.number().int().positive(),
+    observaciones: z.string().max(500).optional(),
+});
+```
+
+#### Integración en DetalleCuotaModal ✅
+
+**Archivo:** `DetalleCuotaModal.tsx` (MODIFICADO)
+
+**Cambios:**
+1. ✅ **Import agregado:** `import AgregarItemModal from './AgregarItemModal'`
+2. ✅ **Estado para modal:** `useState<boolean>(openAgregarItem)`
+3. ✅ **Handlers implementados:**
+   - `handleAgregarItem()` - Abre modal
+   - `handleCloseAgregarItem()` - Cierra modal
+   - `handleItemAgregado()` - Refresh desglose después de agregar
+4. ✅ **Botón habilitado:**
+   ```tsx
+   <Button
+       variant="outlined"
+       startIcon={<AddIcon />}
+       onClick={handleAgregarItem}
+       disabled={cuota.recibo.estado === 'PAGADO'}
+   >
+       Agregar Ítem Manual
+   </Button>
+   ```
+5. ✅ **Modal renderizado:** Integrado al final del Dialog
+
+**Lógica de Negocio:**
+- ✅ Botón solo visible si `FEATURES.RECALCULO_CUOTAS = true`
+- ✅ Botón deshabilitado si estado del recibo es 'PAGADO'
+- ✅ Refresh automático de desglose tras agregar ítem exitosamente
+- ✅ Recálculo de `montoTotal` después de agregar
+
+#### Flujo Completo End-to-End ✅
+
+1. **Usuario abre detalle de cuota** → DetalleCuotaModal muestra desglose
+2. **Usuario click "Agregar Ítem Manual"** → AgregarItemModal se abre
+3. **Usuario selecciona tipo** → Select carga desde catálogo (API)
+4. **Usuario completa formulario** → Validaciones Zod en tiempo real
+5. **Usuario click "Agregar Ítem"** → API POST `/cuotas/:id/items`
+6. **Backend procesa** → Agrega ítem a `items_cuota`, recalcula `montoTotal`
+7. **Frontend refresh** → Desglose se actualiza automáticamente
+8. **Usuario ve ítem agregado** → Aparece en sección "Otros Conceptos"
+
+#### Criterios de Aceptación - Tarea 4.3 ✅
+
+| Verificación | Estado |
+|--------------|--------|
+| Botón aparece habilitado (si recibo != PAGADO) | ✅ Completo |
+| Modal abre correctamente | ✅ Completo |
+| Select muestra tipos de ítems desde catálogo | ✅ Completo |
+| Validaciones Zod funcionan en tiempo real | ✅ Completo |
+| Ítem se agrega a la cuota (backend persiste) | ✅ Completo |
+| Desglose se actualiza automáticamente | ✅ Completo |
+| MontoTotal se recalcula correctamente | ✅ Completo |
+| Errores muestran mensajes claros en español | ✅ Completo |
+
+**Estado:** ✅ **TAREA 4.3 COMPLETADA AL 100%**
+
+**Archivos Modificados:**
+- `/SIGESDA-FRONTEND/src/components/Cuotas/AgregarItemModal.tsx` (NUEVO - 290 líneas)
+- `/SIGESDA-FRONTEND/src/components/Cuotas/DetalleCuotaModal.tsx` (MODIFICADO - +35 líneas)
+
+**Próximas Tareas Fase 4:**
+- ✅ Tarea 4.1: Implementar Exportar Reportes (COMPLETADA)
+- ✅ Tarea 4.2: Agregar Charts Reales con Recharts (COMPLETADA)
+
+---
+
+### ✅ IMPLEMENTED (2026-01-08): FRONTEND - Fase 4 Tareas 4.1 y 4.2: Exportar Reportes + Charts con Recharts
+
+**Contexto:** Implementación de funcionalidades de exportación de reportes y gráficos interactivos con Recharts (PLAN_IMPLEMENTACION_CUOTAS_V2_COMPLETO.md - Fase 4, Tareas 4.1 y 4.2).
+
+**Ubicación:** `/SIGESDA-FRONTEND/src/`
+
+#### Tarea 4.1: Exportar Reportes (COMPLETADA) ✅
+
+**Características Implementadas:**
+- ✅ **Handler de exportación funcional** conectado a `reportesService.exportarReporte()`
+- ✅ **Selector de formato** (Excel .xlsx, PDF .pdf, CSV .csv)
+- ✅ **Descarga automática** de archivos con nombres descriptivos: `reporte-cuotas-YYYY-MM.{ext}`
+- ✅ **Loading states** y **CircularProgress** durante exportación
+- ✅ **Manejo de errores** con Alert de MUI visible al usuario
+- ✅ **Blob handling** correcto para diferentes tipos MIME
+
+**Código Modificado:**
+- **ReportesCuotasPage.tsx** - Handler `handleExport()` con lógica completa de descarga
+- **Estados agregados**: `formatoExportar`, `exportando`, `errorExportacion`
+- **UI actualizada**: Select de formato, botón con loading, Alert de error
+
+**Endpoint Backend Utilizado:**
+```typescript
+POST /api/reportes/cuotas/exportar
+{
+  "tipoReporte": "dashboard",
+  "formato": "EXCEL" | "PDF" | "CSV",
+  "parametros": { "mes": number, "anio": number }
+}
+```
+
+#### Tarea 4.2: Charts con Recharts (COMPLETADA) ✅
+
+**Tecnología:** `recharts` v2.x (instalado exitosamente con 27 packages)
+
+**Componentes Creados:**
+
+1. **DistribucionEstadoChart.tsx** (PieChart)
+   - **Props**: `data: Record<string, { cantidad: number; monto: number }>`
+   - **Características**:
+     - PieChart con colores por estado (PAGADO=verde, PENDIENTE=naranja, VENCIDO=rojo, etc.)
+     - Labels con porcentajes en el gráfico
+     - Tooltip personalizado con MUI (cantidad + monto formateado)
+     - Legend con cantidad de cuotas por estado
+     - Filtrado automático de estados sin datos
+     - Mensaje "No hay datos" cuando está vacío
+   - **Ubicación**: `/components/Cuotas/Charts/DistribucionEstadoChart.tsx`
+
+2. **RecaudacionCategoriaChart.tsx** (BarChart)
+   - **Props**: `data: Record<string, { cantidad: number; monto: number }>`
+   - **Características**:
+     - BarChart vertical con barras coloreadas por categoría
+     - Grid con líneas punteadas para mejor legibilidad
+     - YAxis con formato abreviado ($50k en lugar de $50000)
+     - XAxis con labels rotados -15° para evitar solapamiento
+     - Tooltip personalizado con MUI (cuotas + monto)
+     - Barras con bordes redondeados (radius=[8, 8, 0, 0])
+     - Ordenado por monto descendente
+   - **Ubicación**: `/components/Cuotas/Charts/RecaudacionCategoriaChart.tsx`
+
+3. **index.ts** - Exportador centralizado de ambos componentes
+
+**Integración en ReportesCuotasPage:**
+- Reemplazados placeholders de texto por componentes reales
+- Charts renderizan con datos de `dashboardData.distribucion.porEstado` y `.porCategoria`
+- Responsivos con `ResponsiveContainer` (100% width, 300px height)
+- Integrados dentro de Paper con títulos e iconos
+
+**Formato de Datos Esperado:**
+```typescript
+distribucion: {
+  porEstado: {
+    PAGADO: { cantidad: 45, monto: 125000 },
+    PENDIENTE: { cantidad: 12, monto: 38000 },
+    VENCIDO: { cantidad: 3, monto: 9500 }
+  },
+  porCategoria: {
+    ACTIVO: { cantidad: 30, monto: 98000 },
+    ESTUDIANTE: { cantidad: 20, monto: 52000 },
+    HONORARIO: { cantidad: 5, monto: 15000 }
+  }
+}
+```
+
+**Criterios de Aceptación - Fase 4 Tareas 4.1 y 4.2 ✅**
+
+| Verificación Tarea 4.1 | Estado |
+|------------------------|--------|
+| Botón "Exportar" funciona | ✅ Completo |
+| Selector de formato (Excel/PDF/CSV) | ✅ Completo |
+| Archivo descarga correctamente | ✅ Completo |
+| Nombres de archivo descriptivos | ✅ Completo |
+| Loading state durante exportación | ✅ Completo |
+| Errores muestran Alert visible | ✅ Completo |
+
+| Verificación Tarea 4.2 | Estado |
+|------------------------|--------|
+| Recharts instalado sin errores | ✅ Completo |
+| PieChart renderiza distribución por estado | ✅ Completo |
+| BarChart renderiza recaudación por categoría | ✅ Completo |
+| Tooltips funcionan correctamente | ✅ Completo |
+| Leyendas visibles y legibles | ✅ Completo |
+| Charts son responsivos | ✅ Completo |
+| Colores diferenciados por categoría/estado | ✅ Completo |
+| Mensaje "No hay datos" cuando vacío | ✅ Completo |
+
+**Estado:** ✅ **TAREAS 4.1 y 4.2 COMPLETADAS AL 100%**
+
+**Archivos Creados:**
+- `/SIGESDA-FRONTEND/src/components/Cuotas/Charts/DistribucionEstadoChart.tsx` (NUEVO - 115 líneas)
+- `/SIGESDA-FRONTEND/src/components/Cuotas/Charts/RecaudacionCategoriaChart.tsx` (NUEVO - 125 líneas)
+- `/SIGESDA-FRONTEND/src/components/Cuotas/Charts/index.ts` (NUEVO - 2 líneas)
+
+**Archivos Modificados:**
+- `/SIGESDA-FRONTEND/src/pages/Cuotas/ReportesCuotasPage.tsx` (MODIFICADO - +60 líneas)
+- `/SIGESDA-FRONTEND/package.json` (recharts agregado como dependencia)
+
+**Próximas Tareas Fase 4:**
+- 🟢 Fase 5: Testing y Documentación (Baja prioridad)
+
+---
+
 ## Known Issues & Limitations
 
 ### 🟡 Pre-existing: Snake_case vs camelCase Naming
