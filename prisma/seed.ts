@@ -1910,6 +1910,36 @@ async function main() {
   // ========== Recibo + Cuota ==========
   console.log('  → Recibo + Cuota...');
 
+  /**
+   * CUOTAS V2 - ARQUITECTURA CON ITEMS_CUOTA
+   * ==========================================
+   * Se crean 6 cuotas de ejemplo que demuestran diferentes casos de uso:
+   *
+   * CUOTA 1: BASE SIMPLE (PAGADA)
+   *   - Socio ACTIVO: $5,000 (solo cuota base)
+   *   - Estado: PAGADO
+   *
+   * CUOTA 2: BASE + DESCUENTO AUTOMÁTICO (PENDIENTE)
+   *   - Socio ESTUDIANTE: $5,000 - $1,000 (20% desc. pago anticipado) = $4,000
+   *   - Estado: PENDIENTE
+   *
+   * CUOTA 3: BASE + DESCUENTO FAMILIAR (PAGADA)
+   *   - Socio GENERAL: $5,000 - $500 (10% desc. familiar) = $4,500
+   *   - Estado: PAGADO
+   *
+   * CUOTA 4: BASE + ACTIVIDAD INDIVIDUAL (PENDIENTE)
+   *   - Socio ACTIVO: $5,000 (base) + $3,000 (Guitarra) = $8,000
+   *   - Estado: PENDIENTE
+   *
+   * CUOTA 5: BASE + 2 ACTIVIDADES (PENDIENTE)
+   *   - Socio ESTUDIANTE: $5,000 (base) + $3,000 (Piano) + $3,000 (Violín) = $11,000
+   *   - Estado: PENDIENTE
+   *
+   * CUOTA 6: BASE + ACTIVIDAD + DESCUENTO MANUAL (PENDIENTE)
+   *   - Socio ACTIVO: $5,000 (base) + $3,000 (Coro) - $1,000 (desc. especial) = $7,000
+   *   - Estado: PENDIENTE
+   */
+
   const mesActual = new Date().getMonth() + 1;
   const anioActual = new Date().getFullYear();
 
@@ -2089,6 +2119,210 @@ async function main() {
               diasVencido: 30,
               fechaVencimiento: fechaVencimientoAntigua.toISOString(),
               fechaCalculo: new Date().toISOString()
+            }
+          }
+        ]
+      }
+    }
+  });
+
+  // ========== CUOTA 4: BASE + ACTIVIDAD INDIVIDUAL ==========
+  const recibo4 = await prisma.recibo.create({
+    data: {
+      numero: `CUOTA-${anioActual}-${mesActual.toString().padStart(2, '0')}-1004`,
+      tipo: TipoRecibo.CUOTA,
+      importe: 8000.00, // 5000 (base) + 3000 (actividad)
+      fecha: new Date(),
+      fechaVencimiento: new Date(anioActual, mesActual - 1, 10),
+      estado: EstadoRecibo.PENDIENTE,
+      concepto: `Cuota mensual ${mesActual}/${anioActual} - Socio con Actividad`,
+      observaciones: 'Socio ACTIVO + Actividad Individual',
+      receptorId: socio1.id  // Reutilizamos socio1
+    }
+  });
+
+  const cuota4 = await prisma.cuota.create({
+    data: {
+      reciboId: recibo4.id,
+      mes: mesActual,
+      anio: anioActual,
+      montoBase: null,  // V2: ya no se usan estos campos
+      montoActividades: null,  // V2: ya no se usan estos campos
+      montoTotal: 8000.00,
+      categoriaId: categoriasSocio[0].id, // ACTIVO
+      items: {
+        create: [
+          {
+            tipoItemId: tipoItemCuotaBaseSocio.id,
+            concepto: `Cuota Base Socio - ${categoriasSocio[0].nombre}`,
+            monto: 5000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              categoriaId: categoriasSocio[0].id,
+              categoriaCodigo: categoriasSocio[0].codigo,
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
+            }
+          },
+          {
+            tipoItemId: tipoItemActividadIndividual.id,
+            concepto: 'Guitarra Individual - Nivel Principiante',
+            monto: 3000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              tipoActividad: 'INDIVIDUAL',
+              nombreActividad: 'Guitarra',
+              nivel: 'Principiante',
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
+            }
+          }
+        ]
+      }
+    }
+  });
+
+  // ========== CUOTA 5: BASE + 2 ACTIVIDADES ==========
+  const recibo5 = await prisma.recibo.create({
+    data: {
+      numero: `CUOTA-${anioActual}-${mesActual.toString().padStart(2, '0')}-1005`,
+      tipo: TipoRecibo.CUOTA,
+      importe: 11000.00, // 5000 (base) + 3000 (piano) + 3000 (violín)
+      fecha: new Date(),
+      fechaVencimiento: new Date(anioActual, mesActual - 1, 10),
+      estado: EstadoRecibo.PENDIENTE,
+      concepto: `Cuota mensual ${mesActual}/${anioActual} - Socio con 2 Actividades`,
+      observaciones: 'Socio ESTUDIANTE + Piano + Violín',
+      receptorId: socio2.id
+    }
+  });
+
+  const cuota5 = await prisma.cuota.create({
+    data: {
+      reciboId: recibo5.id,
+      mes: mesActual,
+      anio: anioActual,
+      montoBase: null,  // V2: ya no se usan estos campos
+      montoActividades: null,  // V2: ya no se usan estos campos
+      montoTotal: 11000.00,
+      categoriaId: categoriasSocio[1].id, // ESTUDIANTE
+      items: {
+        create: [
+          {
+            tipoItemId: tipoItemCuotaBaseSocio.id,
+            concepto: `Cuota Base Socio - ${categoriasSocio[1].nombre}`,
+            monto: 5000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              categoriaId: categoriasSocio[1].id,
+              categoriaCodigo: categoriasSocio[1].codigo,
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
+            }
+          },
+          {
+            tipoItemId: tipoItemActividadIndividual.id,
+            concepto: 'Piano Individual - Nivel Intermedio',
+            monto: 3000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              tipoActividad: 'INDIVIDUAL',
+              nombreActividad: 'Piano',
+              nivel: 'Intermedio',
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
+            }
+          },
+          {
+            tipoItemId: tipoItemActividadIndividual.id,
+            concepto: 'Violín Individual - Nivel Avanzado',
+            monto: 3000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              tipoActividad: 'INDIVIDUAL',
+              nombreActividad: 'Violín',
+              nivel: 'Avanzado',
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
+            }
+          }
+        ]
+      }
+    }
+  });
+
+  // ========== CUOTA 6: BASE + ACTIVIDAD + DESCUENTO ==========
+  const recibo6 = await prisma.recibo.create({
+    data: {
+      numero: `CUOTA-${anioActual}-${mesActual.toString().padStart(2, '0')}-1006`,
+      tipo: TipoRecibo.CUOTA,
+      importe: 7000.00, // 5000 (base) + 3000 (actividad) - 1000 (descuento)
+      fecha: new Date(),
+      fechaVencimiento: new Date(anioActual, mesActual - 1, 10),
+      estado: EstadoRecibo.PENDIENTE,
+      concepto: `Cuota mensual ${mesActual}/${anioActual} - Socio con Descuento Aplicado`,
+      observaciones: 'Socio ACTIVO + Coro + Descuento Manual 10%',
+      receptorId: socio3.id
+    }
+  });
+
+  const cuota6 = await prisma.cuota.create({
+    data: {
+      reciboId: recibo6.id,
+      mes: mesActual,
+      anio: anioActual,
+      montoBase: null,  // V2: ya no se usan estos campos
+      montoActividades: null,  // V2: ya no se usan estos campos
+      montoTotal: 7000.00,
+      categoriaId: categoriasSocio[0].id, // ACTIVO
+      items: {
+        create: [
+          {
+            tipoItemId: tipoItemCuotaBaseSocio.id,
+            concepto: `Cuota Base Socio - ${categoriasSocio[0].nombre}`,
+            monto: 5000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              categoriaId: categoriasSocio[0].id,
+              categoriaCodigo: categoriasSocio[0].codigo,
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
+            }
+          },
+          {
+            tipoItemId: tipoItemActividadGrupal.id,
+            concepto: 'Coro Grupal - Nivel General',
+            monto: 3000.00,
+            cantidad: 1,
+            esAutomatico: true,
+            esEditable: false,
+            metadata: {
+              tipoActividad: 'GRUPAL',
+              nombreActividad: 'Coro',
+              nivel: 'General',
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
+            }
+          },
+          {
+            tipoItemId: tipoItemAjusteManualDescuento.id,
+            concepto: 'Descuento Manual - Situación Especial 10%',
+            monto: -1000.00,
+            cantidad: 1,
+            esAutomatico: false,
+            esEditable: true,
+            metadata: {
+              tipoAjuste: 'DESCUENTO',
+              porcentaje: 10,
+              razon: 'Situación socioeconómica especial',
+              aplicadoPor: 'Administración',
+              fechaAplicacion: new Date().toISOString(),
+              periodo: `${anioActual}-${mesActual.toString().padStart(2, '0')}`
             }
           }
         ]
@@ -2378,8 +2612,9 @@ async function main() {
   console.log('  ✓ Participaciones en secciones: 4\n');
 
   console.log('💰 PAGOS:');
-  console.log('  ✓ Recibos: 2');
-  console.log('  ✓ Cuotas: 2');
+  console.log('  ✓ Recibos: 6');
+  console.log('  ✓ Cuotas: 6 (3 originales + 3 nuevas con Items V2)');
+  console.log('  ✓ Items de Cuota: 13 (desglose completo por ítem)');
   console.log('  ✓ Medios de pago: 1\n');
 
   console.log('='.repeat(80));
