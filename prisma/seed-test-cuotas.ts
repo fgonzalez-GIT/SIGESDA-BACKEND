@@ -146,9 +146,18 @@ async function seedTestCuotas() {
 
     let actIndex = 1;
     for (const act of actividades) {
-      await prisma.actividades.create({
-        data: {
-          codigoActividad: `ACT-TEST-${actIndex.toString().padStart(4, '0')}`,
+      const codigoActividad = `ACT-TEST-${actIndex.toString().padStart(4, '0')}`;
+
+      // Usar upsert para evitar error si ya existe
+      await prisma.actividades.upsert({
+        where: { codigoActividad: codigoActividad },
+        update: {
+          // Actualizar campos si existe
+          nombre: act.nombre,
+          costo: act.costo,
+        },
+        create: {
+          codigoActividad: codigoActividad,
           nombre: act.nombre,
           tipoActividadId: act.tipoId,
           categoriaId: categoriaMusica.id,
@@ -163,7 +172,7 @@ async function seedTestCuotas() {
       actIndex++;
     }
 
-    console.log('✅ 4 actividades creadas\n');
+    console.log('✅ 4 actividades verificadas/creadas\n');
 
     // 4. Crear participaciones de prueba (20 socios con actividades)
     console.log('🎯 Creando participaciones en actividades...');
