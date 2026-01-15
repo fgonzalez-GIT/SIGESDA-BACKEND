@@ -604,13 +604,13 @@ export class CuotaService {
             // ============================================================
             // 3.3: Crear ítem BASE (cuota mensual según categoría)
             // ============================================================
-            const montoBaseSocio = socio.categoriaSocio?.montoCuota || 0;
+            const montoBaseSocio = socio.categoria?.montoCuota || 0;
 
             await tx.itemCuota.create({
               data: {
                 cuotaId: cuota.id,
                 tipoItemId: tipoCuotaBase.id,
-                concepto: `Cuota base ${socio.categoria}`,
+                concepto: `Cuota base ${socio.categoria?.nombre || socio.categoria?.codigo || 'Sin categoría'}`,
                 monto: montoBaseSocio,
                 cantidad: 1,
                 esAutomatico: true,
@@ -676,35 +676,51 @@ export class CuotaService {
             // ============================================================
             if (data.aplicarDescuentos) {
               try {
-                const resultadoDescuentos = await motorDescuentos.aplicarReglas({
-                  socioId: socio.id,
-                  categoriaId: socio.categoriaId,
-                  cuotaId: cuota.id,
-                  mes: data.mes,
-                  anio: data.anio
-                }, tx);
+                // Obtener items creados hasta el momento
+                const itemsActuales = await tx.itemCuota.findMany({
+                  where: { cuotaId: cuota.id },
+                  include: {
+                    tipoItem: {
+                      include: {
+                        categoriaItem: true
+                      }
+                    }
+                  }
+                });
+
+                // Llamar al motor con la firma correcta: (cuotaId, personaId, itemsCuota[])
+                const resultadoDescuentos = await motorDescuentos.aplicarReglas(
+                  cuota.id,
+                  socio.id,
+                  itemsActuales as any
+                );
 
                 // Actualizar estadísticas globales
-                if (resultadoDescuentos.items.length > 0) {
+                if (resultadoDescuentos.itemsDescuento.length > 0) {
                   descuentosGlobales.totalSociosConDescuento++;
-                  descuentosGlobales.montoTotalDescuentos += resultadoDescuentos.totalDescuentoAplicado;
+                  descuentosGlobales.montoTotalDescuentos += resultadoDescuentos.totalDescuento;
 
                   // Contar reglas aplicadas
-                  resultadoDescuentos.reglasAplicadas.forEach((regla: any) => {
-                    if (!descuentosGlobales.reglasAplicadas[regla.codigo]) {
-                      descuentosGlobales.reglasAplicadas[regla.codigo] = 0;
+                  resultadoDescuentos.aplicaciones.forEach((aplicacion: any) => {
+                    const codigo = `REGLA_${aplicacion.reglaId}`;
+                    if (!descuentosGlobales.reglasAplicadas[codigo]) {
+                      descuentosGlobales.reglasAplicadas[codigo] = 0;
                     }
-                    descuentosGlobales.reglasAplicadas[regla.codigo]++;
+                    descuentosGlobales.reglasAplicadas[codigo]++;
                   });
                 }
 
                 logger.debug(
-                  `[GENERACIÓN CUOTAS] Descuentos aplicados: ${resultadoDescuentos.items.length} ítems, ` +
-                  `total descuento: $${resultadoDescuentos.totalDescuentoAplicado.toFixed(2)}`
+                  `[GENERACIÓN CUOTAS] Descuentos aplicados: ${resultadoDescuentos.itemsDescuento.length} ítems, ` +
+                  `total descuento: $${resultadoDescuentos.totalDescuento.toFixed(2)}`
                 );
 
               } catch (errorDescuento) {
-                logger.error(`[GENERACIÓN CUOTAS] Error aplicando descuentos para socio ${socio.numeroSocio}:`, errorDescuento);
+                logger.error(
+                  `[GENERACIÓN CUOTAS] Error aplicando descuentos para socio ${socio.numeroSocio}:`,
+                  errorDescuento instanceof Error ? errorDescuento.message : JSON.stringify(errorDescuento),
+                  errorDescuento instanceof Error ? errorDescuento.stack : ''
+                );
                 // No fallar la transacción, solo log del error
               }
             }
