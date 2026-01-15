@@ -352,6 +352,23 @@ Required variables (see `.env.example`):
 - **Migration Scripts**: `scripts/migrate-tipos-contacto-to-catalog.sql` (with rollback support)
 - **Testing**: `tests/migration/test-tipos-contacto-migration.ts`
 
+### ✅ FIXED (2026-01-15): CUOTAS V2 - Critical Bugs in Generation and Motor de Descuentos
+- **File**: `src/services/cuota.service.ts`
+- **Issues Fixed**:
+  1. **Bug #1 - Incorrect field access**: `socio.categoriaSocio?.montoCuota` → `socio.categoria?.montoCuota` (line 607)
+  2. **Bug #2 - Concepto object display**: `${socio.categoria}` → `${socio.categoria?.nombre || ...}` (line 613)
+  3. **Bug #3 - Motor signature mismatch**: Fixed call to `motorDescuentos.aplicarReglas()` with proper parameters (lines 677-722)
+- **Root Causes**:
+  - Repository returns field as `categoria` not `categoriaSocio` (`cuota.repository.ts:679`)
+  - Motor expects `(cuotaId, personaId, itemsCuota[])` but was called with incorrect object structure
+  - Response properties renamed from `.items` to `.itemsDescuento`, `.totalDescuentoAplicado` to `.totalDescuento`
+- **Impact**:
+  - Before: All cuotas generated with `montoTotal = "0"` and concepto showing "[object Object]"
+  - After: Correct amounts (e.g., $5000 for ACTIVO category) and human-readable concepto
+  - Motor now successfully applies discount rules (35/58 socios received discounts totaling $45,900 in test)
+- **Error Logging**: Improved error logging to show full error message and stack trace (lines 719-723)
+- **Testing**: Validated with February-May 2026 generations, verified items breakdown and discount application
+
 ### ✅ FIXED (2025-01-02): Four Critical Issues Resolved
 1. **docentes_actividades table**: Added missing table + roles_docentes catalog
 2. **Capacity validation**: Added validation in `addParticipante()`
