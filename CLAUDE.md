@@ -369,6 +369,29 @@ Required variables (see `.env.example`):
 - **Error Logging**: Improved error logging to show full error message and stack trace (lines 719-723)
 - **Testing**: Validated with February-May 2026 generations, verified items breakdown and discount application
 
+### ✅ FIXED (2026-01-15): Missing actividades_aulas Table - Schema Drift
+- **Problem**: Prisma Client error "The table `actividades_aulas` does not exist in the current database"
+- **Root Cause**: Model defined in `prisma/schema.prisma` but migration was never generated/applied to create the physical table
+- **Migration**: Created `20260115000000_add_actividades_aulas_table/migration.sql`
+- **Table Structure**:
+  - Many-to-many relationship: `actividades` ↔ `aulas`
+  - Soft delete pattern (`activa` boolean, `fechaDesasignacion`)
+  - Priority system for multiple aula assignments
+  - Unique constraint: `(actividad_id, aula_id)`
+  - CASCADE delete on parent removal
+  - Indexes on: `actividad_id`, `aula_id`, `activa`
+- **Impact**:
+  - Before: Prisma Studio errors, `/api/actividades` endpoint failures
+  - After: Full classroom assignment functionality operational
+- **Affected Code**:
+  - Repository: `src/repositories/actividad-aula.repository.ts`
+  - Service: `src/services/actividad-aula.service.ts`
+  - Controller: `src/controllers/actividad-aula.controller.ts`
+  - Routes: `/api/actividades-aulas`, `/api/actividades/:id/aulas`, `/api/aulas/:id/actividades`
+  - DTOs: `src/dto/actividad-aula.dto.ts` (175 lines)
+  - Helper: `src/utils/actividad-aula.helper.ts`
+- **Resolution**: Applied migration, regenerated Prisma Client, verified endpoint functionality
+
 ### ✅ FIXED (2025-01-02): Four Critical Issues Resolved
 1. **docentes_actividades table**: Added missing table + roles_docentes catalog
 2. **Capacity validation**: Added validation in `addParticipante()`
