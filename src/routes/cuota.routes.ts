@@ -26,6 +26,10 @@ const itemCuotaController = new ItemCuotaController(itemCuotaService);
 // Basic CRUD Routes
 router.post('/', cuotaController.createCuota.bind(cuotaController));
 router.get('/', cuotaController.getCuotas.bind(cuotaController));
+
+// Export route (MUST be before /:id to avoid route conflict)
+router.get('/export', cuotaController.exportCuotas.bind(cuotaController));
+
 router.get('/:id', cuotaController.getCuotaById.bind(cuotaController));
 router.put('/:id', cuotaController.updateCuota.bind(cuotaController));
 router.delete('/:id', cuotaController.deleteCuota.bind(cuotaController));

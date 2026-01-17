@@ -398,6 +398,27 @@ Required variables (see `.env.example`):
 3. **Bidirectional family sync**: Auto-sync with `src/utils/parentesco.helper.ts`
 4. **Mutually exclusive types**: SOCIO ↔ NO_SOCIO validation with `src/utils/persona.helper.ts`
 
+### ✅ ENHANCED (2026-01-16): Cuotas Pagination & Export System
+- **Problem**: With 300+ cuotas in database, only 10 records were shown by default (max 100 per request)
+- **Solution**: Added flexible pagination with `limit=all` support + dedicated export endpoint
+- **Changes**:
+  1. **DTO** (`cuota.dto.ts:118-126`): Modified `limit` validation to accept "all" (converted to 999999)
+  2. **Repository** (`cuota.repository.ts:102-160`): Added unlimited query support (no `take` when limit >= 999999)
+  3. **Service** (`cuota.service.ts:99-119`): Added `exportAll()` method for bulk exports
+  4. **Controller** (`cuota.controller.ts:161-284`): Enhanced metadata + new `/export` endpoint
+  5. **Routes** (`cuota.routes.ts:31`): Registered `GET /api/cuotas/export` (before `/:id` to avoid conflicts)
+- **Features**:
+  - `GET /api/cuotas?limit=all` - Get all cuotas with applied filters (maintains other filters)
+  - `GET /api/cuotas/export` - Dedicated export endpoint without pagination
+  - Enhanced metadata: `hasNextPage`, `hasPreviousPage`, `recordsInPage`, `totalRecords`, `isUnlimited`
+- **Use Cases**:
+  - UI listing with pagination: `?page=1&limit=100`
+  - Export filtered data: `?mes=2&anio=2026&limit=all`
+  - Full export: `/api/cuotas/export`
+  - Dashboard analytics: `?mes=1&anio=2026&limit=all`
+- **Performance**: Limit still capped at 999999 to prevent unbounded queries, but allows all current 300+ records
+- **Backward Compatible**: Default behavior unchanged (limit=10, page=1)
+
 ## Known Issues & Limitations
 
 ### 🟡 Pre-existing: Snake_case vs camelCase Naming
@@ -410,7 +431,7 @@ Required variables (see `.env.example`):
 - **CORS**: Enabled for all origins in development
 - **Request Logging**: All requests are logged with duration
 - **Error Format**: Standardized JSON responses with `success`, `error`, `data` fields
-- **Pagination**: Default page size is 20, max is 100 (configurable)
+- **Pagination**: Default limit=10, max=100 for paginated endpoints; use `limit=all` or `/export` endpoint for unlimited queries
 - **Security**: Helmet middleware for HTTP headers, input validation via Zod
 
 

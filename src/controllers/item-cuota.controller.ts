@@ -809,8 +809,6 @@ export class ItemCuotaController {
    *                         porCategoria:
    *                           type: object
    *                           description: Agrupación por categoría de ítem
-   *       200:
-   *         description: Estadísticas obtenidas (sin errores)
    */
   async getGlobalStats(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

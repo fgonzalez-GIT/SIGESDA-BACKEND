@@ -117,10 +117,12 @@ export const cuotaQuerySchema = z.object({
   ),
   limit: z.preprocess(
     (val) => {
+      // Si es "all", devolver un número grande para indicar sin límite
+      if (val === 'all') return 999999;
       const parsed = parseInt(val as string);
       return isNaN(parsed) ? 10 : parsed;
     },
-    z.number().int().positive().max(100).default(10)
+    z.number().int().positive().max(999999).default(10)
   ),
   categoriaId: z.preprocess(
     (val) => {

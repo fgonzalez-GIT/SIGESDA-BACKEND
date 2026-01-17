@@ -99,7 +99,9 @@ export class CuotaRepository {
       };
     }
 
-    const skip = (query.page - 1) * query.limit;
+    // Si limit es 999999 (equivalente a "all"), no aplicar paginación
+    const isUnlimited = query.limit >= 999999;
+    const skip = isUnlimited ? 0 : (query.page - 1) * query.limit;
 
     // Configurar ordenamiento
     let orderBy: Prisma.CuotaOrderByWithRelationInput[] = [];
@@ -121,32 +123,39 @@ export class CuotaRepository {
         orderBy = [{ anio: query.orden }, { mes: query.orden }];
     }
 
-    const [data, total] = await Promise.all([
-      this.prisma.cuota.findMany({
-        where,
-        skip,
-        take: query.limit,
-        include: {
-          recibo: {
-            include: {
-              receptor: {
-                select: {
-                  id: true,
-                  nombre: true,
-                  apellido: true,
-                  dni: true,
-                  numeroSocio: true,
-                  categoria: true
-                }
-              },
-              mediosPago: {
-                orderBy: { fecha: 'desc' }
+    // Preparar opciones de query
+    const queryOptions: Prisma.CuotaFindManyArgs = {
+      where,
+      skip,
+      include: {
+        recibo: {
+          include: {
+            receptor: {
+              select: {
+                id: true,
+                nombre: true,
+                apellido: true,
+                dni: true,
+                numeroSocio: true,
+                categoria: true
               }
+            },
+            mediosPago: {
+              orderBy: { fecha: 'desc' }
             }
           }
-        },
-        orderBy
-      }),
+        }
+      },
+      orderBy
+    };
+
+    // Solo aplicar 'take' si no es modo unlimited
+    if (!isUnlimited) {
+      queryOptions.take = query.limit;
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.cuota.findMany(queryOptions),
       this.prisma.cuota.count({ where })
     ]);
 

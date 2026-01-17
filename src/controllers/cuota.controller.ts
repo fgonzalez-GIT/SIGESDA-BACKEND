@@ -163,6 +163,11 @@ export class CuotaController {
       const query = cuotaQuerySchema.parse(req.query);
       const result = await this.cuotaService.getCuotas(query);
 
+      // Calcular metadata de paginación mejorada
+      const isUnlimited = query.limit >= 999999;
+      const hasNextPage = !isUnlimited && (query.page < result.pages);
+      const hasPreviousPage = !isUnlimited && (query.page > 1);
+
       const response: ApiResponse = {
         success: true,
         data: result.data,
@@ -170,7 +175,115 @@ export class CuotaController {
           page: query.page,
           limit: query.limit,
           total: result.total,
-          totalPages: result.pages
+          totalRecords: result.total, // Alias más claro
+          totalPages: result.pages,
+          recordsInPage: result.data.length,
+          hasNextPage,
+          hasPreviousPage,
+          isUnlimited
+        }
+      };
+
+      res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/cuotas/export:
+   *   get:
+   *     summary: Exportar todas las cuotas sin paginación
+   *     description: Retorna todas las cuotas que coincidan con los filtros, sin límite de paginación. Útil para exportación a Excel, reportes o análisis completo.
+   *     tags: [Cuotas]
+   *     parameters:
+   *       - in: query
+   *         name: mes
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 12
+   *         description: Filtrar por mes
+   *       - in: query
+   *         name: anio
+   *         schema:
+   *           type: integer
+   *           minimum: 2020
+   *           maximum: 2030
+   *         description: Filtrar por año
+   *       - in: query
+   *         name: categoriaId
+   *         schema:
+   *           type: integer
+   *         description: Filtrar por ID de categoría de socio
+   *       - in: query
+   *         name: ordenarPor
+   *         schema:
+   *           type: string
+   *           enum: [fecha, monto, categoria, vencimiento]
+   *           default: fecha
+   *         description: Campo por el cual ordenar
+   *       - in: query
+   *         name: orden
+   *         schema:
+   *           type: string
+   *           enum: [asc, desc]
+   *           default: desc
+   *         description: Orden ascendente o descendente
+   *     responses:
+   *       200:
+   *         description: Lista completa de cuotas exportadas
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Cuotas exportadas exitosamente"
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Cuota'
+   *                 meta:
+   *                   type: object
+   *                   properties:
+   *                     total:
+   *                       type: integer
+   *                       description: Total de cuotas exportadas
+   *                       example: 350
+   *       400:
+   *         description: Parámetros de consulta inválidos
+   */
+  async exportCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // Parsear query params (sin page ni limit)
+      const { mes, anio, categoriaId, ordenarPor, orden, ...otherFilters } = req.query;
+
+      const queryFilters: any = {
+        ...otherFilters,
+        ordenarPor: ordenarPor || 'fecha',
+        orden: orden || 'desc'
+      };
+
+      // Agregar filtros opcionales si están presentes
+      if (mes) queryFilters.mes = parseInt(mes as string);
+      if (anio) queryFilters.anio = parseInt(anio as string);
+      if (categoriaId) queryFilters.categoriaId = parseInt(categoriaId as string);
+
+      const result = await this.cuotaService.exportAll(queryFilters);
+
+      const response: ApiResponse = {
+        success: true,
+        message: `Cuotas exportadas exitosamente`,
+        data: result.data,
+        meta: {
+          total: result.total,
+          exportedAt: new Date().toISOString()
         }
       };
 

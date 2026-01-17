@@ -96,6 +96,28 @@ export class CuotaService {
     };
   }
 
+  /**
+   * Exporta todas las cuotas sin paginación
+   * Optimizado para exportación con formato simplificado
+   * @param query - Filtros de consulta (limit se fuerza a 'all')
+   */
+  async exportAll(query: Omit<CuotaQueryDto, 'page' | 'limit'>): Promise<{ data: Cuota[]; total: number }> {
+    // Forzar limit=all (999999) y page=1 para obtener todos los registros
+    const exportQuery: CuotaQueryDto = {
+      ...query,
+      page: 1,
+      limit: 999999, // Esto se interpreta como "all" en el repository
+      ordenarPor: query.ordenarPor || 'fecha',
+      orden: query.orden || 'desc'
+    };
+
+    const result = await this.cuotaRepository.findAll(exportQuery);
+
+    logger.info(`Exportadas ${result.total} cuotas con filtros aplicados`);
+
+    return result;
+  }
+
   async getCuotaById(id: number): Promise<Cuota | null> {
     return this.cuotaRepository.findById(id);
   }
