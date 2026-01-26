@@ -1658,20 +1658,33 @@ export class CuotaController {
   async validarGeneracionCuotas(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { mes, anio } = req.params;
-      const { categoria } = req.query;
+      const { categoriaIds } = req.query;
 
-      // Verificar cuotas existentes
+      // Parse categoriaIds: puede venir como "2" o "1,2,3" o array ["2", "3"]
+      let categoriaIdsParsed: number[] | undefined;
+      if (categoriaIds) {
+        if (Array.isArray(categoriaIds)) {
+          // Query params repetidos: ?categoriaIds=1&categoriaIds=2 => ["1", "2"]
+          categoriaIdsParsed = categoriaIds.map(id => parseInt(id as string));
+        } else {
+          // String simple o separado por comas: "2" o "1,2,3"
+          const idsString = categoriaIds as string;
+          categoriaIdsParsed = idsString.split(',').map(id => parseInt(id.trim()));
+        }
+      }
+
+      // Verificar cuotas existentes (sin filtro de categoría, solo para contar)
       const cuotasExistentes = await this.cuotaService.getCuotasPorPeriodo(
         parseInt(mes),
         parseInt(anio),
-        categoria as any
+        undefined
       );
 
-      // Obtener socios pendientes
+      // Obtener socios pendientes (CON filtro de categoría si se especifica)
       const sociosPendientes = await this.cuotaService['cuotaRepository'].getCuotasPorGenerar(
         parseInt(mes),
         parseInt(anio),
-        categoria ? [categoria as any] : undefined
+        categoriaIdsParsed
       );
 
       const response: ApiResponse = {
@@ -1689,7 +1702,8 @@ export class CuotaController {
         },
         meta: {
           periodo: `${mes}/${anio}`,
-          categoria: categoria || 'todas'
+          categoriaIds: categoriaIdsParsed || null,
+          categoriaFiltro: categoriaIdsParsed ? categoriaIdsParsed.join(',') : 'todas'
         }
       };
 
