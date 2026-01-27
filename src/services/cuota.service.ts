@@ -879,7 +879,7 @@ export class CuotaService {
     // ====================================================================
     // STEP 4-6: Apply adjustments, exemptions, and discounts using helper
     // ====================================================================
-    const categoriaId = await getCategoriaIdByCodigo(cuota.categoria, this.prisma);
+    const categoriaId = cuota.categoriaId;
     const resultado = await this.aplicarAjustesYExenciones(
       cuota.recibo.receptorId,
       cuota.mes,
@@ -1330,7 +1330,7 @@ export class CuotaService {
     subtotal: number;
   }> {
     // Calculate base amount from categoria
-    const categoriaId = await getCategoriaIdByCodigo(cuota.categoria, this.prisma);
+    const categoriaId = cuota.categoriaId;
     const montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
 
     // Calculate activities cost
