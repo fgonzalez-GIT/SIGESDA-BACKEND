@@ -192,7 +192,8 @@ export class CuotaRepository {
               orderBy: { fecha: 'desc' }
             }
           }
-        }
+        },
+        categoria: true
       }
     });
   }
@@ -215,7 +216,8 @@ export class CuotaRepository {
             },
             mediosPago: true
           }
-        }
+        },
+        categoria: true
       }
     });
   }

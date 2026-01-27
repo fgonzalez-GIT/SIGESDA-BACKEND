@@ -40,7 +40,158 @@ export declare class ActividadRepository {
         }[];
         total: number;
     }>;
-    findById(id: number): Promise<{
+    findById(id: number): Promise<({
+        horarios_actividades: ({
+            diaSemana: {
+                codigo: string;
+                nombre: string;
+                orden: number;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            activo: boolean;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            actividadId: number;
+            diaSemanaId: number;
+            horaInicio: Date;
+            horaFin: Date;
+        })[];
+        docentes_actividades: ({
+            personas: {
+                email: string | null;
+                nombre: string;
+                apellido: string;
+                telefono: string | null;
+                tipos: ({
+                    especialidad: {
+                        activo: boolean;
+                        codigo: string;
+                        nombre: string;
+                        descripcion: string | null;
+                        orden: number;
+                        id: number;
+                        createdAt: Date;
+                        updatedAt: Date;
+                    } | null;
+                    tipoPersona: {
+                        activo: boolean;
+                        codigo: string;
+                        nombre: string;
+                        descripcion: string | null;
+                        orden: number;
+                        id: number;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        requiresCategoria: boolean;
+                        requiresEspecialidad: boolean;
+                        requiresCuit: boolean;
+                    };
+                } & {
+                    tipoPersonaId: number;
+                    observaciones: string | null;
+                    activo: boolean;
+                    categoriaId: number | null;
+                    numeroSocio: number | null;
+                    fechaIngreso: Date | null;
+                    fechaBaja: Date | null;
+                    motivoBaja: string | null;
+                    especialidadId: number | null;
+                    honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
+                    cuit: string | null;
+                    razonSocialId: number | null;
+                    fechaDesasignacion: Date | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    fechaAsignacion: Date;
+                    personaId: number;
+                })[];
+                id: number;
+            };
+            rolesDocentes: {
+                activo: boolean;
+                codigo: string;
+                nombre: string;
+                descripcion: string | null;
+                orden: number;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            observaciones: string | null;
+            activo: boolean;
+            fechaDesasignacion: Date | null;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            fechaAsignacion: Date;
+            actividadId: number;
+            docenteId: number;
+            rolDocenteId: number;
+        })[];
+        participacion_actividades: ({
+            personas: {
+                email: string | null;
+                nombre: string;
+                apellido: string;
+                telefono: string | null;
+                tipos: ({
+                    tipoPersona: {
+                        activo: boolean;
+                        codigo: string;
+                        nombre: string;
+                        descripcion: string | null;
+                        orden: number;
+                        id: number;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        requiresCategoria: boolean;
+                        requiresEspecialidad: boolean;
+                        requiresCuit: boolean;
+                    };
+                } & {
+                    tipoPersonaId: number;
+                    observaciones: string | null;
+                    activo: boolean;
+                    categoriaId: number | null;
+                    numeroSocio: number | null;
+                    fechaIngreso: Date | null;
+                    fechaBaja: Date | null;
+                    motivoBaja: string | null;
+                    especialidadId: number | null;
+                    honorariosPorHora: import("@prisma/client/runtime/library").Decimal | null;
+                    cuit: string | null;
+                    razonSocialId: number | null;
+                    fechaDesasignacion: Date | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    fechaAsignacion: Date;
+                    personaId: number;
+                })[];
+                id: number;
+            };
+        } & {
+            observaciones: string | null;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            personaId: number;
+            actividadId: number;
+            fechaInicio: Date;
+            fechaFin: Date | null;
+            precioEspecial: import("@prisma/client/runtime/library").Decimal | null;
+            activa: boolean;
+        })[];
+        _count: {
+            participacion_actividades: number;
+        };
+    } & {
         observaciones: string | null;
         categoriaId: number;
         nombre: string;
@@ -56,7 +207,7 @@ export declare class ActividadRepository {
         fechaDesde: Date;
         fechaHasta: Date | null;
         costo: import("@prisma/client/runtime/library").Decimal;
-    } | null>;
+    }) | null>;
     findByCodigoActividad(codigo: string): Promise<({
         horarios_actividades: ({
             diaSemana: {
@@ -417,7 +568,16 @@ export declare class ActividadRepository {
         horaFin: Date;
     }>;
     deleteHorariosByActividad(actividadId: number): Promise<import(".prisma/client").Prisma.BatchPayload>;
-    getHorariosByActividad(actividadId: number): Promise<{
+    getHorariosByActividad(actividadId: number): Promise<({
+        diaSemana: {
+            codigo: string;
+            nombre: string;
+            orden: number;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    } & {
         activo: boolean;
         id: number;
         createdAt: Date;
@@ -426,7 +586,7 @@ export declare class ActividadRepository {
         diaSemanaId: number;
         horaInicio: Date;
         horaFin: Date;
-    }[]>;
+    })[]>;
     findHorarioById(horarioId: number): Promise<({
         actividades: {
             nombre: string;

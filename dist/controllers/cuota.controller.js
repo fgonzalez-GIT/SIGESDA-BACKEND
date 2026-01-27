@@ -27,6 +27,9 @@ class CuotaController {
         try {
             const query = cuota_dto_1.cuotaQuerySchema.parse(req.query);
             const result = await this.cuotaService.getCuotas(query);
+            const isUnlimited = query.limit >= 999999;
+            const hasNextPage = !isUnlimited && (query.page < result.pages);
+            const hasPreviousPage = !isUnlimited && (query.page > 1);
             const response = {
                 success: true,
                 data: result.data,
@@ -34,7 +37,42 @@ class CuotaController {
                     page: query.page,
                     limit: query.limit,
                     total: result.total,
-                    totalPages: result.pages
+                    totalRecords: result.total,
+                    totalPages: result.pages,
+                    recordsInPage: result.data.length,
+                    hasNextPage,
+                    hasPreviousPage,
+                    isUnlimited
+                }
+            };
+            res.status(enums_1.HttpStatus.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async exportCuotas(req, res, next) {
+        try {
+            const { mes, anio, categoriaId, ordenarPor, orden, ...otherFilters } = req.query;
+            const queryFilters = {
+                ...otherFilters,
+                ordenarPor: ordenarPor || 'fecha',
+                orden: orden || 'desc'
+            };
+            if (mes)
+                queryFilters.mes = parseInt(mes);
+            if (anio)
+                queryFilters.anio = parseInt(anio);
+            if (categoriaId)
+                queryFilters.categoriaId = parseInt(categoriaId);
+            const result = await this.cuotaService.exportAll(queryFilters);
+            const response = {
+                success: true,
+                message: `Cuotas exportadas exitosamente`,
+                data: result.data,
+                meta: {
+                    total: result.total,
+                    exportedAt: new Date().toISOString()
                 }
             };
             res.status(enums_1.HttpStatus.OK).json(response);
@@ -458,9 +496,19 @@ class CuotaController {
     async validarGeneracionCuotas(req, res, next) {
         try {
             const { mes, anio } = req.params;
-            const { categoria } = req.query;
-            const cuotasExistentes = await this.cuotaService.getCuotasPorPeriodo(parseInt(mes), parseInt(anio), categoria);
-            const sociosPendientes = await this.cuotaService['cuotaRepository'].getCuotasPorGenerar(parseInt(mes), parseInt(anio), categoria ? [categoria] : undefined);
+            const { categoriaIds } = req.query;
+            let categoriaIdsParsed;
+            if (categoriaIds) {
+                if (Array.isArray(categoriaIds)) {
+                    categoriaIdsParsed = categoriaIds.map(id => parseInt(id));
+                }
+                else {
+                    const idsString = categoriaIds;
+                    categoriaIdsParsed = idsString.split(',').map(id => parseInt(id.trim()));
+                }
+            }
+            const cuotasExistentes = await this.cuotaService.getCuotasPorPeriodo(parseInt(mes), parseInt(anio), undefined);
+            const sociosPendientes = await this.cuotaService['cuotaRepository'].getCuotasPorGenerar(parseInt(mes), parseInt(anio), categoriaIdsParsed);
             const response = {
                 success: true,
                 data: {
@@ -476,7 +524,8 @@ class CuotaController {
                 },
                 meta: {
                     periodo: `${mes}/${anio}`,
-                    categoria: categoria || 'todas'
+                    categoriaIds: categoriaIdsParsed || null,
+                    categoriaFiltro: categoriaIdsParsed ? categoriaIdsParsed.join(',') : 'todas'
                 }
             };
             res.status(enums_1.HttpStatus.OK).json(response);

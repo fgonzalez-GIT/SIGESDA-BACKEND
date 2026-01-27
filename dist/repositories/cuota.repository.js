@@ -81,7 +81,8 @@ class CuotaRepository {
                 }
             };
         }
-        const skip = (query.page - 1) * query.limit;
+        const isUnlimited = query.limit >= 999999;
+        const skip = isUnlimited ? 0 : (query.page - 1) * query.limit;
         let orderBy = [];
         switch (query.ordenarPor) {
             case 'fecha':
@@ -99,32 +100,35 @@ class CuotaRepository {
             default:
                 orderBy = [{ anio: query.orden }, { mes: query.orden }];
         }
-        const [data, total] = await Promise.all([
-            this.prisma.cuota.findMany({
-                where,
-                skip,
-                take: query.limit,
-                include: {
-                    recibo: {
-                        include: {
-                            receptor: {
-                                select: {
-                                    id: true,
-                                    nombre: true,
-                                    apellido: true,
-                                    dni: true,
-                                    numeroSocio: true,
-                                    categoria: true
-                                }
-                            },
-                            mediosPago: {
-                                orderBy: { fecha: 'desc' }
+        const queryOptions = {
+            where,
+            skip,
+            include: {
+                recibo: {
+                    include: {
+                        receptor: {
+                            select: {
+                                id: true,
+                                nombre: true,
+                                apellido: true,
+                                dni: true,
+                                numeroSocio: true,
+                                categoria: true
                             }
+                        },
+                        mediosPago: {
+                            orderBy: { fecha: 'desc' }
                         }
                     }
-                },
-                orderBy
-            }),
+                }
+            },
+            orderBy
+        };
+        if (!isUnlimited) {
+            queryOptions.take = query.limit;
+        }
+        const [data, total] = await Promise.all([
+            this.prisma.cuota.findMany(queryOptions),
             this.prisma.cuota.count({ where })
         ]);
         return { data, total };
@@ -159,7 +163,8 @@ class CuotaRepository {
                             orderBy: { fecha: 'desc' }
                         }
                     }
-                }
+                },
+                categoria: true
             }
         });
     }
@@ -181,7 +186,8 @@ class CuotaRepository {
                         },
                         mediosPago: true
                     }
-                }
+                },
+                categoria: true
             }
         });
     }

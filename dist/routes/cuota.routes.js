@@ -21,6 +21,7 @@ const itemCuotaService = new item_cuota_service_1.ItemCuotaService();
 const itemCuotaController = new item_cuota_controller_1.ItemCuotaController(itemCuotaService);
 router.post('/', cuotaController.createCuota.bind(cuotaController));
 router.get('/', cuotaController.getCuotas.bind(cuotaController));
+router.get('/export', cuotaController.exportCuotas.bind(cuotaController));
 router.get('/:id', cuotaController.getCuotaById.bind(cuotaController));
 router.put('/:id', cuotaController.updateCuota.bind(cuotaController));
 router.delete('/:id', cuotaController.deleteCuota.bind(cuotaController));

@@ -20,7 +20,18 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 receptor: {
@@ -29,8 +40,19 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true,
-                        numeroSocio: true
+                        numeroSocio: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 mediosPago: {
@@ -95,7 +117,18 @@ class ReciboRepository {
                             nombre: true,
                             apellido: true,
                             dni: true,
-                            tipo: true
+                            tipos: {
+                                where: { activo: true },
+                                include: {
+                                    tipoPersona: {
+                                        select: {
+                                            id: true,
+                                            codigo: true,
+                                            nombre: true
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     receptor: {
@@ -104,8 +137,19 @@ class ReciboRepository {
                             nombre: true,
                             apellido: true,
                             dni: true,
-                            tipo: true,
-                            numeroSocio: true
+                            numeroSocio: true,
+                            tipos: {
+                                where: { activo: true },
+                                include: {
+                                    tipoPersona: {
+                                        select: {
+                                            id: true,
+                                            codigo: true,
+                                            nombre: true
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     mediosPago: {
@@ -140,9 +184,20 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true,
                         email: true,
-                        telefono: true
+                        telefono: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 receptor: {
@@ -151,10 +206,21 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true,
                         numeroSocio: true,
                         email: true,
-                        telefono: true
+                        telefono: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 mediosPago: {
@@ -178,7 +244,18 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 receptor: {
@@ -187,8 +264,19 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true,
-                        numeroSocio: true
+                        numeroSocio: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 mediosPago: true
@@ -218,7 +306,18 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 receptor: {
@@ -227,8 +326,19 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true,
-                        numeroSocio: true
+                        numeroSocio: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 mediosPago: true
@@ -254,7 +364,18 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 receptor: {
@@ -263,8 +384,19 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true,
-                        numeroSocio: true
+                        numeroSocio: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 mediosPago: true
@@ -286,7 +418,18 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 receptor: {
@@ -295,8 +438,19 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true,
-                        numeroSocio: true
+                        numeroSocio: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 mediosPago: true
@@ -404,7 +558,18 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 receptor: {
@@ -413,8 +578,19 @@ class ReciboRepository {
                         nombre: true,
                         apellido: true,
                         dni: true,
-                        tipo: true,
-                        numeroSocio: true
+                        numeroSocio: true,
+                        tipos: {
+                            where: { activo: true },
+                            include: {
+                                tipoPersona: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        nombre: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 mediosPago: true

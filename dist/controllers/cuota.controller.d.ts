@@ -5,6 +5,7 @@ export declare class CuotaController {
     constructor(cuotaService: CuotaService);
     createCuota(req: Request, res: Response, next: NextFunction): Promise<void>;
     getCuotas(req: Request, res: Response, next: NextFunction): Promise<void>;
+    exportCuotas(req: Request, res: Response, next: NextFunction): Promise<void>;
     getCuotaById(req: Request, res: Response, next: NextFunction): Promise<void>;
     getCuotaByReciboId(req: Request, res: Response, next: NextFunction): Promise<void>;
     getCuotasPorPeriodo(req: Request, res: Response, next: NextFunction): Promise<void>;

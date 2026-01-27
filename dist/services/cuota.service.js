@@ -51,6 +51,18 @@ class CuotaService {
             pages
         };
     }
+    async exportAll(query) {
+        const exportQuery = {
+            ...query,
+            page: 1,
+            limit: 999999,
+            ordenarPor: query.ordenarPor || 'fecha',
+            orden: query.orden || 'desc'
+        };
+        const result = await this.cuotaRepository.findAll(exportQuery);
+        logger_1.logger.info(`Exportadas ${result.total} cuotas con filtros aplicados`);
+        return result;
+    }
     async getCuotaById(id) {
         return this.cuotaRepository.findById(id);
     }
@@ -379,8 +391,8 @@ class CuotaService {
                         logger_1.logger.debug(`[GENERACIÓN CUOTAS] Recibo ${recibo.numero} creado para socio ${socio.numeroSocio}`);
                         const cuota = await tx.cuota.create({
                             data: {
-                                reciboId: recibo.id,
-                                categoria: socio.categoria,
+                                recibo: { connect: { id: recibo.id } },
+                                categoria: { connect: { id: socio.categoria.id } },
                                 mes: data.mes,
                                 anio: data.anio,
                                 montoBase: 0,
@@ -389,12 +401,12 @@ class CuotaService {
                             }
                         });
                         logger_1.logger.debug(`[GENERACIÓN CUOTAS] Cuota ID ${cuota.id} creada`);
-                        const montoBaseSocio = socio.categoriaSocio?.montoCuota || 0;
+                        const montoBaseSocio = socio.categoria?.montoCuota || 0;
                         await tx.itemCuota.create({
                             data: {
                                 cuotaId: cuota.id,
                                 tipoItemId: tipoCuotaBase.id,
-                                concepto: `Cuota base ${socio.categoria}`,
+                                concepto: `Cuota base ${socio.categoria?.nombre || socio.categoria?.codigo || 'Sin categoría'}`,
                                 monto: montoBaseSocio,
                                 cantidad: 1,
                                 esAutomatico: true,
@@ -408,25 +420,27 @@ class CuotaService {
                         logger_1.logger.debug(`[GENERACIÓN CUOTAS] Ítem base creado: $${montoBaseSocio}`);
                         let montoActividades = 0;
                         if (tipoActividad) {
-                            const participaciones = await tx.participacionActividad.findMany({
+                            const participaciones = await tx.participacion_actividades.findMany({
                                 where: {
                                     personaId: socio.id,
                                     activa: true,
-                                    actividad: {
-                                        estado: { in: ['EN_CURSO', 'PROXIMAMENTE'] }
+                                    actividades: {
+                                        estado: {
+                                            codigo: { in: ['EN_CURSO', 'PROXIMAMENTE'] }
+                                        }
                                     }
                                 },
                                 include: {
-                                    actividad: true
+                                    actividades: true
                                 }
                             });
                             for (const participacion of participaciones) {
-                                const costoActividad = participacion.precioEspecial || participacion.actividad.costo || 0;
+                                const costoActividad = participacion.precioEspecial || participacion.actividades.costo || 0;
                                 await tx.itemCuota.create({
                                     data: {
                                         cuotaId: cuota.id,
                                         tipoItemId: tipoActividad.id,
-                                        concepto: participacion.actividad.nombre,
+                                        concepto: participacion.actividades.nombre,
                                         monto: costoActividad,
                                         cantidad: 1,
                                         esAutomatico: true,
@@ -444,28 +458,33 @@ class CuotaService {
                         }
                         if (data.aplicarDescuentos) {
                             try {
-                                const resultadoDescuentos = await motorDescuentos.aplicarReglas({
-                                    socioId: socio.id,
-                                    categoriaId: socio.categoriaId,
-                                    cuotaId: cuota.id,
-                                    mes: data.mes,
-                                    anio: data.anio
-                                }, tx);
-                                if (resultadoDescuentos.items.length > 0) {
-                                    descuentosGlobales.totalSociosConDescuento++;
-                                    descuentosGlobales.montoTotalDescuentos += resultadoDescuentos.totalDescuentoAplicado;
-                                    resultadoDescuentos.reglasAplicadas.forEach((regla) => {
-                                        if (!descuentosGlobales.reglasAplicadas[regla.codigo]) {
-                                            descuentosGlobales.reglasAplicadas[regla.codigo] = 0;
+                                const itemsActuales = await tx.itemCuota.findMany({
+                                    where: { cuotaId: cuota.id },
+                                    include: {
+                                        tipoItem: {
+                                            include: {
+                                                categoriaItem: true
+                                            }
                                         }
-                                        descuentosGlobales.reglasAplicadas[regla.codigo]++;
+                                    }
+                                });
+                                const resultadoDescuentos = await motorDescuentos.aplicarReglas(cuota.id, socio.id, itemsActuales);
+                                if (resultadoDescuentos.itemsDescuento.length > 0) {
+                                    descuentosGlobales.totalSociosConDescuento++;
+                                    descuentosGlobales.montoTotalDescuentos += resultadoDescuentos.totalDescuento;
+                                    resultadoDescuentos.aplicaciones.forEach((aplicacion) => {
+                                        const codigo = `REGLA_${aplicacion.reglaId}`;
+                                        if (!descuentosGlobales.reglasAplicadas[codigo]) {
+                                            descuentosGlobales.reglasAplicadas[codigo] = 0;
+                                        }
+                                        descuentosGlobales.reglasAplicadas[codigo]++;
                                     });
                                 }
-                                logger_1.logger.debug(`[GENERACIÓN CUOTAS] Descuentos aplicados: ${resultadoDescuentos.items.length} ítems, ` +
-                                    `total descuento: $${resultadoDescuentos.totalDescuentoAplicado.toFixed(2)}`);
+                                logger_1.logger.debug(`[GENERACIÓN CUOTAS] Descuentos aplicados: ${resultadoDescuentos.itemsDescuento.length} ítems, ` +
+                                    `total descuento: $${resultadoDescuentos.totalDescuento.toFixed(2)}`);
                             }
                             catch (errorDescuento) {
-                                logger_1.logger.error(`[GENERACIÓN CUOTAS] Error aplicando descuentos para socio ${socio.numeroSocio}:`, errorDescuento);
+                                logger_1.logger.error(`[GENERACIÓN CUOTAS] Error aplicando descuentos para socio ${socio.numeroSocio}:`, errorDescuento instanceof Error ? errorDescuento.message : JSON.stringify(errorDescuento), errorDescuento instanceof Error ? errorDescuento.stack : '');
                             }
                         }
                         const totalItems = await tx.itemCuota.aggregate({

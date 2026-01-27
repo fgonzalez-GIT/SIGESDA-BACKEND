@@ -19,6 +19,10 @@ export declare class CuotaService {
         total: number;
         pages: number;
     }>;
+    exportAll(query: Omit<CuotaQueryDto, 'page' | 'limit'>): Promise<{
+        data: Cuota[];
+        total: number;
+    }>;
     getCuotaById(id: number): Promise<Cuota | null>;
     getCuotaByReciboId(reciboId: number): Promise<Cuota | null>;
     getCuotasPorPeriodo(mes: number, anio: number, categoria?: CategoriaSocio): Promise<Cuota[]>;

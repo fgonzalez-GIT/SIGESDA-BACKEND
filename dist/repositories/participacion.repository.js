@@ -110,9 +110,20 @@ class ParticipacionRepository {
                             id: true,
                             nombre: true,
                             apellido: true,
-                            tipo: true,
                             dni: true,
-                            email: true
+                            email: true,
+                            tipos: {
+                                where: { activo: true },
+                                include: {
+                                    tipoPersona: {
+                                        select: {
+                                            id: true,
+                                            codigo: true,
+                                            nombre: true
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     actividades: {

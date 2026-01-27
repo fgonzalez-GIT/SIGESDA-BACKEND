@@ -97,9 +97,11 @@ exports.cuotaQuerySchema = zod_1.z.object({
         return isNaN(parsed) ? 1 : parsed;
     }, zod_1.z.number().int().positive().default(1)),
     limit: zod_1.z.preprocess((val) => {
+        if (val === 'all')
+            return 999999;
         const parsed = parseInt(val);
         return isNaN(parsed) ? 10 : parsed;
-    }, zod_1.z.number().int().positive().max(100).default(10)),
+    }, zod_1.z.number().int().positive().max(999999).default(10)),
     categoriaId: zod_1.z.preprocess((val) => {
         if (!val)
             return undefined;

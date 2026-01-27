@@ -42,9 +42,12 @@ class ActividadRepository {
             include: {
                 horarios_actividades: {
                     orderBy: [
-                        { diaSemana: 'asc' },
+                        { diaSemana: { orden: 'asc' } },
                         { horaInicio: 'asc' }
-                    ]
+                    ],
+                    include: {
+                        diaSemana: true
+                    }
                 },
                 docentes_actividades: {
                     include: {
@@ -212,9 +215,12 @@ class ActividadRepository {
             include: {
                 horarios_actividades: {
                     orderBy: [
-                        { diaSemana: 'asc' },
+                        { diaSemana: { orden: 'asc' } },
                         { horaInicio: 'asc' }
-                    ]
+                    ],
+                    include: {
+                        diaSemana: true
+                    }
                 },
                 docentes_actividades: {
                     include: {
@@ -426,7 +432,7 @@ class ActividadRepository {
         return this.prisma.horarios_actividades.findMany({
             where: { actividadId },
             include: {
-                diasSemana: true
+                diaSemana: true
             },
             orderBy: [
                 { diaSemanaId: 'asc' },
