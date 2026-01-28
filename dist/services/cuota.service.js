@@ -557,7 +557,7 @@ class CuotaService {
         const montosCalculados = await this.calcularMontosCuota(cuota);
         const montoBase = montosCalculados.montoBase;
         const montoActividades = montosCalculados.montoActividades;
-        const categoriaId = await (0, categoria_helper_1.getCategoriaIdByCodigo)(cuota.categoria, this.prisma);
+        const categoriaId = cuota.categoriaId;
         const resultado = await this.aplicarAjustesYExenciones(cuota.recibo.receptorId, cuota.mes, cuota.anio, montosCalculados.subtotal, {
             aplicarAjustes: data.aplicarAjustes,
             aplicarExenciones: data.aplicarExenciones,
@@ -848,7 +848,7 @@ class CuotaService {
         };
     }
     async calcularMontosCuota(cuota) {
-        const categoriaId = await (0, categoria_helper_1.getCategoriaIdByCodigo)(cuota.categoria, this.prisma);
+        const categoriaId = cuota.categoriaId;
         const montoBase = await this.cuotaRepository.getMontoBasePorCategoria(categoriaId);
         const montoActividades = await this.calcularCostoActividades(cuota.recibo.receptorId.toString(), cuota.mes, cuota.anio).then(result => result.total);
         const subtotal = montoBase + montoActividades;

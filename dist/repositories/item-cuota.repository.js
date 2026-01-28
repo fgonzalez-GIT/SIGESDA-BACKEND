@@ -97,8 +97,14 @@ class ItemCuotaRepository {
         };
         for (const item of items) {
             const monto = Number(item.monto);
-            summary.total += monto;
             const categoria = item.tipoItem.categoriaItem.codigo;
+            const categoriasQueRestan = ['DESCUENTO', 'BONIFICACION', 'AJUSTE'];
+            if (categoriasQueRestan.includes(categoria)) {
+                summary.total -= monto;
+            }
+            else {
+                summary.total += monto;
+            }
             switch (categoria) {
                 case 'BASE':
                     summary.base += monto;
@@ -258,9 +264,27 @@ class ItemCuotaRepository {
             where: { esAutomatico: false }
         });
         const items = await database_1.prisma.itemCuota.findMany({
-            select: { monto: true }
+            select: {
+                monto: true,
+                tipoItem: {
+                    select: {
+                        categoriaItem: {
+                            select: {
+                                codigo: true
+                            }
+                        }
+                    }
+                }
+            }
         });
-        const montoTotal = items.reduce((sum, item) => sum + Number(item.monto), 0);
+        const montoTotal = items.reduce((sum, item) => {
+            const monto = Number(item.monto);
+            const categoria = item.tipoItem.categoriaItem.codigo;
+            const categoriasQueRestan = ['DESCUENTO', 'BONIFICACION', 'AJUSTE'];
+            return categoriasQueRestan.includes(categoria)
+                ? sum - monto
+                : sum + monto;
+        }, 0);
         const itemsPorCategoria = await database_1.prisma.itemCuota.groupBy({
             by: ['tipoItemId'],
             _count: true,

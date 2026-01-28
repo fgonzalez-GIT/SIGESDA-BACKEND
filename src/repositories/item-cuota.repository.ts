@@ -137,9 +137,19 @@ export class ItemCuotaRepository {
 
     for (const item of items) {
       const monto = Number(item.monto);
-      summary.total += monto;
-
       const categoria = item.tipoItem.categoriaItem.codigo;
+
+      // Categorías que SUMAN al total: BASE, ACTIVIDAD, RECARGO, OTRO
+      // Categorías que RESTAN del total: DESCUENTO, BONIFICACION, AJUSTE
+      const categoriasQueRestan = ['DESCUENTO', 'BONIFICACION', 'AJUSTE'];
+
+      if (categoriasQueRestan.includes(categoria)) {
+        summary.total -= monto;  // RESTAR descuentos, bonificaciones y ajustes
+      } else {
+        summary.total += monto;  // SUMAR base, actividades, recargos y otros
+      }
+
+      // Acumular subtotales por categoría (siempre positivos para visualización)
       switch (categoria) {
         case 'BASE':
           summary.base += monto;
@@ -348,11 +358,31 @@ export class ItemCuotaRepository {
       where: { esAutomatico: false }
     });
 
-    // Suma total de montos
+    // Suma total de montos (considerando categorías que restan)
     const items = await prisma.itemCuota.findMany({
-      select: { monto: true }
+      select: {
+        monto: true,
+        tipoItem: {
+          select: {
+            categoriaItem: {
+              select: {
+                codigo: true
+              }
+            }
+          }
+        }
+      }
     });
-    const montoTotal = items.reduce((sum, item) => sum + Number(item.monto), 0);
+
+    const montoTotal = items.reduce((sum, item) => {
+      const monto = Number(item.monto);
+      const categoria = item.tipoItem.categoriaItem.codigo;
+      const categoriasQueRestan = ['DESCUENTO', 'BONIFICACION', 'AJUSTE'];
+
+      return categoriasQueRestan.includes(categoria)
+        ? sum - monto  // RESTAR descuentos, bonificaciones y ajustes
+        : sum + monto; // SUMAR base, actividades, recargos y otros
+    }, 0);
 
     // Ítems por categoría
     const itemsPorCategoria = await prisma.itemCuota.groupBy({
