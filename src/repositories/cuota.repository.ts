@@ -30,13 +30,31 @@ export class CuotaRepository {
                 apellido: true,
                 dni: true,
                 numeroSocio: true,
-                categoria: true
+                categoria: true, // Legacy field
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
               }
             },
             mediosPago: {
               orderBy: { fecha: 'desc' }
             }
           }
+        },
+        categoria: true,
+        items: { // ✅ AGREGADO: Ítems de la cuota
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       }
     });
@@ -145,13 +163,31 @@ export class CuotaRepository {
                 apellido: true,
                 dni: true,
                 numeroSocio: true,
-                categoria: true
+                categoria: true, // Legacy field (mantener para backward compatibility)
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
               }
             },
             mediosPago: {
               orderBy: { fecha: 'desc' }
             }
           }
+        },
+        categoria: true, // Categoría de la cuota
+        items: { // ✅ AGREGADO: Ítems de la cuota (actividades, etc.)
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       },
       orderBy
@@ -183,9 +219,16 @@ export class CuotaRepository {
                 apellido: true,
                 dni: true,
                 numeroSocio: true,
-                categoria: true,
+                categoria: true, // Legacy field
                 email: true,
-                telefono: true
+                telefono: true,
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
               }
             },
             emisor: {
@@ -201,7 +244,17 @@ export class CuotaRepository {
             }
           }
         },
-        categoria: true
+        categoria: true,
+        items: { // ✅ AGREGADO: Ítems de la cuota
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
+        }
       }
     });
   }
@@ -219,13 +272,30 @@ export class CuotaRepository {
                 apellido: true,
                 dni: true,
                 numeroSocio: true,
-                categoria: true
+                categoria: true, // Legacy field
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
               }
             },
             mediosPago: true
           }
         },
-        categoria: true
+        categoria: true,
+        items: { // ✅ AGREGADO: Ítems de la cuota
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
+        }
       }
     });
   }
@@ -251,10 +321,29 @@ export class CuotaRepository {
                 nombre: true,
                 apellido: true,
                 dni: true,
-                numeroSocio: true
+                numeroSocio: true,
+                categoria: true, // Legacy field
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
               }
             }
           }
+        },
+        categoria: true,
+        items: { // ✅ AGREGADO: Ítems de la cuota
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       },
       orderBy: [
@@ -274,8 +363,36 @@ export class CuotaRepository {
       include: {
         recibo: {
           include: {
+            receptor: {
+              select: {
+                id: true,
+                nombre: true,
+                apellido: true,
+                dni: true,
+                numeroSocio: true,
+                categoria: true, // Legacy field
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
+              }
+            },
             mediosPago: true
           }
+        },
+        categoria: true,
+        items: { // ✅ AGREGADO: Ítems de la cuota
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       },
       orderBy: [
@@ -312,11 +429,29 @@ export class CuotaRepository {
                 apellido: true,
                 dni: true,
                 numeroSocio: true,
-                categoria: true
+                categoria: true, // Legacy field
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
               }
             },
             mediosPago: true
           }
+        },
+        categoria: true,
+        items: { // ✅ AGREGADO: Ítems de la cuota
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       }
     });
@@ -401,11 +536,29 @@ export class CuotaRepository {
                 apellido: true,
                 dni: true,
                 numeroSocio: true,
-                categoria: true
+                categoria: true, // Legacy field
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
               }
             },
             mediosPago: true
           }
+        },
+        categoria: true,
+        items: { // ✅ AGREGADO: Ítems de la cuota
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       },
       orderBy: [
@@ -529,10 +682,28 @@ export class CuotaRepository {
                 apellido: true,
                 dni: true,
                 numeroSocio: true,
-                categoria: true
+                categoria: true, // Legacy field
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
               }
             }
           }
+        },
+        categoria: true,
+        items: { // ✅ AGREGADO: Ítems de la cuota
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       },
       orderBy: [
@@ -559,10 +730,28 @@ export class CuotaRepository {
                 apellido: true,
                 dni: true,
                 numeroSocio: true,
-                categoria: true
+                categoria: true, // Legacy field
+                tipos: { // ✅ AGREGADO: Architecture V2 - tipos de persona
+                  where: { activo: true },
+                  include: {
+                    tipoPersona: true,
+                    categoria: true
+                  }
+                }
               }
             }
           }
+        },
+        categoria: true,
+        items: { // ✅ AGREGADO: Ítems de la cuota
+          include: {
+            tipoItem: {
+              include: {
+                categoriaItem: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       },
       orderBy: [
