@@ -158,6 +158,14 @@ export const cuotaQuerySchema = z.object({
     },
     z.number().int().positive().optional()
   ),
+  personaId: z.preprocess(
+    (val) => {
+      if (!val) return undefined;
+      const parsed = parseInt(val as string);
+      return isNaN(parsed) ? undefined : parsed;
+    },
+    z.number().int().positive().optional()
+  ),
   soloImpagas: z.string()
     .transform(val => val === 'true')
     .optional(),

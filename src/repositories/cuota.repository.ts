@@ -61,6 +61,14 @@ export class CuotaRepository {
       where.reciboId = query.reciboId;
     }
 
+    // Filtro por persona (receptor del recibo)
+    if (query.personaId) {
+      where.recibo = {
+        ...where.recibo,
+        receptorId: query.personaId
+      };
+    }
+
     // Filtros por fecha
     if (query.fechaDesde || query.fechaHasta) {
       where.recibo = {
