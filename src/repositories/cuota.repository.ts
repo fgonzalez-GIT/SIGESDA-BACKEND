@@ -63,8 +63,8 @@ export class CuotaRepository {
   async findAll(query: CuotaQueryDto): Promise<{ data: Cuota[]; total: number }> {
     const where: Prisma.CuotaWhereInput = {};
 
-    if (query.categoria) {
-      where.categoria = query.categoria;
+    if (query.categoriaId) {
+      where.categoriaId = query.categoriaId;
     }
 
     if (query.mes) {
